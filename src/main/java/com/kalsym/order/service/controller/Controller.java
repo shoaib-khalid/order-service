@@ -1,6 +1,6 @@
 package com.kalsym.order.service.controller;
 
-import com.kalsym.order.service.Main;
+import com.kalsym.order.service.OrderServiceApplication;
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @author 7cu
  */
-@RestController
+//@RestController
 public class Controller {
     @Autowired
     private Environment env;
@@ -23,10 +23,10 @@ public class Controller {
 
     @RequestMapping(value = "/liveness", method = RequestMethod.GET, produces = "application/json", params = {})
     public String liveness() {
-        logger.debug("[" + Main.VERSION + "] order-service up!");
+        logger.debug("[" + OrderServiceApplication.VERSION + "] order-service up!");
         JSONObject json = new JSONObject();
         json.put("name","order-service");
-        json.put("version", Main.VERSION);
+        json.put("version", OrderServiceApplication.VERSION);
 
         return json.toString();
     }
@@ -40,19 +40,19 @@ public class Controller {
      */
     @RequestMapping(value = "/step", method = RequestMethod.GET, produces = "application/json", params = {"refId", "msisdn", "isOnNet"})
     public String getMessage(@RequestParam("refId") String refId, @RequestParam("msisdn") long msisdn, @RequestParam("isOnNet") boolean isOnNet) {
-        logger.debug("[" + Main.VERSION + "][" + refId + "] New HTTP Request received getMessage");
+        logger.debug("[" + OrderServiceApplication.VERSION + "][" + refId + "] New HTTP Request received getMessage");
         return "";
     }
     
     @RequestMapping(value = "/getProducts", method = RequestMethod.GET, produces = "application/json", params = {"refId", "msisdn", "isOnNet"})
     public String getProducts(@RequestParam("refId") String refId, @RequestParam("msisdn") long msisdn, @RequestParam("isOnNet") boolean isOnNet) {
-        logger.debug("[" + Main.VERSION + "][" + refId + "] New HTTP Request received getMessage");
+        logger.debug("[" + OrderServiceApplication.VERSION + "][" + refId + "] New HTTP Request received getMessage");
         return "";
     }
     
     @RequestMapping(value = "/product", method = RequestMethod.GET, produces = "application/json", params = {"refId", "msisdn", "isOnNet"})
     public String getProduct(@RequestParam("refId") String refId, @RequestParam("msisdn") long msisdn, @RequestParam("isOnNet") boolean isOnNet) {
-        logger.debug("[" + Main.VERSION + "][" + refId + "] New HTTP Request received getMessage");
+        logger.debug("[" + OrderServiceApplication.VERSION + "][" + refId + "] New HTTP Request received getMessage");
         return "";
     }
     
