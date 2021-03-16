@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
  * @author 7cu
  */
 @Repository
-public interface OrderPaymentDetailRepository extends PagingAndSortingRepository<OrderPaymentDetail, String>, JpaRepository<OrderPaymentDetail, String> {
+public interface OrderShipmentDetailRepository extends PagingAndSortingRepository<OrderShipmentDetail, String>, JpaRepository<OrderShipmentDetail, String> {
 
     <S extends Object> Page<S> findByOrderId(@Param("orderId") String orderId, Pageable pgbl);
 }

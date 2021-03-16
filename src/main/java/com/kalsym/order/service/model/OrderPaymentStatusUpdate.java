@@ -18,36 +18,29 @@ import org.hibernate.annotations.GenericGenerator;
 @Getter
 @Setter
 @ToString
-@Table(name = "cart")
+@Table(name = "order_payment_status_update")
 
-/**
- * When a customer leaves an online store without making a purchase it is
- * recorded as an abandoned cart
- */
-public class Cart {
+public class OrderPaymentStatusUpdate {
 
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
-    private String customerId;
-
-    private String storeId;
+    private String status;
 
     private Date created;
 
-    private Date updated;
+    private String modifiedBy;
+    private String comments;
+    private String orderId;
 
-    public void update(Cart cart) {
-        if (null != cart.getId()) {
-            this.setId(cart.getId());
-        }
-
-        customerId = cart.getCustomerId();
-        storeId = cart.getStoreId();
-        created = cart.getCreated();
-        updated = cart.getUpdated();
+    public void update(OrderPaymentStatusUpdate orderPaymentStatusUpdate) {
+        orderId = orderPaymentStatusUpdate.getOrderId();
+        status = orderPaymentStatusUpdate.getStatus();
+        created = orderPaymentStatusUpdate.getCreated();
+        modifiedBy = orderPaymentStatusUpdate.getModifiedBy();
+        comments = orderPaymentStatusUpdate.getComments();
     }
 
 }

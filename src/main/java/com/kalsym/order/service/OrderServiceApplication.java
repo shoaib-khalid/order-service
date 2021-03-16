@@ -24,11 +24,10 @@ public class OrderServiceApplication implements CommandLineRunner {
 
     static {
         System.setProperty("spring.jpa.hibernate.naming.physical-strategy", "org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl");
-//        System.setProperty("security.basic.enabled", "false");
-//        System.setProperty("management.basic.enabled", "false");
     }
 
     public static String VERSION;
+    
     @Autowired
     private Environment env;
 

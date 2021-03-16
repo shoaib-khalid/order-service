@@ -1,6 +1,5 @@
 package com.kalsym.order.service.model;
 
-import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -18,17 +17,16 @@ import org.hibernate.annotations.GenericGenerator;
 @Getter
 @Setter
 @ToString
-@Table(name = "order_payment_detail")
+@Table(name = "order_completion_status")
 
-public class OrderPaymentDetail {
+/**
+ * When a customer leaves an online store without making a purchase it is recorded as an abandoned cart
+ */
+public class OrderCompletionStatus {
 
-    private String accountName;
-    private String gatewayId;
-    private String couponId;
-    private Date time;
-    private String orderId;
-
-    public void update(OrderPaymentDetail orderPaymentDetail) {
-
-    }
+    @Id
+    private String status;
+    
+    private String description;
+   
 }

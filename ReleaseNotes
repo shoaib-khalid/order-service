@@ -1,0 +1,40 @@
+##################################################
+# product-service-1.0-SNAPSHOT
+######################################################################
+
+
+Orders controller:
+GET /orders
+GET /orders/{id}
+POST /orders
+DELETE /orders/{id}
+PUT /orders/{id}
+
+OrderItems:
+GET /orders/{orderId}/items
+GET /orders/{orderId}/items/{orderItemId}
+POST /orders/items
+DELETE /orders/items
+PUT /orders/{orderId}/items
+
+OrderShipment:
+GET /orders/{orderId}/shipment-details
+POST /orders/{orderId}/shipment-details
+DELETE /orders/{orderId}/shipment-details
+PUT /orders/{orderId}/shipment-details
+
+
+Carts controller:
+GET /carts
+GET /carts/{id}
+POST /carts
+DELETE /carts/{id}
+PUT /carts/{id}
+
+CartItems:
+GET /{cartId}/items
+GET /{cartId}/items/{cartItemId}
+POST /items
+DELETE /items
+PUT /{cartId}/items
+
