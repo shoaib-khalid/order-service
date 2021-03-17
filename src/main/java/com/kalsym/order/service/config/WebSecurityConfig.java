@@ -1,6 +1,7 @@
 package com.kalsym.order.service.config;
 
 import com.kalsym.order.service.filter.SessionRequestFilter;
+import com.kalsym.order.service.service.MySQLUserDetailsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,15 +25,15 @@ import org.springframework.web.filter.CorsFilter;
  *
  * @author Sarosh
  */
-//@Configuration
-//@EnableWebSecurity
-//@EnableGlobalMethodSecurity(prePostEnabled = true)
+@Configuration
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static Logger logger = LoggerFactory.getLogger("application");
     
-//    @Autowired
-//    MySQLUserDetailsService mySQLUserDetailsService;
+    @Autowired
+    MySQLUserDetailsService mySQLUserDetailsService;
 
     @Autowired
     private SessionAuthenticationEntryPoint sessionAuthenticationEntryPoint;
@@ -42,7 +43,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        //auth.userDetailsService(mySQLUserDetailsService).passwordEncoder(passwordEncoder());
+        auth.userDetailsService(mySQLUserDetailsService).passwordEncoder(passwordEncoder());
     }
 
     @Bean
