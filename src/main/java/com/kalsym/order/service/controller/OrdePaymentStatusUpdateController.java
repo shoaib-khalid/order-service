@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -41,21 +42,21 @@ public class OrdePaymentStatusUpdateController {
     @Autowired
     OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository;
 
-    @PostMapping(path = {""}, name = "order-payment-status-update-get-by-order")
-    @PreAuthorize("hasAnyAuthority('order-payment-status-update-get-by-order', 'all')")
+    @GetMapping(path = {""}, name = "order-payment-status-update-get")
+    @PreAuthorize("hasAnyAuthority('order-payment-status-update-get', 'all')")
     public ResponseEntity<HttpResponse> getOrderPaymentStatusUpdatesByOrder(HttpServletRequest request,
             @PathVariable(required = true) String orderId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-payment-status-update-get-by-order, orderId: {}", orderId);
+        logger.info("order-payment-status-update-get, orderId: {}", orderId);
 
         Optional<Order> order = orderRepository.findById(orderId);
 
         if (!order.isPresent()) {
             response.setErrorStatus(HttpStatus.NOT_FOUND);
-            logger.info("order-payment-status-update-get-by-order, orderId, not found. orderId: {}", orderId);
+            logger.info("order-payment-status-update-get, orderId, not found. orderId: {}", orderId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
@@ -66,14 +67,14 @@ public class OrdePaymentStatusUpdateController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping(path = {""}, name = "order-payment-status-update-post-by-order")
-    @PreAuthorize("hasAnyAuthority('order-payment-status-update-post-by-order', 'all')")
+    @PostMapping(path = {""}, name = "order-payment-status-update-post")
+    @PreAuthorize("hasAnyAuthority('order-payment-status-update-post', 'all')")
     public ResponseEntity<HttpResponse> postOrderPaymentStatusUpdatesByOrder(HttpServletRequest request,
             @Valid @RequestBody OrderPaymentStatusUpdate bodyOrderPaymentStatusUpdate) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-payment-status-update-post-by-order, orderId: {}", bodyOrderPaymentStatusUpdate.getOrderId());
+        logger.info("order-payment-status-update-post, orderId: {}", bodyOrderPaymentStatusUpdate.getOrderId());
         logger.info(bodyOrderPaymentStatusUpdate.toString(), "");
 
         Optional<Order> savedOrder = null;
@@ -98,21 +99,23 @@ public class OrdePaymentStatusUpdateController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @DeleteMapping(path = {""}, name = "order-payment-status-update-delete-by-order")
-    @PreAuthorize("hasAnyAuthority('order-payment-status-update-delete-by-order', 'all')")
+    @DeleteMapping(path = {"/{id}"}, name = "order-payment-status-update-delete-by-id")
+    @PreAuthorize("hasAnyAuthority('order-payment-status-update-delete-by-id', 'all')")
     public ResponseEntity<HttpResponse> deleteOrderPaymentStatusUpdatesByOrder(HttpServletRequest request,
+            @PathVariable(required = true) String orderId,
+            @PathVariable(required = true) String id,
             @Valid @RequestBody OrderPaymentStatusUpdate bodyOrderPaymentStatusUpdate) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-payment-status-update-delete-by-order, orderId: {}", bodyOrderPaymentStatusUpdate.getOrderId());
+        logger.info("order-payment-status-update-delete-by-id, orderId: {}", orderId);
         logger.info(bodyOrderPaymentStatusUpdate.toString(), "");
 
         Optional<Order> savedOrder = null;
 
-        savedOrder = orderRepository.findById(bodyOrderPaymentStatusUpdate.getOrderId());
+        savedOrder = orderRepository.findById(orderId);
         if (savedOrder == null) {
-            logger.info("order-payment-status-update-delete-by-order, order not found, orderId: {}", bodyOrderPaymentStatusUpdate.getOrderId());
+            logger.info("order-payment-status-update-delete-by-id, order not found, orderId: {}", orderId);
             response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
@@ -129,38 +132,40 @@ public class OrdePaymentStatusUpdateController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PutMapping(path = {""}, name = "order-payment-status-update-put-by-order")
-    @PreAuthorize("hasAnyAuthority('order-payment-status-update-put-by-order', 'all')")
+    @PutMapping(path = {"/{id}"}, name = "order-payment-status-update-put-by-id")
+    @PreAuthorize("hasAnyAuthority('order-payment-status-update-put-by-id', 'all')")
     public ResponseEntity<HttpResponse> putOrderPaymentStatusUpdatesByOrder(HttpServletRequest request,
+            @PathVariable(required = true) String orderId,
+            @PathVariable(required = true) String id,
             @Valid @RequestBody OrderPaymentStatusUpdate bodyOrderPaymentStatusUpdate) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-payment-status-update-put-by-order, orderId: {}", bodyOrderPaymentStatusUpdate.getOrderId());
+        logger.info("order-payment-status-update-put-by-id, orderId: {}", orderId);
         logger.info(bodyOrderPaymentStatusUpdate.toString(), "");
 
-        Optional<Order> optOrder = orderRepository.findById(bodyOrderPaymentStatusUpdate.getOrderId());
+        Optional<Order> optOrder = orderRepository.findById(orderId);
 
         if (!optOrder.isPresent()) {
-            logger.info("Order not found with orderId: {}", bodyOrderPaymentStatusUpdate.getOrderId());
+            logger.info("Order not found with orderId: {}", orderId);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        Optional<OrderPaymentStatusUpdate> optOrderPaymentStatusUpdate = orderPaymentStatusUpdateRepository.findById(bodyOrderPaymentStatusUpdate.getOrderId());
+        Optional<OrderPaymentStatusUpdate> optOrderPaymentStatusUpdate = orderPaymentStatusUpdateRepository.findById(orderId);
 
         if (!optOrderPaymentStatusUpdate.isPresent()) {
-            logger.info("orderPaymentStatusUpdate not found with orderId: {}", bodyOrderPaymentStatusUpdate.getOrderId());
+            logger.info("orderPaymentStatusUpdate not found with orderId: {}", orderId);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        logger.info("orderPaymentStatusUpdate found with orderId: {}", bodyOrderPaymentStatusUpdate.getOrderId());
+        logger.info("orderPaymentStatusUpdate found with orderId: {}", orderId);
         OrderPaymentStatusUpdate orderPaymentStatusUpdate = optOrderPaymentStatusUpdate.get();
 
         orderPaymentStatusUpdate.update(bodyOrderPaymentStatusUpdate);
 
-        logger.info("orderPaymentStatusUpdate updated for orderId: {}", bodyOrderPaymentStatusUpdate.getOrderId());
+        logger.info("orderPaymentStatusUpdate updated for orderId: {}", orderId);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(orderPaymentStatusUpdateRepository.save(orderPaymentStatusUpdate));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);

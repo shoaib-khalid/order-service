@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @author 7cu
  */
-//@RestController
+@RestController
 public class Controller {
     @Autowired
     private Environment env;
@@ -29,35 +29,5 @@ public class Controller {
         json.put("version", OrderServiceApplication.VERSION);
 
         return json.toString();
-    }
-
-    /**
-     * Get the next step in the conversation
-     * @param refId
-     * @param msisdn
-     * @param isOnNet
-     * @return 
-     */
-    @RequestMapping(value = "/step", method = RequestMethod.GET, produces = "application/json", params = {"refId", "msisdn", "isOnNet"})
-    public String getMessage(@RequestParam("refId") String refId, @RequestParam("msisdn") long msisdn, @RequestParam("isOnNet") boolean isOnNet) {
-        logger.debug("[" + OrderServiceApplication.VERSION + "][" + refId + "] New HTTP Request received getMessage");
-        return "";
-    }
-    
-    @RequestMapping(value = "/getProducts", method = RequestMethod.GET, produces = "application/json", params = {"refId", "msisdn", "isOnNet"})
-    public String getProducts(@RequestParam("refId") String refId, @RequestParam("msisdn") long msisdn, @RequestParam("isOnNet") boolean isOnNet) {
-        logger.debug("[" + OrderServiceApplication.VERSION + "][" + refId + "] New HTTP Request received getMessage");
-        return "";
-    }
-    
-    @RequestMapping(value = "/product", method = RequestMethod.GET, produces = "application/json", params = {"refId", "msisdn", "isOnNet"})
-    public String getProduct(@RequestParam("refId") String refId, @RequestParam("msisdn") long msisdn, @RequestParam("isOnNet") boolean isOnNet) {
-        logger.debug("[" + OrderServiceApplication.VERSION + "][" + refId + "] New HTTP Request received getMessage");
-        return "";
-    }
-    
-    @RequestMapping(value = "/selectProduct", method = RequestMethod.PUT, produces = "application/json")
-    public void selectProduct(){
-        
     }
 }

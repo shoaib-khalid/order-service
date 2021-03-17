@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -41,9 +42,9 @@ public class OrderItemController {
     @Autowired
     OrderItemRepository orderItemRepository;
 
-    @PostMapping(path = {""}, name = "order-items-get-by-order")
-    @PreAuthorize("hasAnyAuthority('order-items-get-by-order', 'all')")
-    public ResponseEntity<HttpResponse> getOrderItemsByOrder(HttpServletRequest request,
+    @GetMapping(path = {""}, name = "order-items-get")
+    @PreAuthorize("hasAnyAuthority('order-items-get', 'all')")
+    public ResponseEntity<HttpResponse> getOrderItems(HttpServletRequest request,
             @PathVariable(required = true) String orderId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) throws Exception {
@@ -66,78 +67,76 @@ public class OrderItemController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping(path = {"/{orderItemId}"}, name = "order-items-get-by-orderItemId")
-    @PreAuthorize("hasAnyAuthority('order-items-get-by-orderItemId', 'all')")
-    public ResponseEntity<HttpResponse> getOrderItemsByOrderItemId(HttpServletRequest request,
-            @PathVariable(required = true) String orderItemId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int pageSize) throws Exception {
+    @PostMapping(path = {""}, name = "order-items-post")
+    @PreAuthorize("hasAnyAuthority('order-items-post', 'all')")
+    public ResponseEntity<HttpResponse> postOrderItems(HttpServletRequest request,
+            @PathVariable(required = true) String orderId,
+            @Valid @RequestBody OrderItem bodyOrderItem) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-items-get-by-orderItemId, orderItemId: {}", orderItemId);
+        logger.info("order-items-post, orderId: {}", orderId);
 
-        Optional<OrderItem> orderItem = orderItemRepository.findById(orderItemId);
+        Optional<OrderItem> orderItem = orderItemRepository.findById(bodyOrderItem.getId());
 
         if (!orderItem.isPresent()) {
             response.setErrorStatus(HttpStatus.NOT_FOUND);
-            logger.info("order-items-get-by-orderItemId, orderItemId, not found. orderItemId: {}", orderItemId);
+            logger.info("order-items-get-by-orderItemId, orderItemId, not found. orderItemId: {}", bodyOrderItem.getId());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        Pageable pageable = PageRequest.of(page, pageSize);
-
         response.setSuccessStatus(HttpStatus.OK);
-        response.setData(orderItemRepository.findById(orderItemId));
+        response.setData(orderItemRepository.findById(bodyOrderItem.getId()));
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping(path = {""}, name = "order-items-post-by-order")
-    @PreAuthorize("hasAnyAuthority('order-items-post-by-order', 'all')")
-    public ResponseEntity<HttpResponse> postOrderItemsByOrder(HttpServletRequest request,
+//    @PostMapping(path = {""}, name = "order-items-post-by-order")
+//    @PreAuthorize("hasAnyAuthority('order-items-post-by-order', 'all')")
+//    public ResponseEntity<HttpResponse> postOrderItemsByOrder(HttpServletRequest request,
+//            @Valid @RequestBody OrderItem bodyOrderItem) throws Exception {
+//        String logprefix = request.getRequestURI() + " ";
+//        HttpResponse response = new HttpResponse(request.getRequestURI());
+//
+//        logger.info("cart-items-post-by-cart, cartId: {}", bodyOrderItem.getOrderId());
+//        logger.info(bodyOrderItem.toString(), "");
+//
+//        Optional<Order> savedOrder = null;
+//
+//        savedOrder = orderRepository.findById(bodyOrderItem.getOrderId());
+//        if (savedOrder == null) {
+//            logger.info("order-items-post-by-order, orderId not found, orderId: {}", bodyOrderItem.getOrderId());
+//            response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
+//            return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
+//        }
+//        OrderItem orderItem;
+//        try {
+//            orderItem = orderItemRepository.save(bodyOrderItem);
+//            response.setSuccessStatus(HttpStatus.CREATED);
+//        } catch (Exception exp) {
+//            logger.error("Error saving order item", exp);
+//            response.setMessage(exp.getMessage());
+//            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
+//        }
+//        logger.info("orderItem created with id: " + orderItem.getId());
+//        response.setData(orderItem);
+//        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+//    }
+    @DeleteMapping(path = {"/{id}"}, name = "order-items-delete-by-id")
+    @PreAuthorize("hasAnyAuthority('order-items-delete-by-id', 'all')")
+    public ResponseEntity<HttpResponse> deleteOrderItemsById(HttpServletRequest request,
+            @PathVariable(required = true) String orderId,
+            @PathVariable(required = true) String id,
             @Valid @RequestBody OrderItem bodyOrderItem) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("cart-items-post-by-cart, cartId: {}", bodyOrderItem.getOrderId());
+        logger.info("order-items-delete-by-id, orderId: {}", orderId);
         logger.info(bodyOrderItem.toString(), "");
 
         Optional<Order> savedOrder = null;
 
-        savedOrder = orderRepository.findById(bodyOrderItem.getOrderId());
+        savedOrder = orderRepository.findById(orderId);
         if (savedOrder == null) {
-            logger.info("order-items-post-by-order, orderId not found, orderId: {}", bodyOrderItem.getOrderId());
-            response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
-            return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
-        }
-        OrderItem orderItem;
-        try {
-            orderItem = orderItemRepository.save(bodyOrderItem);
-            response.setSuccessStatus(HttpStatus.CREATED);
-        } catch (Exception exp) {
-            logger.error("Error saving order item", exp);
-            response.setMessage(exp.getMessage());
-            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
-        }
-        logger.info("orderItem created with id: " + orderItem.getId());
-        response.setData(orderItem);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @DeleteMapping(path = {""}, name = "order-items-delete-by-order")
-    @PreAuthorize("hasAnyAuthority('order-items-delete-by-order', 'all')")
-    public ResponseEntity<HttpResponse> deleteOrderItemsByOrder(HttpServletRequest request,
-            @Valid @RequestBody OrderItem bodyOrderItem) throws Exception {
-        String logprefix = request.getRequestURI() + " ";
-        HttpResponse response = new HttpResponse(request.getRequestURI());
-
-        logger.info("order-items-delete-by-order, orderId: {}", bodyOrderItem.getOrderId());
-        logger.info(bodyOrderItem.toString(), "");
-
-        Optional<Order> savedOrder = null;
-
-        savedOrder = orderRepository.findById(bodyOrderItem.getOrderId());
-        if (savedOrder == null) {
-            logger.info("order-items-delete-by-order, orderId not found, orderId: {}", bodyOrderItem.getOrderId());
+            logger.info("order-items-delete-by-order, orderId not found, orderId: {}", orderId);
             response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
@@ -150,42 +149,44 @@ public class OrderItemController {
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
-        logger.info("orderItem deleted with id: " + bodyOrderItem.getId());
+        logger.info("orderItem deleted with id: " + id);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PutMapping(path = {""}, name = "order-items-put-by-order")
-    @PreAuthorize("hasAnyAuthority('order-items-put-by-order', 'all')")
-    public ResponseEntity<HttpResponse> putCartItemsByOrder(HttpServletRequest request,
+    @PutMapping(path = {"/{id}"}, name = "order-items-put-by-id")
+    @PreAuthorize("hasAnyAuthority('order-items-put-by-id', 'all')")
+    public ResponseEntity<HttpResponse> putCartItemsById(HttpServletRequest request,
+            @PathVariable(required = true) String orderId,
+            @PathVariable(required = true) String id,
             @Valid @RequestBody OrderItem bodyOrderItem) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-items-put-by-order, orderId: {}", bodyOrderItem.getOrderId());
+        logger.info("order-items-put-by-order, orderId: {}", orderId);
         logger.info(bodyOrderItem.toString(), "");
 
-        Optional<Order> optOrder = orderRepository.findById(bodyOrderItem.getOrderId());
+        Optional<Order> optOrder = orderRepository.findById(orderId);
 
         if (!optOrder.isPresent()) {
-            logger.info("Order not found with orderId: {}", bodyOrderItem.getOrderId());
+            logger.info("Order not found with orderId: {}", orderId);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        Optional<OrderItem> optOrderItem = orderItemRepository.findById(bodyOrderItem.getId());
+        Optional<OrderItem> optOrderItem = orderItemRepository.findById(id);
 
         if (!optOrderItem.isPresent()) {
-            logger.info("orderItem not found with orderItemId: {}", bodyOrderItem.getId());
+            logger.info("orderItem not found with orderItemId: {}", id);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        logger.info("orderItem found with orderItemId: {}", bodyOrderItem.getId());
+        logger.info("orderItem found with orderItemId: {}", id);
         OrderItem orderItem = optOrderItem.get();
 
         orderItem.update(bodyOrderItem);
 
-        logger.info("orderItem updated for orderItemId: {}", bodyOrderItem.getId());
+        logger.info("orderItem updated for orderItemId: {}", id);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(orderItemRepository.save(orderItem));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);

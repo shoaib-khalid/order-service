@@ -1,0 +1,92 @@
+<configuration>
+    
+    <property name="LOG_PATTERN" value="%d %5p [%t] %L - %m%n" />
+    <property name="CDR_PATTERN" value="%d{dd-MM-yyyy},%d{HH:mm:ss.SSSZ},%m%n" />
+	<property name="PROJECT_NAME" value="product-service"/>
+    <property name="LOG_ROOT" value="/var/kalsym/logs/product-service"/>
+    
+    <appender name="CDRAPPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_ROOT}/cdrs/cdr.log</file>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>${LOG_ROOT}/cdrs/cdr.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!-- or whenever the file size reaches 100MB -->
+                <maxFileSize>100MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <!-- keep 30 days' worth of history -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <charset>UTF-8</charset>
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <Pattern>${CDR_PATTERN}</Pattern>
+            </layout>
+        </encoder>
+    </appender>
+    
+    <appender name="APPLICATION" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_ROOT}/${PROJECT_NAME}.log</file>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>${LOG_ROOT}/${PROJECT_NAME}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!-- or whenever the file size reaches 100MB -->
+                <maxFileSize>100MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <!-- keep 30 days' worth of history -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <charset>UTF-8</charset>
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <Pattern>${LOG_PATTERN}</Pattern>
+            </layout>
+        </encoder>
+    </appender>
+    
+    <appender name="springLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_ROOT}/spring-boot.log</file>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${LOG_ROOT}/spring-boot-%i.log</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>10</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>10MB</maxFileSize>
+        </triggeringPolicy>
+    </appender>  
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <Pattern>${LOG_PATTERN}</Pattern>
+        </encoder>
+    </appender>
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <Pattern>${LOG_PATTERN}</Pattern>
+        </encoder>
+    </appender>
+    <logger name="com.kalsym" level="INFO" additivity="false">
+        <appender-ref ref="APPLICATION"/>
+    </logger>
+    <logger name="cdr" level="DEBUG" additivity="false">
+        <appender-ref ref="CDRAPPENDER"/>
+    </logger>
+    <logger name="org.springframework" level="DEBUG">
+        <appender-ref ref="springLog" />
+        <appender-ref ref="console" />
+    </logger>
+    <root level="debug">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="console" />
+    </root>
+</configuration>

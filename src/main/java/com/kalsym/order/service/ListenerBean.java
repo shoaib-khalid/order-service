@@ -26,7 +26,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  *
  * @author Sarosh
  */
-@Component
+//@Component
 public class ListenerBean {
 
     private static Logger logger = LoggerFactory.getLogger("application");

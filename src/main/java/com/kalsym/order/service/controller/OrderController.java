@@ -116,16 +116,17 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @DeleteMapping(path = {"/{orderId}"}, name = "orders-delete-by-id")
+    @DeleteMapping(path = {"/{id}"}, name = "orders-delete-by-id")
     @PreAuthorize("hasAnyAuthority('orders-delete-by-id', 'all')")
-    public ResponseEntity<HttpResponse> deleteOrdersById(HttpServletRequest request, @PathVariable String orderId) {
+    public ResponseEntity<HttpResponse> deleteOrdersById(HttpServletRequest request,
+            @PathVariable(required = true) String id) {
         String logprefix = request.getRequestURI() + " ";
         String location = Thread.currentThread().getStackTrace()[1].getMethodName();
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("orders-delete-by-id, productId: {}", orderId);
+        logger.info("orders-delete-by-id, orderId: {}", id);
 
-        Optional<Order> optProduct = orderRepository.findById(orderId);
+        Optional<Order> optProduct = orderRepository.findById(id);
 
         if (!optProduct.isPresent()) {
             logger.info("order not found", "");
@@ -136,7 +137,7 @@ public class OrderController {
         logger.info("order found", "");
         orderRepository.delete(optProduct.get());
 
-        logger.info("order deleted, with id: {}", orderId);
+        logger.info("order deleted, with orderId: {}", id);
         response.setSuccessStatus(HttpStatus.OK);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -148,9 +149,11 @@ public class OrderController {
      * @param bodyProduct
      * @return
      */
-    @PutMapping(path = {"/{orderId}"}, name = "orders-put-by-id")
+    @PutMapping(path = {"/{id}"}, name = "orders-put-by-id")
     @PreAuthorize("hasAnyAuthority('orders-put-by-id', 'all')")
-    public ResponseEntity<HttpResponse> putOrdersById(HttpServletRequest request, @PathVariable String orderId, @RequestBody Order bodyOrder) {
+    public ResponseEntity<HttpResponse> putOrdersById(HttpServletRequest request, 
+            @PathVariable String id, 
+            @RequestBody Order bodyOrder) {
         String logprefix = request.getRequestURI() + " ";
         String location = Thread.currentThread().getStackTrace()[1].getMethodName();
         HttpResponse response = new HttpResponse(request.getRequestURI());
@@ -158,21 +161,21 @@ public class OrderController {
         logger.info("", "");
         logger.info(bodyOrder.toString(), "");
 
-        Optional<Order> optOrder = orderRepository.findById(orderId);
+        Optional<Order> optOrder = orderRepository.findById(id);
 
         if (!optOrder.isPresent()) {
-            logger.info("Order not found with orderId: {}", orderId);
+            logger.info("Order not found with orderId: {}", id);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        logger.info("order found with orderId: {}", orderId);
+        logger.info("order found with orderId: {}", id);
         Order order = optOrder.get();
         List<String> errors = new ArrayList<>();
 
         order.update(bodyOrder);
 
-        logger.info("order updated for orderId: {}", orderId);
+        logger.info("order updated for orderId: {}", id);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(orderRepository.save(order));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);

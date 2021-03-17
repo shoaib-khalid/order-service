@@ -27,7 +27,7 @@ public class OrderServiceApplication implements CommandLineRunner {
     }
 
     public static String VERSION;
-    
+
     @Autowired
     private Environment env;
 

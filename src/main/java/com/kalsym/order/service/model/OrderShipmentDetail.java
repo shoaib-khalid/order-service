@@ -5,6 +5,7 @@ import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import javax.persistence.Id;
 
 /**
  *
@@ -27,6 +28,7 @@ public class OrderShipmentDetail {
     private String address;
     private String city;
     private String zipcode;
+    @Id
     private String orderId;
     
     public void update(OrderShipmentDetail orderShipmentDetail){

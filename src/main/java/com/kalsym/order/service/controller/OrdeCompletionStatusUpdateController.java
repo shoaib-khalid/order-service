@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -41,21 +42,21 @@ public class OrdeCompletionStatusUpdateController {
     @Autowired
     OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository;
 
-    @PostMapping(path = {""}, name = "order-completion-status-update-get-by-order")
-    @PreAuthorize("hasAnyAuthority('order-completion-status-update-get-by-order', 'all')")
+    @GetMapping(path = {""}, name = "order-completion-status-update-get")
+    @PreAuthorize("hasAnyAuthority('order-completion-status-update-get', 'all')")
     public ResponseEntity<HttpResponse> getOrderCompletionStatusUpdatesByOrder(HttpServletRequest request,
             @PathVariable(required = true) String orderId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-completion-status-update-get-by-order, orderId: {}", orderId);
+        logger.info("order-completion-status-update-get, orderId: {}", orderId);
 
         Optional<Order> order = orderRepository.findById(orderId);
 
         if (!order.isPresent()) {
             response.setErrorStatus(HttpStatus.NOT_FOUND);
-            logger.info("order-completion-status-update-get-by-order, orderId, not found. orderId: {}", orderId);
+            logger.info("order-completion-status-update-get, orderId, not found. orderId: {}", orderId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
@@ -66,8 +67,8 @@ public class OrdeCompletionStatusUpdateController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping(path = {""}, name = "order-completion-status-update-post-by-order")
-    @PreAuthorize("hasAnyAuthority('order-completion-status-update-post-by-order', 'all')")
+    @PostMapping(path = {""}, name = "order-completion-status-update-post")
+    @PreAuthorize("hasAnyAuthority('order-completion-status-update-post', 'all')")
     public ResponseEntity<HttpResponse> postOrderCompletionStatusUpdatesByOrder(HttpServletRequest request,
             @Valid @RequestBody OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate) throws Exception {
         String logprefix = request.getRequestURI() + " ";
@@ -98,21 +99,23 @@ public class OrdeCompletionStatusUpdateController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @DeleteMapping(path = {""}, name = "order-completion-status-update-delete-by-order")
-    @PreAuthorize("hasAnyAuthority('order-completion-status-update-delete-by-order', 'all')")
+    @DeleteMapping(path = {"/{id}"}, name = "order-completion-status-update-delete-by-id")
+    @PreAuthorize("hasAnyAuthority('order-completion-status-update-delete-by-id', 'all')")
     public ResponseEntity<HttpResponse> deleteOrderCompletionStatusUpdatesByOrder(HttpServletRequest request,
+            @PathVariable(required = true) String orderId,
+            @PathVariable(required = true) String id,
             @Valid @RequestBody OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-completion-status-update-delete-by-order, orderId: {}", bodyOrderCompletionStatusUpdate.getOrderId());
+        logger.info("order-completion-status-update-delete-by-id, orderId: {}", orderId);
         logger.info(bodyOrderCompletionStatusUpdate.toString(), "");
 
         Optional<Order> savedOrder = null;
 
-        savedOrder = orderRepository.findById(bodyOrderCompletionStatusUpdate.getOrderId());
+        savedOrder = orderRepository.findById(orderId);
         if (savedOrder == null) {
-            logger.info("order-completion-status-update-delete-by-order, order not found, orderId: {}", bodyOrderCompletionStatusUpdate.getOrderId());
+            logger.info("order-completion-status-update-delete-by-id, order not found, orderId: {}", orderId);
             response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
@@ -129,38 +132,40 @@ public class OrdeCompletionStatusUpdateController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PutMapping(path = {""}, name = "order-completion-status-update-put-by-order")
-    @PreAuthorize("hasAnyAuthority('order-completion-status-update-put-by-order', 'all')")
+    @PutMapping(path = {"/{id}"}, name = "order-completion-status-update-put-by-id")
+    @PreAuthorize("hasAnyAuthority('order-completion-status-update-put-by-id', 'all')")
     public ResponseEntity<HttpResponse> putOrderCompletionStatusUpdatesByOrder(HttpServletRequest request,
+            @PathVariable(required = true) String orderId,
+            @PathVariable(required = true) String id,
             @Valid @RequestBody OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-completion-status-update-put-by-order, orderId: {}", bodyOrderCompletionStatusUpdate.getOrderId());
+        logger.info("order-completion-status-update-put-by-id, orderId: {}", orderId);
         logger.info(bodyOrderCompletionStatusUpdate.toString(), "");
 
-        Optional<Order> optOrder = orderRepository.findById(bodyOrderCompletionStatusUpdate.getOrderId());
+        Optional<Order> optOrder = orderRepository.findById(orderId);
 
         if (!optOrder.isPresent()) {
-            logger.info("Order not found with orderId: {}", bodyOrderCompletionStatusUpdate.getOrderId());
+            logger.info("Order not found with orderId: {}", orderId);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        Optional<OrderCompletionStatusUpdate> optOrderCompletionStatusUpdate = orderCompletionStatusUpdateRepository.findById(bodyOrderCompletionStatusUpdate.getOrderId());
+        Optional<OrderCompletionStatusUpdate> optOrderCompletionStatusUpdate = orderCompletionStatusUpdateRepository.findById(orderId);
 
         if (!optOrderCompletionStatusUpdate.isPresent()) {
-            logger.info("orderCompletionStatusUpdate not found with orderId: {}", bodyOrderCompletionStatusUpdate.getOrderId());
+            logger.info("orderCompletionStatusUpdate not found with orderId: {}", orderId);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        logger.info("orderCompletionStatusUpdate found with orderId: {}", bodyOrderCompletionStatusUpdate.getOrderId());
+        logger.info("orderCompletionStatusUpdate found with orderId: {}", orderId);
         OrderCompletionStatusUpdate orderCompletionStatusUpdate = optOrderCompletionStatusUpdate.get();
 
         orderCompletionStatusUpdate.update(bodyOrderCompletionStatusUpdate);
 
-        logger.info("orderCompletionStatusUpdate updated for orderId: {}", bodyOrderCompletionStatusUpdate.getOrderId());
+        logger.info("orderCompletionStatusUpdate updated for orderId: {}", orderId);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(orderCompletionStatusUpdateRepository.save(orderCompletionStatusUpdate));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);

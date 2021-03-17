@@ -26,6 +26,7 @@ public class OrderPaymentDetail {
     private String gatewayId;
     private String couponId;
     private Date time;
+    @Id
     private String orderId;
 
     public void update(OrderPaymentDetail orderPaymentDetail) {

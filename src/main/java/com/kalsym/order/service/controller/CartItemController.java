@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -41,21 +42,21 @@ public class CartItemController {
     @Autowired
     CartItemRepository cartItemRepository;
 
-    @PostMapping(path = {""}, name = "cart-items-get-by-cart")
-    @PreAuthorize("hasAnyAuthority('cart-items-get-by-cart', 'all')")
+    @GetMapping(path = {""}, name = "cart-items-get")
+    @PreAuthorize("hasAnyAuthority('cart-items-get', 'all')")
     public ResponseEntity<HttpResponse> getCartItemsByCart(HttpServletRequest request,
             @PathVariable(required = true) String cartId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("cart-items-get-by-cart, cartId: {}", cartId);
+        logger.info("cart-items-get, cartId: {}", cartId);
 
         Optional<Cart> cart = cartRepository.findById(cartId);
 
         if (!cart.isPresent()) {
             response.setErrorStatus(HttpStatus.NOT_FOUND);
-            logger.info("cart-items-get-by-cart, cartId, not found. cartId: {}", cartId);
+            logger.info("cart-items-get, cartId, not found. cartId: {}", cartId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
@@ -66,34 +67,36 @@ public class CartItemController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping(path = {"/{cartItemId}"}, name = "cart-items-get-by-cartItemId")
-    @PreAuthorize("hasAnyAuthority('cart-items-get-by-cartItemId', 'all')")
+    @GetMapping(path = {"/{id}"}, name = "cart-items-get-by-id")
+    @PreAuthorize("hasAnyAuthority('cart-items-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> getCartItemsByCartItemId(HttpServletRequest request,
-            @PathVariable(required = true) String cartItemId,
+            @PathVariable(required = true) String orderId,
+            @PathVariable(required = true) String id,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("cart-items-get-by-cartItemId, cartItemId: {}", cartItemId);
+        logger.info("cart-items-get-by-id, cartItemId: {}", id);
 
-        Optional<CartItem> cartItem = cartItemRepository.findById(cartItemId);
+        Optional<CartItem> cartItem = cartItemRepository.findById(id);
 
         if (!cartItem.isPresent()) {
             response.setErrorStatus(HttpStatus.NOT_FOUND);
-            logger.info("cart-items-get-by-cartItemId, cartItemId, not found. cartItemId: {}", cartItemId);
+            logger.info("cart-items-get-by-id, cartItemId, not found. cartItemId: {}", id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
         Pageable pageable = PageRequest.of(page, pageSize);
 
         response.setSuccessStatus(HttpStatus.OK);
-        response.setData(cartItemRepository.findById(cartItemId));
+        response.setData(cartItemRepository.findById(id));
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping(path = {""}, name = "cart-items-post-by-cart")
-    @PreAuthorize("hasAnyAuthority('cart-items-post-by-cart', 'all')")
-    public ResponseEntity<HttpResponse> postCartItemsByCart(HttpServletRequest request,
+    @PostMapping(path = {""}, name = "cart-items-post")
+    @PreAuthorize("hasAnyAuthority('cart-items-post', 'all')")
+    public ResponseEntity<HttpResponse> postCartItems(HttpServletRequest request,
+            @PathVariable(required = true) String cartId,
             @Valid @RequestBody CartItem bodyCartItem) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
@@ -123,21 +126,22 @@ public class CartItemController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @DeleteMapping(path = {""}, name = "cart-items-delete-by-cart")
-    @PreAuthorize("hasAnyAuthority('cart-items-delete-by-cart', 'all')")
-    public ResponseEntity<HttpResponse> deleteCartItemsByCart(HttpServletRequest request,
+    @DeleteMapping(path = {"/{id}"}, name = "cart-items-delete-by-id")
+    @PreAuthorize("hasAnyAuthority('cart-items-delete-by-id', 'all')")
+    public ResponseEntity<HttpResponse> deleteCartItemsById(HttpServletRequest request,
+            @PathVariable(required = true) String id,
             @Valid @RequestBody CartItem bodyCartItem) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("cart-items-delete-by-cart, cartId: {}", bodyCartItem.getCartId());
+        logger.info("cart-items-delete-by-id, cartId: {}", id);
         logger.info(bodyCartItem.toString(), "");
 
         Optional<Cart> savedCart = null;
 
         savedCart = cartRepository.findById(bodyCartItem.getCartId());
         if (savedCart == null) {
-            logger.info("cart-items-delete-by-cart, cartId not found, cartId: {}", bodyCartItem.getCartId());
+            logger.info("cart-items-delete-by-id, cartId not found, cartId: {}", id);
             response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
@@ -154,20 +158,21 @@ public class CartItemController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PutMapping(path = {""}, name = "cart-items-put-by-cart")
-    @PreAuthorize("hasAnyAuthority('cart-items-put-by-cart', 'all')")
-    public ResponseEntity<HttpResponse> putCartItemsByCart(HttpServletRequest request,
+    @PutMapping(path = {"/{id}"}, name = "cart-items-put-by-id")
+    @PreAuthorize("hasAnyAuthority('cart-items-put-by-id', 'all')")
+    public ResponseEntity<HttpResponse> putCartItemsById(HttpServletRequest request,
+            @PathVariable(required = true) String id,
             @Valid @RequestBody CartItem bodyCartItem) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("cart-items-put-by-cart, cartId: {}", bodyCartItem.getCartId());
+        logger.info("cart-items-put-by-id, cartId: {}", id);
         logger.info(bodyCartItem.toString(), "");
 
-        Optional<Cart> optCart = cartRepository.findById(bodyCartItem.getCartId());
+        Optional<Cart> optCart = cartRepository.findById(id);
 
         if (!optCart.isPresent()) {
-            logger.info("Cart not found with cartId: {}", bodyCartItem.getCartId());
+            logger.info("Cart not found with cartId: {}", id);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
@@ -190,6 +195,5 @@ public class CartItemController {
         response.setData(cartItemRepository.save(cartItem));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
-
 
 }

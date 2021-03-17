@@ -1,0 +1,1 @@
+ps -ef | grep order-service-1.0-SNAPSHOT.jar | grep -v grep | awk '{print $2}' | xargs kill -9

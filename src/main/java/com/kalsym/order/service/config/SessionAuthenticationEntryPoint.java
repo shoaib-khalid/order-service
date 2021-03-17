@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  *
  * @author Sarosh
  */
-@Component
+//@Component
 public class SessionAuthenticationEntryPoint implements AuthenticationEntryPoint, Serializable {
 
     @Override
