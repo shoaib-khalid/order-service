@@ -46,18 +46,23 @@ public class CartController {
     @GetMapping(path = {""}, name = "carts-get", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('carts-get', 'all')")
     public ResponseEntity<HttpResponse> getCarts(HttpServletRequest request,
+            @RequestParam(required = false) String customerId,
+            @RequestParam(required = false) String storeId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
 
+        logger.info("carts-get request...");
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Cart cartMatch = new Cart();
+        cartMatch.setCustomerId(customerId);
+        cartMatch.setStoreId(storeId);
 
-        ExampleMatcher matcher = ExampleMatcher
+        ExampleMatcher exampleCartMatcher = ExampleMatcher
                 .matchingAll()
                 .withIgnoreCase()
                 .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
-        Example<Cart> cartExample = Example.of(cartMatch, matcher);
+        Example<Cart> cartExample = Example.of(cartMatch, exampleCartMatcher);
 
         Pageable pageable = PageRequest.of(page, pageSize);
 
@@ -94,24 +99,23 @@ public class CartController {
     @PostMapping(path = {""}, name = "carts-post")
     @PreAuthorize("hasAnyAuthority('carts-post', 'all')")
     public ResponseEntity<HttpResponse> postCarts(HttpServletRequest request,
-            @Valid @RequestBody Cart bodyOrder) throws Exception {
+            @Valid @RequestBody Cart bodyCart) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("carts-post", "");
-        logger.info(bodyOrder.toString(), "");
+        logger.info("carts-post, bodyCart: ", bodyCart.toString());
 
-        Cart savedStore = null;
+        Cart savedCart = null;
         try {
-            savedStore = cartRepository.save(bodyOrder);
+            savedCart = cartRepository.save(bodyCart);
             response.setSuccessStatus(HttpStatus.CREATED);
         } catch (Exception exp) {
             logger.error("Error saving cart", exp);
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
-        logger.info("cart created with id: " + savedStore.getId());
-        response.setData(savedStore);
+        logger.info("cart created with id: " + savedCart.getId());
+        response.setData(savedCart);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -178,4 +182,4 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
-   }
+}

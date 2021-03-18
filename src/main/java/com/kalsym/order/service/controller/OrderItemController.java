@@ -76,17 +76,28 @@ public class OrderItemController {
 
         logger.info("order-items-post, orderId: {}", orderId);
 
-        Optional<OrderItem> orderItem = orderItemRepository.findById(bodyOrderItem.getId());
+        logger.info("bodyOrderItem: {}", bodyOrderItem.toString());
 
-        if (!orderItem.isPresent()) {
-            response.setErrorStatus(HttpStatus.NOT_FOUND);
-            logger.info("order-items-get-by-orderItemId, orderItemId, not found. orderItemId: {}", bodyOrderItem.getId());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        Optional<Order> savedOrder = null;
+
+        savedOrder = orderRepository.findById(orderId);
+        if (savedOrder == null) {
+            logger.info("order-items-post, cartId not found, orderId: {}", orderId);
+            response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
+            return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
-
-        response.setSuccessStatus(HttpStatus.OK);
-        response.setData(orderItemRepository.findById(bodyOrderItem.getId()));
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        OrderItem orderItem;
+        try {
+            orderItem = orderItemRepository.save(bodyOrderItem);
+            response.setSuccessStatus(HttpStatus.CREATED);
+        } catch (Exception exp) {
+            logger.error("Error saving orderItem", exp);
+            response.setMessage(exp.getMessage());
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
+        }
+        logger.info("cartItem added in orderId: {} with orderItemId: {}", orderId, orderItem.getId());
+        response.setData(orderItem);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
 //    @PostMapping(path = {""}, name = "order-items-post-by-order")

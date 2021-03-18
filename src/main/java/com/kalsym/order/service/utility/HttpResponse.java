@@ -3,6 +3,7 @@ package com.kalsym.order.service.utility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
 
@@ -13,6 +14,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @Setter
 @JsonInclude(Include.NON_NULL)
+@NoArgsConstructor
 public class HttpResponse {
 
     public HttpResponse(String requestUri) {

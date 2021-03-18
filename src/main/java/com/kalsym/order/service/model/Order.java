@@ -17,12 +17,8 @@ import org.hibernate.annotations.GenericGenerator;
 @Getter
 @Setter
 @ToString
+//@Table(name = "`order`")
 @Table(name = "order")
-
-/**
- * When a customer leaves an online store without making a purchase it is
- * recorded as an abandoned cart
- */
 public class Order {
 
     @Id
@@ -31,27 +27,26 @@ public class Order {
     private String id;
 
     private String storeId;
-    private float subTotal;
-    private float total;
+    private Float subTotal;
+    private Float total;
     private String completionStatus;
     private String paymentStatus;
     private String customerNotes;
     private String privateAdminNotes;
     private String cartId;
+    private String customerId;
 
     public void update(Order order) {
         if (null != order.getStoreId()) {
             this.setStoreId(order.getStoreId());
         }
-
         subTotal = order.getSubTotal();
         total = order.getTotal();
         completionStatus = order.getCompletionStatus();
         paymentStatus = order.getPaymentStatus();
         customerNotes = order.getCustomerNotes();
         privateAdminNotes = order.getPrivateAdminNotes();
+        customerId = order.getCustomerId();
         cartId = order.getCartId();
-
     }
-
 }

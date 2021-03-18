@@ -44,7 +44,7 @@ public class CartItemController {
 
     @GetMapping(path = {""}, name = "cart-items-get")
     @PreAuthorize("hasAnyAuthority('cart-items-get', 'all')")
-    public ResponseEntity<HttpResponse> getCartItemsByCart(HttpServletRequest request,
+    public ResponseEntity<HttpResponse> getCartItems(HttpServletRequest request,
             @PathVariable(required = true) String cartId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) throws Exception {
@@ -101,14 +101,14 @@ public class CartItemController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("cart-items-post-by-cart, cartId: {}", bodyCartItem.getCartId());
-        logger.info(bodyCartItem.toString(), "");
+        logger.info("cart-items-post, cartId: {}", cartId);
+        logger.info("bodyCartItem: {}", bodyCartItem.toString());
 
         Optional<Cart> savedCart = null;
 
-        savedCart = cartRepository.findById(bodyCartItem.getCartId());
+        savedCart = cartRepository.findById(cartId);
         if (savedCart == null) {
-            logger.info("cart-items-post-by-cart, cartId not found, cartId: {}", bodyCartItem.getCartId());
+            logger.info("cart-items-post, cartId not found, cartId: {}", cartId);
             response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
@@ -121,7 +121,7 @@ public class CartItemController {
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
-        logger.info("cartItem created with id: " + cartItem.getId());
+        logger.info("cartItem added in cartId: {} with cartItemId: {}", cartId, cartItem.getId());
         response.setData(cartItem);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

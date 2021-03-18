@@ -18,6 +18,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 
 import com.kalsym.order.service.model.Order;
+import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,12 +48,17 @@ public class OrderController {
     @GetMapping(path = {""}, name = "orders-get", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-get', 'all')")
     public ResponseEntity<HttpResponse> getOrders(HttpServletRequest request,
+            @RequestParam(required = false) String customerId,
+            @RequestParam(required = false) String storeId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
 
+        logger.info("orders-get request");
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Order orderMatch = new Order();
+        orderMatch.setStoreId(storeId);
+        orderMatch.setCustomerId(customerId);
 
         ExampleMatcher matcher = ExampleMatcher
                 .matchingAll()
@@ -151,8 +157,8 @@ public class OrderController {
      */
     @PutMapping(path = {"/{id}"}, name = "orders-put-by-id")
     @PreAuthorize("hasAnyAuthority('orders-put-by-id', 'all')")
-    public ResponseEntity<HttpResponse> putOrdersById(HttpServletRequest request, 
-            @PathVariable String id, 
+    public ResponseEntity<HttpResponse> putOrdersById(HttpServletRequest request,
+            @PathVariable String id,
             @RequestBody Order bodyOrder) {
         String logprefix = request.getRequestURI() + " ";
         String location = Thread.currentThread().getStackTrace()[1].getMethodName();

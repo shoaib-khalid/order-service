@@ -32,6 +32,7 @@ public class OrderItem {
     private float weight;
     private float SKU;
     private int quantity;
+    private String itemCode;
 
     public void update(OrderItem orderitem) {
         id = orderitem.getId();
@@ -42,6 +43,7 @@ public class OrderItem {
         weight = orderitem.getWeight();
         SKU = orderitem.getSKU();
         quantity = orderitem.getQuantity();
+        itemCode = orderitem.getItemCode();
     }
 
 }
