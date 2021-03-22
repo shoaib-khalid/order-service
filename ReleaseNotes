@@ -1,7 +1,10 @@
 ##################################################
 # product-service-1.0-SNAPSHOT
 ######################################################################
+TODO:
 
+delete cart, delete cart-items
+delete order, delete order-items
 
 Orders controller:
 GET /orders

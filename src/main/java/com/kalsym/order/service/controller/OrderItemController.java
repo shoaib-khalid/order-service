@@ -100,48 +100,15 @@ public class OrderItemController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-//    @PostMapping(path = {""}, name = "order-items-post-by-order")
-//    @PreAuthorize("hasAnyAuthority('order-items-post-by-order', 'all')")
-//    public ResponseEntity<HttpResponse> postOrderItemsByOrder(HttpServletRequest request,
-//            @Valid @RequestBody OrderItem bodyOrderItem) throws Exception {
-//        String logprefix = request.getRequestURI() + " ";
-//        HttpResponse response = new HttpResponse(request.getRequestURI());
-//
-//        logger.info("cart-items-post-by-cart, cartId: {}", bodyOrderItem.getOrderId());
-//        logger.info(bodyOrderItem.toString(), "");
-//
-//        Optional<Order> savedOrder = null;
-//
-//        savedOrder = orderRepository.findById(bodyOrderItem.getOrderId());
-//        if (savedOrder == null) {
-//            logger.info("order-items-post-by-order, orderId not found, orderId: {}", bodyOrderItem.getOrderId());
-//            response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
-//            return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
-//        }
-//        OrderItem orderItem;
-//        try {
-//            orderItem = orderItemRepository.save(bodyOrderItem);
-//            response.setSuccessStatus(HttpStatus.CREATED);
-//        } catch (Exception exp) {
-//            logger.error("Error saving order item", exp);
-//            response.setMessage(exp.getMessage());
-//            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
-//        }
-//        logger.info("orderItem created with id: " + orderItem.getId());
-//        response.setData(orderItem);
-//        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-//    }
     @DeleteMapping(path = {"/{id}"}, name = "order-items-delete-by-id")
     @PreAuthorize("hasAnyAuthority('order-items-delete-by-id', 'all')")
     public ResponseEntity<HttpResponse> deleteOrderItemsById(HttpServletRequest request,
             @PathVariable(required = true) String orderId,
-            @PathVariable(required = true) String id,
-            @Valid @RequestBody OrderItem bodyOrderItem) throws Exception {
+            @PathVariable(required = true) String id) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-items-delete-by-id, orderId: {}", orderId);
-        logger.info(bodyOrderItem.toString(), "");
+        logger.info("order-items-delete-by-id, orderId: {}, orderItemId: {}", orderId, id);
 
         Optional<Order> savedOrder = null;
 
@@ -153,14 +120,14 @@ public class OrderItemController {
         }
 
         try {
-            orderItemRepository.delete(bodyOrderItem);
+            orderItemRepository.deleteById(id);
             response.setSuccessStatus(HttpStatus.OK);
         } catch (Exception exp) {
-            logger.error("Error deleting order item", exp);
+            logger.error("Error deleting order item with id: {}", id, exp);
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
-        logger.info("orderItem deleted with id: " + id);
+        logger.info("orderItem deleted with orderItemId: {}", id);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -173,8 +140,8 @@ public class OrderItemController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-items-put-by-order, orderId: {}", orderId);
-        logger.info(bodyOrderItem.toString(), "");
+        logger.info("order-items-put-by-order, orderId: {}, id: {}", orderId, id);
+        logger.info("bodyOrderItem.toString()", bodyOrderItem.toString());
 
         Optional<Order> optOrder = orderRepository.findById(orderId);
 

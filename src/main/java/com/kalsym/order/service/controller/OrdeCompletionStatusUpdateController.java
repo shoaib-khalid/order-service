@@ -69,19 +69,19 @@ public class OrdeCompletionStatusUpdateController {
 
     @PostMapping(path = {""}, name = "order-completion-status-update-post")
     @PreAuthorize("hasAnyAuthority('order-completion-status-update-post', 'all')")
-    public ResponseEntity<HttpResponse> postOrderCompletionStatusUpdatesByOrder(HttpServletRequest request,
+    public ResponseEntity<HttpResponse> postOrderCompletionStatusUpdates(HttpServletRequest request,
+            @PathVariable(required = true) String orderId,
             @Valid @RequestBody OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate) throws Exception {
-        String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-completion-status-update-post-by-order, orderId: {}", bodyOrderCompletionStatusUpdate.getOrderId());
+        logger.info("order-completion-status-update-post, orderId: {}", orderId);
         logger.info(bodyOrderCompletionStatusUpdate.toString(), "");
 
         Optional<Order> savedOrder = null;
 
         savedOrder = orderRepository.findById(bodyOrderCompletionStatusUpdate.getOrderId());
         if (savedOrder == null) {
-            logger.info("order-completion-status-update-post-by-order, orderId not found, orderId: {}", bodyOrderCompletionStatusUpdate.getOrderId());
+            logger.info("order-completion-status-update-post, orderId not found, orderId: {}", orderId);
             response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
@@ -94,7 +94,7 @@ public class OrdeCompletionStatusUpdateController {
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
-        logger.info("orderCompletionStatusUpdate created with id: " + orderCompletionStatusUpdate.getOrderId());
+        logger.info("orderCompletionStatusUpdate created for orderId: {}", orderId);
         response.setData(orderCompletionStatusUpdate);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -141,7 +141,7 @@ public class OrdeCompletionStatusUpdateController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-completion-status-update-put-by-id, orderId: {}", orderId);
+        logger.info("order-completion-status-update-put-by-id, orderId: {}, id: {}", orderId, id);
         logger.info(bodyOrderCompletionStatusUpdate.toString(), "");
 
         Optional<Order> optOrder = orderRepository.findById(orderId);

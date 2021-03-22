@@ -135,13 +135,13 @@ public class OrderController {
         Optional<Order> optProduct = orderRepository.findById(id);
 
         if (!optProduct.isPresent()) {
-            logger.info("order not found", "");
+            logger.info("order not found with orderId: {}", id);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
         logger.info("order found", "");
-        orderRepository.delete(optProduct.get());
+        orderRepository.deleteById(id);
 
         logger.info("order deleted, with orderId: {}", id);
         response.setSuccessStatus(HttpStatus.OK);
@@ -151,7 +151,8 @@ public class OrderController {
     /**
      *
      * @param request
-     * @param orderId
+     * @param id
+     * @param bodyOrder
      * @param bodyProduct
      * @return
      */

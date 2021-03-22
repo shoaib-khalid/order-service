@@ -27,10 +27,10 @@ public class OrderItem {
 
     private String orderId;
     private String productId;
-    private float price;
-    private float productPrice;
-    private float weight;
-    private float SKU;
+    private Float price;
+    private Float productPrice;
+    private Float weight;
+    private String SKU;
     private int quantity;
     private String itemCode;
 

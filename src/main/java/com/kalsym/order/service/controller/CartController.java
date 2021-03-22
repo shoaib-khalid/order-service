@@ -122,22 +122,20 @@ public class CartController {
     @DeleteMapping(path = {"/{cartId}"}, name = "carts-delete-by-id")
     @PreAuthorize("hasAnyAuthority('carts-delete-by-id', 'all')")
     public ResponseEntity<HttpResponse> deleteCartsById(HttpServletRequest request, @PathVariable String cartId) {
-        String logprefix = request.getRequestURI() + " ";
-        String location = Thread.currentThread().getStackTrace()[1].getMethodName();
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("carts-delete-by-id, productId: {}", cartId);
+        logger.info("carts-delete-by-id, cartId: {}", cartId);
 
         Optional<Cart> optCart = cartRepository.findById(cartId);
 
         if (!optCart.isPresent()) {
-            logger.info("cart not found", "");
+            logger.info("cart not found with cartId: {}", cartId);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
         logger.info("cart found", "");
-        cartRepository.delete(optCart.get());
+        cartRepository.deleteById(cartId);
 
         logger.info("cart deleted, with id: {}", cartId);
         response.setSuccessStatus(HttpStatus.OK);
