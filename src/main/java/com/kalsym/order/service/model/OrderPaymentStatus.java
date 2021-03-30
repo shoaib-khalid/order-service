@@ -19,15 +19,14 @@ import org.hibernate.annotations.GenericGenerator;
 @ToString
 @Table(name = "order_payment_status")
 
-/**
- * When a customer leaves an online store without making a purchase it is recorded as an abandoned cart
- */
 public class OrderPaymentStatus {
 
     @Id
     private String status;
-    
-    
     private String description;
-   
+
+    public void update(OrderPaymentStatus orderPaymentStatus) {
+        status = orderPaymentStatus.getStatus();
+        description = orderPaymentStatus.getDescription();
+    }
 }

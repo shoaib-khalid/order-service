@@ -1,8 +1,6 @@
 package com.kalsym.order.service.model.repository;
 
 import com.kalsym.order.service.model.OrderCompletionStatus;
-import com.kalsym.order.service.model.OrderShipmentDetail;
-import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,7 +14,7 @@ import org.springframework.stereotype.Repository;
  */
 
 @Repository
-public interface OrderCompletionStatusRepository extends PagingAndSortingRepository<OrderShipmentDetail, String>, JpaRepository<OrderShipmentDetail, String> {
+public interface OrderCompletionStatusRepository extends PagingAndSortingRepository<OrderCompletionStatus, String>, JpaRepository<OrderCompletionStatus, String> {
 
-    <S extends Object> Page<S> findByOrderId(@Param("orderId") String orderId, Pageable pgbl);
+    <S extends Object> Page<S> findById(@Param("status") String status, Pageable pgbl);
 }
