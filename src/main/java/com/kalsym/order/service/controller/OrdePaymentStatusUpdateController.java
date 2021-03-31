@@ -44,7 +44,7 @@ public class OrdePaymentStatusUpdateController {
 
     @GetMapping(path = {""}, name = "order-payment-status-update-get")
     @PreAuthorize("hasAnyAuthority('order-payment-status-update-get', 'all')")
-    public ResponseEntity<HttpResponse> getOrderPaymentStatusUpdatesByOrder(HttpServletRequest request,
+    public ResponseEntity<HttpResponse> getOrderPaymentStatusUpdates(HttpServletRequest request,
             @PathVariable(required = true) String orderId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) throws Exception {
@@ -69,7 +69,8 @@ public class OrdePaymentStatusUpdateController {
 
     @PostMapping(path = {""}, name = "order-payment-status-update-post")
     @PreAuthorize("hasAnyAuthority('order-payment-status-update-post', 'all')")
-    public ResponseEntity<HttpResponse> postOrderPaymentStatusUpdatesByOrder(HttpServletRequest request,
+    public ResponseEntity<HttpResponse> postOrderPaymentStatusUpdates(HttpServletRequest request,
+            @PathVariable(required = true) String orderId,
             @Valid @RequestBody OrderPaymentStatusUpdate bodyOrderPaymentStatusUpdate) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
@@ -101,7 +102,7 @@ public class OrdePaymentStatusUpdateController {
 
     @DeleteMapping(path = {"/{id}"}, name = "order-payment-status-update-delete-by-id")
     @PreAuthorize("hasAnyAuthority('order-payment-status-update-delete-by-id', 'all')")
-    public ResponseEntity<HttpResponse> deleteOrderPaymentStatusUpdatesByOrder(HttpServletRequest request,
+    public ResponseEntity<HttpResponse> deleteOrderPaymentStatusUpdatesById(HttpServletRequest request,
             @PathVariable(required = true) String orderId,
             @PathVariable(required = true) String id,
             @Valid @RequestBody OrderPaymentStatusUpdate bodyOrderPaymentStatusUpdate) throws Exception {
@@ -134,7 +135,7 @@ public class OrdePaymentStatusUpdateController {
 
     @PutMapping(path = {"/{id}"}, name = "order-payment-status-update-put-by-id")
     @PreAuthorize("hasAnyAuthority('order-payment-status-update-put-by-id', 'all')")
-    public ResponseEntity<HttpResponse> putOrderPaymentStatusUpdatesByOrder(HttpServletRequest request,
+    public ResponseEntity<HttpResponse> putOrderPaymentStatusUpdatesById(HttpServletRequest request,
             @PathVariable(required = true) String orderId,
             @PathVariable(required = true) String id,
             @Valid @RequestBody OrderPaymentStatusUpdate bodyOrderPaymentStatusUpdate) throws Exception {

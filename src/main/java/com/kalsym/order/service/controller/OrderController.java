@@ -73,17 +73,17 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping(path = {"/{orderId}"}, name = "orders-get-by-id", produces = "application/json")
+    @GetMapping(path = {"/{id}"}, name = "orders-get-by-id", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> getOrdersById(HttpServletRequest request,
-            @RequestParam(required = true) String orderId,
+            @RequestParam(required = true) String id,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Order orderMatch = new Order();
-        orderMatch.setId(orderId);
+        orderMatch.setId(id);
 
         ExampleMatcher matcher = ExampleMatcher
                 .matchingAll()

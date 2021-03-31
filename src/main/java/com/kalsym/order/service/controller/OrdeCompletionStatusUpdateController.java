@@ -44,7 +44,7 @@ public class OrdeCompletionStatusUpdateController {
 
     @GetMapping(path = {""}, name = "order-completion-status-update-get")
     @PreAuthorize("hasAnyAuthority('order-completion-status-update-get', 'all')")
-    public ResponseEntity<HttpResponse> getOrderCompletionStatusUpdatesByOrder(HttpServletRequest request,
+    public ResponseEntity<HttpResponse> getOrderCompletionStatusUpdates(HttpServletRequest request,
             @PathVariable(required = true) String orderId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) throws Exception {
@@ -101,7 +101,7 @@ public class OrdeCompletionStatusUpdateController {
 
     @DeleteMapping(path = {"/{id}"}, name = "order-completion-status-update-delete-by-id")
     @PreAuthorize("hasAnyAuthority('order-completion-status-update-delete-by-id', 'all')")
-    public ResponseEntity<HttpResponse> deleteOrderCompletionStatusUpdatesByOrder(HttpServletRequest request,
+    public ResponseEntity<HttpResponse> deleteOrderCompletionStatusUpdatesById(HttpServletRequest request,
             @PathVariable(required = true) String orderId,
             @PathVariable(required = true) String id,
             @Valid @RequestBody OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate) throws Exception {
@@ -134,7 +134,7 @@ public class OrdeCompletionStatusUpdateController {
 
     @PutMapping(path = {"/{id}"}, name = "order-completion-status-update-put-by-id")
     @PreAuthorize("hasAnyAuthority('order-completion-status-update-put-by-id', 'all')")
-    public ResponseEntity<HttpResponse> putOrderCompletionStatusUpdatesByOrder(HttpServletRequest request,
+    public ResponseEntity<HttpResponse> putOrderCompletionStatusUpdatesById(HttpServletRequest request,
             @PathVariable(required = true) String orderId,
             @PathVariable(required = true) String id,
             @Valid @RequestBody OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate) throws Exception {

@@ -16,5 +16,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OrderCompletionStatusRepository extends PagingAndSortingRepository<OrderCompletionStatus, String>, JpaRepository<OrderCompletionStatus, String> {
 
-    <S extends Object> Page<S> findById(@Param("status") String status, Pageable pgbl);
+    //<S extends Object> Page<S> findById(@Param("status") String status, Pageable pgbl);
 }

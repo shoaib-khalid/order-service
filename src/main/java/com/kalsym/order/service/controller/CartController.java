@@ -71,17 +71,17 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping(path = {"/{cartId}"}, name = "carts-get-by-id", produces = "application/json")
+    @GetMapping(path = {"/{id}"}, name = "carts-get-by-id", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('carts-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> getCartsById(HttpServletRequest request,
-            @RequestParam(required = true) String cartId,
+            @RequestParam(required = true) String id,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Cart cartMatch = new Cart();
-        cartMatch.setId(cartId);
+        cartMatch.setId(id);
 
         ExampleMatcher matcher = ExampleMatcher
                 .matchingAll()
@@ -119,25 +119,25 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @DeleteMapping(path = {"/{cartId}"}, name = "carts-delete-by-id")
+    @DeleteMapping(path = {"/{id}"}, name = "carts-delete-by-id")
     @PreAuthorize("hasAnyAuthority('carts-delete-by-id', 'all')")
-    public ResponseEntity<HttpResponse> deleteCartsById(HttpServletRequest request, @PathVariable String cartId) {
+    public ResponseEntity<HttpResponse> deleteCartsById(HttpServletRequest request, @PathVariable String id) {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("carts-delete-by-id, cartId: {}", cartId);
+        logger.info("carts-delete-by-id, cartId: {}", id);
 
-        Optional<Cart> optCart = cartRepository.findById(cartId);
+        Optional<Cart> optCart = cartRepository.findById(id);
 
         if (!optCart.isPresent()) {
-            logger.info("cart not found with cartId: {}", cartId);
+            logger.info("cart not found with cartId: {}", id);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
         logger.info("cart found", "");
-        cartRepository.deleteById(cartId);
+        cartRepository.deleteById(id);
 
-        logger.info("cart deleted, with id: {}", cartId);
+        logger.info("cart deleted, with id: {}", id);
         response.setSuccessStatus(HttpStatus.OK);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -145,13 +145,13 @@ public class CartController {
     /**
      *
      * @param request
-     * @param cartId
+     * @param id
      * @param bodyCart
      * @return
      */
-    @PutMapping(path = {"/{cartId}"}, name = "carts-put-by-id")
+    @PutMapping(path = {"/{id}"}, name = "carts-put-by-id")
     @PreAuthorize("hasAnyAuthority('carts-put-by-id', 'all')")
-    public ResponseEntity<HttpResponse> putCartsById(HttpServletRequest request, @PathVariable String cartId,
+    public ResponseEntity<HttpResponse> putCartsById(HttpServletRequest request, @PathVariable String id,
             @Valid @RequestBody Cart bodyCart) {
         String logprefix = request.getRequestURI() + " ";
         String location = Thread.currentThread().getStackTrace()[1].getMethodName();
@@ -160,21 +160,21 @@ public class CartController {
         logger.info("", "");
         logger.info(bodyCart.toString(), "");
 
-        Optional<Cart> optCart = cartRepository.findById(cartId);
+        Optional<Cart> optCart = cartRepository.findById(id);
 
         if (!optCart.isPresent()) {
-            logger.info("Cart not found with cartId: {}", cartId);
+            logger.info("Cart not found with cartId: {}", id);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        logger.info("cart found with cartId: {}", cartId);
+        logger.info("cart found with cartId: {}", id);
         Cart cart = optCart.get();
         List<String> errors = new ArrayList<>();
 
         cart.update(bodyCart);
 
-        logger.info("cart updated for cartId: {}", cartId);
+        logger.info("cart updated for cartId: {}", id);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(cartRepository.save(cart));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
