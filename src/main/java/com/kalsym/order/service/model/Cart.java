@@ -43,15 +43,6 @@ public class Cart {
     @UpdateTimestamp
     private Date updated;
 
-//    @PrePersist
-//    protected void onCreate() {
-//        created = new Date();
-//    }
-//
-//    @PreUpdate
-//    protected void onUpdate() {
-//        updated = new Date();
-//    }
     /**
      * If the cart is still open, use to track when the cart is closed and order
      * is placed, in that case the cart is moved to orders table
@@ -65,8 +56,6 @@ public class Cart {
 
         customerId = cart.getCustomerId();
         storeId = cart.getStoreId();
-//        created = cart.getCreated();
-//        updated = cart.getUpdated();
         isOpen = cart.getIsOpen();
     }
 
