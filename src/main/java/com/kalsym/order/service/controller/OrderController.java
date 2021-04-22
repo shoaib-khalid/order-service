@@ -16,7 +16,7 @@ import com.kalsym.order.service.utility.HttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
-
+import com.kalsym.order.service.utility.OrderPostService;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
@@ -44,6 +44,9 @@ public class OrderController {
 
     @Autowired
     OrderRepository orderRepository;
+
+    @Autowired
+    OrderPostService orderPostService;
 
     @GetMapping(path = {""}, name = "orders-get", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-get', 'all')")
@@ -108,17 +111,18 @@ public class OrderController {
         logger.info("orders-post", "");
         logger.info(bodyOrder.toString(), "");
 
-        Order savedStore = null;
+        Order savedOrder = null;
         try {
-            savedStore = orderRepository.save(bodyOrder);
+            savedOrder = orderRepository.save(bodyOrder);
             response.setSuccessStatus(HttpStatus.CREATED);
+            orderPostService.postOrderLink(savedOrder.getId());
         } catch (Exception exp) {
             logger.error("Error saving order", exp);
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
-        logger.info("order created with id: " + savedStore.getId());
-        response.setData(savedStore);
+        logger.info("Order created with id: {}, Order link posted", savedOrder.getId());
+        response.setData(savedOrder);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -188,5 +192,4 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
-    
 }
