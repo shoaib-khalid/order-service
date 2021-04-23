@@ -115,7 +115,8 @@ public class OrderController {
         try {
             savedOrder = orderRepository.save(bodyOrder);
             response.setSuccessStatus(HttpStatus.CREATED);
-            orderPostService.postOrderLink(savedOrder.getId());
+            // pass orderId to OrderPostService
+            orderPostService.postOrderLink(savedOrder.getId(), bodyOrder.getStoreId());
         } catch (Exception exp) {
             logger.error("Error saving order", exp);
             response.setMessage(exp.getMessage());

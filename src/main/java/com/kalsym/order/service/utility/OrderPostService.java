@@ -37,19 +37,23 @@ public class OrderPostService {
     @Value("${liveChat.userId:nubj4bBZHctboNnXt}") // nubj4bBZHctboNnXt
     private String liveChatUserId;
 
-    public String postOrderLink(String orderId) {
+    @Autowired
+    StoreNameService storeNameService;
+
+    public String postOrderLink(String orderId, String storeId) {
 
         String logprefix = "createSubDomain";
 
-//        WebClient webClient = WebClient.create(liveChatMessage);
+        String storeName = storeNameService.getStoreName(storeId);
+        String groupName = "#" + storeName + "-orders";
 
         OrderPostRequestBody orderPostBody = new OrderPostRequestBody();
         orderPostBody.setAlias("SYMplified order");
         orderPostBody.setAvatar("");
-        orderPostBody.setChannel("#kfood-orders");
-        orderPostBody.setText("You have a new order, please visit the merchant portal to process");
-   
-//        String url = liveChatMessage;// + "/" + name;
+//        orderPostBody.setChannel("#kfood-orders");
+        orderPostBody.setChannel(groupName);
+        orderPostBody.setText("You have a new order, please visit the merchant portal to process, orderId: " + orderId);
+
         try {
 
             RestTemplate restTemplate = new RestTemplate();
@@ -61,7 +65,7 @@ public class OrderPostService {
             HttpEntity<OrderPostRequestBody> httpEntity;
             httpEntity = new HttpEntity(orderPostBody, headers);
 
-            logger.debug("sending request to live service");
+            logger.debug("Sending request to live service, on group: {}", groupName);
             ResponseEntity res = restTemplate.exchange(liveChatMessageURL, HttpMethod.POST, httpEntity, String.class);
 
             logger.debug("Request sent to live service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
