@@ -31,8 +31,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 /**
- * GET /orders GET /orders/{id} POST /orders DELETE /orders/{id} PUT
- * /orders/{id}
+ * 
  *
  * @author 7cu
  */

@@ -53,10 +53,8 @@ public class Cart {
         if (null != cart.getId()) {
             this.setId(cart.getId());
         }
-
         customerId = cart.getCustomerId();
         storeId = cart.getStoreId();
         isOpen = cart.getIsOpen();
     }
-
 }

@@ -2,6 +2,7 @@ package com.kalsym.order.service.controller;
 
 import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
+import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.utility.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import com.kalsym.order.service.model.Cart;
 import com.kalsym.order.service.model.CartItem;
+import com.kalsym.order.service.model.OrderItem;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,6 +31,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.kalsym.order.service.model.Order;
+import com.kalsym.order.service.model.repository.OrderRepository;
 
 /**
  *
@@ -42,6 +47,14 @@ public class CartController {
 
     @Autowired
     CartRepository cartRepository;
+
+    @Autowired
+    CartItemRepository cartItemRepository;
+    @Autowired
+
+    OrderItemRepository orderItemRepository;
+    @Autowired
+    OrderRepository orderRepository;
 
     @GetMapping(path = {""}, name = "carts-get", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('carts-get', 'all')")
@@ -178,6 +191,65 @@ public class CartController {
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(cartRepository.save(cart));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
+
+    /**
+     * TODO: create endpoint to empty the cart by deleting all the cart-items in the cart
+     * @param request
+     * @param id
+     * @return 
+     */
+    @GetMapping(path = {"/{id}/empty"}, name = "carts-empty-by-id", produces = "application/json")
+    @PreAuthorize("hasAnyAuthority('carts-order-by-id', 'all')")
+    public ResponseEntity<HttpResponse> empty(HttpServletRequest request,
+            @PathVariable String id) {
+        //
+
+//        logger.info("carts-order-by-id request...");
+//        HttpResponse response = new HttpResponse(request.getRequestURI());
+//
+//        Cart cartMatch = new Cart();
+//
+//        Optional<Cart> cartOptional = cartRepository.findById(id);
+//
+//        Cart cart = cartOptional.get();
+//
+//        Order newOrder = new Order();
+//        newOrder.setCompletionStatus("OnHold");
+//        newOrder.setCustomerId(cart.getCustomerId());
+//        newOrder.setPaymentStatus("Pending");
+//        Order savedOrder = orderRepository.save(newOrder);
+//        // Closing the cart status since now order is being placed 
+//        cart.setIsOpen(Boolean.FALSE);
+//        Iterable<CartItem> cartItems = cartItemRepository.findByCartId(id, null);
+//
+//        for (CartItem cartItem : cartItems) {
+//            OrderItem orderItem = new OrderItem();
+//            orderItem.setItemCode(cartItem.getItemCode());
+//            orderItem.setOrderId(savedOrder.getId());
+//            // Price is missing in cart
+//            orderItem.setPrice(cartItem.getId());
+//            orderItem.setProductId(cartItem.getProductId());
+//            // ProductPrice is also missing in cart
+//            orderItem.setProductPrice(cartItem.getProductId());
+//            orderItem.setQuantity(cartItem.getQuantity());
+//            // SKU is missing in cart
+//            orderItem.setSKU(cartItem.getQuantity());
+//            orderItem.setWeight(cartItem.getQuantity());
+//        }
+//
+//        ExampleMatcher exampleCartMatcher = ExampleMatcher
+//                .matchingAll()
+//                .withIgnoreCase()
+//                .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
+//        Example<Cart> cartExample = Example.of(cartMatch, exampleCartMatcher);
+//
+//        Pageable pageable = PageRequest.of(page, pageSize);
+//
+//        response.setSuccessStatus(HttpStatus.OK);
+//        response.setData(cartRepository.findAll(cartExample, pageable));
+//        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return null;
     }
 
 }

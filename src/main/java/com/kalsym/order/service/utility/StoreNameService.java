@@ -10,11 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import lombok.Getter;
-import lombok.Setter;
+
 
 /**
- *
+ * Used to get the store name from the product service
  * @author 7cu
  */
 @Service
@@ -39,7 +38,7 @@ public class StoreNameService {
 
             HttpEntity httpEntity = new HttpEntity(headers);
 
-            logger.debug("sending request to product service to get store name");
+            logger.debug("Sending request to product-service: {} to get store name against storeId: {}", url, storeId);
             ResponseEntity res = restTemplate.exchange(url, HttpMethod.GET, httpEntity, StoreResponse.class);
 
             if (res != null) {
@@ -53,7 +52,7 @@ public class StoreNameService {
 
             logger.debug("Request sent to live service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
         } catch (RestClientException e) {
-            logger.error("Error creating domain {}", productServiceURL, e);
+            logger.error("Error getting storeName against storeId:{}, url: {}", storeId, productServiceURL, e);
             return null;
         }
         return "";

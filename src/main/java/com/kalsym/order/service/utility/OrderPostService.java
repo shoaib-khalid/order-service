@@ -23,6 +23,9 @@ import org.springframework.web.reactive.function.client.WebClient;
  * @author 7cu
  */
 @Service
+/**
+ * Used to post the order in live.symplifed (rocket chat)
+ */
 public class OrderPostService {
 
     private static Logger logger = LoggerFactory.getLogger("application");
@@ -36,6 +39,9 @@ public class OrderPostService {
 
     @Value("${liveChat.userId:nubj4bBZHctboNnXt}") // nubj4bBZHctboNnXt
     private String liveChatUserId;
+
+    @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
+    private String onboardingOrderLink;
 
     @Autowired
     StoreNameService storeNameService;
@@ -52,7 +58,7 @@ public class OrderPostService {
         orderPostBody.setAvatar("");
 //        orderPostBody.setChannel("#kfood-orders");
         orderPostBody.setChannel(groupName);
-        orderPostBody.setText("You have a new order, please visit the merchant portal to process, orderId: " + orderId);
+        orderPostBody.setText("You have a new order, please visit the merchant portal to process, orderId: " + orderId + " " + onboardingOrderLink + orderId);
 
         try {
 

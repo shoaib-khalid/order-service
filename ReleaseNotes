@@ -1,11 +1,25 @@
 ##################################################
-# product-service-1.1-SNAPSHOT
+# order-service-1.2-SNAPSHOT
+##################################################
++ Changes:
+1. Added order link posting to live chat service
+2. Added StoreNameService to get the store name from product-service
+3. Added properties for product-service in application-prod.properties file
+        product-service.URL=https://api.symplified.biz/v1/product-service
+        product-service.token=Bearer accessToken
+4. Added properties for liveChat properties in application-prod.properties file
+        liveChat.sendMessage.URL=http://209.58.160.20:3000/api/v1/chat.postMessage
+        liveChat.token=kkJ4G-gEqu5nL-VY9YWBo25otESh_zlQu8ckpic49ne
+        livechat.userid=JEdxZxgW4R5Z53xq2
+
+##################################################
+# order-service-1.1-SNAPSHOT
 ##################################################
 
 
 
 ##################################################
-# product-service-1.0-FINAL
+# order-service-1.0-FINAL
 ##################################################
 Implemented the following end points:
 
@@ -44,8 +58,9 @@ DELETE /items
 PUT /{cartId}/items
 
 ##################################################
-# product-service-1.0-SNAPSHOT
+# order-service-1.0-SNAPSHOT
 ##################################################
+Not implementing the endpoint which converts the cart to order, since the price to be get from the backend could be different from what is to be shown at the front-end. So it is better to get it from the front-end, since front-end is already getting the latest prices from the product endpoint.
 TODO:
 
 delete cart, delete cart-items
