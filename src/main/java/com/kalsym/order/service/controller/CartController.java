@@ -120,6 +120,7 @@ public class CartController {
 
         Cart savedCart = null;
         try {
+            bodyCart.setIsOpen(Boolean.TRUE);
             savedCart = cartRepository.save(bodyCart);
             response.setSuccessStatus(HttpStatus.CREATED);
         } catch (Exception exp) {

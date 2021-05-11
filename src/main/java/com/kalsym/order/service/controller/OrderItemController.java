@@ -87,14 +87,25 @@ public class OrderItemController {
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
         OrderItem orderItem;
-        try {
-            orderItem = orderItemRepository.save(bodyOrderItem);
+        /*try {
+            //find item in current cart, increase quantity if already exist
+            OrderItem existingItem = orderItemRepository.findByOrderIdAndProductId(bodyOrderItem.getOrderId(), bodyOrderItem.getProductId());
+            if (existingItem!=null) {
+                logger.info("item already exist for orderId: {} with productId: {}", bodyOrderItem.getOrderId(), bodyOrderItem.getProductId());
+                int newQty = existingItem.getQuantity() + bodyOrderItem.getQuantity();
+                existingItem.setQuantity(newQty);
+                orderItem = orderItemRepository.save(existingItem);
+            } else {
+                orderItem = orderItemRepository.save(bodyOrderItem);
+            }
             response.setSuccessStatus(HttpStatus.CREATED);
         } catch (Exception exp) {
             logger.error("Error saving orderItem", exp);
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
-        }
+        }*/
+        orderItem = orderItemRepository.save(bodyOrderItem);
+        response.setSuccessStatus(HttpStatus.CREATED);
         logger.info("cartItem added in orderId: {} with orderItemId: {}", orderId, orderItem.getId());
         response.setData(orderItem);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

@@ -1,8 +1,11 @@
 package com.kalsym.order.service.model;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,7 +36,13 @@ public class OrderItem {
     private String SKU;
     private int quantity;
     private String itemCode;
-
+    
+    /*
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "orderId", insertable=false, updatable=false)
+    private Order orderMain;
+    */
+    
     public void update(OrderItem orderitem) {
         id = orderitem.getId();
         orderId = orderitem.getOrderId();

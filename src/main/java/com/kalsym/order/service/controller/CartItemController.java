@@ -2,6 +2,7 @@ package com.kalsym.order.service.controller;
 
 import com.kalsym.order.service.model.Cart;
 import com.kalsym.order.service.model.CartItem;
+import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.utility.HttpResponse;
@@ -114,7 +115,16 @@ public class CartItemController {
         }
         CartItem cartItem;
         try {
-            cartItem = cartItemRepository.save(bodyCartItem);
+            //find item in current cart, increase quantity if already exist
+            CartItem existingItem = cartItemRepository.findByCartIdAndProductId(bodyCartItem.getCartId(), bodyCartItem.getProductId());
+            if (existingItem!=null) {
+                logger.info("item already exist for cartId: {} with productId: {}", bodyCartItem.getCartId(), bodyCartItem.getProductId());
+                int newQty = existingItem.getQuantity() + bodyCartItem.getQuantity();
+                existingItem.setQuantity(newQty);
+                cartItem = cartItemRepository.save(existingItem);
+            } else {
+                cartItem = cartItemRepository.save(bodyCartItem);
+            }
             response.setSuccessStatus(HttpStatus.CREATED);
         } catch (Exception exp) {
             logger.error("Error saving cart item", exp);
@@ -193,6 +203,83 @@ public class CartItemController {
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(cartItemRepository.save(cartItem));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
+    
+    
+    @DeleteMapping(path = {"/clear"}, name = "cart-items-clear-by-id")
+    @PreAuthorize("hasAnyAuthority('cart-items-clear-by-id', 'all')")
+    public ResponseEntity<HttpResponse> clearCartItems(HttpServletRequest request,
+            @PathVariable(required = true) String cartId) throws Exception {
+        String logprefix = request.getRequestURI() + " ";
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        logger.info("cart-items-delete-by-id, cartId: {}, cartItemId: {}", cartId);
+
+        Optional<Cart> savedCart = null;
+
+        savedCart = cartRepository.findById(cartId);
+        if (savedCart == null) {
+            logger.info("cart-items-clear-by-id, cartId not found, cartId: {}", cartId);
+            response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
+            return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
+        }
+
+        try {
+            cartItemRepository.clearCartItem(cartId);
+            response.setSuccessStatus(HttpStatus.OK);
+        } catch (Exception exp) {
+            logger.error("Error deleting cart item with id: {}", cartId, exp);
+            response.setMessage(exp.getMessage());
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
+        }
+        logger.info("cartItem deleted with id: {}", cartId);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    
+    
+    @PostMapping(path = {"/updatequantiy/{id}/{quantityChange}"}, name = "cart-items-updatequantity-by-id")
+    @PreAuthorize("hasAnyAuthority('cart-items-updatequantity-by-id', 'all')")
+    public ResponseEntity<HttpResponse> updateQuantityCartItemsById(HttpServletRequest request,
+            @PathVariable(required = true) String cartId,
+            @PathVariable(required = true) String id,
+            @PathVariable(required = true) int quantityChange) throws Exception {
+        String logprefix = request.getRequestURI() + " ";
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        logger.info("cart-items-delete-by-id, cartId: {}, cartItemId: {}", cartId, id);
+
+        Optional<Cart> savedCart = null;
+
+        savedCart = cartRepository.findById(cartId);
+        if (savedCart == null) {
+            logger.info("cart-items-updatequantity-by-id, cartId not found, cartId: {}", id);
+            response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
+            return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
+        }
+        
+        //find item in current cart, increase quantity if already exist
+        Optional<CartItem> existingItem = cartItemRepository.findById(id);
+        if (existingItem.isPresent()) {
+            CartItem item = existingItem.get();
+            logger.info("item exist for cartId: {} with productId: {}", item.getCartId(), item.getProductId());
+            int newQty = item.getQuantity() + quantityChange;
+            item.setQuantity(newQty);
+            cartItemRepository.save(item);
+        } else {
+            logger.error("Item not found for id: {}", id);
+            response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
+            return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
+        }
+        try {
+            cartItemRepository.deleteById(id);
+            response.setSuccessStatus(HttpStatus.OK);
+        } catch (Exception exp) {
+            logger.error("Error deleting cart item with id: {}", id, exp);
+            response.setMessage(exp.getMessage());
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
+        }
+        logger.info("cartItem deleted with id: {}", id);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
 }

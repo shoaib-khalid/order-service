@@ -1,9 +1,14 @@
 package com.kalsym.order.service.model;
 
 import java.util.Date;
+import java.util.List;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
@@ -42,7 +47,11 @@ public class Cart {
     private Date created;
     @UpdateTimestamp
     private Date updated;
-
+   
+    /*@OneToMany(fetch = FetchType.LAZY, mappedBy = "cartMain")
+    private List<CartItem> cartItems;
+    */
+    
     /**
      * If the cart is still open, use to track when the cart is closed and order
      * is placed, in that case the cart is moved to orders table

@@ -17,4 +17,8 @@ import org.springframework.stereotype.Repository;
 public interface OrderItemRepository extends PagingAndSortingRepository<OrderItem, String>, JpaRepository<OrderItem, String> {
 
     <S extends Object> Page<S> findByOrderId(@Param("orderId") String orderId,  Pageable pgbl);
+    
+    List<OrderItem> findByOrderId(@Param("orderId") String orderId);
+    
+    //OrderItem findByOrderIdAndProductId(@Param("orderId") String orderId, @Param("productId") String productId);
 }

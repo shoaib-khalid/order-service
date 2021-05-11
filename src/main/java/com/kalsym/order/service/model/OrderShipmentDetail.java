@@ -1,11 +1,14 @@
 package com.kalsym.order.service.model;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 
 /**
  *
@@ -28,6 +31,10 @@ public class OrderShipmentDetail {
     private String address;
     private String city;
     private String zipcode;
+    private String email;
+    private Integer deliveryProviderId;
+    private String state;
+    private String country;
     @Id
     private String orderId;
     
