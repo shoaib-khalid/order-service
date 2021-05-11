@@ -2,6 +2,19 @@
 # order-service-1.2-SNAPSHOT
 ##################################################
 + Changes:
+1. Add new API to clear cart item
+2. Add new API to increase /decrease quantity in cart item
+3. bug fix for add new cart item
+4. New API order-update:
+	-receive order-update from payment-service after payment completed
+	-trigger delivery-service for adhoc product
+	-send email after receive response from delivery-service with tracking url
+
+
+##################################################
+# order-service-1.2-SNAPSHOT
+##################################################
++ Changes:
 1. Added order link posting to live chat service
 2. Added StoreNameService to get the store name from product-service
 3. Added properties for product-service in application-prod.properties file
