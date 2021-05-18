@@ -118,7 +118,7 @@ public class OrderController {
     @GetMapping(path = {"/{id}"}, name = "orders-get-by-id", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> getOrdersById(HttpServletRequest request,
-            @RequestParam(required = true) String id,
+            @PathVariable(required = true) String id,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
 
