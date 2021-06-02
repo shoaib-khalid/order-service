@@ -56,7 +56,8 @@ public class OrderPostService {
         OrderPostRequestBody orderPostBody = new OrderPostRequestBody();
         orderPostBody.setAlias("SYMplified order");
         orderPostBody.setAvatar("");
-//        orderPostBody.setChannel("#kfood-orders");
+        // Rocket chat accepts groupName in lowerCase
+        groupName += groupName.toLowerCase();
         orderPostBody.setChannel(groupName);
         orderPostBody.setText("You have a new order, please visit the merchant portal to process, orderId: " + orderId + " " + onboardingOrderLink + orderId);
 
