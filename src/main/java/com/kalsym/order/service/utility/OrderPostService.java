@@ -77,7 +77,7 @@ public class OrderPostService {
 
             logger.info("Request sent to live chat group: {}, responseCode: {}, responseBody: {}", storeLiveChatOrdersGroupName, res.getStatusCode(), res.getBody());
         } catch (RestClientException e) {
-            logger.error("Error creating domain {}", liveChatMessageURL, e);
+            logger.error("Error posting order on liveChat URL: {}", liveChatMessageURL, e);
             return null;
         }
         return "";
