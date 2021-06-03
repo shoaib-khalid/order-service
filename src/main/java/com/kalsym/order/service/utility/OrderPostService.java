@@ -72,7 +72,7 @@ public class OrderPostService {
             HttpEntity<OrderPostRequestBody> httpEntity;
             httpEntity = new HttpEntity(orderPostBody, headers);
 
-            logger.info("Sending request to live chat, on group: {}, orderPostBody: {}", storeLiveChatOrdersGroupName, httpEntity.getBody().toString());
+            logger.info("Sending request to live chat, on group: {}, orderPostBody: {}, httpEntity: {}", storeLiveChatOrdersGroupName, httpEntity);
             ResponseEntity res = restTemplate.exchange(liveChatMessageURL, HttpMethod.POST, httpEntity, String.class);
 
             logger.info("Request sent to live chat group: {}, responseCode: {}, responseBody: {}", storeLiveChatOrdersGroupName, res.getStatusCode(), res.getBody());

@@ -38,7 +38,7 @@ public class StoreNameService {
 
             HttpEntity httpEntity = new HttpEntity(headers);
 
-            logger.debug("Sending request to product-service: {} to get store group name (liveChatCsrGroupName) against storeId: {}", url, storeId);
+            logger.debug("Sending request to product-service: {} to get store group name (liveChatCsrGroupName) against storeId: {} , httpEntity: {}", url, storeId, httpEntity);
             ResponseEntity res = restTemplate.exchange(url, HttpMethod.GET, httpEntity, StoreResponse.class);
 
             if (res != null) {
