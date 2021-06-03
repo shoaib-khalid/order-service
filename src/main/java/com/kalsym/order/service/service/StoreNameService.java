@@ -1,5 +1,6 @@
-package com.kalsym.order.service.utility;
+package com.kalsym.order.service.service;
 
+import com.kalsym.order.service.utility.StoreResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

@@ -15,15 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.kalsym.order.service.utility.HttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import com.kalsym.order.service.utility.OrderPostService;
-import com.kalsym.order.service.utility.DeliveryService;
-import com.kalsym.order.service.utility.EmailService;
+import com.kalsym.order.service.service.EmailService;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.CartItem;
 import com.kalsym.order.service.model.Product;
-import com.kalsym.order.service.model.Cart;
 import com.kalsym.order.service.model.Store;
 import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.object.DeliveryServiceDeliveryDetails;
@@ -31,17 +27,19 @@ import com.kalsym.order.service.model.object.DeliveryServiceSubmitOrder;
 import com.kalsym.order.service.model.object.DeliveryServicePickupDetails;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.object.DeliveryServiceResponse;
-import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
 import com.kalsym.order.service.model.repository.ProductRepository;
 import com.kalsym.order.service.model.repository.StoreRepository;
 import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
+import com.kalsym.order.service.service.DeliveryService;
+import com.kalsym.order.service.service.OrderPostService;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.Valid;
 import java.util.Optional;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -201,7 +199,7 @@ public class OrderController {
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
-        
+
         //Optional<Order> orderDetails = orderRepository.findById(savedOrder.getId());
         response.setData(savedOrder);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

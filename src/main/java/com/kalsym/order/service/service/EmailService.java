@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.kalsym.order.service.utility;
+package com.kalsym.order.service.service;
 
 import java.util.Properties;
 import javax.mail.*;

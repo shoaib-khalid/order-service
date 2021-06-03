@@ -1,12 +1,6 @@
-package com.kalsym.order.service.utility;
+package com.kalsym.order.service.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
 import com.google.gson.Gson; 
-import com.google.gson.GsonBuilder;  
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.reactive.function.client.WebClient;
 import com.kalsym.order.service.model.object.DeliveryServiceSubmitOrder;
 import com.kalsym.order.service.model.object.DeliveryServiceResponse;
 import org.springframework.http.HttpStatus;
