@@ -54,12 +54,11 @@ public class Order {
     @OneToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="orderId", insertable = false, updatable = false)
     private OrderPaymentDetail orderPaymentDetail;
-    
+    */
     @OneToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="orderId", insertable = false, updatable = false)
+    @JoinColumn(name="id", insertable = false, updatable = false)
     private OrderShipmentDetail orderShipmentDetail;
-   */
-
+   
 /*    @OneToMany(fetch = FetchType.LAZY, mappedBy = "orderMain")
     private List<OrderItem> orderItem;
   */

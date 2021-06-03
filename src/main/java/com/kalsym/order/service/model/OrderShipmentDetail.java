@@ -1,5 +1,6 @@
 package com.kalsym.order.service.model;
 
+import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Table;
@@ -24,7 +25,7 @@ import javax.persistence.OneToOne;
  *
  * @author 7cu
  */
-public class OrderShipmentDetail {
+public class OrderShipmentDetail implements Serializable {
 
     private String receiverName;
     private String phoneNumber;
