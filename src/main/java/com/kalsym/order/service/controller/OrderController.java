@@ -49,7 +49,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 /**
- * 
+ *
  *
  * @author 7cu
  */
@@ -64,29 +64,28 @@ public class OrderController {
 
     @Autowired
     OrderPostService orderPostService;
-    
+
     @Autowired
     DeliveryService deliveryService;
-    
+
     @Autowired
     EmailService emailService;
-    
+
     @Autowired
     ProductRepository productRepository;
-    
+
     @Autowired
     OrderItemRepository orderItemRepository;
-    
+
     @Autowired
     CartItemRepository cartItemRepository;
-    
+
     @Autowired
     OrderShipmentDetailRepository orderShipmentDetailRepository;
-    
+
     @Autowired
     StoreRepository storeRepository;
-    
-    
+
     @GetMapping(path = {""}, name = "orders-get", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-get', 'all')")
     public ResponseEntity<HttpResponse> getOrders(HttpServletRequest request,
@@ -152,7 +151,7 @@ public class OrderController {
 
         Order savedOrder = new Order();
         try {
-            
+
             //create customerId            
             savedOrder.setCartId(bodyOrder.getCartId());
             savedOrder.setCustomerId(bodyOrder.getCustomerId());
@@ -161,12 +160,12 @@ public class OrderController {
             savedOrder.setTotal(bodyOrder.getTotal());
             savedOrder.setSubTotal(bodyOrder.getSubTotal());
             savedOrder.setCustomerNotes(bodyOrder.getCustomerNotes());
-            savedOrder.setPrivateAdminNotes(bodyOrder.getPrivateAdminNotes());        
+            savedOrder.setPrivateAdminNotes(bodyOrder.getPrivateAdminNotes());
             orderRepository.save(savedOrder);
             logger.info("Order created with id: {}", savedOrder.getId());
             //save order item
             List<CartItem> cartItems = cartItemRepository.findByCartId(bodyOrder.getCartId());
-            for (int i=0;i<cartItems.size();i++) {
+            for (int i = 0; i < cartItems.size(); i++) {
                 CartItem cartItem = cartItems.get(i);
                 OrderItem orderItem = new OrderItem();
                 orderItem.setOrderId(savedOrder.getId());
@@ -182,7 +181,7 @@ public class OrderController {
             logger.info("Order Item copied for orderId: {}", savedOrder.getId());
             OrderShipmentDetail orderShipmentDetail = new OrderShipmentDetail();
             orderShipmentDetail.setOrderId(savedOrder.getId());
-            orderShipmentDetail.setReceiverName(bodyOrder.getDeliveryContactName());            
+            orderShipmentDetail.setReceiverName(bodyOrder.getDeliveryContactName());
             orderShipmentDetail.setAddress(bodyOrder.getDeliveryAddress());
             orderShipmentDetail.setCity(bodyOrder.getDeliveryCity());
             orderShipmentDetail.setZipcode(bodyOrder.getDeliveryPostcode());
@@ -190,23 +189,23 @@ public class OrderController {
             orderShipmentDetail.setEmail(bodyOrder.getDeliveryEmail());
             orderShipmentDetail.setDeliveryProviderId(bodyOrder.getDeliveryProviderId());
             orderShipmentDetailRepository.save(orderShipmentDetail);
-            logger.info("orderShipmentDetail created for orderId: {}",savedOrder.getId());
+            logger.info("orderShipmentDetail created for orderId: {}", savedOrder.getId());
             response.setSuccessStatus(HttpStatus.CREATED);
             //clear cart item
-            logger.info("clear cartItem for cartId: {}",bodyOrder.getCartId());
+            logger.info("clear cartItem for cartId: {}", bodyOrder.getCartId());
             cartItemRepository.clearCartItem(bodyOrder.getCartId());
-            // pass orderId to OrderPostService
+            // pass orderId to OrderPostService, even though the status is not completed yet
             orderPostService.postOrderLink(savedOrder.getId(), bodyOrder.getStoreId());
         } catch (Exception exp) {
             logger.error("Error saving order", exp);
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
-        logger.info("Order created with id: {}, Order link posted", savedOrder.getId());
+        
         //Optional<Order> orderDetails = orderRepository.findById(savedOrder.getId());
         response.setData(savedOrder);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }   
+    }
 
     @DeleteMapping(path = {"/{id}"}, name = "orders-delete-by-id")
     @PreAuthorize("hasAnyAuthority('orders-delete-by-id', 'all')")
@@ -267,14 +266,13 @@ public class OrderController {
         List<String> errors = new ArrayList<>();
 
         order.update(bodyOrder);
-      
+
         logger.info("order updated for orderId: {}", id);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(orderRepository.save(order));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
-    
-    
+
     /**
      *
      * @param request
@@ -305,15 +303,15 @@ public class OrderController {
 
         logger.info("order found with orderId: {}", id);
         Order order = optOrder.get();
-        
+
         if (bodyOrder.getPaymentStatus().equalsIgnoreCase("SUCCESS")) {
             order.setCompletionStatus("Received");
             order.setPaymentStatus("Completed");
             logger.info("order success for orderId: {}", id);
-           //check if need adhoc delivery        
+            //check if need adhoc delivery        
             List<OrderItem> itemList = orderItemRepository.findByOrderId(order.getId());
             logger.info("orderId:{} itemList size:{}", order.getId(), itemList.size());
-            if (itemList.size()>0) {
+            if (itemList.size() > 0) {
                 Optional<Product> product = productRepository.findById(itemList.get(0).getProductId());
                 if (product.isPresent()) {
                     logger.info("orderId:{} Product found:{} deliveryType:{}", order.getId(), product.get().getId(), product.get().getDeliveryType());
@@ -324,7 +322,7 @@ public class OrderController {
                         deliveryServiceSubmitOrder.setOrderId(id);
                         deliveryServiceSubmitOrder.setCustomerId(order.getCustomerId());
                         deliveryServiceSubmitOrder.setStoreId(order.getStoreId());
-                        deliveryServiceSubmitOrder.setPieces(1);                        
+                        deliveryServiceSubmitOrder.setPieces(1);
                         deliveryServiceSubmitOrder.setProductCode("document");
                         deliveryServiceSubmitOrder.setItemType("parcel");
                         deliveryServiceSubmitOrder.setTotalWeightKg(1);
@@ -333,19 +331,19 @@ public class OrderController {
                         deliveryServiceSubmitOrder.setShipmentValue(order.getTotal());
                         deliveryServiceSubmitOrder.setDeliveryProviderId(orderShipmentDetail.getDeliveryProviderId());
                         //pickup details
-                        logger.info("Find storeId:{}",order.getStoreId()); 
+                        logger.info("Find storeId:{}", order.getStoreId());
                         Optional<Store> fstore = storeRepository.findById(order.getStoreId());
                         if (fstore.isPresent()) {
-                            Store store = fstore.get();                            
+                            Store store = fstore.get();
                             logger.info("storeId:{} Store found. contactName:{}", order.getStoreId(), store.getContactName());
-                            DeliveryServicePickupDetails pickupDetails = new DeliveryServicePickupDetails(); 
+                            DeliveryServicePickupDetails pickupDetails = new DeliveryServicePickupDetails();
                             pickupDetails.setPickupContactName(store.getContactName());
                             pickupDetails.setTrolleyRequired(false);
                             pickupDetails.setPickupContactPhone(store.getPhone());
-                            pickupDetails.setPickupContactEmail(store.getEmail());                                                
+                            pickupDetails.setPickupContactEmail(store.getEmail());
                             pickupDetails.setPickupAddress(store.getAddress());
                             pickupDetails.setPickupPostcode(store.getPostcode());
-                            pickupDetails.setPickupCity(store.getCity());                        
+                            pickupDetails.setPickupCity(store.getCity());
                             pickupDetails.setPickupState(store.getState());
                             pickupDetails.setPickupOption("ADHOC");
                             pickupDetails.setVehicleType("MOTORCYCLE");
@@ -361,7 +359,7 @@ public class OrderController {
                         deliveryDetails.setDeliveryContactName(orderShipmentDetail.getReceiverName());
                         deliveryDetails.setDeliveryContactPhone(orderShipmentDetail.getPhoneNumber());
                         deliveryDetails.setDeliveryContactEmail(orderShipmentDetail.getEmail());
-                        deliveryServiceSubmitOrder.setDelivery(deliveryDetails);                    
+                        deliveryServiceSubmitOrder.setDelivery(deliveryDetails);
                         logger.info("submit to delivey-service orderId:{}", order.getId());
                         logger.info("Request Body:{}", deliveryServiceSubmitOrder.toString());
                         DeliveryServiceResponse deliveryResponse = deliveryService.submitDeliveryOrder(deliveryServiceSubmitOrder);
@@ -369,16 +367,21 @@ public class OrderController {
                         if (deliveryResponse.data.isSuccess) {
                             order.setCompletionStatus("ReadyForDelivery");
                             //send email with tracking url
-                            String [] url = deliveryResponse.data.trackingUrl;
+                            String[] url = deliveryResponse.data.trackingUrl;
                             String receiver = orderShipmentDetail.getEmail();
-                            String subject = "["+order.getId()+"] Your order is being deliver";
-                            String content = "Your order "+order.getId()+" is being deliver. Use this url to track your order :"
-                                            + "<br/>";
-                            for (int i=0;i<url.length;i++) {
-                                content += "<br/>"+url[0];
+                            String subject = "[" + order.getId() + "] Your order is being deliver";
+                            String content = "Your order " + order.getId() + " is being deliver. Use this url to track your order :"
+                                    + "<br/>";
+                            for (int i = 0; i < url.length; i++) {
+                                content += "<br/>" + url[0];
                             }
-                            logger.info("Email Receiver:"+receiver+" Subject:"+subject+" Content:"+content);
+                            logger.debug("Sending Email! Receiver:" + receiver + " Subject:" + subject + " Content:" + content);
                             emailService.SendEmail(receiver, subject, content);
+                            logger.info("Sent Email");
+                            // pass orderId to OrderPostService
+                            logger.debug("Posting order");
+                            orderPostService.postOrderLink(id, bodyOrder.getStoreId());
+                            logger.info("Order Posted on live chat");
                         } else {
                             logger.info("adhoc delivery fail for orderId: {}", id);
                         }
@@ -390,7 +393,7 @@ public class OrderController {
             order.setPaymentStatus("Failed");
             logger.info("payment fail orderId: {}", id);
         }
-            
+
         orderRepository.save(order);
         logger.info("order updated for orderId: {}", id);
         response.setSuccessStatus(HttpStatus.ACCEPTED);

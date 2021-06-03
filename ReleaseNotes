@@ -1,4 +1,16 @@
 ##################################################
+# order-service-1.3-SNAPSHOT
+##################################################
++ Changes:
+1. Modified the coloumn to be used to get live chat groupName, now getting from liveChatOrdersGroupName
+2. Posted order to rocket chat in OrderController update endpoint
+
+
+
+
+
+
+##################################################
 # order-service-1.2.2-SNAPSHOT
 ##################################################
 + Changes:

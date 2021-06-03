@@ -50,15 +50,15 @@ public class OrderPostService {
 
         String logprefix = "createSubDomain";
 
-        String storeName = storeNameService.getStoreName(storeId);
-        String groupName = "#" + storeName + "-orders";
+        String storeLiveChatOrdersGroupName = storeNameService.getLiveChatOrdersGroupName(storeId);
+//        String groupName = "#" + storeLiveChatOrdersGroupName + "-orders";
 
         OrderPostRequestBody orderPostBody = new OrderPostRequestBody();
         orderPostBody.setAlias("SYMplified order");
         orderPostBody.setAvatar("");
         // Rocket chat accepts groupName in lowerCase
-        groupName += groupName.toLowerCase();
-        orderPostBody.setChannel(groupName);
+//        groupName += groupName.toLowerCase();
+        orderPostBody.setChannel(storeLiveChatOrdersGroupName);
         orderPostBody.setText("You have a new order, please visit the merchant portal to process, orderId: " + orderId + " " + onboardingOrderLink + orderId);
 
         try {
@@ -72,10 +72,10 @@ public class OrderPostService {
             HttpEntity<OrderPostRequestBody> httpEntity;
             httpEntity = new HttpEntity(orderPostBody, headers);
 
-            logger.debug("Sending request to live service, on group: {}", groupName);
+            logger.info("Sending request to live chat, on group: {}, orderPostBody: {}", storeLiveChatOrdersGroupName, httpEntity.getBody().toString());
             ResponseEntity res = restTemplate.exchange(liveChatMessageURL, HttpMethod.POST, httpEntity, String.class);
 
-            logger.debug("Request sent to live service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
+            logger.info("Request sent to live chat group: {}, responseCode: {}, responseBody: {}", storeLiveChatOrdersGroupName, res.getStatusCode(), res.getBody());
         } catch (RestClientException e) {
             logger.error("Error creating domain {}", liveChatMessageURL, e);
             return null;

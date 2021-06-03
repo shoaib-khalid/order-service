@@ -28,7 +28,7 @@ public class StoreNameService {
     @Value("${product-service.token:Bearer accessToken}")
     private String productServiceToken;
 
-    public String getStoreName(String storeId) {
+    public String getLiveChatOrdersGroupName(String storeId) {
         String url = productServiceURL + "stores/" + storeId;
         try {
             RestTemplate restTemplate = new RestTemplate();
@@ -38,13 +38,13 @@ public class StoreNameService {
 
             HttpEntity httpEntity = new HttpEntity(headers);
 
-            logger.debug("Sending request to product-service: {} to get store name against storeId: {}", url, storeId);
+            logger.debug("Sending request to product-service: {} to get store group name (liveChatCsrGroupName) against storeId: {}", url, storeId);
             ResponseEntity res = restTemplate.exchange(url, HttpMethod.GET, httpEntity, StoreResponse.class);
 
             if (res != null) {
                 StoreResponse storeResponse = (StoreResponse) res.getBody();
-                String storeName = storeResponse.getData().getName();
-                logger.debug("Store name received: {}, against storeId: {}", storeName, storeId);
+                String storeName = storeResponse.getData().getLiveChatOrdersGroupName();
+                logger.debug("Store orders group (liveChatOrdersGroupName) received: {}, against storeId: {}", storeName, storeId);
                 return storeName;
             } else {
                 logger.warn("Cannot get storename against storeId: {}", storeId);
