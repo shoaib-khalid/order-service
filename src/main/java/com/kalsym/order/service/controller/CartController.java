@@ -204,53 +204,36 @@ public class CartController {
     @PreAuthorize("hasAnyAuthority('carts-order-by-id', 'all')")
     public ResponseEntity<HttpResponse> empty(HttpServletRequest request,
             @PathVariable String id) {
-        //
+        
 
-//        logger.info("carts-order-by-id request...");
-//        HttpResponse response = new HttpResponse(request.getRequestURI());
-//
-//        Cart cartMatch = new Cart();
-//
-//        Optional<Cart> cartOptional = cartRepository.findById(id);
-//
-//        Cart cart = cartOptional.get();
-//
-//        Order newOrder = new Order();
-//        newOrder.setCompletionStatus("OnHold");
-//        newOrder.setCustomerId(cart.getCustomerId());
-//        newOrder.setPaymentStatus("Pending");
-//        Order savedOrder = orderRepository.save(newOrder);
-//        // Closing the cart status since now order is being placed 
-//        cart.setIsOpen(Boolean.FALSE);
-//        Iterable<CartItem> cartItems = cartItemRepository.findByCartId(id, null);
-//
-//        for (CartItem cartItem : cartItems) {
-//            OrderItem orderItem = new OrderItem();
-//            orderItem.setItemCode(cartItem.getItemCode());
-//            orderItem.setOrderId(savedOrder.getId());
-//            // Price is missing in cart
-//            orderItem.setPrice(cartItem.getId());
-//            orderItem.setProductId(cartItem.getProductId());
-//            // ProductPrice is also missing in cart
-//            orderItem.setProductPrice(cartItem.getProductId());
-//            orderItem.setQuantity(cartItem.getQuantity());
-//            // SKU is missing in cart
-//            orderItem.setSKU(cartItem.getQuantity());
-//            orderItem.setWeight(cartItem.getQuantity());
-//        }
-//
-//        ExampleMatcher exampleCartMatcher = ExampleMatcher
-//                .matchingAll()
-//                .withIgnoreCase()
-//                .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
-//        Example<Cart> cartExample = Example.of(cartMatch, exampleCartMatcher);
-//
-//        Pageable pageable = PageRequest.of(page, pageSize);
-//
-//        response.setSuccessStatus(HttpStatus.OK);
-//        response.setData(cartRepository.findAll(cartExample, pageable));
-//        return ResponseEntity.status(HttpStatus.OK).body(response);
-        return null;
+        logger.info("carts-order-by-id request...");
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Cart cartMatch = new Cart();
+
+        Optional<Cart> cartOptional = cartRepository.findById(id);
+
+        Cart cart = cartOptional.get();
+
+        Order newOrder = new Order();
+        newOrder.setCompletionStatus("OnHold");
+        newOrder.setCustomerId(cart.getCustomerId());
+        newOrder.setPaymentStatus("Pending");
+        Order savedOrder = orderRepository.save(newOrder);
+        // Closing the cart status since now order is being placed 
+        cart.setIsOpen(Boolean.FALSE);
+        Iterable<CartItem> cartItems = cartItemRepository.findByCartId(id, null);
+
+        for (CartItem cartItem : cartItems) {
+            cartItemRepository.delete(cartItem);
+        }
+
+       
+
+        response.setSuccessStatus(HttpStatus.OK);
+        //response.setData(cartRepository.findAll(cartExample, pageable));
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+        
     }
 
 }
