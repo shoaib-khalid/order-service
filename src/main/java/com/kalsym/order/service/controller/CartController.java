@@ -87,25 +87,20 @@ public class CartController {
     @GetMapping(path = {"/{id}"}, name = "carts-get-by-id", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('carts-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> getCartsById(HttpServletRequest request,
-            @RequestParam(required = true) String id,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int pageSize) {
+            @RequestParam(required = true) String id) {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        Cart cartMatch = new Cart();
-        cartMatch.setId(id);
+        Optional<Cart> optCart = cartRepository.findById(id);
 
-        ExampleMatcher matcher = ExampleMatcher
-                .matchingAll()
-                .withIgnoreCase()
-                .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
-        Example<Cart> cartExample = Example.of(cartMatch, matcher);
-
-        Pageable pageable = PageRequest.of(page, pageSize);
+        if (!optCart.isPresent()) {
+            response.setSuccessStatus(HttpStatus.NOT_FOUND);
+            response.setError("cart not foud");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
 
         response.setSuccessStatus(HttpStatus.OK);
-        response.setData(cartRepository.findAll(cartExample, pageable));
+        response.setData(optCart.get());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -195,16 +190,17 @@ public class CartController {
     }
 
     /**
-     * TODO: create endpoint to empty the cart by deleting all the cart-items in the cart
+     * TODO: create endpoint to empty the cart by deleting all the cart-items in
+     * the cart
+     *
      * @param request
      * @param id
-     * @return 
+     * @return
      */
     @GetMapping(path = {"/{id}/empty"}, name = "carts-empty-by-id", produces = "application/json")
-    @PreAuthorize("hasAnyAuthority('carts-order-by-id', 'all')")
+    @PreAuthorize("hasAnyAuthority('carts-empty-by-id', 'all')")
     public ResponseEntity<HttpResponse> empty(HttpServletRequest request,
             @PathVariable String id) {
-        
 
         logger.info("carts-order-by-id request...");
         HttpResponse response = new HttpResponse(request.getRequestURI());
@@ -228,12 +224,60 @@ public class CartController {
             cartItemRepository.delete(cartItem);
         }
 
-       
-
         response.setSuccessStatus(HttpStatus.OK);
         //response.setData(cartRepository.findAll(cartExample, pageable));
         return ResponseEntity.status(HttpStatus.OK).body(response);
+
+    }
+
+    @GetMapping(path = {"/{id}/weight"}, name = "carts-weight-by-id", produces = "application/json")
+    @PreAuthorize("hasAnyAuthority('carts-weight-by-id', 'all')")
+    public ResponseEntity<HttpResponse> getWeightOfCart(HttpServletRequest request,
+            @PathVariable String id) {
+
+        logger.info("carts-order-by-id request...");
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        List<CartItem> cartItems = cartItemRepository.findByCartId(id);
+
+        double totalWeight = 0;
+        if (null != cartItems) {
+            for (int i = 0; i < cartItems.size(); i++) {
+                CartItem cartItem = cartItems.get(i);
+                double singleItemWeight = 0;
+                if (null == cartItem.getWeight()) {
+                    singleItemWeight = 1;
+                }
+                double itemWeight = cartItem.getQuantity() * singleItemWeight;
+                totalWeight = totalWeight + itemWeight;
+            }
+        }
+
+        class Weight {
+
+            Double totalWeight;
+
+            public Weight() {
+            }
+
+            public Double getTotalWeight() {
+                return totalWeight;
+            }
+
+            public void setTotalWeight(Double totalWeight) {
+                this.totalWeight = totalWeight;
+            }
+
+        }
         
+        Weight w = new Weight();
+        w.setTotalWeight(totalWeight);
+
+
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(w);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+
     }
 
 }

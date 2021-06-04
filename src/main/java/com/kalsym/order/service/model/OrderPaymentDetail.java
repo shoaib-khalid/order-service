@@ -1,5 +1,6 @@
 package com.kalsym.order.service.model;
 
+import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,8 +20,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Setter
 @ToString
 @Table(name = "order_payment_detail")
-
-public class OrderPaymentDetail {
+public class OrderPaymentDetail implements Serializable {
 
     private String accountName;
     private String gatewayId;
@@ -28,6 +28,10 @@ public class OrderPaymentDetail {
     private Date time;
     @Id
     private String orderId;
+    
+    
+    private String  deliveryQuotationReferenceId;
+    private Double deliveryQuotationAmount;
 
     public void update(OrderPaymentDetail orderPaymentDetail) {
 

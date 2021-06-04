@@ -1,5 +1,6 @@
 package com.kalsym.order.service.controller;
 
+import com.kalsym.order.service.model.OrderPaymentDetail;
 import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,7 @@ import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.object.DeliveryServiceResponse;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
+import com.kalsym.order.service.model.repository.OrderPaymentDetailRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
 import com.kalsym.order.service.model.repository.ProductRepository;
 import com.kalsym.order.service.model.repository.StoreRepository;
@@ -36,6 +38,7 @@ import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.OrderPostService;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.validation.Valid;
 import java.util.Optional;
@@ -83,6 +86,9 @@ public class OrderController {
 
     @Autowired
     StoreRepository storeRepository;
+    
+    @Autowired
+    OrderPaymentDetailRepository orderPaymentDetailRepository;
 
     @GetMapping(path = {""}, name = "orders-get", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-get', 'all')")
@@ -188,7 +194,17 @@ public class OrderController {
             orderShipmentDetail.setDeliveryProviderId(bodyOrder.getDeliveryProviderId());
             orderShipmentDetailRepository.save(orderShipmentDetail);
             logger.info("orderShipmentDetail created for orderId: {}", savedOrder.getId());
-            response.setSuccessStatus(HttpStatus.CREATED);
+            //OrderPayementDetial
+            OrderPaymentDetail opd = new OrderPaymentDetail();
+            opd.setAccountName(bodyOrder.getAccountName());
+            opd.setCouponId(bodyOrder.getCouponId());
+            opd.setDeliveryQuotationAmount(bodyOrder.getDeliveryQuotationAmount());
+            opd.setDeliveryQuotationReferenceId(bodyOrder.getDeliveryQuotationReferenceId());
+            opd.setGatewayId(bodyOrder.getGatewayId());
+            opd.setOrderId(savedOrder.getId());
+            opd.setTime(new Date());
+            orderPaymentDetailRepository.save(opd);
+            
             //clear cart item
             logger.info("clear cartItem for cartId: {}", bodyOrder.getCartId());
             cartItemRepository.clearCartItem(bodyOrder.getCartId());
@@ -201,6 +217,7 @@ public class OrderController {
         }
 
         //Optional<Order> orderDetails = orderRepository.findById(savedOrder.getId());
+        response.setSuccessStatus(HttpStatus.CREATED);
         response.setData(savedOrder);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
