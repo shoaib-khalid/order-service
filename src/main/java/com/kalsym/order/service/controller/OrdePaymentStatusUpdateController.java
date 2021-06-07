@@ -4,6 +4,9 @@ import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderPaymentStatusUpdate;
 import com.kalsym.order.service.model.repository.OrderPaymentStatusUpdateRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
+import com.kalsym.order.service.service.DeliveryService;
+import com.kalsym.order.service.service.EmailService;
+import com.kalsym.order.service.service.OrderPostService;
 import com.kalsym.order.service.utility.HttpResponse;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
@@ -38,6 +41,16 @@ public class OrdePaymentStatusUpdateController {
 
     @Autowired
     OrderRepository orderRepository;
+
+    @Autowired
+    DeliveryService deliveryService;
+
+    @Autowired
+    EmailService emailService;
+    
+    @Autowired
+    OrderPostService orderPostService;
+
 
     @Autowired
     OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository;
@@ -133,16 +146,15 @@ public class OrdePaymentStatusUpdateController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PutMapping(path = {"/{id}"}, name = "order-payment-status-update-put-by-id")
-    @PreAuthorize("hasAnyAuthority('order-payment-status-update-put-by-id', 'all')")
+    @PutMapping(path = {"/"}, name = "order-payment-status-update-put")
+    @PreAuthorize("hasAnyAuthority('order-payment-status-update-put', 'all')")
     public ResponseEntity<HttpResponse> putOrderPaymentStatusUpdatesById(HttpServletRequest request,
             @PathVariable(required = true) String orderId,
-            @PathVariable(required = true) String id,
             @Valid @RequestBody OrderPaymentStatusUpdate bodyOrderPaymentStatusUpdate) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-payment-status-update-put-by-id, orderId: {}", orderId);
+        logger.info("order-payment-status-update-put, orderId: {}", orderId);
         logger.info(bodyOrderPaymentStatusUpdate.toString(), "");
 
         Optional<Order> optOrder = orderRepository.findById(orderId);
@@ -153,22 +165,72 @@ public class OrdePaymentStatusUpdateController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        Optional<OrderPaymentStatusUpdate> optOrderPaymentStatusUpdate = orderPaymentStatusUpdateRepository.findById(orderId);
-
-        if (!optOrderPaymentStatusUpdate.isPresent()) {
-            logger.info("orderPaymentStatusUpdate not found with orderId: {}", orderId);
-            response.setErrorStatus(HttpStatus.NOT_FOUND);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
-
+//        Optional<OrderPaymentStatusUpdate> optOrderPaymentStatusUpdate = orderPaymentStatusUpdateRepository.findById(orderId);
+//
+//        if (!optOrderPaymentStatusUpdate.isPresent()) {
+//            logger.info("orderPaymentStatusUpdate not found with orderId: {}", orderId);
+//            response.setErrorStatus(HttpStatus.NOT_FOUND);
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+//        }
         logger.info("orderPaymentStatusUpdate found with orderId: {}", orderId);
-        OrderPaymentStatusUpdate orderPaymentStatusUpdate = optOrderPaymentStatusUpdate.get();
-
-        orderPaymentStatusUpdate.update(bodyOrderPaymentStatusUpdate);
+        OrderPaymentStatusUpdate orderPaymentStatusUpdate = orderPaymentStatusUpdateRepository.save(bodyOrderPaymentStatusUpdate);
 
         logger.info("orderPaymentStatusUpdate updated for orderId: {}", orderId);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(orderPaymentStatusUpdateRepository.save(orderPaymentStatusUpdate));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
+
+    @PutMapping(path = {"/confirm"}, name = "order-payment-status-update-confirm")
+    @PreAuthorize("hasAnyAuthority('order-payment-status-update-confirm', 'all')")
+    public ResponseEntity<HttpResponse> putOrderPaymentStatusUpdatesConfirm(HttpServletRequest request,
+            @PathVariable(required = true) String orderId,
+            @Valid @RequestBody OrderPaymentStatusUpdate bodyOrderPaymentStatusUpdate) throws Exception {
+        String logprefix = request.getRequestURI() + " ";
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        logger.info("order-payment-status-update-put, orderId: {}", orderId);
+        logger.info(bodyOrderPaymentStatusUpdate.toString(), "");
+
+        Optional<Order> optOrder = orderRepository.findById(orderId);
+
+        if (!optOrder.isPresent()) {
+            logger.info("Order not found with orderId: {}", orderId);
+            response.setErrorStatus(HttpStatus.NOT_FOUND, "order not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        Order order = optOrder.get();
+        order.setPaymentStatus("Completed");
+        orderRepository.save(order);
+//        Optional<OrderPaymentStatusUpdate> optOrderPaymentStatusUpdate = orderPaymentStatusUpdateRepository.findById(orderId);
+//
+//        if (!optOrderPaymentStatusUpdate.isPresent()) {
+//            logger.info("orderPaymentStatusUpdate not found with orderId: {}", orderId);
+//            response.setErrorStatus(HttpStatus.NOT_FOUND);
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+//        }
+
+        logger.info("orderPaymentStatusUpdate found with orderId: {}", orderId);
+        OrderPaymentStatusUpdate orderPaymentStatusUpdate = orderPaymentStatusUpdateRepository.save(bodyOrderPaymentStatusUpdate);
+
+        deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
+
+        //String[] url = deliveryResponse.data.trackingUrl;
+        String receiver = order.getOrderShipmentDetail().getEmail();
+        String subject = "[" + order.getId() + "] Your order is being deliver";
+        String content = "Your order " + order.getId() + " is being deliver. Use this url to track your order :"
+                + "<br/>";
+//        for (int i = 0; i < url.length; i++) {
+//            content += "<br/>" + url[0];
+//        }
+
+        emailService.SendEmail(receiver, subject, content);
+        orderPostService.postOrderLink(order.getId(), order.getStoreId());
+
+        logger.info("orderPaymentStatusUpdate updated for orderId: {}", orderId);
+        response.setSuccessStatus(HttpStatus.ACCEPTED);
+        response.setData(order);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 }

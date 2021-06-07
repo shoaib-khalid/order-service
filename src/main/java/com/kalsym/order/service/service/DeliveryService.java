@@ -1,6 +1,6 @@
 package com.kalsym.order.service.service;
 
-import com.google.gson.Gson; 
+import com.google.gson.Gson;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,32 +33,35 @@ public class DeliveryService {
     @Value("${deliveryService.submitOrder.URL:https://api.symplified.biz/v1/delivery-service/orders/submitorder}")
     String deliveryServiceSubmitOrderURL;
 
+    @Value("${deliveryService.confirmation.URL:https://api.symplified.biz/v1/delivery-service/orders/confirmDelivery/}")
+    String orderDeliveryConfirmationURL;
+
     @Autowired
     StoreNameService storeNameService;
 
     public DeliveryServiceResponse submitDeliveryOrder(DeliveryServiceSubmitOrder orderPostBody) {
-        
+
         try {
 
             RestTemplate restTemplate = new RestTemplate();
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", "Bearer accessToken");
-            
+
             HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
             httpEntity = new HttpEntity(orderPostBody, headers);
 
-            logger.info("Sending request to delivery service : "+orderPostBody.toString());
+            logger.info("Sending request to delivery service : " + orderPostBody.toString());
             ResponseEntity<String> res = restTemplate.exchange(deliveryServiceSubmitOrderURL, HttpMethod.POST, httpEntity, String.class);
 
             logger.info("Request sent to delivery service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
-            
-            if (res.getStatusCode()==HttpStatus.OK) {
+
+            if (res.getStatusCode() == HttpStatus.OK) {
                 Gson gson = new Gson();
                 DeliveryServiceResponse response = gson.fromJson(res.getBody(), DeliveryServiceResponse.class);
-                logger.info("DeliveryServiceResponse:"+response.toString());
+                logger.info("DeliveryServiceResponse:" + response.toString());
                 return response;
-            } 
+            }
         } catch (RestClientException e) {
             logger.error("Error creating domain {}", deliveryServiceSubmitOrderURL, e);
             return null;
@@ -66,5 +69,18 @@ public class DeliveryService {
         return null;
     }
 
-    
+    public void confirmOrderDelivery(String refId) {
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer accessToken");
+        HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
+        httpEntity = new HttpEntity(headers);
+        String url = orderDeliveryConfirmationURL+refId;
+        logger.info("orderDeliveryConfirmationURL : " + url);
+        ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class);
+        logger.info("res : " + res);
+
+    }
+
 }

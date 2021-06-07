@@ -58,6 +58,10 @@ public class Order {
     @OneToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="id", insertable = false, updatable = false)
     private OrderShipmentDetail orderShipmentDetail;
+    
+    @OneToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="id", insertable = false, updatable = false)
+    private OrderPaymentDetail orderPaymentDetail;
    
 /*    @OneToMany(fetch = FetchType.LAZY, mappedBy = "orderMain")
     private List<OrderItem> orderItem;

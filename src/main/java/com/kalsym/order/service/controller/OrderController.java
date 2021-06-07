@@ -86,7 +86,7 @@ public class OrderController {
 
     @Autowired
     StoreRepository storeRepository;
-    
+
     @Autowired
     OrderPaymentDetailRepository orderPaymentDetailRepository;
 
@@ -204,7 +204,7 @@ public class OrderController {
             opd.setOrderId(savedOrder.getId());
             opd.setTime(new Date());
             orderPaymentDetailRepository.save(opd);
-            
+
             //clear cart item
             logger.info("clear cartItem for cartId: {}", bodyOrder.getCartId());
             cartItemRepository.clearCartItem(bodyOrder.getCartId());
@@ -293,7 +293,6 @@ public class OrderController {
      * @param request
      * @param id
      * @param bodyOrder
-     * @param bodyProduct
      * @return
      */
     @PostMapping(path = {"/update/{id}"}, name = "orders-update-by-id")
@@ -322,6 +321,10 @@ public class OrderController {
         if (bodyOrder.getPaymentStatus().equalsIgnoreCase("SUCCESS")) {
             order.setCompletionStatus("Received");
             order.setPaymentStatus("Completed");
+            orderPostService.postOrderLink(order.getId(), bodyOrder.getStoreId());
+            
+            
+
             logger.info("order success for orderId: {}", id);
             //check if need adhoc delivery        
             List<OrderItem> itemList = orderItemRepository.findByOrderId(order.getId());
@@ -378,6 +381,7 @@ public class OrderController {
                         logger.info("submit to delivey-service orderId:{}", order.getId());
                         logger.info("Request Body:{}", deliveryServiceSubmitOrder.toString());
                         DeliveryServiceResponse deliveryResponse = deliveryService.submitDeliveryOrder(deliveryServiceSubmitOrder);
+                        deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
                         logger.info("Response Data isSuccess:{} trackingUrl:{}", deliveryResponse.data.isSuccess, deliveryResponse.data.trackingUrl);
                         if (deliveryResponse.data.isSuccess) {
                             order.setCompletionStatus("ReadyForDelivery");
