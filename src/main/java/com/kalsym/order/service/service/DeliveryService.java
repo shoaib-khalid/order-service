@@ -30,10 +30,10 @@ public class DeliveryService {
     private static Logger logger = LoggerFactory.getLogger("application");
 
     //@Autowired
-    @Value("${deliveryService.submitOrder.URL:https://api.symplified.biz/v1/delivery-service/orders/submitorder}")
+    @Value("${deliveryService.submitOrder.URL:https://api.symplified.biz/delivery-service/v1/orders/submitorder}")
     String deliveryServiceSubmitOrderURL;
 
-    @Value("${deliveryService.confirmation.URL:https://api.symplified.biz/v1/delivery-service/orders/confirmDelivery/}")
+    @Value("${deliveryService.confirmation.URL:https://api.symplified.biz/delivery-service/v1/orders/confirmDelivery/}")
     String orderDeliveryConfirmationURL;
 
     @Autowired

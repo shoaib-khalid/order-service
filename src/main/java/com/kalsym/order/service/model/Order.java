@@ -50,6 +50,8 @@ public class Order {
     @UpdateTimestamp
     private Date updated;
     
+    private String referenceId;
+    
     /*
     @OneToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="orderId", insertable = false, updatable = false)

@@ -24,6 +24,7 @@ import org.hibernate.annotations.GenericGenerator;
 @ToString
 @Table(name = "store")
 public class Store {
+
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
@@ -38,4 +39,24 @@ public class Store {
     private String contactName;
     private String phone;
     private String email;
+
+    public String getNameAbreviation() {
+        String abbreviation = "";
+
+        if (name.length() <= 3) {
+            abbreviation = name;
+        } else {
+            String[] myName = name.split(" ");
+
+            for (int i = 0; i < myName.length; i++) {
+                String s = myName[i];
+                abbreviation = abbreviation + s.charAt(0);
+
+                if (abbreviation.length() == 3) {
+                    break;
+                }
+            }
+        }
+        return abbreviation;
+    }
 }

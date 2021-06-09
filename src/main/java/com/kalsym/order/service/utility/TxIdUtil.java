@@ -1,17 +1,26 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.kalsym.order.service.utility;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Random;
 
 /**
  *
  * @author saros
  */
 public class TxIdUtil {
-    
-    public static String generateTxId(String prefix, String postfix){
-        return null;
+
+    public static String generateReferenceId(String prefix) {
+        String referenceId = prefix;
+        Date dNow = new Date();
+        SimpleDateFormat ft = new SimpleDateFormat("yyMMddhhmmss");
+        String datetime = ft.format(dNow);
+
+        Random rnd = new Random();
+        int n = 100 + rnd.nextInt(900);
+
+        referenceId = referenceId + datetime + n;
+
+        return referenceId;
     }
 }

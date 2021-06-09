@@ -37,6 +37,7 @@ import com.kalsym.order.service.model.repository.StoreRepository;
 import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.OrderPostService;
+import com.kalsym.order.service.utility.TxIdUtil;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -156,6 +157,15 @@ public class OrderController {
         Order savedOrder = new Order();
         try {
 
+            Optional<Store> optStore = storeRepository.findById(bodyOrder.getStoreId());
+
+            if (!optStore.isPresent()) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("store not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            Store store = optStore.get();
             //create customerId            
             savedOrder.setCartId(bodyOrder.getCartId());
             savedOrder.setCustomerId(bodyOrder.getCustomerId());
@@ -165,7 +175,18 @@ public class OrderController {
             savedOrder.setSubTotal(bodyOrder.getSubTotal());
             savedOrder.setCustomerNotes(bodyOrder.getCustomerNotes());
             savedOrder.setPrivateAdminNotes(bodyOrder.getPrivateAdminNotes());
-            orderRepository.save(savedOrder);
+
+            while (true) {
+                try {
+                    String referenceId = TxIdUtil.generateReferenceId(store.getNameAbreviation());
+                    savedOrder.setReferenceId(referenceId);
+                    orderRepository.save(savedOrder);
+                    break;
+                } catch (Exception e) {
+
+                }
+            }
+
             logger.info("Order created with id: {}", savedOrder.getId());
             //save order item
             List<CartItem> cartItems = cartItemRepository.findByCartId(bodyOrder.getCartId());
@@ -322,8 +343,6 @@ public class OrderController {
             order.setCompletionStatus("Received");
             order.setPaymentStatus("Completed");
             orderPostService.postOrderLink(order.getId(), bodyOrder.getStoreId());
-            
-            
 
             logger.info("order success for orderId: {}", id);
             //check if need adhoc delivery        
