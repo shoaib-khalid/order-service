@@ -1,5 +1,7 @@
 package com.kalsym.order.service.controller;
 
+import com.kalsym.order.service.enums.OrderStatus;
+import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderPaymentStatusUpdate;
 import com.kalsym.order.service.model.repository.OrderPaymentStatusUpdateRepository;
@@ -198,7 +200,8 @@ public class OrderPaymentStatusUpdateController {
         }
 
         Order order = optOrder.get();
-        order.setPaymentStatus("Completed");
+        order.setCompletionStatus(OrderStatus.PAYMENT_CONFIRMED.toString());
+        order.setPaymentStatus(PaymentStatus.PAID.toString());
         orderRepository.save(order);
 //        Optional<OrderPaymentStatusUpdate> optOrderPaymentStatusUpdate = orderPaymentStatusUpdateRepository.findById(orderId);
 //

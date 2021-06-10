@@ -1,5 +1,7 @@
 package com.kalsym.order.service.controller;
 
+import com.kalsym.order.service.enums.OrderStatus;
+import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.model.OrderPaymentDetail;
 import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -150,12 +152,12 @@ public class OrderController {
 
         logger.info("orders-post", "");
 
-        OrderObject bodyOrder = new OrderObject();
-        logger.info(bodyOrder.toString(), "");
+//        OrderObject bodyOrder = new OrderObject();
+        logger.info(order.toString(), "");
 
         try {
 
-            Optional<Store> optStore = storeRepository.findById(bodyOrder.getStoreId());
+            Optional<Store> optStore = storeRepository.findById(order.getStoreId());
 
             if (!optStore.isPresent()) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
@@ -167,8 +169,10 @@ public class OrderController {
 
             while (true) {
                 try {
-                    String referenceId = TxIdUtil.generateReferenceId(store.getNameAbreviation());
-                    order.setReferenceId(referenceId);
+                    String invoiceId = TxIdUtil.generateReferenceId(store.getNameAbreviation());
+                    order.setInvoiceId(invoiceId);
+                    order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE.toString());
+                    order.setPaymentStatus(PaymentStatus.PENDING.toString());
                     order = orderRepository.save(order);
                     break;
                 } catch (Exception e) {
@@ -178,7 +182,7 @@ public class OrderController {
 
             logger.info("Order created with id: {}", order.getId());
             //save order item
-            List<CartItem> cartItems = cartItemRepository.findByCartId(bodyOrder.getCartId());
+            List<CartItem> cartItems = cartItemRepository.findByCartId(order.getCartId());
             for (int i = 0; i < cartItems.size(); i++) {
                 CartItem cartItem = cartItems.get(i);
                 OrderItem orderItem = new OrderItem();
@@ -202,10 +206,10 @@ public class OrderController {
             orderPaymentDetailRepository.save(opd);
 
             //clear cart item
-            logger.info("clear cartItem for cartId: {}", bodyOrder.getCartId());
-            cartItemRepository.clearCartItem(bodyOrder.getCartId());
+            logger.info("clear cartItem for cartId: {}", order.getCartId());
+            cartItemRepository.clearCartItem(order.getCartId());
             // pass orderId to OrderPostService, even though the status is not completed yet
-            orderPostService.postOrderLink(order.getId(), bodyOrder.getStoreId());
+            orderPostService.postOrderLink(order.getId(), order.getStoreId());
         } catch (Exception exp) {
             logger.error("Error saving order", exp);
             response.setMessage(exp.getMessage());

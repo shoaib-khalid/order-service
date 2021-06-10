@@ -38,6 +38,8 @@ public class Order {
 
     private String storeId;
     private Float subTotal;
+    private Float serviceCharges;
+    private Float deliveryCharges;
     private Float total;
     private String completionStatus;
     private String paymentStatus;
@@ -50,7 +52,7 @@ public class Order {
     @UpdateTimestamp
     private Date updated;
     
-    private String referenceId;
+    private String invoiceId;
     
     /*
     @OneToOne(fetch=FetchType.LAZY)
@@ -74,6 +76,8 @@ public class Order {
             this.setStoreId(order.getStoreId());
         }
         subTotal = order.getSubTotal();
+        serviceCharges = order.getServiceCharges();
+        deliveryCharges = order.getDeliveryCharges();
         total = order.getTotal();
         completionStatus = order.getCompletionStatus();
         paymentStatus = order.getPaymentStatus();
