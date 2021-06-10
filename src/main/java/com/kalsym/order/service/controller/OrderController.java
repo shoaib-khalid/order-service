@@ -171,9 +171,15 @@ public class OrderController {
                 try {
                     String invoiceId = TxIdUtil.generateReferenceId(store.getNameAbreviation());
                     order.setInvoiceId(invoiceId);
-                    order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE.toString());
-                    order.setPaymentStatus(PaymentStatus.PENDING.toString());
+                    OrderPaymentDetail opd = order.getOrderPaymentDetail();
+                    OrderShipmentDetail osd = order.getOrderShipmentDetail();
+                    order.setOrderPaymentDetail(null);
+                    order.setOrderShipmentDetail(null);
                     order = orderRepository.save(order);
+                    opd.setOrderId(order.getId());
+                    osd.setOrderId(order.getId());
+                    orderPaymentDetailRepository.save(opd);
+                    orderShipmentDetailRepository.save(osd);
                     break;
                 } catch (Exception e) {
 
@@ -197,13 +203,13 @@ public class OrderController {
                 orderItemRepository.save(orderItem);
             }
             logger.info("Order Item copied for orderId: {}", order.getId());
-            OrderShipmentDetail orderShipmentDetail = order.getOrderShipmentDetail();
+//            OrderShipmentDetail orderShipmentDetail = order.getOrderShipmentDetail();
 
-            orderShipmentDetailRepository.save(orderShipmentDetail);
+//            orderShipmentDetailRepository.save(orderShipmentDetail);
             logger.info("orderShipmentDetail created for orderId: {}", order.getId());
             //OrderPayementDetial
-            OrderPaymentDetail opd = order.getOrderPaymentDetail();
-            orderPaymentDetailRepository.save(opd);
+//            OrderPaymentDetail opd = order.getOrderPaymentDetail();
+//            orderPaymentDetailRepository.save(opd);
 
             //clear cart item
             logger.info("clear cartItem for cartId: {}", order.getCartId());

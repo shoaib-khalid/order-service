@@ -1,5 +1,6 @@
 package com.kalsym.order.service.model;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
@@ -29,7 +30,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @ToString
 //@Table(name = "`order`")
 @Table(name = "order")
-public class Order {
+public class Order implements Serializable {
 
     @Id
     @GeneratedValue(generator = "uuid2")
