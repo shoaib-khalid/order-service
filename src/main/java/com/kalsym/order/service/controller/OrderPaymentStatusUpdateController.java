@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController()
 @RequestMapping("/orders/{orderId}/payment-status-updates")
-public class OrdePaymentStatusUpdateController {
+public class OrderPaymentStatusUpdateController {
 
     private static Logger logger = LoggerFactory.getLogger("application");
 
@@ -91,65 +91,62 @@ public class OrdePaymentStatusUpdateController {
         logger.info("order-payment-status-update-post, orderId: {}", bodyOrderPaymentStatusUpdate.getOrderId());
         logger.info(bodyOrderPaymentStatusUpdate.toString(), "");
 
-        Optional<Order> savedOrder = null;
+        Optional<Order> savedOrder = orderRepository.findById(bodyOrderPaymentStatusUpdate.getOrderId());
 
-        savedOrder = orderRepository.findById(bodyOrderPaymentStatusUpdate.getOrderId());
-        if (savedOrder == null) {
+        if (!savedOrder.isPresent()) {
             logger.info("order-payment-status-update-post-by-order, orderId not found, orderId: {}", bodyOrderPaymentStatusUpdate.getOrderId());
             response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
-        OrderPaymentStatusUpdate orderPaymentStatusUpdate;
         try {
-            orderPaymentStatusUpdate = orderPaymentStatusUpdateRepository.save(bodyOrderPaymentStatusUpdate);
+            orderPaymentStatusUpdateRepository.save(bodyOrderPaymentStatusUpdate);
             response.setSuccessStatus(HttpStatus.CREATED);
         } catch (Exception exp) {
             logger.error("Error saving orderPaymentStatusUpdate", exp);
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
-        logger.info("orderPaymentStatusUpdate created with id: " + orderPaymentStatusUpdate.getOrderId());
-        response.setData(orderPaymentStatusUpdate);
+        logger.info("orderPaymentStatusUpdate created with id: " + bodyOrderPaymentStatusUpdate.getOrderId());
+        response.setData(bodyOrderPaymentStatusUpdate);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @DeleteMapping(path = {"/{id}"}, name = "order-payment-status-update-delete-by-id")
-    @PreAuthorize("hasAnyAuthority('order-payment-status-update-delete-by-id', 'all')")
-    public ResponseEntity<HttpResponse> deleteOrderPaymentStatusUpdatesById(HttpServletRequest request,
-            @PathVariable(required = true) String orderId,
-            @PathVariable(required = true) String id,
-            @Valid @RequestBody OrderPaymentStatusUpdate bodyOrderPaymentStatusUpdate) throws Exception {
-        String logprefix = request.getRequestURI() + " ";
-        HttpResponse response = new HttpResponse(request.getRequestURI());
-
-        logger.info("order-payment-status-update-delete-by-id, orderId: {}", orderId);
-        logger.info(bodyOrderPaymentStatusUpdate.toString(), "");
-
-        Optional<Order> savedOrder = null;
-
-        savedOrder = orderRepository.findById(orderId);
-        if (savedOrder == null) {
-            logger.info("order-payment-status-update-delete-by-id, order not found, orderId: {}", orderId);
-            response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
-            return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
-        }
-
-        try {
-            orderPaymentStatusUpdateRepository.delete(bodyOrderPaymentStatusUpdate);
-            response.setSuccessStatus(HttpStatus.OK);
-        } catch (Exception exp) {
-            logger.error("Error deleting orderPaymentStatusUpdate", exp);
-            response.setMessage(exp.getMessage());
-            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
-        }
-        logger.info("orderPaymentStatusUpdate deleted with orderId: " + bodyOrderPaymentStatusUpdate.getOrderId());
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
+//    @DeleteMapping(path = {"/{id}"}, name = "order-payment-status-update-delete-by-id")
+//    @PreAuthorize("hasAnyAuthority('order-payment-status-update-delete-by-id', 'all')")
+//    public ResponseEntity<HttpResponse> deleteOrderPaymentStatusUpdatesById(HttpServletRequest request,
+//            @PathVariable(required = true) String orderId,
+//            @PathVariable(required = true) String id,
+//            @Valid @RequestBody OrderPaymentStatusUpdate bodyOrderPaymentStatusUpdate) throws Exception {
+//        String logprefix = request.getRequestURI() + " ";
+//        HttpResponse response = new HttpResponse(request.getRequestURI());
+//
+//        logger.info("order-payment-status-update-delete-by-id, orderId: {}", orderId);
+//        logger.info(bodyOrderPaymentStatusUpdate.toString(), "");
+//
+//        Optional<Order> savedOrder = orderRepository.findById(orderId);
+//        if (!savedOrder.isPresent()) {
+//            logger.info("order-payment-status-update-delete-by-id, order not found, orderId: {}", orderId);
+//            response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
+//            return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
+//        }
+//
+//        try {
+//            orderPaymentStatusUpdateRepository.delete(bodyOrderPaymentStatusUpdate);
+//            response.setSuccessStatus(HttpStatus.OK);
+//        } catch (Exception exp) {
+//            logger.error("Error deleting orderPaymentStatusUpdate", exp);
+//            response.setMessage(exp.getMessage());
+//            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
+//        }
+//        logger.info("orderPaymentStatusUpdate deleted with orderId: " + bodyOrderPaymentStatusUpdate.getOrderId());
+//        return ResponseEntity.status(HttpStatus.OK).body(response);
+//    }
 
     @PutMapping(path = {"/"}, name = "order-payment-status-update-put")
     @PreAuthorize("hasAnyAuthority('order-payment-status-update-put', 'all')")
     public ResponseEntity<HttpResponse> putOrderPaymentStatusUpdatesById(HttpServletRequest request,
             @PathVariable(required = true) String orderId,
+            @PathVariable(required = true) String paymentId,
             @Valid @RequestBody OrderPaymentStatusUpdate bodyOrderPaymentStatusUpdate) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
@@ -173,11 +170,11 @@ public class OrdePaymentStatusUpdateController {
 //            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 //        }
         logger.info("orderPaymentStatusUpdate found with orderId: {}", orderId);
-        OrderPaymentStatusUpdate orderPaymentStatusUpdate = orderPaymentStatusUpdateRepository.save(bodyOrderPaymentStatusUpdate);
+        bodyOrderPaymentStatusUpdate = orderPaymentStatusUpdateRepository.save(bodyOrderPaymentStatusUpdate);
 
         logger.info("orderPaymentStatusUpdate updated for orderId: {}", orderId);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
-        response.setData(orderPaymentStatusUpdateRepository.save(orderPaymentStatusUpdate));
+        response.setData(orderPaymentStatusUpdateRepository.save(bodyOrderPaymentStatusUpdate));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
@@ -212,7 +209,7 @@ public class OrdePaymentStatusUpdateController {
 //        }
 
         logger.info("orderPaymentStatusUpdate found with orderId: {}", orderId);
-        OrderPaymentStatusUpdate orderPaymentStatusUpdate = orderPaymentStatusUpdateRepository.save(bodyOrderPaymentStatusUpdate);
+        bodyOrderPaymentStatusUpdate = orderPaymentStatusUpdateRepository.save(bodyOrderPaymentStatusUpdate);
 
         deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
 
