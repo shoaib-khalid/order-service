@@ -19,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import com.kalsym.order.service.model.Cart;
 import com.kalsym.order.service.model.CartItem;
-import com.kalsym.order.service.model.OrderItem;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -211,11 +210,11 @@ public class CartController {
 
         Cart cart = cartOptional.get();
 
-        Order newOrder = new Order();
-        newOrder.setCompletionStatus("OnHold");
-        newOrder.setCustomerId(cart.getCustomerId());
-        newOrder.setPaymentStatus("Pending");
-        Order savedOrder = orderRepository.save(newOrder);
+//        Order newOrder = new Order();
+////        newOrder.setCompletionStatus("OnHold");
+////        newOrder.setCustomerId(cart.getCustomerId());
+////        newOrder.setPaymentStatus("Pending");
+//        Order savedOrder = orderRepository.save(newOrder);
         // Closing the cart status since now order is being placed 
         cart.setIsOpen(Boolean.FALSE);
         Iterable<CartItem> cartItems = cartItemRepository.findByCartId(id, null);

@@ -24,7 +24,6 @@ import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.CartItem;
 import com.kalsym.order.service.model.Store;
 import com.kalsym.order.service.model.OrderShipmentDetail;
-import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.OrderPaymentDetailRepository;
@@ -36,6 +35,7 @@ import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.OrderPostService;
 import com.kalsym.order.service.utility.TxIdUtil;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.validation.Valid;
 import java.util.Optional;
@@ -92,6 +92,16 @@ public class OrderController {
     public ResponseEntity<HttpResponse> getOrders(HttpServletRequest request,
             @RequestParam(required = false) String customerId,
             @RequestParam(required = false) String storeId,
+            @RequestParam(required = false) PaymentStatus paymentStatus,
+            @RequestParam(required = false) Date from,
+            @RequestParam(required = false) Date to,
+            @RequestParam(required = false) String invoiceId,
+            @RequestParam(required = false) String accountName,
+            @RequestParam(required = false) String deliveryQuotationReferenceId,
+            @RequestParam(required = false) String receiverName,
+            @RequestParam(required = false) String phoneNumber,
+            @RequestParam(required = false) String zipcode,
+            @RequestParam(required = false) String city,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
 
@@ -101,7 +111,7 @@ public class OrderController {
         Order orderMatch = new Order();
         orderMatch.setStoreId(storeId);
         orderMatch.setCustomerId(customerId);
-
+        
         ExampleMatcher matcher = ExampleMatcher
                 .matchingAll()
                 .withIgnoreCase()
