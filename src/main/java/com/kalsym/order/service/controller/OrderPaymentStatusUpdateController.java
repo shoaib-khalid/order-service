@@ -49,10 +49,9 @@ public class OrderPaymentStatusUpdateController {
 
     @Autowired
     EmailService emailService;
-    
+
     @Autowired
     OrderPostService orderPostService;
-
 
     @Autowired
     OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository;
@@ -143,7 +142,6 @@ public class OrderPaymentStatusUpdateController {
 //        logger.info("orderPaymentStatusUpdate deleted with orderId: " + bodyOrderPaymentStatusUpdate.getOrderId());
 //        return ResponseEntity.status(HttpStatus.OK).body(response);
 //    }
-
     @PutMapping(path = {"/"}, name = "order-payment-status-update-put")
     @PreAuthorize("hasAnyAuthority('order-payment-status-update-put', 'all')")
     public ResponseEntity<HttpResponse> putOrderPaymentStatusUpdatesById(HttpServletRequest request,
@@ -226,7 +224,11 @@ public class OrderPaymentStatusUpdateController {
 //        }
 
         emailService.SendEmail(receiver, subject, content);
-        orderPostService.postOrderLink(order.getId(), order.getStoreId());
+        try {
+            orderPostService.postOrderLink(order.getId(), order.getStoreId());
+        } catch (Exception e) {
+            logger.info("error sending message to rocket chat: {}", e);
+        }
 
         logger.info("orderPaymentStatusUpdate updated for orderId: {}", orderId);
         response.setSuccessStatus(HttpStatus.ACCEPTED);

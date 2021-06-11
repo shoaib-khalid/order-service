@@ -215,7 +215,7 @@ public class OrderController {
             logger.info("clear cartItem for cartId: {}", order.getCartId());
             cartItemRepository.clearCartItem(order.getCartId());
             // pass orderId to OrderPostService, even though the status is not completed yet
-            orderPostService.postOrderLink(order.getId(), order.getStoreId());
+            //orderPostService.postOrderLink(order.getId(), order.getStoreId());
         } catch (Exception exp) {
             logger.error("Error saving order", exp);
             response.setMessage(exp.getMessage());

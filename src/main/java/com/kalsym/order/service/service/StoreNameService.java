@@ -23,7 +23,7 @@ public class StoreNameService {
     private static Logger logger = LoggerFactory.getLogger("application");
 
     //@Autowired
-    @Value("${product-service.URL:http://209.58.160.20:7071/}")
+    @Value("${product-service.URL:https://api.symplified.biz/product-service/v1/}")
     String productServiceURL;
 
     @Value("${product-service.token:Bearer accessToken}")

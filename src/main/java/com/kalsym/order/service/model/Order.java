@@ -2,21 +2,17 @@ package com.kalsym.order.service.model;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -52,26 +48,25 @@ public class Order implements Serializable {
     private Date created;
     @UpdateTimestamp
     private Date updated;
-    
+
     private String invoiceId;
-    
+
     /*
     @OneToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="orderId", insertable = false, updatable = false)
     private OrderPaymentDetail orderPaymentDetail;
-    */
-    @OneToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="id", insertable = false, updatable = false)
+     */
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id", insertable = false, updatable = false)
     private OrderShipmentDetail orderShipmentDetail;
-    
-    @OneToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="id", insertable = false, updatable = false)
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id", insertable = false, updatable = false)
     private OrderPaymentDetail orderPaymentDetail;
-   
-/*    @OneToMany(fetch = FetchType.LAZY, mappedBy = "orderMain")
+
+    /*    @OneToMany(fetch = FetchType.LAZY, mappedBy = "orderMain")
     private List<OrderItem> orderItem;
-  */
-    
+     */
     public void update(Order order) {
         if (null != order.getStoreId()) {
             this.setStoreId(order.getStoreId());
