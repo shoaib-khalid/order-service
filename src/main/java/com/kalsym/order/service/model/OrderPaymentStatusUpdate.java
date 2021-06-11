@@ -1,7 +1,10 @@
 package com.kalsym.order.service.model;
 
+import com.kalsym.order.service.enums.PaymentStatus;
 import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -26,8 +29,8 @@ public class OrderPaymentStatusUpdate {
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
-
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus status;
 
     private Date created;
 

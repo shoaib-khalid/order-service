@@ -1,13 +1,17 @@
 package com.kalsym.order.service.model;
 
+import com.kalsym.order.service.enums.OrderStatus;
 import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 
 /**
@@ -32,7 +36,9 @@ public class OrderCompletionStatusUpdate {
     private String id;
 
     private String orderId;
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
+    @CreationTimestamp
     private Date created;
     private String modifiedBy;
     private String comments;

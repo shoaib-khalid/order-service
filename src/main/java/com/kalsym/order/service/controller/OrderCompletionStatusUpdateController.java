@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController()
 @RequestMapping("/orders/{orderId}/completion-status-updates")
-public class OrdeCompletionStatusUpdateController {
+public class OrderCompletionStatusUpdateController {
 
     private static Logger logger = LoggerFactory.getLogger("application");
 

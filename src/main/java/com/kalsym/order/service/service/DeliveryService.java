@@ -80,7 +80,6 @@ public class DeliveryService {
         logger.info("orderDeliveryConfirmationURL : " + url);
         ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class);
         logger.info("res : " + res);
-
     }
 
 }

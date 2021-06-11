@@ -62,6 +62,7 @@ public class OrderPostService {
 
         if (!loginLiveChat()) {
             logger.info("live chat not logged in");
+            return "";
         }
         logger.info("live chat logged in");
 

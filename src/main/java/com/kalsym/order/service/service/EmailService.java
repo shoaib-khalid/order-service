@@ -25,7 +25,7 @@ public class EmailService {
     @Value("${emailService.SenderAddress:mcmc.lms@gmail.com}")
     static String emailServiceSenderAddress;
     
-    public static void SendEmail(String emailAddress, String emailSubject, String emailText) {
+    public void sendEmail(String emailAddress, String emailSubject, String emailText) {
           logger.info("SendEmail() starting");
             
           logger.info("mail:"+emailAddress+" emailSubject:"+emailSubject);

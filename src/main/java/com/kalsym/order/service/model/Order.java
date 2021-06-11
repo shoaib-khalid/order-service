@@ -1,8 +1,12 @@
 package com.kalsym.order.service.model;
 
+import com.kalsym.order.service.enums.OrderStatus;
+import com.kalsym.order.service.enums.PaymentStatus;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -38,8 +42,10 @@ public class Order implements Serializable {
     private Float serviceCharges;
     private Float deliveryCharges;
     private Float total;
-    private String completionStatus;
-    private String paymentStatus;
+    @Enumerated(EnumType.STRING)
+    private OrderStatus completionStatus;
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
     private String customerNotes;
     private String privateAdminNotes;
     private String cartId;

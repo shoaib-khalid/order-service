@@ -1,13 +1,14 @@
 package com.kalsym.order.service.model;
 
+import com.kalsym.order.service.enums.PaymentStatus;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.GenericGenerator;
 
 /**
  *
@@ -22,7 +23,8 @@ import org.hibernate.annotations.GenericGenerator;
 public class OrderPaymentStatus {
 
     @Id
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus status;
     private String description;
 
     public void update(OrderPaymentStatus orderPaymentStatus) {

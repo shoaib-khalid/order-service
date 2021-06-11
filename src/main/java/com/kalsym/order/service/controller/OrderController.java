@@ -130,7 +130,6 @@ public class OrderController {
 //                .withIgnoreCase()
 //                .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
 //        Example<Order> orderExample = Example.of(orderMatch, matcher);
-
 //        Pageable pageable = PageRequest.of(page, pageSize);
         Optional<Order> optOrder = orderRepository.findById(id);
         if (!optOrder.isPresent()) {
@@ -167,24 +166,30 @@ public class OrderController {
 
             Store store = optStore.get();
 
-            while (true) {
-                try {
-                    String invoiceId = TxIdUtil.generateReferenceId(store.getNameAbreviation());
-                    order.setInvoiceId(invoiceId);
-                    OrderPaymentDetail opd = order.getOrderPaymentDetail();
-                    OrderShipmentDetail osd = order.getOrderShipmentDetail();
-                    order.setOrderPaymentDetail(null);
-                    order.setOrderShipmentDetail(null);
-                    order = orderRepository.save(order);
-                    opd.setOrderId(order.getId());
-                    osd.setOrderId(order.getId());
-                    orderPaymentDetailRepository.save(opd);
-                    orderShipmentDetailRepository.save(osd);
-                    break;
-                } catch (Exception e) {
-
-                }
+//            while (true) {
+            try {
+                String invoiceId = TxIdUtil.generateReferenceId(store.getNameAbreviation());
+                order.setInvoiceId(invoiceId);
+                OrderPaymentDetail opd = order.getOrderPaymentDetail();
+                OrderShipmentDetail osd = order.getOrderShipmentDetail();
+                order.setOrderPaymentDetail(null);
+                order.setOrderShipmentDetail(null);
+                order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE);
+                order.setPaymentStatus(PaymentStatus.PENDING);
+                order = orderRepository.save(order);
+                opd.setOrderId(order.getId());
+                osd.setOrderId(order.getId());
+                orderPaymentDetailRepository.save(opd);
+                logger.info("Order payment details created for orderId: {}", order.getId());
+                orderShipmentDetailRepository.save(osd);
+                logger.info("orderShipmentDetail created for orderId: {}", order.getId());
+//                break;
+            } catch (Exception ex) {
+                logger.error("exception occure while storing order ", ex);
+                response.setMessage(ex.getMessage());
+                return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
             }
+//            }
 
             logger.info("Order created with id: {}", order.getId());
             //save order item
@@ -202,15 +207,13 @@ public class OrderController {
                 orderItem.setSKU(cartItem.getSKU());
                 orderItemRepository.save(orderItem);
             }
-            logger.info("Order Item copied for orderId: {}", order.getId());
-//            OrderShipmentDetail orderShipmentDetail = order.getOrderShipmentDetail();
 
+//            OrderShipmentDetail orderShipmentDetail = order.getOrderShipmentDetail();
 //            orderShipmentDetailRepository.save(orderShipmentDetail);
-            logger.info("orderShipmentDetail created for orderId: {}", order.getId());
+//            logger.info("orderShipmentDetail created for orderId: {}", order.getId());
             //OrderPayementDetial
 //            OrderPaymentDetail opd = order.getOrderPaymentDetail();
 //            orderPaymentDetailRepository.save(opd);
-
             //clear cart item
             logger.info("clear cartItem for cartId: {}", order.getCartId());
             cartItemRepository.clearCartItem(order.getCartId());
@@ -422,5 +425,4 @@ public class OrderController {
 //        response.setData(order);
 //        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
 //    }
-
 }

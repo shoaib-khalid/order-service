@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController()
 @RequestMapping("/orders/payment-statuseses")
-public class OrdePaymentStatusController {
+public class OrderPaymentStatusController {
 
     private static Logger logger = LoggerFactory.getLogger("application");
 

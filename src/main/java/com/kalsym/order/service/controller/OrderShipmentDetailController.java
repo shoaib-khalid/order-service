@@ -153,22 +153,21 @@ public class OrderShipmentDetailController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        Optional<OrderShipmentDetail> optOrderShipmentDetail = orderShipmentDetailRepository.findById(orderId);
+//        Optional<OrderShipmentDetail> optOrderShipmentDetail = orderShipmentDetailRepository.findById(orderId);
+//
+//        if (!optOrderShipmentDetail.isPresent()) {
+//            logger.info("orderShipmentDetail not found with orderId: {}", orderId);
+//            response.setErrorStatus(HttpStatus.NOT_FOUND);
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+//        }
 
-        if (!optOrderShipmentDetail.isPresent()) {
-            logger.info("orderShipmentDetail not found with orderId: {}", orderId);
-            response.setErrorStatus(HttpStatus.NOT_FOUND);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
+//        logger.info("orderShipmentDetail found with orderId: {}", orderId);
+//        OrderShipmentDetail orderItem = optOrderShipmentDetail.get();
 
-        logger.info("orderShipmentDetail found with orderId: {}", orderId);
-        OrderShipmentDetail orderItem = optOrderShipmentDetail.get();
-
-        orderItem.update(bodyOrderShipmentDetail);
-
+        bodyOrderShipmentDetail.update(bodyOrderShipmentDetail);
         logger.info("orderShipmentDetail updated for orderId: {}", orderId);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
-        response.setData(orderShipmentDetailRepository.save(orderItem));
+        response.setData(orderShipmentDetailRepository.save(bodyOrderShipmentDetail));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 }
