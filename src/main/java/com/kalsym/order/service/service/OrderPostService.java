@@ -1,7 +1,7 @@
 package com.kalsym.order.service.service;
 
+import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.livechat.LiveChatLoginReponse;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.reactive.function.client.WebClient;
 
 /**
  *
@@ -56,7 +55,7 @@ public class OrderPostService {
     @Autowired
     StoreNameService storeNameService;
 
-    public String postOrderLink(String orderId, String storeId) {
+    public String postOrderLink(String orderId, String storeId, List<OrderItem> orderItems) {
 
         String logprefix = "postOrderLink";
 
@@ -68,14 +67,17 @@ public class OrderPostService {
 
         String storeLiveChatOrdersGroupName = storeNameService.getLiveChatOrdersGroupName(storeId);
 //        String groupName = "#" + storeLiveChatOrdersGroupName + "-orders";
-
+        String orderItemDetails = "";
+        for(int i = 0; i< orderItems.size(); i++){
+            orderItemDetails += orderItems.get(i).getSKU() + ", QTY: " + orderItems.get(i).getQuantity() + "\n";
+        }
         OrderPostRequestBody orderPostBody = new OrderPostRequestBody();
         orderPostBody.setAlias("SYMplified order");
         orderPostBody.setAvatar("");
         // Rocket chat accepts groupName in lowerCase
 //        groupName += groupName.toLowerCase();
         orderPostBody.setChannel(storeLiveChatOrdersGroupName);
-        orderPostBody.setText("You have a new order, please visit the merchant portal to process, orderId: " + orderId + " " + onboardingOrderLink + orderId);
+        orderPostBody.setText("You have a new order, orderId: " + orderId + "\n " + orderItemDetails + " please visit the merchant portal to process,  [Click here](" + onboardingOrderLink + orderId + ")");
 
         try {
 

@@ -11,6 +11,7 @@ import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 
 /**
@@ -31,7 +32,7 @@ public class OrderPaymentStatusUpdate {
     private String id;
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
-
+    @CreationTimestamp
     private Date created;
 
     private String modifiedBy;

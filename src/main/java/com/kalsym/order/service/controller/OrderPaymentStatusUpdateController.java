@@ -5,13 +5,16 @@ import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.repository.OrderPaymentStatusUpdateRepository;
 import com.kalsym.order.service.model.OrderCompletionStatusUpdate;
+import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.OrderPaymentStatusUpdate;
 import com.kalsym.order.service.model.repository.OrderCompletionStatusUpdateRepository;
+import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.EmailService;
 import com.kalsym.order.service.service.OrderPostService;
 import com.kalsym.order.service.utility.HttpResponse;
+import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -48,6 +51,9 @@ public class OrderPaymentStatusUpdateController {
 
     @Autowired
     OrderPostService orderPostService;
+
+    @Autowired
+    OrderItemRepository orderItemRepository;
 
     @Autowired
     OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository;
@@ -174,8 +180,8 @@ public class OrderPaymentStatusUpdateController {
 //        response.setData(orderPaymentStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate));
 //        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
 //    }
-    @PutMapping(path = {""}, name = "order-completion-status-update")
-    @PreAuthorize("hasAnyAuthority('order-completion -status-update', 'all')")
+    @PutMapping(path = {""}, name = "order-completion-status-updates-put-by-order-id")
+    @PreAuthorize("hasAnyAuthority('order-completion-status-updates-put-by-order-id', 'all')")
     public ResponseEntity<HttpResponse> putOrderCompletionStatusUpdatesConfirm(HttpServletRequest request,
             @PathVariable(required = true) String orderId,
             @Valid @RequestBody OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate) throws Exception {
@@ -184,7 +190,7 @@ public class OrderPaymentStatusUpdateController {
 
         logger.info("order-payment-status-update-put, orderId: {}", orderId);
         logger.info(bodyOrderCompletionStatusUpdate.toString(), "");
-
+//        try {
         Optional<Order> optOrder = orderRepository.findById(orderId);
 
         if (!optOrder.isPresent()) {
@@ -234,13 +240,20 @@ public class OrderPaymentStatusUpdateController {
                         + "<br/>";
                 emailService.sendEmail(receiver, subject, content);
                 boolean isExceptionOccur = false;
+
                 try {
-                    deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
+                    deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), order.getId());
                     status = OrderStatus.AWAITING_PICKUP;
+                    //get order items
+                    List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+                    orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
                 } catch (Exception ex) {
                     //there might be some issue so need to updated email for issue and refund
                     isExceptionOccur = true;
                     status = OrderStatus.REQUESTING_DELIVERY_FAILED;
+                    subject = "[" + order.getId() + "] Your order Delivery is failed";
+                    content = "Your order " + order.getId() + " is not accepted by the delivery firm . Use this url to track your order :"
+                            + "<br/>";
                 }
                 orderPaymentStatusUpdate.setStatus(PaymentStatus.PAID);
                 orderPaymentStatusUpdate.setComments(bodyOrderCompletionStatusUpdate.getComments());
@@ -316,16 +329,17 @@ public class OrderPaymentStatusUpdateController {
 //            content += "<br/>" + url[0];
 //        }
         emailService.sendEmail(receiver, subject, content);
-        try {
-            orderPostService.postOrderLink(order.getId(), order.getStoreId());
-        } catch (Exception e) {
-            logger.info("error sending message to rocket chat: {}", e);
-        }
 
         logger.info("orderPaymentStatusUpdate updated for orderId: {}", orderId);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(order);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+//        } catch (Exception ex) {
+//            response.setErrorStatus(HttpStatus.EXPECTATION_FAILED);
+//            response.setData(null);
+//            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+//        }
+
     }
 
 }

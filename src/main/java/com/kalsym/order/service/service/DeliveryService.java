@@ -69,14 +69,14 @@ public class DeliveryService {
         return null;
     }
 
-    public void confirmOrderDelivery(String refId) {
+    public void confirmOrderDelivery(String refId, String orderId) {
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer accessToken");
         HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
         httpEntity = new HttpEntity(headers);
-        String url = orderDeliveryConfirmationURL+refId;
+        String url = orderDeliveryConfirmationURL + refId + "/" + orderId;
         logger.info("orderDeliveryConfirmationURL : " + url);
         ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class);
         logger.info("res : " + res);

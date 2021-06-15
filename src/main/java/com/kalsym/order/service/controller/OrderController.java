@@ -34,12 +34,18 @@ import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.OrderPostService;
 import com.kalsym.order.service.utility.TxIdUtil;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.validation.Valid;
 import java.util.Optional;
+import javax.persistence.criteria.Predicate;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.jpa.convert.QueryByExamplePredicateBuilder;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -93,8 +99,8 @@ public class OrderController {
             @RequestParam(required = false) String customerId,
             @RequestParam(required = false) String storeId,
             @RequestParam(required = false) PaymentStatus paymentStatus,
-            @RequestParam(required = false) Date from,
-            @RequestParam(required = false) Date to,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
             @RequestParam(required = false) String invoiceId,
             @RequestParam(required = false) String accountName,
             @RequestParam(required = false) String deliveryQuotationReferenceId,
@@ -105,23 +111,40 @@ public class OrderController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
 
+        logger.info("from : " + from + ", to : " + to);
+
         logger.info("orders-get request");
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Order orderMatch = new Order();
         orderMatch.setStoreId(storeId);
         orderMatch.setCustomerId(customerId);
-        
+        orderMatch.setPaymentStatus(paymentStatus);
+        orderMatch.setInvoiceId(invoiceId);
+        OrderPaymentDetail opd = new OrderPaymentDetail();
+        opd.setAccountName(accountName);
+        opd.setDeliveryQuotationReferenceId(deliveryQuotationReferenceId);
+        orderMatch.setOrderPaymentDetail(opd);
+        OrderShipmentDetail osd = new OrderShipmentDetail();
+        osd.setReceiverName(receiverName);
+        osd.setPhoneNumber(phoneNumber);
+        osd.setCity(city);
+        osd.setZipcode(zipcode);
+        orderMatch.setOrderShipmentDetail(osd);
+
         ExampleMatcher matcher = ExampleMatcher
                 .matchingAll()
                 .withIgnoreCase()
+                .withIgnoreNullValues()
                 .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
         Example<Order> orderExample = Example.of(orderMatch, matcher);
 
         Pageable pageable = PageRequest.of(page, pageSize);
 
         response.setSuccessStatus(HttpStatus.OK);
-        response.setData(orderRepository.findAll(orderExample, pageable));
+        response.setData(orderRepository.findAll(getSpecWithDatesBetween(from, to, orderExample), pageable));
+
+
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -435,4 +458,26 @@ public class OrderController {
 //        response.setData(order);
 //        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
 //    }
+    /**
+     * Accept two dates and example matcher
+     *
+     * @param from
+     * @param to
+     * @param example
+     * @return
+     */
+    public Specification<Order> getSpecWithDatesBetween(
+            Date from, Date to, Example<Order> example) {
+
+        return (Specification<Order>) (root, query, builder) -> {
+            final List<Predicate> predicates = new ArrayList<>();
+
+            if (from != null && to != null) {
+                predicates.add(builder.between(root.get("created"), (Date) from, (Date) to));
+            }
+            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+
+            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
 }
