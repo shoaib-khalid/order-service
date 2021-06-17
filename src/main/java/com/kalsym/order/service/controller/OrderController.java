@@ -20,8 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import com.kalsym.order.service.service.EmailService;
 import com.kalsym.order.service.model.Order;
-import com.kalsym.order.service.model.OrderItem;
-import com.kalsym.order.service.model.CartItem;
 import com.kalsym.order.service.model.Store;
 import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
@@ -34,17 +32,19 @@ import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.OrderPostService;
 import com.kalsym.order.service.utility.TxIdUtil;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.validation.Valid;
 import java.util.Optional;
+import javax.persistence.TemporalType;
 import javax.persistence.criteria.Predicate;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.convert.QueryByExamplePredicateBuilder;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.Temporal;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -110,26 +110,57 @@ public class OrderController {
             @RequestParam(required = false) String city,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
-
-        logger.info("from : " + from + ", to : " + to);
+        logger.info("before from : " + from + ", to : " + to);
+//        to.setDate(to.getDate() + 1);
+//        logger.info("after adding 1 day to (todate) from : " + from + ", to : " + to);
 
         logger.info("orders-get request");
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Order orderMatch = new Order();
-        orderMatch.setStoreId(storeId);
-        orderMatch.setCustomerId(customerId);
-        orderMatch.setPaymentStatus(paymentStatus);
-        orderMatch.setInvoiceId(invoiceId);
+        if (storeId != null && !storeId.isEmpty()) {
+            orderMatch.setStoreId(storeId);
+        }
+        if (customerId != null && !customerId.isEmpty()) {
+            orderMatch.setCustomerId(customerId);
+        }
+
+        if (paymentStatus != null) {
+            orderMatch.setPaymentStatus(paymentStatus);
+        }
+
+        if (invoiceId != null && !invoiceId.isEmpty()) {
+            orderMatch.setInvoiceId(invoiceId);
+        }
+
         OrderPaymentDetail opd = new OrderPaymentDetail();
-        opd.setAccountName(accountName);
-        opd.setDeliveryQuotationReferenceId(deliveryQuotationReferenceId);
+        if (accountName != null && !accountName.isEmpty()) {
+            opd.setAccountName(accountName);
+        }
+
+        if (deliveryQuotationReferenceId != null && !deliveryQuotationReferenceId.isEmpty()) {
+            opd.setDeliveryQuotationReferenceId(deliveryQuotationReferenceId);
+        }
+
         orderMatch.setOrderPaymentDetail(opd);
+
         OrderShipmentDetail osd = new OrderShipmentDetail();
-        osd.setReceiverName(receiverName);
-        osd.setPhoneNumber(phoneNumber);
-        osd.setCity(city);
-        osd.setZipcode(zipcode);
+        if (receiverName != null && !receiverName.isEmpty()) {
+            osd.setReceiverName(receiverName);
+        }
+
+        if (phoneNumber != null && !phoneNumber.isEmpty()) {
+            osd.setPhoneNumber(phoneNumber);
+        }
+
+        if (city != null && !city.isEmpty()) {
+            osd.setCity(city);
+        }
+
+        if (zipcode != null && !zipcode.isEmpty()) {
+            osd.setZipcode(zipcode);
+        }
+
         orderMatch.setOrderShipmentDetail(osd);
 
         ExampleMatcher matcher = ExampleMatcher
@@ -139,11 +170,10 @@ public class OrderController {
                 .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
         Example<Order> orderExample = Example.of(orderMatch, matcher);
 
-        Pageable pageable = PageRequest.of(page, pageSize);
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
 
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(orderRepository.findAll(getSpecWithDatesBetween(from, to, orderExample), pageable));
-
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -205,6 +235,7 @@ public class OrderController {
                 order.setInvoiceId(invoiceId);
                 OrderPaymentDetail opd = order.getOrderPaymentDetail();
                 OrderShipmentDetail osd = order.getOrderShipmentDetail();
+                order.setDeliveryCharges(opd.getDeliveryQuotationAmount());
                 order.setOrderPaymentDetail(null);
                 order.setOrderShipmentDetail(null);
                 order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE);
@@ -226,20 +257,21 @@ public class OrderController {
 
             logger.info("Order created with id: {}", order.getId());
             //save order item
-            List<CartItem> cartItems = cartItemRepository.findByCartId(order.getCartId());
-            for (int i = 0; i < cartItems.size(); i++) {
-                CartItem cartItem = cartItems.get(i);
-                OrderItem orderItem = new OrderItem();
-                orderItem.setOrderId(order.getId());
-                orderItem.setItemCode(cartItem.getItemCode());
-                orderItem.setQuantity(cartItem.getQuantity());
-                orderItem.setProductId(cartItem.getProductId());
-                orderItem.setWeight(cartItem.getWeight());
-                orderItem.setPrice(cartItem.getPrice());
-                orderItem.setProductPrice(cartItem.getProductPrice());
-                orderItem.setSKU(cartItem.getSKU());
-                orderItemRepository.save(orderItem);
-            }
+//            List<CartItem> cartItems = cartItemRepository.findByCartId(order.getCartId());
+//            for (int i = 0; i < cartItems.size(); i++) {
+//                CartItem cartItem = cartItems.get(i);
+//                OrderItem orderItem = new OrderItem();
+//                orderItem.setOrderId(order.getId());
+//                orderItem.setItemCode(cartItem.getItemCode());
+//                orderItem.setQuantity(cartItem.getQuantity());
+//                orderItem.setProductId(cartItem.getProductId());
+//                orderItem.setWeight(cartItem.getWeight());
+//                orderItem.setPrice(cartItem.getPrice());
+//                orderItem.setProductPrice(cartItem.getProductPrice());
+//                orderItem.setSKU(cartItem.getSKU());
+//                orderItem = orderItemRepository.save(orderItem);
+//                logger.info("Order Item saved with OrderId: " + order.getId() + ", cartId: " + order.getCartId() + " and OrderItemId: " + orderItem.getId());
+//            }
 
 //            OrderShipmentDetail orderShipmentDetail = order.getOrderShipmentDetail();
 //            orderShipmentDetailRepository.save(orderShipmentDetail);
@@ -248,8 +280,9 @@ public class OrderController {
 //            OrderPaymentDetail opd = order.getOrderPaymentDetail();
 //            orderPaymentDetailRepository.save(opd);
             //clear cart item
-            logger.info("clear cartItem for cartId: {}", order.getCartId());
+            
             cartItemRepository.clearCartItem(order.getCartId());
+            logger.info("clear cartItem for cartId: {}", order.getCartId());
             // pass orderId to OrderPostService, even though the status is not completed yet
             //orderPostService.postOrderLink(order.getId(), order.getStoreId());
         } catch (Exception exp) {
@@ -473,7 +506,9 @@ public class OrderController {
             final List<Predicate> predicates = new ArrayList<>();
 
             if (from != null && to != null) {
-                predicates.add(builder.between(root.get("created"), (Date) from, (Date) to));
+                to.setDate(to.getDate() + 1);
+                predicates.add(builder.greaterThanOrEqualTo(root.get("created"),  from));
+                predicates.add(builder.lessThanOrEqualTo(root.get("created"),  to));
             }
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 

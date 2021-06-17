@@ -104,6 +104,7 @@ public class OrderItemController {
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }*/
+        bodyOrderItem.setPrice(bodyOrderItem.getProductPrice() * bodyOrderItem.getQuantity());
         orderItem = orderItemRepository.save(bodyOrderItem);
         response.setSuccessStatus(HttpStatus.CREATED);
         logger.info("cartItem added in orderId: {} with orderItemId: {}", orderId, orderItem.getId());

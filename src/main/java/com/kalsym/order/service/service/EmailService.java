@@ -5,12 +5,24 @@
  */
 package com.kalsym.order.service.service;
 
+import com.google.gson.Gson;
 import java.util.Properties;
 import javax.mail.*;
 import javax.mail.internet.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import com.kalsym.order.service.model.Email;
+import com.kalsym.order.service.model.object.DeliveryServiceResponse;
+import com.kalsym.order.service.model.object.DeliveryServiceSubmitOrder;
+import java.util.Arrays;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 /**
  *
@@ -18,74 +30,40 @@ import org.springframework.beans.factory.annotation.Value;
  */
 @org.springframework.stereotype.Service
 public class EmailService {
-    
+
     private static Logger logger = LoggerFactory.getLogger("application");
-    
+
     //@Autowired
-    @Value("${emailService.SenderAddress:mcmc.lms@gmail.com}")
-    static String emailServiceSenderAddress;
-    
-    public void sendEmail(String emailAddress, String emailSubject, String emailText) {
-          logger.info("SendEmail() starting");
-            
-          logger.info("mail:"+emailAddress+" emailSubject:"+emailSubject);
-          
-          String from = "no-reply@symplified.biz";
-          
-            // Recipient's email ID needs to be mentioned.
-          String to = emailAddress;
-          
-          // Assuming you are sending email from localhost
-          String host = "localhost";
+//    @Value("${emailService.SenderAddress:mcmc.lms@gmail.com}")
+//    static String emailServiceSenderAddress;
+    @Value("${emailService.sendEmail.URL:http://209.58.160.20:2001/email/no-reply/orders}")
+    String sendEmailURL;
 
-          // Setup mail server
-          Properties prop = new Properties();
-          prop.put("mail.smtp.auth", true);
-          prop.put("mail.smtp.starttls.enable", "true");
-          prop.put("mail.smtp.host", "smtpout.secureserver.net");
-          prop.put("mail.smtp.port", "465");
-          // SSL Factory
-          prop.put("mail.smtp.socketFactory.class","javax.net.ssl.SSLSocketFactory");  
+    public void sendEmail(Email email) {
+        logger.info("SendEmail() starting");
 
-          //prop.put("mail.smtp.ssl.trust", "smtp.mailtrap.io");
+        logger.info("mail to :" + Arrays.toString(email.getTo()));
+        try {
 
-          // creating Session instance referenced to 
-            // Authenticator object to pass in 
-            // Session.getInstance argument
-            Session session = Session.getInstance(prop,
-                new javax.mail.Authenticator() {
+            RestTemplate restTemplate = new RestTemplate();
 
-                    // override the getPasswordAuthentication 
-                    // method
-                    protected PasswordAuthentication 
-                            getPasswordAuthentication() {
-                        return new PasswordAuthentication("no-reply@symplified.biz",
-                                                        "SYMplified@1234");
-                    }
-                });
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Bearer accessToken");
+            HttpEntity<Email> httpEntity = new HttpEntity(email, headers);
 
-          try {
-             // Create a default MimeMessage object.
-             MimeMessage message = new MimeMessage(session);
+            logger.info("Sending request to email service : " + email.toString());
+            ResponseEntity<String> res = restTemplate.exchange(sendEmailURL, HttpMethod.POST, httpEntity, String.class);
 
-             // Set From: header field of the header.
-             message.setFrom(new InternetAddress(from));
+            logger.info("Request sent to email service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
 
-             // Set To: header field of the header.
-             message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
+            if (res.getStatusCode() == HttpStatus.OK) {
+                logger.info("EmailServiceResponse:" + res);
+            } else {
+                logger.info("EmailServiceResponse:" + res);
+            }
+        } catch (RestClientException ex) {
+            logger.error("Exception while sending email to email service: ", ex);
+        }
 
-             // Set Subject: header field
-             message.setSubject(emailSubject);
-
-             // Send the actual HTML message, as big as you like
-             message.setContent(emailText, "text/html");
-
-             // Send message
-             Transport.send(message);
-             logger.info("Sent message successfully....");
-          } catch (MessagingException mex) {
-             mex.printStackTrace();
-             logger.error("Exception sending email:",mex);
-          }
     }
 }

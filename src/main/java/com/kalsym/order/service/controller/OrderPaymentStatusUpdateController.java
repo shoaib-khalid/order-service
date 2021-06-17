@@ -2,7 +2,10 @@ package com.kalsym.order.service.controller;
 
 import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
+import com.kalsym.order.service.model.Body;
+import com.kalsym.order.service.model.Email;
 import com.kalsym.order.service.model.Order;
+import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.repository.OrderPaymentStatusUpdateRepository;
 import com.kalsym.order.service.model.OrderCompletionStatusUpdate;
 import com.kalsym.order.service.model.OrderItem;
@@ -10,10 +13,13 @@ import com.kalsym.order.service.model.OrderPaymentStatusUpdate;
 import com.kalsym.order.service.model.repository.OrderCompletionStatusUpdateRepository;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
+import com.kalsym.order.service.model.repository.StoreDetailsRepository;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.EmailService;
 import com.kalsym.order.service.service.OrderPostService;
 import com.kalsym.order.service.utility.HttpResponse;
+import com.kalsym.order.service.utility.Utilities;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
@@ -61,6 +67,8 @@ public class OrderPaymentStatusUpdateController {
     @Autowired
     OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository;
 
+    @Autowired
+    StoreDetailsRepository storeDetailsRepository;
 //    @GetMapping(path = {""}, name = "order-payment-status-update-get")
 //    @PreAuthorize("hasAnyAuthority('order-payment-status-update-get', 'all')")
 //    public ResponseEntity<HttpResponse> getOrderPaymentStatusUpdates(HttpServletRequest request,
@@ -180,6 +188,7 @@ public class OrderPaymentStatusUpdateController {
 //        response.setData(orderPaymentStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate));
 //        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
 //    }
+
     @PutMapping(path = {""}, name = "order-completion-status-updates-put-by-order-id")
     @PreAuthorize("hasAnyAuthority('order-completion-status-updates-put-by-order-id', 'all')")
     public ResponseEntity<HttpResponse> putOrderCompletionStatusUpdatesConfirm(HttpServletRequest request,
@@ -190,7 +199,7 @@ public class OrderPaymentStatusUpdateController {
 
         logger.info("order-payment-status-update-put, orderId: {}", orderId);
         logger.info(bodyOrderCompletionStatusUpdate.toString(), "");
-//        try {
+
         Optional<Order> optOrder = orderRepository.findById(orderId);
 
         if (!optOrder.isPresent()) {
@@ -198,8 +207,16 @@ public class OrderPaymentStatusUpdateController {
             response.setErrorStatus(HttpStatus.NOT_FOUND, "order not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
-
         Order order = optOrder.get();
+        Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(order.getStoreId());
+        if (!optStore.isPresent()) {
+            logger.info("Store not found with storeId: {}", order.getStoreId());
+            response.setErrorStatus(HttpStatus.NOT_FOUND, "Store not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        StoreWithDetails storeWithDetails = optStore.get();
+
 //        String status = bodyOrderCompletionStatusUpdate.getStatus();
         OrderStatus status = bodyOrderCompletionStatusUpdate.getStatus();
         String subject = null;
@@ -207,54 +224,47 @@ public class OrderPaymentStatusUpdateController {
         //String[] url = deliveryResponse.data.trackingUrl;
         String receiver = order.getOrderShipmentDetail().getEmail();
         OrderPaymentStatusUpdate orderPaymentStatusUpdate = new OrderPaymentStatusUpdate();
+        Body body = new Body();
+
+        body.setCurrency(storeWithDetails.getRegionCountry().getCurrencyCode());
+        body.setDeliveryAddress(order.getOrderShipmentDetail().getAddress());
+        body.setDeliveryCity(order.getOrderShipmentDetail().getCity());
+        body.setOrderStatus(status);
+        body.setDeliveryCharges(order.getOrderPaymentDetail().getDeliveryQuotationAmount());
+        body.setSubTotal(order.getSubTotal());
+        body.setInvoiceId(order.getInvoiceId());
+
+        body.setStoreAddress(storeWithDetails.getAddress());
+
+        body.setStoreName(storeWithDetails.getName());
+
+        //get order items
+        List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+
+        body.setOrderItems(orderItems);
+
+        Email email = new Email();
+        email.setBody(body);
+        ArrayList<String> tos = new ArrayList<>();
+        tos.add(order.getOrderShipmentDetail().getEmail());
+        String[] to = Utilities.convertArrayListToStringArray(tos);
+        email.setTo(to);
         switch (status) {
-            case AWAITING_PICKUP:
-                subject = "[" + order.getId() + "] Your order is awaiting pickup";
-                content = "Your order " + order.getId() + " is awaiting pickup. Use this url to track your order :"
-                        + "<br/>";
-                break;
-            case BEING_DELIVERED:
-                subject = "[" + order.getId() + "] Your order is being delivered";
-                content = "Your order " + order.getId() + " is being delivered. Use this url to track your order :"
-                        + "<br/>";
-                break;
-            case BEING_PREPARED:
-                subject = "[" + order.getId() + "] Your order is being prepared";
-                content = "Your order " + order.getId() + " is being prepared. Use this url to track your order :"
-                        + "<br/>";
-                break;
-            case CANCELED_BY_CUSTOMER:
-                subject = "[" + order.getId() + "] Order Canceled";
-                content = "Your order " + order.getId() + " is has been canceled. ";
-                order.setCompletionStatus(OrderStatus.CANCELED_BY_CUSTOMER);
-                break;
-            case DELIVERED_TO_CUSTOMER:
-                subject = "[" + order.getId() + "] Your order is delivered";
-                content = "Your order " + order.getId() + " is delivered. thank you for using our services";
-                order.setCompletionStatus(OrderStatus.DELIVERED_TO_CUSTOMER);
-                break;
             case PAYMENT_CONFIRMED:
 //                order.setCompletionStatus(OrderStatus.PAYMENT_CONFIRMED);
-                subject = "[" + order.getId() + "] Your order amount is paid";
-                content = "Your order " + order.getId() + " amount is paid. Use this url to track your order :"
-                        + "<br/>";
-                emailService.sendEmail(receiver, subject, content);
-                boolean isExceptionOccur = false;
+                emailService.sendEmail(email);
 
                 try {
                     deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), order.getId());
                     status = OrderStatus.AWAITING_PICKUP;
-                    //get order items
-                    List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+                    logger.info("delivery confirmed awaiting for pickup");
                     orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
                 } catch (Exception ex) {
                     //there might be some issue so need to updated email for issue and refund
-                    isExceptionOccur = true;
+                    logger.error("Exception occur while confirming order Delivery ", ex);
                     status = OrderStatus.REQUESTING_DELIVERY_FAILED;
-                    subject = "[" + order.getId() + "] Your order Delivery is failed";
-                    content = "Your order " + order.getId() + " is not accepted by the delivery firm . Use this url to track your order :"
-                            + "<br/>";
                 }
+
                 orderPaymentStatusUpdate.setStatus(PaymentStatus.PAID);
                 orderPaymentStatusUpdate.setComments(bodyOrderCompletionStatusUpdate.getComments());
                 orderPaymentStatusUpdate.setModifiedBy(bodyOrderCompletionStatusUpdate.getModifiedBy());
@@ -263,82 +273,23 @@ public class OrderPaymentStatusUpdateController {
                 logger.info("orderPaymentStatusUpdate created with orderId: {}", orderId);
 
                 order.setPaymentStatus(PaymentStatus.PAID);
-                if (!isExceptionOccur) {
-                    subject = "[" + order.getId() + "] Your order is awaiting pickup";
-                    content = "Your order " + order.getId() + " is awaiting pickup. Use this url to track your order :"
-                            + "<br/>";
-                } else {
-                    subject = "[" + order.getId() + "] Your order is not placed";
-                    content = "Your order " + order.getId() + " is not placed successfully due some technical issue. Please try again later. "
-                            + "<br/>";
-                }
-                break;
-            case READY_FOR_DELIVERY:
-                subject = "[" + order.getId() + "] Your order is Ready for delivery";
-                content = "Your order " + order.getId() + " is ready for delivery. Use this url to track your order :"
-                        + "<br/>";
-                break;
-            case RECEIVED_AT_STORE:
-                subject = "[" + order.getId() + "] Your order is recieved";
-                content = "Your order " + order.getId() + " is recieved. Use this url to track your order :"
-                        + "<br/>";
-                break;
-            case REFUNDED:
-                subject = "[" + order.getId() + "] Request for refund";
-                content = "Your order " + order.getId() + " refund is requested. Use this url to track your order :"
-                        + "<br/>";
-                break;
-            case REJECTED_BY_STORE:
-                subject = "[" + order.getId() + "] Your order is rejected by store";
-                content = "Sorry! \nYour order " + order.getId() + " is rejected by store owner. Use this url to track your order :"
-                        + "<br/>";
-                break;
-            case REQUESTING_DELIVERY_FAILED:
-                subject = "[" + order.getId() + "] Your order Delivery is failed";
-                content = "Your order " + order.getId() + " is not accepted by the delivery firm . Use this url to track your order :"
-                        + "<br/>";
-                break;
-            case FAILED:
-                subject = "[" + order.getId() + "] Your order is Failed";
-                content = "Sorry! \nYour order is not placed. Please try again"
-                        + "<br/>";
-                order.setPaymentStatus(PaymentStatus.FAILED);
-                orderPaymentStatusUpdate.setStatus(PaymentStatus.FAILED);
-                orderPaymentStatusUpdate.setComments(bodyOrderCompletionStatusUpdate.getComments());
-                orderPaymentStatusUpdate.setModifiedBy(bodyOrderCompletionStatusUpdate.getModifiedBy());
-                orderPaymentStatusUpdate.setOrderId(orderId);
-                orderPaymentStatusUpdateRepository.save(orderPaymentStatusUpdate);
-                logger.info("orderPaymentStatusUpdate created with orderId: {}", orderId);
+
                 break;
         }
         order.setCompletionStatus(status);
-//        orderRepository.save(order);
-//        Optional<OrderPaymentStatusUpdate> optOrderPaymentStatusUpdate = orderPaymentStatusUpdateRepository.findById(orderId);
-//
-//        if (!optOrderPaymentStatusUpdate.isPresent()) {
-//            logger.info("orderPaymentStatusUpdate not found with orderId: {}", orderId);
-//            response.setErrorStatus(HttpStatus.NOT_FOUND);
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-//        }
+        body.setOrderStatus(status);
+        email.setBody(body);
 
         orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
 
         orderRepository.save(order);
-        logger.info("Order completion status updated to : " + status.toString());
-//        for (int i = 0; i < url.length; i++) {
-//            content += "<br/>" + url[0];
-//        }
-        emailService.sendEmail(receiver, subject, content);
+
+        emailService.sendEmail(email);
 
         logger.info("orderPaymentStatusUpdate updated for orderId: {}", orderId);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(order);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
-//        } catch (Exception ex) {
-//            response.setErrorStatus(HttpStatus.EXPECTATION_FAILED);
-//            response.setData(null);
-//            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-//        }
 
     }
 

@@ -1,8 +1,8 @@
 package com.kalsym.order.service.controller;
 
 import com.kalsym.order.service.model.Cart;
+import com.kalsym.order.service.model.ProductInventory;
 import com.kalsym.order.service.model.CartItem;
-import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.utility.HttpResponse;
@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.kalsym.order.service.model.repository.ProductInventoryRepository;
 
 /**
  *
@@ -42,6 +43,9 @@ public class CartItemController {
 
     @Autowired
     CartItemRepository cartItemRepository;
+    
+    @Autowired
+    ProductInventoryRepository productInventoryRepository;
 
     @GetMapping(path = {""}, name = "cart-items-get")
     @PreAuthorize("hasAnyAuthority('cart-items-get', 'all')")
@@ -115,14 +119,19 @@ public class CartItemController {
         }
         CartItem cartItem;
         try {
+            //find product invertory against itemcode to set sku
+            ProductInventory productInventory = productInventoryRepository.findByItemCode(bodyCartItem.getItemCode());
+            
             //find item in current cart, increase quantity if already exist
             CartItem existingItem = cartItemRepository.findByCartIdAndProductId(bodyCartItem.getCartId(), bodyCartItem.getProductId());
             if (existingItem!=null) {
                 logger.info("item already exist for cartId: {} with productId: {}", bodyCartItem.getCartId(), bodyCartItem.getProductId());
                 int newQty = existingItem.getQuantity() + bodyCartItem.getQuantity();
                 existingItem.setQuantity(newQty);
+                existingItem.setSKU(productInventory.getSKU());
                 cartItem = cartItemRepository.save(existingItem);
             } else {
+                bodyCartItem.setSKU(productInventory.getSKU());
                 cartItem = cartItemRepository.save(bodyCartItem);
             }
             response.setSuccessStatus(HttpStatus.CREATED);

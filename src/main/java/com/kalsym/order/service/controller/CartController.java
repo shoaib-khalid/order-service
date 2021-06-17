@@ -201,7 +201,7 @@ public class CartController {
     public ResponseEntity<HttpResponse> empty(HttpServletRequest request,
             @PathVariable String id) {
 
-        logger.info("carts-order-by-id request...");
+        logger.info("carts-empty-by-id request...");
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Cart cartMatch = new Cart();

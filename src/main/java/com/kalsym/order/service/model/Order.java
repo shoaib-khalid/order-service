@@ -13,6 +13,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -40,7 +42,7 @@ public class Order implements Serializable {
     private String storeId;
     private Float subTotal;
     private Float serviceCharges;
-    private Float deliveryCharges;
+    private Double deliveryCharges;
     private Float total;
     @Enumerated(EnumType.STRING)
     private OrderStatus completionStatus;
@@ -51,8 +53,10 @@ public class Order implements Serializable {
     private String cartId;
     private String customerId;
     @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
     private Date created;
     @UpdateTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
     private Date updated;
 
     private String invoiceId;

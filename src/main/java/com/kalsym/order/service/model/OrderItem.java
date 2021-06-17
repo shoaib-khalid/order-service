@@ -36,6 +36,7 @@ public class OrderItem {
     private String SKU;
     private int quantity;
     private String itemCode;
+    private String productName;
     
     /*
     @ManyToOne(fetch = FetchType.LAZY)

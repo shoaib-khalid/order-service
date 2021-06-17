@@ -77,7 +77,7 @@ public class OrderPostService {
         // Rocket chat accepts groupName in lowerCase
 //        groupName += groupName.toLowerCase();
         orderPostBody.setChannel(storeLiveChatOrdersGroupName);
-        orderPostBody.setText("You have a new order, orderId: " + orderId + "\n " + orderItemDetails + " please visit the merchant portal to process,  [Click here](" + onboardingOrderLink + orderId + ")");
+        orderPostBody.setText("You have a new order, \n " + orderItemDetails + " please click [here](" + onboardingOrderLink + orderId + ") for details"  );
 
         try {
 

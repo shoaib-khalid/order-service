@@ -35,6 +35,8 @@ public class DeliveryService {
 
     @Value("${deliveryService.confirmation.URL:https://api.symplified.biz/delivery-service/v1/orders/confirmDelivery/}")
     String orderDeliveryConfirmationURL;
+    
+    
 
     @Autowired
     StoreNameService storeNameService;
