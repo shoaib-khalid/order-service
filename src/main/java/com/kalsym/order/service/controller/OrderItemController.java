@@ -2,8 +2,10 @@ package com.kalsym.order.service.controller;
 
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderItem;
+import com.kalsym.order.service.model.ProductInventory;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
+import com.kalsym.order.service.model.repository.ProductInventoryRepository;
 import com.kalsym.order.service.utility.HttpResponse;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
@@ -42,6 +44,9 @@ public class OrderItemController {
     @Autowired
     OrderItemRepository orderItemRepository;
 
+    @Autowired
+    ProductInventoryRepository productInventoryRepository;
+
     @GetMapping(path = {""}, name = "order-items-get")
     @PreAuthorize("hasAnyAuthority('order-items-get', 'all')")
     public ResponseEntity<HttpResponse> getOrderItems(HttpServletRequest request,
@@ -74,7 +79,7 @@ public class OrderItemController {
             @Valid @RequestBody OrderItem bodyOrderItem) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-items-post, orderId: {}", orderId);
+        logger.info("order-items-post, url : {}, orderId: {}", request.getRequestURI(), orderId);
 
         logger.info("bodyOrderItem: {}", bodyOrderItem.toString());
 
@@ -104,7 +109,13 @@ public class OrderItemController {
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }*/
+
+        //find product invertory against itemcode to set sku
+        ProductInventory productInventory = productInventoryRepository.findByItemCode(bodyOrderItem.getItemCode());
+        logger.info("got product inventory details: " + productInventory.toString());
         bodyOrderItem.setPrice(bodyOrderItem.getProductPrice() * bodyOrderItem.getQuantity());
+        bodyOrderItem.setSKU(productInventory.getSKU());
+//        bodyOrderItem.setProductName(productInventory.getProduct().getName());
         orderItem = orderItemRepository.save(bodyOrderItem);
         response.setSuccessStatus(HttpStatus.CREATED);
         logger.info("cartItem added in orderId: {} with orderItemId: {}", orderId, orderItem.getId());

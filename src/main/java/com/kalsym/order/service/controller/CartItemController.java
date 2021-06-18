@@ -55,7 +55,7 @@ public class CartItemController {
             @RequestParam(defaultValue = "20") int pageSize) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("cart-items-get, cartId: {}", cartId);
+        logger.info("cart-items-get, URL: {} cartId: {}", request.getRequestURI(), cartId);
 
         Optional<Cart> cart = cartRepository.findById(cartId);
 
@@ -121,17 +121,17 @@ public class CartItemController {
         try {
             //find product invertory against itemcode to set sku
             ProductInventory productInventory = productInventoryRepository.findByItemCode(bodyCartItem.getItemCode());
-            
+            logger.info("got product inventory details: " + productInventory.toString());
             //find item in current cart, increase quantity if already exist
             CartItem existingItem = cartItemRepository.findByCartIdAndProductId(bodyCartItem.getCartId(), bodyCartItem.getProductId());
             if (existingItem!=null) {
                 logger.info("item already exist for cartId: {} with productId: {}", bodyCartItem.getCartId(), bodyCartItem.getProductId());
                 int newQty = existingItem.getQuantity() + bodyCartItem.getQuantity();
                 existingItem.setQuantity(newQty);
-                existingItem.setSKU(productInventory.getSKU());
+                existingItem.setProductName(productInventory.getProduct().getName());
                 cartItem = cartItemRepository.save(existingItem);
             } else {
-                bodyCartItem.setSKU(productInventory.getSKU());
+                bodyCartItem.setProductName(productInventory.getProduct().getName());
                 cartItem = cartItemRepository.save(bodyCartItem);
             }
             response.setSuccessStatus(HttpStatus.CREATED);
@@ -187,13 +187,13 @@ public class CartItemController {
         logger.info("cart-items-put-by-id, cartId: {}", cartId);
         logger.info(bodyCartItem.toString(), "");
 
-        Optional<Cart> optCart = cartRepository.findById(cartId);
-
-        if (!optCart.isPresent()) {
-            logger.info("Cart not found with cartId: {}", cartId);
-            response.setErrorStatus(HttpStatus.NOT_FOUND);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
+//        Optional<Cart> optCart = cartRepository.findById(cartId);
+//
+//        if (!optCart.isPresent()) {
+//            logger.info("Cart not found with cartId: {}", cartId);
+//            response.setErrorStatus(HttpStatus.NOT_FOUND);
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+//        }
 
         Optional<CartItem> optCartItem = cartItemRepository.findById(id);
 

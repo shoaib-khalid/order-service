@@ -24,7 +24,7 @@ public class Body {
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
     private Double deliveryCharges;
-    private Float subTotal;
+    private Double total;
     private String invoiceId;
     private List<OrderItem> orderItems;
     private String storeAddress;

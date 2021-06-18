@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface CartItemRepository extends PagingAndSortingRepository<CartItem, String>, JpaRepository<CartItem, String> {
 
-    <S extends Object> Page<S> findByCartId(@Param("cartId") String cartId,  Pageable pgbl);
+    Page<CartItem> findByCartId(@Param("cartId") String cartId,  Pageable pgbl);
     
     CartItem findByCartIdAndProductId(@Param("cartId") String cartId, @Param("productId") String productId);
     

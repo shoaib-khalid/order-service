@@ -40,10 +40,10 @@ public class Order implements Serializable {
     private String id;
 
     private String storeId;
-    private Float subTotal;
-    private Float serviceCharges;
+    private Double subTotal;
+    private Double serviceCharges;
     private Double deliveryCharges;
-    private Float total;
+    private Double total;
     @Enumerated(EnumType.STRING)
     private OrderStatus completionStatus;
     @Enumerated(EnumType.STRING)

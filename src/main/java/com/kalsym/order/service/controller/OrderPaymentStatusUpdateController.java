@@ -231,7 +231,7 @@ public class OrderPaymentStatusUpdateController {
         body.setDeliveryCity(order.getOrderShipmentDetail().getCity());
         body.setOrderStatus(status);
         body.setDeliveryCharges(order.getOrderPaymentDetail().getDeliveryQuotationAmount());
-        body.setSubTotal(order.getSubTotal());
+        body.setTotal(order.getTotal());
         body.setInvoiceId(order.getInvoiceId());
 
         body.setStoreAddress(storeWithDetails.getAddress());
@@ -253,11 +253,21 @@ public class OrderPaymentStatusUpdateController {
             case PAYMENT_CONFIRMED:
 //                order.setCompletionStatus(OrderStatus.PAYMENT_CONFIRMED);
                 emailService.sendEmail(email);
-
+                //inserting order payment status update
+                orderPaymentStatusUpdate.setStatus(PaymentStatus.PAID);
+                orderPaymentStatusUpdate.setComments(bodyOrderCompletionStatusUpdate.getComments());
+                orderPaymentStatusUpdate.setModifiedBy(bodyOrderCompletionStatusUpdate.getModifiedBy());
+                orderPaymentStatusUpdate.setOrderId(orderId);
+                orderPaymentStatusUpdateRepository.save(orderPaymentStatusUpdate);
+                logger.info("orderPaymentStatusUpdate created with orderId: {}", orderId);
+                //inserting order completing status update
+                orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
+                logger.info("orderPaymentStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
                 try {
                     deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), order.getId());
                     status = OrderStatus.AWAITING_PICKUP;
-                    logger.info("delivery confirmed awaiting for pickup");
+                    logger.info("delivery confirmed for order: {} awaiting for pickup", orderId);
+                    //sending request to rocket chat for posting order
                     orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
                 } catch (Exception ex) {
                     //there might be some issue so need to updated email for issue and refund
@@ -265,28 +275,29 @@ public class OrderPaymentStatusUpdateController {
                     status = OrderStatus.REQUESTING_DELIVERY_FAILED;
                 }
 
-                orderPaymentStatusUpdate.setStatus(PaymentStatus.PAID);
-                orderPaymentStatusUpdate.setComments(bodyOrderCompletionStatusUpdate.getComments());
-                orderPaymentStatusUpdate.setModifiedBy(bodyOrderCompletionStatusUpdate.getModifiedBy());
-                orderPaymentStatusUpdate.setOrderId(orderId);
-                orderPaymentStatusUpdateRepository.save(orderPaymentStatusUpdate);
-                logger.info("orderPaymentStatusUpdate created with orderId: {}", orderId);
-
+                
+                
+                //setting completing status with update values 
+                bodyOrderCompletionStatusUpdate.setStatus(status);
+                //setting payment status in order object
                 order.setPaymentStatus(PaymentStatus.PAID);
 
                 break;
         }
         order.setCompletionStatus(status);
+        
+        //setting email body status
         body.setOrderStatus(status);
         email.setBody(body);
 
+        //inserting order completion status updates
         orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
+        logger.info("orderPaymentStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
 
         orderRepository.save(order);
 
         emailService.sendEmail(email);
 
-        logger.info("orderPaymentStatusUpdate updated for orderId: {}", orderId);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(order);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);

@@ -20,11 +20,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import com.kalsym.order.service.service.EmailService;
 import com.kalsym.order.service.model.Order;
+import com.kalsym.order.service.model.OrderCompletionStatusUpdate;
+import com.kalsym.order.service.model.OrderPaymentStatusUpdate;
 import com.kalsym.order.service.model.Store;
 import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
+import com.kalsym.order.service.model.repository.OrderCompletionStatusUpdateRepository;
 import com.kalsym.order.service.model.repository.OrderPaymentDetailRepository;
+import com.kalsym.order.service.model.repository.OrderPaymentStatusUpdateRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
 import com.kalsym.order.service.model.repository.ProductRepository;
 import com.kalsym.order.service.model.repository.StoreRepository;
@@ -92,6 +96,12 @@ public class OrderController {
 
     @Autowired
     OrderPaymentDetailRepository orderPaymentDetailRepository;
+    
+    @Autowired
+    OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository;
+    
+    @Autowired
+    OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository;
 
     @GetMapping(path = {""}, name = "orders-get", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-get', 'all')")
@@ -114,7 +124,7 @@ public class OrderController {
 //        to.setDate(to.getDate() + 1);
 //        logger.info("after adding 1 day to (todate) from : " + from + ", to : " + to);
 
-        logger.info("orders-get request");
+        logger.info("orders-get request " + request.getRequestURL());
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Order orderMatch = new Order();
@@ -212,7 +222,7 @@ public class OrderController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("orders-post", "");
+        logger.info("orders-post request on url: {}" , request.getRequestURI());
 
 //        OrderObject bodyOrder = new OrderObject();
         logger.info(order.toString(), "");
@@ -256,31 +266,22 @@ public class OrderController {
 //            }
 
             logger.info("Order created with id: {}", order.getId());
-            //save order item
-//            List<CartItem> cartItems = cartItemRepository.findByCartId(order.getCartId());
-//            for (int i = 0; i < cartItems.size(); i++) {
-//                CartItem cartItem = cartItems.get(i);
-//                OrderItem orderItem = new OrderItem();
-//                orderItem.setOrderId(order.getId());
-//                orderItem.setItemCode(cartItem.getItemCode());
-//                orderItem.setQuantity(cartItem.getQuantity());
-//                orderItem.setProductId(cartItem.getProductId());
-//                orderItem.setWeight(cartItem.getWeight());
-//                orderItem.setPrice(cartItem.getPrice());
-//                orderItem.setProductPrice(cartItem.getProductPrice());
-//                orderItem.setSKU(cartItem.getSKU());
-//                orderItem = orderItemRepository.save(orderItem);
-//                logger.info("Order Item saved with OrderId: " + order.getId() + ", cartId: " + order.getCartId() + " and OrderItemId: " + orderItem.getId());
-//            }
-
-//            OrderShipmentDetail orderShipmentDetail = order.getOrderShipmentDetail();
-//            orderShipmentDetailRepository.save(orderShipmentDetail);
-//            logger.info("orderShipmentDetail created for orderId: {}", order.getId());
-            //OrderPayementDetial
-//            OrderPaymentDetail opd = order.getOrderPaymentDetail();
-//            orderPaymentDetailRepository.save(opd);
-            //clear cart item
             
+            //inserting ordercompleting statusupdate  to pending
+            OrderCompletionStatusUpdate orderCompletionStatusUpdate = new OrderCompletionStatusUpdate();
+            orderCompletionStatusUpdate.setOrderId(order.getId());
+            orderCompletionStatusUpdate.setStatus(OrderStatus.RECEIVED_AT_STORE);
+            orderCompletionStatusUpdateRepository.save(orderCompletionStatusUpdate);
+            logger.info("Order completion status update inserted for orderid: {}, with status: {}", order.getId(), orderCompletionStatusUpdate.getStatus().toString());
+            
+            //inserting paymentstatusupdate
+            OrderPaymentStatusUpdate orderPaymentStatusUpdate = new OrderPaymentStatusUpdate();
+            orderPaymentStatusUpdate.setOrderId(order.getId());
+            orderPaymentStatusUpdate.setStatus(PaymentStatus.PENDING);
+            orderPaymentStatusUpdateRepository.save(orderPaymentStatusUpdate);
+            logger.info("Order payment status update inserted for orderid: {}, with status: {}", order.getId(), orderPaymentStatusUpdate.getStatus().toString());
+            
+            //clear cart item
             cartItemRepository.clearCartItem(order.getCartId());
             logger.info("clear cartItem for cartId: {}", order.getCartId());
             // pass orderId to OrderPostService, even though the status is not completed yet

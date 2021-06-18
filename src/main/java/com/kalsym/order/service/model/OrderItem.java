@@ -1,11 +1,9 @@
 package com.kalsym.order.service.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,6 +31,7 @@ public class OrderItem {
     private Float price;
     private Float productPrice;
     private Float weight;
+    @JsonProperty("SKU")
     private String SKU;
     private int quantity;
     private String itemCode;
