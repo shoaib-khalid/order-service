@@ -110,6 +110,7 @@ public class CartController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
+        logger.info("carts-post, URL: {} ", request.getRequestURI());
         logger.info("carts-post, bodyCart: ", bodyCart.toString());
 
         Cart savedCart = null;

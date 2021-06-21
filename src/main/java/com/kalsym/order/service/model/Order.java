@@ -1,5 +1,6 @@
 package com.kalsym.order.service.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
 import java.io.Serializable;
@@ -54,9 +55,11 @@ public class Order implements Serializable {
     private String customerId;
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date created;
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updated;
 
     private String invoiceId;
