@@ -40,7 +40,7 @@ public class OrderCompletionStatusUpdate {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
     @CreationTimestamp
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    //@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date created;
     private String modifiedBy;
     private String comments;
