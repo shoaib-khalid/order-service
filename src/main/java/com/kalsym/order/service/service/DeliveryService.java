@@ -1,5 +1,7 @@
 package com.kalsym.order.service.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 
 import org.slf4j.Logger;
@@ -16,6 +18,9 @@ import org.springframework.web.client.RestTemplate;
 import com.kalsym.order.service.model.object.DeliveryServiceSubmitOrder;
 import com.kalsym.order.service.model.object.DeliveryServiceResponse;
 import org.springframework.http.HttpStatus;
+import com.kalsym.order.service.model.DeliveryOrder;
+import java.util.logging.Level;
+import org.json.JSONObject;
 
 /**
  *
@@ -35,8 +40,6 @@ public class DeliveryService {
 
     @Value("${deliveryService.confirmation.URL:https://api.symplified.biz/delivery-service/v1/orders/confirmDelivery/}")
     String orderDeliveryConfirmationURL;
-    
-    
 
     @Autowired
     StoreNameService storeNameService;
@@ -71,7 +74,7 @@ public class DeliveryService {
         return null;
     }
 
-    public void confirmOrderDelivery(String refId, String orderId) {
+    public DeliveryOrder confirmOrderDelivery(String refId, String orderId) throws JsonProcessingException {
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
@@ -82,6 +85,20 @@ public class DeliveryService {
         logger.info("orderDeliveryConfirmationURL : " + url);
         ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class);
         logger.info("res : " + res);
+        JSONObject jsonObject = new JSONObject(res.getBody());
+//        logger.info("got json Object " + jsonObject.toString());
+//        System.exit(0);
+        //create ObjectMapper instance
+        JSONObject deliveryOrderObject = jsonObject.getJSONObject("data").getJSONObject("orderCreated");
+        //create ObjectMapper instance
+        ObjectMapper objectMapper = new ObjectMapper();
+        //convert json string to object
+        DeliveryOrder deliveryOrder = null;
+        
+        deliveryOrder = objectMapper.readValue(deliveryOrderObject.toString(), DeliveryOrder.class);
+        
+        logger.info("got delivery object : " + deliveryOrder.toString());
+        return deliveryOrder;
     }
 
 }

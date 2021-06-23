@@ -281,9 +281,9 @@ public class OrderController {
             orderPaymentStatusUpdateRepository.save(orderPaymentStatusUpdate);
             logger.info("Order payment status update inserted for orderid: {}, with status: {}", order.getId(), orderPaymentStatusUpdate.getStatus().toString());
             
-            //clear cart item
-            cartItemRepository.clearCartItem(order.getCartId());
-            logger.info("clear cartItem for cartId: {}", order.getCartId());
+//            //clear cart item
+//            cartItemRepository.clearCartItem(order.getCartId());
+//            logger.info("clear cartItem for cartId: {}", order.getCartId());
             // pass orderId to OrderPostService, even though the status is not completed yet
             //orderPostService.postOrderLink(order.getId(), order.getStoreId());
         } catch (Exception exp) {

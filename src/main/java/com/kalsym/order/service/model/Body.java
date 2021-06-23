@@ -29,6 +29,10 @@ public class Body {
     private List<OrderItem> orderItems;
     private String storeAddress;
     private String storeName;
+    private String logoUrl;
+    private String storeContact;
+    private String cutomerTrackingUrl;
+    private String merchantTrackingUrl;
     
     
     public Body(){
