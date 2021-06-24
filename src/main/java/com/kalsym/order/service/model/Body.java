@@ -31,7 +31,7 @@ public class Body {
     private String storeName;
     private String logoUrl;
     private String storeContact;
-    private String cutomerTrackingUrl;
+    private String customerTrackingUrl;
     private String merchantTrackingUrl;
     
     

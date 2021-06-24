@@ -2,6 +2,7 @@
 package com.kalsym.order.service.model;
 
 import java.io.Serializable;
+import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.Getter;
@@ -15,6 +16,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@Entity
 @Table(name = "store_asset")
 public class StoreAsset implements Serializable{
     @Id

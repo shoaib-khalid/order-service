@@ -1,17 +1,14 @@
 
 package com.kalsym.order.service.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  *
@@ -21,6 +18,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@ToString
 public class DeliveryOrder {
     
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY)

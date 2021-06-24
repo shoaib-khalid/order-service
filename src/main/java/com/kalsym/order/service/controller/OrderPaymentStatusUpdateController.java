@@ -221,7 +221,7 @@ public class OrderPaymentStatusUpdateController {
         }
 
         StoreWithDetails storeWithDetails = optStore.get();
-
+        logger.info("Store details got : " + storeWithDetails.toString());
 //        String status = bodyOrderCompletionStatusUpdate.getStatus();
         OrderStatus status = bodyOrderCompletionStatusUpdate.getStatus();
         String subject = null;
@@ -241,7 +241,7 @@ public class OrderPaymentStatusUpdateController {
 
         body.setStoreAddress(storeWithDetails.getAddress());
         body.setStoreContact(storeWithDetails.getPhoneNumber());
-//        body.setLogoUrl(storeWithDetails.getStoreAsset().getLogoUrl());
+        body.setLogoUrl(storeWithDetails.getStoreAsset().getLogoUrl());
 
         body.setStoreName(storeWithDetails.getName());
 
@@ -276,7 +276,7 @@ public class OrderPaymentStatusUpdateController {
                     DeliveryOrder deliveryOrder = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), order.getId());
 //                    status = OrderStatus.AWAITING_PICKUP;
                     email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
-                    email.getBody().setCutomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
+                    email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
                     logger.info("delivery confirmed for order: {} awaiting for pickup", orderId);
 
                     //sending request to rocket chat for posting order
