@@ -241,7 +241,7 @@ public class OrderPaymentStatusUpdateController {
 
         body.setStoreAddress(storeWithDetails.getAddress());
         body.setStoreContact(storeWithDetails.getPhoneNumber());
-        body.setLogoUrl(storeWithDetails.getStoreAsset().getLogoUrl());
+        body.setLogoUrl(storeWithDetails.getStoreAsset() == null ? "": storeWithDetails.getStoreAsset().getLogoUrl());
 
         body.setStoreName(storeWithDetails.getName());
 
