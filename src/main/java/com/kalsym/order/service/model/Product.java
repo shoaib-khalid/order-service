@@ -38,8 +38,8 @@ public class Product {
     private String barcode;
     private String region;
     private Float weight;
-    private String deliveryType;
-    private String itemType;
+//    private String deliveryType;
+//    private String itemType;
     private String seoUrl;
     
     public enum Status {

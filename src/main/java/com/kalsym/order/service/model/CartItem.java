@@ -37,6 +37,7 @@ public class CartItem {
     @JsonProperty("SKU")
     private String SKU;
     private String productName;
+    private String specialInstruction;
 
     /*@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cartId", insertable=false, updatable=false)
