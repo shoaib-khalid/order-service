@@ -38,9 +38,13 @@ public class Product {
     private String barcode;
     private String region;
     private Float weight;
-    private String deliveryType;
-    private String itemType;
+//    private String deliveryType;
+//    private String itemType;
     private String seoUrl;
+    private Boolean trackQuantity;
+    private Boolean allowOutOfStockPurchases;
+    private int minQuantityForAlarm;
+    
     
     public enum Status {
         ACTIVE,

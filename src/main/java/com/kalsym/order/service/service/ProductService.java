@@ -1,6 +1,7 @@
 package com.kalsym.order.service.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kalsym.order.service.enums.ProductStatus;
 import com.kalsym.order.service.model.object.DeliveryServiceSubmitOrder;
@@ -18,22 +19,25 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import com.kalsym.order.service.model.*;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author FaisalHayatJadoon
  */
+
+@Service
 public class ProductService {
 
     private static Logger logger = LoggerFactory.getLogger("application");
 
-    @Value("${product.reduce.quantity.URL:https://api.symplified.biz/stores/%STOREID%/products/%PRODUCTID%/inventory/%ITEMCODE%}")
+    @Value("${product.reduce.quantity.URL:https://api.symplified.biz/product-service/v1/stores/%STOREID%/products/%PRODUCTID%/inventory/%ITEMCODE%?quantity=}")
     String reduceProductInventoryURL;
     
-    @Value("${get.product.by.id.URL:https://api.symplified.biz/stores/%STOREID%/products/%PRODUCTID%}")
+    @Value("${get.product.by.id.URL:https://api.symplified.biz/product-service/v1/stores/%STOREID%/products/%PRODUCTID%}")
     String getProductByIdURL;
     
-    @Value("${change.product.status.URL:https://api.symplified.biz/stores/%STOREID%/products/%PRODUCTID%/inventory/%ITEMCODE%/productStatus}")
+    @Value("${change.product.status.URL:https://api.symplified.biz/product-service/v1/stores/%STOREID%/products/%PRODUCTID%/inventory/%ITEMCODE%/productStatus?status=}")
     String changeProductStatusURL;
     
     public Product getProductById(String storeId, String productId) {
@@ -41,7 +45,7 @@ public class ProductService {
         try {
             getProductByIdURL = getProductByIdURL.replace("%STOREID%", storeId);
             getProductByIdURL = getProductByIdURL.replace("%PRODUCTID%", productId);
-
+//            logger.info("getProductByIdURL created: " + getProductByIdURL);
             RestTemplate restTemplate = new RestTemplate();
 
             HttpHeaders headers = new HttpHeaders();
@@ -62,19 +66,23 @@ public class ProductService {
 //        
                 //create ObjectMapper instance
                 JSONObject productObject = jsonObject.getJSONObject("data");
+                logger.info("object of productObject: " + productObject);
                 //create ObjectMapper instance
                 ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+                objectMapper.disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
+                objectMapper.disable(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES);
                 //convert json string to object
                 Product product = objectMapper.readValue(productObject.toString(), Product.class);
 
-                logger.info("got procduct Inventory object : " + product.toString());
+                logger.info("got procduct object : " + product.toString());
                 return product;
             }
         } catch (RestClientException e) {
-            logger.error("Error product inventory reduction domain {}", reduceProductInventoryURL, e);
+            logger.error("Error product {}", e);
             return null;
         } catch (JsonProcessingException ex) {
-            logger.error("Error product inventory reduction {}", reduceProductInventoryURL, ex);
+            logger.error("Error product {}", ex);
         }
         return null;
     }
@@ -93,18 +101,19 @@ public class ProductService {
             reduceProductInventoryURL = reduceProductInventoryURL.replace("%STOREID%", storeId);
             reduceProductInventoryURL = reduceProductInventoryURL.replace("%PRODUCTID%", productId);
             reduceProductInventoryURL = reduceProductInventoryURL.replace("%ITEMCODE%", itemcode);
-
+            reduceProductInventoryURL = reduceProductInventoryURL + quantity;
+            logger.info("reduceProductInventoryURL created: " + reduceProductInventoryURL);
             RestTemplate restTemplate = new RestTemplate();
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", "Bearer accessToken");
-            Map<String, Integer> params = new HashMap<>();
-            params.put("quantity", quantity);
+//            Map<String, Integer> params = new HashMap<>();
+//            params.put("quantity", quantity);
             HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
             httpEntity = new HttpEntity(null, headers);
 
             logger.info("Sending request to product service to reduce " + quantity + " quantity:  " + reduceProductInventoryURL);
-            ResponseEntity<String> res = restTemplate.exchange(reduceProductInventoryURL, HttpMethod.PUT, httpEntity, String.class, params);
+            ResponseEntity<String> res = restTemplate.exchange(reduceProductInventoryURL, HttpMethod.PUT, httpEntity, String.class);
 
             logger.info("Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
 
@@ -114,8 +123,12 @@ public class ProductService {
 //        
                 //create ObjectMapper instance
                 JSONObject productInventoryObject = jsonObject.getJSONObject("data");
+                logger.info("object of productInventory: " + productInventoryObject);
                 //create ObjectMapper instance
                 ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+                objectMapper.disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
+                objectMapper.disable(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES);
                 //convert json string to object
                 ProductInventory productInventory = objectMapper.readValue(productInventoryObject.toString(), ProductInventory.class);
 
@@ -145,18 +158,19 @@ public class ProductService {
             changeProductStatusURL = changeProductStatusURL.replace("%STOREID%", storeId);
             changeProductStatusURL = changeProductStatusURL.replace("%PRODUCTID%", productId);
             changeProductStatusURL = changeProductStatusURL.replace("%ITEMCODE%", itemcode);
-
+            changeProductStatusURL = changeProductStatusURL + productStatus.toString();
+            logger.info("changeProductStatusURL created: " + changeProductStatusURL);
             RestTemplate restTemplate = new RestTemplate();
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", "Bearer accessToken");
-            Map<String, String> params = new HashMap<>();
-            params.put("status", productStatus.toString());
+//            Map<String, String> params = new HashMap<>();
+//            params.put("status", productStatus.toString());
             HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
             httpEntity = new HttpEntity(null, headers);
 
             logger.info("Sending request to product service to change status of product to: " + productStatus.toString() + changeProductStatusURL);
-            ResponseEntity<String> res = restTemplate.exchange(changeProductStatusURL, HttpMethod.PUT, httpEntity, String.class, params);
+            ResponseEntity<String> res = restTemplate.exchange(changeProductStatusURL, HttpMethod.PUT, httpEntity, String.class);
 
             logger.info("Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
 
@@ -166,8 +180,12 @@ public class ProductService {
 //        
                 //create ObjectMapper instance
                 JSONObject productInventoryObject = jsonObject.getJSONObject("data");
+                logger.info("object of productInventory: " + productInventoryObject);
                 //create ObjectMapper instance
                 ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+                objectMapper.disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
+                objectMapper.disable(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES);
                 //convert json string to object
                 ProductInventory productInventory = objectMapper.readValue(productInventoryObject.toString(), ProductInventory.class);
 

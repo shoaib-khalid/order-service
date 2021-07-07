@@ -13,5 +13,5 @@ public class DeliveryServiceResponse {
     public String timestamp;
     public int status;
     public String message;
-    public DeliveryResponseData data;    
+    public String data;    
 }

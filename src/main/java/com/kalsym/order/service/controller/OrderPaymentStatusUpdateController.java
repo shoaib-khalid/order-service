@@ -2,6 +2,7 @@ package com.kalsym.order.service.controller;
 
 import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
+import com.kalsym.order.service.enums.ProductStatus;
 import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.Email;
 import com.kalsym.order.service.model.Order;
@@ -35,6 +36,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.kalsym.order.service.model.DeliveryOrder;
+import com.kalsym.order.service.model.repository.CartItemRepository;
+import com.kalsym.order.service.model.repository.ProductInventoryRepository;
+import com.kalsym.order.service.service.ProductService;
+import com.kalsym.order.service.model.*;
 
 /**
  *
@@ -56,6 +62,9 @@ public class OrderPaymentStatusUpdateController {
     EmailService emailService;
 
     @Autowired
+    ProductService productService;
+
+    @Autowired
     OrderPostService orderPostService;
 
     @Autowired
@@ -69,6 +78,13 @@ public class OrderPaymentStatusUpdateController {
 
     @Autowired
     StoreDetailsRepository storeDetailsRepository;
+
+    @Autowired
+    CartItemRepository cartItemRepository;
+
+    @Autowired
+    ProductInventoryRepository productInventoryRepository;
+
 //    @GetMapping(path = {""}, name = "order-payment-status-update-get")
 //    @PreAuthorize("hasAnyAuthority('order-payment-status-update-get', 'all')")
 //    public ResponseEntity<HttpResponse> getOrderPaymentStatusUpdates(HttpServletRequest request,
@@ -188,7 +204,6 @@ public class OrderPaymentStatusUpdateController {
 //        response.setData(orderPaymentStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate));
 //        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
 //    }
-
     @PutMapping(path = {""}, name = "order-completion-status-updates-put-by-order-id")
     @PreAuthorize("hasAnyAuthority('order-completion-status-updates-put-by-order-id', 'all')")
     public ResponseEntity<HttpResponse> putOrderCompletionStatusUpdatesConfirm(HttpServletRequest request,
@@ -216,7 +231,7 @@ public class OrderPaymentStatusUpdateController {
         }
 
         StoreWithDetails storeWithDetails = optStore.get();
-
+        logger.info("Store details got : " + storeWithDetails.toString());
 //        String status = bodyOrderCompletionStatusUpdate.getStatus();
         OrderStatus status = bodyOrderCompletionStatusUpdate.getStatus();
         String subject = null;
@@ -235,6 +250,8 @@ public class OrderPaymentStatusUpdateController {
         body.setInvoiceId(order.getInvoiceId());
 
         body.setStoreAddress(storeWithDetails.getAddress());
+        body.setStoreContact(storeWithDetails.getPhoneNumber());
+        body.setLogoUrl(storeWithDetails.getStoreAsset() == null ? "" : storeWithDetails.getStoreAsset().getLogoUrl());
 
         body.setStoreName(storeWithDetails.getName());
 
@@ -251,8 +268,10 @@ public class OrderPaymentStatusUpdateController {
         email.setTo(to);
         switch (status) {
             case PAYMENT_CONFIRMED:
+                //clear cart item
+                cartItemRepository.clearCartItem(order.getCartId());
+                logger.info("clear cartItem for cartId: {}", order.getCartId());
 //                order.setCompletionStatus(OrderStatus.PAYMENT_CONFIRMED);
-                emailService.sendEmail(email);
                 //inserting order payment status update
                 orderPaymentStatusUpdate.setStatus(PaymentStatus.PAID);
                 orderPaymentStatusUpdate.setComments(bodyOrderCompletionStatusUpdate.getComments());
@@ -264,31 +283,67 @@ public class OrderPaymentStatusUpdateController {
                 orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
                 logger.info("orderPaymentStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
                 try {
-                    deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), order.getId());
-                    status = OrderStatus.AWAITING_PICKUP;
+                    DeliveryOrder deliveryOrder = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), order.getId());
+//                    status = OrderStatus.AWAITING_PICKUP;
+                    email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
+                    email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
                     logger.info("delivery confirmed for order: {} awaiting for pickup", orderId);
+                    ProductInventory productInventory;
+                    Product product;
                     //sending request to rocket chat for posting order
                     orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
+                    for (int i = 0; i < orderItems.size(); i++) {
+                        // get product details
+                        
+                        product = productService.getProductById(order.getStoreId(), orderItems.get(i).getProductId());
+                        logger.info("Got product details of orderItem: " + product.toString());
+                        if (product.getTrackQuantity()) {
+                            logger.info("Product tracking is enable");
+                            productInventory = productService.reduceProductInventory(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), orderItems.get(i).getQuantity());
+                            if (productInventory.getQuantity() <= product.getMinQuantityForAlarm()) {
+                                //sending notification for product is going out of stock
+                                //we can send email as well
+                                orderPostService.sendMinimumQuantityAlarm(order.getId(), order.getStoreId(), orderItems.get(i), productInventory.getQuantity());
+                                logger.info("intimation send for out of stock product id: " + orderItems.get(i).getProductId() + ", SKU: " + orderItems.get(i).getSKU() + ", Name: " + productInventory.getProduct().getName());
+                            }
+                            
+                            if(!product.getAllowOutOfStockPurchases()){
+                                // making this product variant outof stock
+                                productInventory = productService.changeProductStatus(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), ProductStatus.OUTOFSTOCK);
+                                logger.info("this product variant is out of stock now storeId: " + order.getStoreId() + ", productId: " + orderItems.get(i).getProductId() + ", itemCode: " + orderItems.get(i).getItemCode());
+                            }
+                        } else {
+                            logger.info("Product tracking is not enabled by marchant");
+                        }
+//                        ProductInventory productInventory = productInventoryRepository.findByItemCode(orderItems.get(i).getItemCode());
+//                        logger.info("got product inventory details: " + productInventory.toString());
+                        //reduce quantity of product inventory
+
+                    }
+
                 } catch (Exception ex) {
                     //there might be some issue so need to updated email for issue and refund
                     logger.error("Exception occur while confirming order Delivery ", ex);
                     status = OrderStatus.REQUESTING_DELIVERY_FAILED;
                 }
-
-                
-                
+                //sending email
+                emailService.sendEmail(email);
                 //setting completing status with update values 
                 bodyOrderCompletionStatusUpdate.setStatus(status);
                 //setting payment status in order object
                 order.setPaymentStatus(PaymentStatus.PAID);
 
                 break;
+            case DELIVERED_TO_CUSTOMER:
+            case REJECTED_BY_STORE:
+                //sending email
+                emailService.sendEmail(email);
+                break;
         }
         order.setCompletionStatus(status);
-        
-        //setting email body status
-        body.setOrderStatus(status);
-        email.setBody(body);
+//        order.getOrderShipmentDetail().setTrackingUrl(bodyOrderCompletionStatusUpdate.getTrackingUrl());
+//        //setting email body status
+//        email.getBody().setOrderStatus(status);
 
         //inserting order completion status updates
         orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
@@ -296,8 +351,7 @@ public class OrderPaymentStatusUpdateController {
 
         orderRepository.save(order);
 
-        emailService.sendEmail(email);
-
+//        emailService.sendEmail(email);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(order);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);

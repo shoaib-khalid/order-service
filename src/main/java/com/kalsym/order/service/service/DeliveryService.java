@@ -1,6 +1,10 @@
 package com.kalsym.order.service.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.kalsym.order.service.model.DeliveryOrder;
+import com.kalsym.order.service.model.Product;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +19,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import com.kalsym.order.service.model.object.DeliveryServiceSubmitOrder;
 import com.kalsym.order.service.model.object.DeliveryServiceResponse;
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 
 /**
@@ -35,8 +40,6 @@ public class DeliveryService {
 
     @Value("${deliveryService.confirmation.URL:https://api.symplified.biz/delivery-service/v1/orders/confirmDelivery/}")
     String orderDeliveryConfirmationURL;
-    
-    
 
     @Autowired
     StoreNameService storeNameService;
@@ -71,17 +74,40 @@ public class DeliveryService {
         return null;
     }
 
-    public void confirmOrderDelivery(String refId, String orderId) {
+    public DeliveryOrder confirmOrderDelivery(String refId, String orderId) {
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer accessToken");
         HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
         httpEntity = new HttpEntity(headers);
-        String url = orderDeliveryConfirmationURL + refId + "/" + orderId;
-        logger.info("orderDeliveryConfirmationURL : " + url);
-        ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class);
-        logger.info("res : " + res);
+        try {
+            String url = orderDeliveryConfirmationURL + refId + "/" + orderId;
+            logger.info("orderDeliveryConfirmationURL : " + url);
+            ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class);
+            logger.info("res : " + res);
+
+            if (res.getStatusCode() == HttpStatus.OK) {
+                logger.info("res : " + res);
+                JSONObject jsonObject = new JSONObject(res.getBody());
+//        
+                //create ObjectMapper instance
+                JSONObject deliveryObject = jsonObject.getJSONObject("data").getJSONObject("orderCreated");
+                //create ObjectMapper instance
+                ObjectMapper objectMapper = new ObjectMapper();
+                //convert json string to object
+                DeliveryOrder deliveryOrder = objectMapper.readValue(deliveryObject.toString(), DeliveryOrder.class);
+
+                logger.info("got delivery order object : " + deliveryOrder.toString());
+                return deliveryOrder;
+            }
+        } catch (RestClientException e) {
+            logger.error("Error delivery order domain {}", orderDeliveryConfirmationURL, e);
+            return null;
+        } catch (JsonProcessingException ex) {
+            logger.error("Error delivery order domain {}", orderDeliveryConfirmationURL, ex);
+        }
+        return null;
     }
 
 }
