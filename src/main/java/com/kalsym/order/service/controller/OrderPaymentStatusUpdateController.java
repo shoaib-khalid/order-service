@@ -202,7 +202,7 @@ public class OrderPaymentStatusUpdateController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-payment-status-update-put, orderId: {}", orderId);
+        logger.info("order-completion-status-updates-put-by-order-id, orderId: {}", orderId);
         logger.info(bodyOrderCompletionStatusUpdate.toString(), "");
 
         Optional<Order> optOrder = orderRepository.findById(orderId);
@@ -241,7 +241,7 @@ public class OrderPaymentStatusUpdateController {
 
         body.setStoreAddress(storeWithDetails.getAddress());
         body.setStoreContact(storeWithDetails.getPhoneNumber());
-        body.setLogoUrl(storeWithDetails.getStoreAsset() == null ? "": storeWithDetails.getStoreAsset().getLogoUrl());
+        body.setLogoUrl(storeWithDetails.getStoreAsset() == null ? "" : storeWithDetails.getStoreAsset().getLogoUrl());
 
         body.setStoreName(storeWithDetails.getName());
 
@@ -271,20 +271,27 @@ public class OrderPaymentStatusUpdateController {
                 logger.info("orderPaymentStatusUpdate created with orderId: {}", orderId);
                 //inserting order completing status update
                 orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
-                logger.info("orderPaymentStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
+                logger.info("orderCompletionStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
                 try {
-                    DeliveryOrder deliveryOrder = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), order.getId());
+                    //TODO: check store.verticalCode, if FnB do not request to delivery service
+                    if (!"FNB".equalsIgnoreCase(storeWithDetails.getVerticalCode())) {
+                        DeliveryOrder deliveryOrder = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), order.getId());
 //                    status = OrderStatus.AWAITING_PICKUP;
-                    email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
-                    email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
-                    logger.info("delivery confirmed for order: {} awaiting for pickup", orderId);
-
+                        email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
+                        email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
+                        logger.info("delivery confirmed for order: {} awaiting for pickup", orderId);
+                    } else {
+                        logger.info("This order is FnB so no need to call delivery confirmation now, storeId: " + storeWithDetails.getId());
+                    }
                     //sending request to rocket chat for posting order
                     orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
                 } catch (Exception ex) {
                     //there might be some issue so need to updated email for issue and refund
-                    logger.error("Exception occur while confirming order Delivery ", ex);
-                    status = OrderStatus.REQUESTING_DELIVERY_FAILED;
+                    logger.error("Exception occur ", ex);
+                    if (!"FNB".equalsIgnoreCase(storeWithDetails.getVerticalCode())) {
+                        status = OrderStatus.REQUESTING_DELIVERY_FAILED;
+                    }
+
                 }
                 //sending email
                 emailService.sendEmail(email);
@@ -307,11 +314,110 @@ public class OrderPaymentStatusUpdateController {
 
         //inserting order completion status updates
         orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
-        logger.info("orderPaymentStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
+        logger.info("orderCompletionStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
 
         orderRepository.save(order);
 
 //        emailService.sendEmail(email);
+        response.setSuccessStatus(HttpStatus.ACCEPTED);
+        response.setData(order);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+
+    }
+
+    @PutMapping(path = {"/request-delivery"}, name = "order-completion-status-updates-put-by-order-id-by-merchant")
+    @PreAuthorize("hasAnyAuthority('order-completion-status-updates-put-by-order-id-by-merchant', 'all')")
+    public ResponseEntity<HttpResponse> requestToDelivery(HttpServletRequest request,
+            @PathVariable(required = true) String orderId) throws Exception {
+        String logprefix = request.getRequestURI() + " ";
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate = new OrderCompletionStatusUpdate();
+        logger.info("order-completion-status-updates-put-by-order-id-by-merchant, orderId: {}", orderId);
+//        logger.info(bodyOrderCompletionStatusUpdate.toString(), "");
+
+        Optional<Order> optOrder = orderRepository.findById(orderId);
+
+        if (!optOrder.isPresent()) {
+            logger.info("Order not found with orderId: {}", orderId);
+            response.setErrorStatus(HttpStatus.NOT_FOUND, "order not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        Order order = optOrder.get();
+        Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(order.getStoreId());
+        if (!optStore.isPresent()) {
+            logger.info("Store not found with storeId: {}", order.getStoreId());
+            response.setErrorStatus(HttpStatus.NOT_FOUND, "Store not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        StoreWithDetails storeWithDetails = optStore.get();
+        logger.info("Store details got : " + storeWithDetails.toString());
+//        String status = bodyOrderCompletionStatusUpdate.getStatus();
+//        OrderStatus status = bodyOrderCompletionStatusUpdate.getStatus();
+        OrderStatus status = OrderStatus.READY_FOR_DELIVERY;
+        String subject = null;
+        String content = null;
+        //String[] url = deliveryResponse.data.trackingUrl;
+        String receiver = order.getOrderShipmentDetail().getEmail();
+        OrderPaymentStatusUpdate orderPaymentStatusUpdate = new OrderPaymentStatusUpdate();
+        Body body = new Body();
+
+        body.setCurrency(storeWithDetails.getRegionCountry().getCurrencyCode());
+        body.setDeliveryAddress(order.getOrderShipmentDetail().getAddress());
+        body.setDeliveryCity(order.getOrderShipmentDetail().getCity());
+        body.setOrderStatus(status);
+        body.setDeliveryCharges(order.getOrderPaymentDetail().getDeliveryQuotationAmount());
+        body.setTotal(order.getTotal());
+        body.setInvoiceId(order.getInvoiceId());
+
+        body.setStoreAddress(storeWithDetails.getAddress());
+        body.setStoreContact(storeWithDetails.getPhoneNumber());
+        body.setLogoUrl(storeWithDetails.getStoreAsset() == null ? "" : storeWithDetails.getStoreAsset().getLogoUrl());
+
+        body.setStoreName(storeWithDetails.getName());
+
+        //get order items
+        List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+
+        body.setOrderItems(orderItems);
+
+        Email email = new Email();
+        email.setBody(body);
+        ArrayList<String> tos = new ArrayList<>();
+        tos.add(order.getOrderShipmentDetail().getEmail());
+        String[] to = Utilities.convertArrayListToStringArray(tos);
+        email.setTo(to);
+
+        bodyOrderCompletionStatusUpdate.setModifiedBy(storeWithDetails.getName());
+        bodyOrderCompletionStatusUpdate.setStatus(status);
+        bodyOrderCompletionStatusUpdate.setOrderId(orderId);
+        //inserting order completing status update
+        orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
+        logger.info("orderCompletionStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
+        try {
+
+            DeliveryOrder deliveryOrder = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), order.getId());
+            email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
+            email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
+            logger.info("delivery confirmed for order: {} awaiting for pickup", orderId);
+
+        } catch (Exception ex) {
+            //there might be some issue so need to updated email for issue and refund
+            logger.error("Exception occur while confirming order Delivery ", ex);
+            status = OrderStatus.REQUESTING_DELIVERY_FAILED;
+        }
+        //sending email
+        emailService.sendEmail(email);
+        //update completion status in order
+        order.setCompletionStatus(status);
+
+//        //inserting order completion status updates
+//        orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
+//        logger.info("orderPaymentStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
+
+        orderRepository.save(order);
+
+
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(order);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
