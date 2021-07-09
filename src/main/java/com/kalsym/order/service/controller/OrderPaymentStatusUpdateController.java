@@ -273,24 +273,27 @@ public class OrderPaymentStatusUpdateController {
                 orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
                 logger.info("orderCompletionStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
                 try {
-                    //TODO: check store.verticalCode, if FnB do not request to delivery service
-                    if (!"FNB".equalsIgnoreCase(storeWithDetails.getVerticalCode())) {
-                        DeliveryOrder deliveryOrder = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), order.getId());
-//                    status = OrderStatus.AWAITING_PICKUP;
-                        email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
-                        email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
-                        logger.info("delivery confirmed for order: {} awaiting for pickup", orderId);
-                    } else {
-                        logger.info("This order is FnB so no need to call delivery confirmation now, storeId: " + storeWithDetails.getId());
-                    }
+                    //check store.verticalCode, if FnB do not request to delivery service
+                    // commenting below code reason is: merchant have to request manually to delivery service
+//                    if (!"FNB".equalsIgnoreCase(storeWithDetails.getVerticalCode())) {
+//                        DeliveryOrder deliveryOrder = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), order.getId());
+////                    status = OrderStatus.AWAITING_PICKUP;
+//                        email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
+//                        email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
+//                        logger.info("delivery confirmed for order: {} awaiting for pickup", orderId);
+//                    } else {
+//                        logger.info("This order is FnB so no need to call delivery confirmation now, storeId: " + storeWithDetails.getId());
+//                    }
                     //sending request to rocket chat for posting order
                     orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
+                    logger.info("Order posted to rocket chat");
                 } catch (Exception ex) {
                     //there might be some issue so need to updated email for issue and refund
                     logger.error("Exception occur ", ex);
-                    if (!"FNB".equalsIgnoreCase(storeWithDetails.getVerticalCode())) {
-                        status = OrderStatus.REQUESTING_DELIVERY_FAILED;
-                    }
+//                    if (!"FNB".equalsIgnoreCase(storeWithDetails.getVerticalCode())) {
+//                    status = OrderStatus.REQUESTING_DELIVERY_FAILED;
+                    status = OrderStatus.FAILED;
+//                    }
 
                 }
                 //sending email
@@ -343,6 +346,14 @@ public class OrderPaymentStatusUpdateController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         Order order = optOrder.get();
+
+        OrderStatus prevStatus = order.getCompletionStatus();
+        if (!prevStatus.toString().equalsIgnoreCase(OrderStatus.PAYMENT_CONFIRMED.toString())) {
+            // should return error with cause
+            logger.info("Previous status in not valid: {}", order.getCompletionStatus().toString());
+            response.setErrorStatus(HttpStatus.BAD_REQUEST, "You can't change status because previous status is: " + order.getCompletionStatus().toString());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
         Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(order.getStoreId());
         if (!optStore.isPresent()) {
             logger.info("Store not found with storeId: {}", order.getStoreId());
@@ -414,9 +425,7 @@ public class OrderPaymentStatusUpdateController {
 //        //inserting order completion status updates
 //        orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
 //        logger.info("orderPaymentStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
-
         orderRepository.save(order);
-
 
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(order);

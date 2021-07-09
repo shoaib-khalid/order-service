@@ -36,19 +36,16 @@ import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.OrderPostService;
 import com.kalsym.order.service.utility.TxIdUtil;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.validation.Valid;
 import java.util.Optional;
-import javax.persistence.TemporalType;
 import javax.persistence.criteria.Predicate;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.convert.QueryByExamplePredicateBuilder;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.repository.Temporal;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -78,7 +75,7 @@ public class OrderController {
 
     @Autowired
     EmailService emailService;
-
+    
     @Autowired
     ProductRepository productRepository;
 
@@ -214,7 +211,7 @@ public class OrderController {
         response.setData(optOrder.get());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
+    
     @PostMapping(path = {""}, name = "orders-post")
     @PreAuthorize("hasAnyAuthority('orders-post', 'all')")
     public ResponseEntity<HttpResponse> postOrders(HttpServletRequest request,

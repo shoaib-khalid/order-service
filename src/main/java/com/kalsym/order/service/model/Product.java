@@ -29,15 +29,15 @@ public class Product {
     private String id;
 
     private String name;
-    private String stock;
+//    private String stock;
     private String storeId;
     private String categoryId;
     private String thumbnailUrl;
     private String vendor;
     private String description;
-    private String barcode;
+//    private String barcode;
     private String region;
-    private Float weight;
+//    private Float weight;
 //    private String deliveryType;
 //    private String itemType;
     private String seoUrl;
