@@ -21,6 +21,9 @@ import com.kalsym.order.service.model.object.DeliveryServiceSubmitOrder;
 import com.kalsym.order.service.model.object.DeliveryServiceResponse;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
+import com.kalsym.order.service.model.DeliveryOrder;
+import java.util.logging.Level;
+import org.json.JSONObject;
 
 /**
  *
@@ -74,13 +77,15 @@ public class DeliveryService {
         return null;
     }
 
-    public DeliveryOrder confirmOrderDelivery(String refId, String orderId) {
+    public DeliveryOrder confirmOrderDelivery(String refId, String orderId) throws JsonProcessingException {
+
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer accessToken");
         HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
         httpEntity = new HttpEntity(headers);
+
         try {
             String url = orderDeliveryConfirmationURL + refId + "/" + orderId;
             logger.info("orderDeliveryConfirmationURL : " + url);

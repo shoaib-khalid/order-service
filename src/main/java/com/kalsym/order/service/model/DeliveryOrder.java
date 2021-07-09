@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 package com.kalsym.order.service.model;
 
 import javax.persistence.Entity;
@@ -45,4 +49,8 @@ public class DeliveryOrder {
     Double totalWeightKg;
     String merchantTrackingUrl;
     String customerTrackingUrl;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> master

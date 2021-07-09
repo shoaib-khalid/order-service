@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 package com.kalsym.order.service.model;
 
 import java.io.Serializable;
@@ -28,5 +32,4 @@ public class StoreAsset implements Serializable{
         this.logoUrl = logoUrl;
         this.bannerUrl = bannerUrl;
     }
-    
 }

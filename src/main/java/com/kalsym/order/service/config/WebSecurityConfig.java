@@ -78,7 +78,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .exceptionHandling().authenticationEntryPoint(sessionAuthenticationEntryPoint).and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .cors().and().csrf().disable();;
+                .cors().and().csrf().disable();
         httpSecurity.addFilterBefore(sessionRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }
 

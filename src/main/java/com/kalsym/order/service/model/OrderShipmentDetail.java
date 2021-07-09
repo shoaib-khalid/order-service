@@ -33,6 +33,7 @@ public class OrderShipmentDetail implements Serializable {
     private Integer deliveryProviderId;
     private String state;
     private String country;
+    private String trackingUrl;
     @Id
     private String orderId;
     

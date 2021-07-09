@@ -70,11 +70,12 @@ public class StoreWithDetails implements Serializable {
             fetch = FetchType.EAGER)
     @JoinColumn(name = "regionCountryId", referencedColumnName = "id", insertable = false, updatable = false, nullable = true)
     private RegionCountry regionCountry;
-    
-    @OneToOne(cascade = CascadeType.ALL,
-            fetch = FetchType.EAGER)
-    @JoinColumn(name = "id", referencedColumnName = "storeId", insertable = false, updatable = false, nullable = true)
+
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id", insertable = false, updatable = false, nullable = true)
     private StoreAsset storeAsset;
+    
     
     @OneToMany(cascade = CascadeType.ALL,
             fetch = FetchType.EAGER)
