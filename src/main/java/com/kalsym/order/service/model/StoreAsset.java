@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-=======
 
->>>>>>> master
 package com.kalsym.order.service.model;
 
 import java.io.Serializable;
