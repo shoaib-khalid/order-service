@@ -2,6 +2,7 @@ package com.kalsym.order.service.controller;
 
 import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
+import com.kalsym.order.service.enums.StorePaymentType;
 import com.kalsym.order.service.model.OrderPaymentDetail;
 import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -20,12 +21,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import com.kalsym.order.service.service.EmailService;
 import com.kalsym.order.service.model.Order;
+import com.kalsym.order.service.model.COD;
+import com.kalsym.order.service.model.CartItem;
+import com.kalsym.order.service.model.ProductInventory;
+import com.kalsym.order.service.model.StoreWithDetails;
+import com.kalsym.order.service.model.StoreDeliveryDetail;
+import com.kalsym.order.service.model.Cart;
 import com.kalsym.order.service.model.OrderCompletionStatusUpdate;
 import com.kalsym.order.service.model.OrderPaymentStatusUpdate;
 import com.kalsym.order.service.model.Store;
+import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
+import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.model.repository.OrderCompletionStatusUpdateRepository;
 import com.kalsym.order.service.model.repository.OrderPaymentDetailRepository;
 import com.kalsym.order.service.model.repository.OrderPaymentStatusUpdateRepository;
@@ -35,6 +44,7 @@ import com.kalsym.order.service.model.repository.StoreRepository;
 import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.OrderPostService;
+import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.utility.TxIdUtil;
 import java.util.ArrayList;
 import java.util.Date;
@@ -74,8 +84,14 @@ public class OrderController {
     DeliveryService deliveryService;
 
     @Autowired
+    ProductService productService;
+
+    @Autowired
+    CartRepository cartRepository;
+
+    @Autowired
     EmailService emailService;
-    
+
     @Autowired
     ProductRepository productRepository;
 
@@ -93,10 +109,10 @@ public class OrderController {
 
     @Autowired
     OrderPaymentDetailRepository orderPaymentDetailRepository;
-    
+
     @Autowired
     OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository;
-    
+
     @Autowired
     OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository;
 
@@ -211,7 +227,7 @@ public class OrderController {
         response.setData(optOrder.get());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-    
+
     @PostMapping(path = {""}, name = "orders-post")
     @PreAuthorize("hasAnyAuthority('orders-post', 'all')")
     public ResponseEntity<HttpResponse> postOrders(HttpServletRequest request,
@@ -219,7 +235,7 @@ public class OrderController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("orders-post request on url: {}" , request.getRequestURI());
+        logger.info("orders-post request on url: {}", request.getRequestURI());
 
 //        OrderObject bodyOrder = new OrderObject();
         logger.info(order.toString(), "");
@@ -263,26 +279,26 @@ public class OrderController {
 //            }
 
             logger.info("Order created with id: {}", order.getId());
-            
+
             //inserting ordercompleting statusupdate  to pending
             OrderCompletionStatusUpdate orderCompletionStatusUpdate = new OrderCompletionStatusUpdate();
             orderCompletionStatusUpdate.setOrderId(order.getId());
             orderCompletionStatusUpdate.setStatus(OrderStatus.RECEIVED_AT_STORE);
             orderCompletionStatusUpdateRepository.save(orderCompletionStatusUpdate);
             logger.info("Order completion status update inserted for orderid: {}, with status: {}", order.getId(), orderCompletionStatusUpdate.getStatus().toString());
-            
+
             //inserting paymentstatusupdate
             OrderPaymentStatusUpdate orderPaymentStatusUpdate = new OrderPaymentStatusUpdate();
             orderPaymentStatusUpdate.setOrderId(order.getId());
             orderPaymentStatusUpdate.setStatus(PaymentStatus.PENDING);
             orderPaymentStatusUpdateRepository.save(orderPaymentStatusUpdate);
             logger.info("Order payment status update inserted for orderid: {}, with status: {}", order.getId(), orderPaymentStatusUpdate.getStatus().toString());
-            
+
 //            //clear cart item
-//            cartItemRepository.clearCartItem(order.getCartId());
-//            logger.info("clear cartItem for cartId: {}", order.getCartId());
+//            cartItemRepository.clearCartItem(cart.getCartId());
+//            logger.info("clear cartItem for cartId: {}", cart.getCartId());
             // pass orderId to OrderPostService, even though the status is not completed yet
-            //orderPostService.postOrderLink(order.getId(), order.getStoreId());
+            //orderPostService.postOrderLink(cart.getId(), cart.getStoreId());
         } catch (Exception exp) {
             logger.error("Error saving order", exp);
             response.setMessage(exp.getMessage());
@@ -293,6 +309,166 @@ public class OrderController {
         response.setSuccessStatus(HttpStatus.CREATED);
         response.setData(order);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     *
+     *
+     * @param request
+     * @param cartId
+     * @param cod
+     * @return
+     * @throws Exception
+     */
+    @PostMapping(path = {"/carts/{cartId}/cod/push"}, name = "orders-push-cod")
+    @PreAuthorize("hasAnyAuthority('orders-push-cod', 'all')")
+    public ResponseEntity<HttpResponse> pushCODOrder(HttpServletRequest request,
+            @PathVariable(required = true) String cartId,
+            @RequestBody COD cod) throws Exception {
+        String logprefix = request.getRequestURI() + " ";
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        logger.info("orders-push-cod request on url: {}", request.getRequestURI());
+
+        logger.info("orders-push-cod request body: " + cod.toString());
+
+        // create order object
+        Order order = new Order();
+        try {
+            Optional<Cart> optCart = cartRepository.findById(cartId);
+            if (!optCart.isPresent()) {
+                logger.info("cart with id " + cartId + " not found");
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("cart with id " + cartId + " not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            Cart cart = optCart.get();
+            logger.info("cart exists against cartId: {}", cartId);
+
+            //getting store details for cart if from product service
+            StoreWithDetails storeWithDetials = productService.getStoreById(cart.getStoreId());
+            logger.info("got store details of cartId: {}, and storeId: {}, {}", cartId, cart.getStoreId(), storeWithDetials.toString());
+
+            if (storeWithDetials == null) {
+                logger.info("store with storeId: {} not found", cart.getStoreId());
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("store not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            //getting store details 
+            StoreDeliveryDetail storeDeliveryDetail = productService.getStoreDeliveryDetails(cart.getStoreId());
+            logger.info("got store details, {}", storeDeliveryDetail.toString());
+            Double subTotal = 0.0;
+            List<OrderItem> orderItems = new ArrayList<OrderItem>();
+            try {
+                // check store payment type
+                if (storeWithDetials.getPaymentType().equalsIgnoreCase(StorePaymentType.COD.toString())) {
+                    logger.info("Store with storeId: {} is COD", cart.getStoreId());
+                    // get cart items 
+                    List<CartItem> cartItems = cartItemRepository.findByCartId(cartId);
+                    logger.info("got cartItems of cartId: {}, {}", cartId, cartItems.toString());
+                    for (int i = 0; i < cartItems.size(); i++) {
+                        // check every items price in product service
+                        ProductInventory productInventory = productService.getProductInventoryById(cart.getStoreId(), cartItems.get(i).getProductId(), cartItems.get(i).getItemCode());
+                        logger.info("got productinventory against itemcode: {}, {}", cartItems.get(i).getItemCode(), productInventory);
+                        if (cartItems.get(i).getProductPrice() != Float.parseFloat(String.valueOf(productInventory.getPrice()))) {
+                            // should return warning if prices are not same
+                            logger.info("prices are not same, price got updated: oldPrice: {}, newPrice: {}", cartItems.get(i).getProductPrice(), String.valueOf(productInventory.getPrice()));
+                            response.setSuccessStatus(HttpStatus.CONFLICT);
+                            response.setMessage("Conflict in prices, please update prices in cartItems, oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
+                            response.setData(cartItems.get(i));
+                            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+                        }
+                        subTotal += productInventory.getPrice();
+
+                        //creating orderItem
+                        OrderItem orderItem = new OrderItem();
+                        orderItem.setItemCode(cartItems.get(i).getItemCode());
+                        orderItem.setProductId(cartItems.get(i).getProductId());
+                        orderItem.setProductName((productInventory.getProduct() !=null) ? productInventory.getProduct().getName(): "" );
+                        orderItem.setProductPrice(Float.parseFloat(String.valueOf(productInventory.getPrice())));
+                        orderItem.setQuantity(cartItems.get(i).getQuantity());
+                        orderItem.setSKU(productInventory.getSKU());
+                        orderItem.setSpecialInstruction(cartItems.get(i).getSpecialInstruction());
+                        orderItem.setWeight(cartItems.get(i).getWeight());
+                        orderItem.setPrice(cartItems.get(i).getQuantity() * Float.parseFloat(String.valueOf(productInventory.getPrice())));
+
+                        //adding new orderItem to orderItems list
+                        orderItems.add(orderItem);
+                        logger.info("added orderItem to order list: {}", orderItem.toString());
+                    }
+
+                    order.setCartId(cartId);
+                    order.setStoreId(storeWithDetials.getId());
+                    order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE);
+                    order.setPaymentStatus(PaymentStatus.PENDING);
+                    order.setCustomerId(cod.getCustomerId());
+                    order.setDeliveryCharges(cod.getOrderPaymentDetails().getDeliveryQuotationAmount());
+
+                    //setting service charges
+                    Double serviceChargesPercentage = storeWithDetials.getServiceChargesPercentage();
+                    Double serviceCharges = (serviceChargesPercentage * subTotal) /100;
+                    order.setServiceCharges(serviceCharges);
+
+                    //setting subTotal
+                    order.setSubTotal(subTotal);
+                    //setting total 
+                    order.setTotal(subTotal + serviceCharges + order.getDeliveryCharges());
+                    // setting invoice id
+                    String invoiceId = TxIdUtil.generateReferenceId(storeWithDetials.getNameAbreviation());
+                    order.setInvoiceId(invoiceId);
+
+                    // setting this empty
+                    order.setPrivateAdminNotes("");
+                    order.setCustomerNotes("");
+                    // saving order object to get order Id
+                    order = orderRepository.save(order);
+                    logger.info("order posted successfully orderId: {}", order.getId());
+                    // save payment details
+                    cod.getOrderPaymentDetails().setOrderId(order.getId());
+                    order.setOrderPaymentDetail(orderPaymentDetailRepository.save(cod.getOrderPaymentDetails()));
+                    logger.info("order payment details inserted successfully: {}", order.getOrderPaymentDetail().toString());
+                    // save shipment detials
+                    cod.getOrderShipmentDetails().setOrderId(order.getId());
+                    order.setOrderShipmentDetail(orderShipmentDetailRepository.save(cod.getOrderShipmentDetails()));
+                    logger.info("order shipment details inserted successfully: {}", order.getOrderShipmentDetail().toString());
+                    OrderItem orderItem = null;
+                    // inserting order items now
+                    for (int i = 0; i < orderItems.size(); i++) {
+                        // insert orderItem 
+                        orderItems.get(i).setOrderId(order.getId());
+                        orderItem = orderItemRepository.save(orderItems.get(i));
+                        logger.info("orderItem created with id: {}, orderId: {}", orderItem.getId(), orderItem.getOrderId());
+                    }
+                    // push cart to rocket chat
+                    orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
+                    logger.info("order pushed to merchant rocket chat orderId: {}", order.getId());
+                } else {
+                    // throw bad request exception
+                    logger.info("You cannot place order through this endpoint: {} because store is not cod", "/orders/carts/" + cartId + "/cod/push");
+                    response.setMessage("you cannot post order throgh this endpoint because store is not cod");
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+                }
+
+            } catch (Exception ex) {
+                logger.error("exception occur while pushing order to rocket chat ", ex);
+                response.setMessage(ex.getMessage());
+                return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
+            }
+            
+            logger.info("Everything is fine thanks for using this API for placing order");
+            response.setSuccessStatus(HttpStatus.CREATED);
+            response.setData(order);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            //orderPostService.postOrderLink(cart.getId(), cart.getStoreId());
+        } catch (Exception exp) {
+            logger.error("Error saving order", exp);
+            response.setMessage(exp.getMessage());
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
+        }
+
     }
 
     @DeleteMapping(path = {"/{id}"}, name = "orders-delete-by-id")
@@ -379,51 +555,51 @@ public class OrderController {
 //        logger.info("", "");
 //        logger.info(bodyOrder.toString(), "");
 //
-//        Optional<Order> optOrder = orderRepository.findById(id);
+//        Optional<Order> optCart = orderRepository.findById(id);
 //
-//        if (!optOrder.isPresent()) {
+//        if (!optCart.isPresent()) {
 //            logger.info("Order not found with orderId: {}", id);
 //            response.setErrorStatus(HttpStatus.NOT_FOUND);
 //            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 //        }
 //
-//        logger.info("order found with orderId: {}", id);
-//        Order order = optOrder.get();
+//        logger.info("cart found with orderId: {}", id);
+//        Order cart = optCart.get();
 //
 //        if (bodyOrder.getPaymentStatus().equalsIgnoreCase("SUCCESS")) {
-//            order.setCompletionStatus("Received");
-//            order.setPaymentStatus("Completed");
-//            orderPostService.postOrderLink(order.getId(), bodyOrder.getStoreId());
+//            cart.setCompletionStatus("Received");
+//            cart.setPaymentStatus("Completed");
+//            orderPostService.postOrderLink(cart.getId(), bodyOrder.getStoreId());
 //
-//            logger.info("order success for orderId: {}", id);
+//            logger.info("cart success for orderId: {}", id);
 //            //check if need adhoc delivery        
-//            List<OrderItem> itemList = orderItemRepository.findByOrderId(order.getId());
-//            logger.info("orderId:{} itemList size:{}", order.getId(), itemList.size());
+//            List<OrderItem> itemList = orderItemRepository.findByOrderId(cart.getId());
+//            logger.info("orderId:{} itemList size:{}", cart.getId(), itemList.size());
 //            if (itemList.size() > 0) {
 //                Optional<Product> product = productRepository.findById(itemList.get(0).getProductId());
 //                if (product.isPresent()) {
-//                    logger.info("orderId:{} Product found:{} deliveryType:{}", order.getId(), product.get().getId(), product.get().getDeliveryType());
+//                    logger.info("orderId:{} Product found:{} deliveryType:{}", cart.getId(), product.get().getId(), product.get().getDeliveryType());
 //                    if (product.get().getDeliveryType().equals("ADHOC")) {
 //                        // trigger delivery service
 //                        DeliveryServiceSubmitOrder deliveryServiceSubmitOrder = new DeliveryServiceSubmitOrder();
 //                        OrderShipmentDetail orderShipmentDetail = orderShipmentDetailRepository.findByOrderId(id);
 //                        deliveryServiceSubmitOrder.setOrderId(id);
-//                        deliveryServiceSubmitOrder.setCustomerId(order.getCustomerId());
-//                        deliveryServiceSubmitOrder.setStoreId(order.getStoreId());
+//                        deliveryServiceSubmitOrder.setCustomerId(cart.getCustomerId());
+//                        deliveryServiceSubmitOrder.setStoreId(cart.getStoreId());
 //                        deliveryServiceSubmitOrder.setPieces(1);
 //                        deliveryServiceSubmitOrder.setProductCode("document");
 //                        deliveryServiceSubmitOrder.setItemType("parcel");
 //                        deliveryServiceSubmitOrder.setTotalWeightKg(1);
 //                        deliveryServiceSubmitOrder.setIsInsurance(false);
 //                        deliveryServiceSubmitOrder.setShipmentContent("Food");
-//                        deliveryServiceSubmitOrder.setShipmentValue(order.getTotal());
+//                        deliveryServiceSubmitOrder.setShipmentValue(cart.getTotal());
 //                        deliveryServiceSubmitOrder.setDeliveryProviderId(orderShipmentDetail.getDeliveryProviderId());
 //                        //pickup details
-//                        logger.info("Find storeId:{}", order.getStoreId());
-//                        Optional<Store> fstore = storeRepository.findById(order.getStoreId());
+//                        logger.info("Find storeId:{}", cart.getStoreId());
+//                        Optional<Store> fstore = storeRepository.findById(cart.getStoreId());
 //                        if (fstore.isPresent()) {
 //                            Store store = fstore.get();
-//                            logger.info("storeId:{} Store found. contactName:{}", order.getStoreId(), store.getContactName());
+//                            logger.info("storeId:{} Store found. contactName:{}", cart.getStoreId(), store.getContactName());
 //                            DeliveryServicePickupDetails pickupDetails = new DeliveryServicePickupDetails();
 //                            pickupDetails.setPickupContactName(store.getContactName());
 //                            pickupDetails.setTrolleyRequired(false);
@@ -448,18 +624,18 @@ public class OrderController {
 //                        deliveryDetails.setDeliveryContactPhone(orderShipmentDetail.getPhoneNumber());
 //                        deliveryDetails.setDeliveryContactEmail(orderShipmentDetail.getEmail());
 //                        deliveryServiceSubmitOrder.setDelivery(deliveryDetails);
-//                        logger.info("submit to delivey-service orderId:{}", order.getId());
+//                        logger.info("submit to delivey-service orderId:{}", cart.getId());
 //                        logger.info("Request Body:{}", deliveryServiceSubmitOrder.toString());
 //                        DeliveryServiceResponse deliveryResponse = deliveryService.submitDeliveryOrder(deliveryServiceSubmitOrder);
-//                        deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
+//                        deliveryService.confirmOrderDelivery(cart.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
 //                        logger.info("Response Data isSuccess:{} trackingUrl:{}", deliveryResponse.data.isSuccess, deliveryResponse.data.trackingUrl);
 //                        if (deliveryResponse.data.isSuccess) {
-//                            order.setCompletionStatus("ReadyForDelivery");
+//                            cart.setCompletionStatus("ReadyForDelivery");
 //                            //send email with tracking url
 //                            String[] url = deliveryResponse.data.trackingUrl;
 //                            String receiver = orderShipmentDetail.getEmail();
-//                            String subject = "[" + order.getId() + "] Your order is being deliver";
-//                            String content = "Your order " + order.getId() + " is being deliver. Use this url to track your order :"
+//                            String subject = "[" + cart.getId() + "] Your cart is being deliver";
+//                            String content = "Your cart " + cart.getId() + " is being deliver. Use this url to track your cart :"
 //                                    + "<br/>";
 //                            for (int i = 0; i < url.length; i++) {
 //                                content += "<br/>" + url[0];
@@ -468,7 +644,7 @@ public class OrderController {
 //                            emailService.SendEmail(receiver, subject, content);
 //                            logger.info("Sent Email");
 //                            // pass orderId to OrderPostService
-//                            logger.debug("Posting order");
+//                            logger.debug("Posting cart");
 //                            orderPostService.postOrderLink(id, bodyOrder.getStoreId());
 //                            logger.info("Order Posted on live chat");
 //                        } else {
@@ -478,15 +654,15 @@ public class OrderController {
 //                }
 //            }
 //        } else {
-//            order.setCompletionStatus("OnHold");
-//            order.setPaymentStatus("Failed");
+//            cart.setCompletionStatus("OnHold");
+//            cart.setPaymentStatus("Failed");
 //            logger.info("payment fail orderId: {}", id);
 //        }
 //
-//        orderRepository.save(order);
-//        logger.info("order updated for orderId: {}", id);
+//        orderRepository.save(cart);
+//        logger.info("cart updated for orderId: {}", id);
 //        response.setSuccessStatus(HttpStatus.ACCEPTED);
-//        response.setData(order);
+//        response.setData(cart);
 //        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
 //    }
     /**
@@ -505,12 +681,13 @@ public class OrderController {
 
             if (from != null && to != null) {
                 to.setDate(to.getDate() + 1);
-                predicates.add(builder.greaterThanOrEqualTo(root.get("created"),  from));
-                predicates.add(builder.lessThanOrEqualTo(root.get("created"),  to));
+                predicates.add(builder.greaterThanOrEqualTo(root.get("created"), from));
+                predicates.add(builder.lessThanOrEqualTo(root.get("created"), to));
             }
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
+
 }

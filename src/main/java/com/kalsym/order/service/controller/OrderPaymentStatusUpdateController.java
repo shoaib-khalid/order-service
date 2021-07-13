@@ -347,6 +347,7 @@ public class OrderPaymentStatusUpdateController {
                 break;
             case DELIVERED_TO_CUSTOMER:
             case REJECTED_BY_STORE:
+            case READY_FOR_DELIVERY:
                 //sending email
                 emailService.sendEmail(email);
                 break;

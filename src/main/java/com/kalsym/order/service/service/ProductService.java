@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kalsym.order.service.enums.ProductStatus;
 import com.kalsym.order.service.model.object.DeliveryServiceSubmitOrder;
-import java.util.HashMap;
-import java.util.Map;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,14 +30,29 @@ public class ProductService {
     private static Logger logger = LoggerFactory.getLogger("application");
 
     @Value("${product.reduce.quantity.URL:https://api.symplified.biz/product-service/v1/stores/%STOREID%/products/%PRODUCTID%/inventory/%ITEMCODE%?quantity=}")
-    String reduceProductInventoryURL;
+    private String reduceProductInventoryURL;
     
     @Value("${get.product.by.id.URL:https://api.symplified.biz/product-service/v1/stores/%STOREID%/products/%PRODUCTID%}")
-    String getProductByIdURL;
+    private String getProductByIdURL;
     
     @Value("${change.product.status.URL:https://api.symplified.biz/product-service/v1/stores/%STOREID%/products/%PRODUCTID%/inventory/%ITEMCODE%/productStatus?status=}")
-    String changeProductStatusURL;
+    private String changeProductStatusURL;
     
+    @Value("${get.store.by.id.URL:https://api.symplified.biz/product-service/v1/stores/%STOREID%}")
+    private String getStoreByIdURL;
+    
+    @Value("${get.store.delivery.details.URL:https://api.symplified.biz/product-service/v1/stores/%STOREID%/deliverydetails}")
+    private String getStoreDeliveryDetailsURL;
+    
+    @Value("${get.product.inventory.URL:https://api.symplified.biz/product-service/v1/stores/%STOREID%/products/%PRODUCTID%/inventory/%ITEMCODE%}")
+    private String getProductInventoryURL;
+    
+    /**
+     * 
+     * @param storeId
+     * @param productId
+     * @return 
+     */
     public Product getProductById(String storeId, String productId) {
 
         try {
@@ -197,6 +210,157 @@ public class ProductService {
             return null;
         } catch (JsonProcessingException ex) {
             logger.error("Error product inventory reduction {}", changeProductStatusURL, ex);
+        }
+        return null;
+    }
+    
+    /**
+     * 
+     * @param storeId
+     * @return
+     * @throws JsonProcessingException 
+     */
+    public StoreWithDetails getStoreById(String storeId) throws JsonProcessingException {
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer accessToken");
+        HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
+        httpEntity = new HttpEntity(headers);
+
+        try {
+            getStoreByIdURL = getStoreByIdURL.replace("%STOREID%", storeId);
+            logger.info("getStoreByIdURL : " + getStoreByIdURL);
+            ResponseEntity<String> res = restTemplate.exchange(getStoreByIdURL, HttpMethod.GET, httpEntity, String.class);
+            logger.info("res : " + res);
+
+            if (res.getStatusCode() == HttpStatus.OK) {
+                logger.info("res : " + res);
+                JSONObject jsonObject = new JSONObject(res.getBody());
+//        
+                //create ObjectMapper instance
+                JSONObject storeObject = jsonObject.getJSONObject("data");
+                //create ObjectMapper instance
+                ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+                objectMapper.disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
+                objectMapper.disable(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES);
+                //convert json string to object
+                StoreWithDetails storeWithDetails = objectMapper.readValue(storeObject.toString(), StoreWithDetails.class);
+
+                logger.info("got store object : " + storeWithDetails.toString());
+                return storeWithDetails;
+            }
+        } catch (RestClientException e) {
+            logger.error("Error getStoreById domain {}", getStoreByIdURL, e);
+            return null;
+        } catch (JsonProcessingException ex) {
+            logger.error("Error getStoreById domain {}", getStoreByIdURL, ex);
+        }
+        return null;
+    }
+    
+    
+    /**
+     * 
+     * @param storeId
+     * @return
+     * @throws JsonProcessingException 
+     */
+    public StoreDeliveryDetail getStoreDeliveryDetails(String storeId) throws JsonProcessingException {
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer accessToken");
+        HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
+        httpEntity = new HttpEntity(headers);
+
+        try {
+            getStoreDeliveryDetailsURL = getStoreDeliveryDetailsURL.replace("%STOREID%", storeId);
+            logger.info("getStoreDeliveryDetailsURL : " + getStoreDeliveryDetailsURL);
+            ResponseEntity<String> res = restTemplate.exchange(getStoreDeliveryDetailsURL, HttpMethod.GET, httpEntity, String.class);
+            logger.info("res : " + res);
+
+            if (res.getStatusCode() == HttpStatus.OK) {
+                logger.info("res : " + res);
+                JSONObject jsonObject = new JSONObject(res.getBody());
+//        
+                //create ObjectMapper instance
+                JSONObject storeDeliveryDetailsObject = jsonObject.getJSONObject("data");
+                //create ObjectMapper instance
+                ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+                objectMapper.disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
+                objectMapper.disable(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES);
+                //convert json string to object
+                StoreDeliveryDetail storeDeliveryDetail = objectMapper.readValue(storeDeliveryDetailsObject.toString(), StoreDeliveryDetail.class);
+
+                logger.info("got store delivery object : " + storeDeliveryDetail.toString());
+                return storeDeliveryDetail;
+            }
+        } catch (RestClientException e) {
+            logger.error("Error getStoreDeliveryDetails domain {}", getStoreDeliveryDetailsURL, e);
+            return null;
+        } catch (JsonProcessingException ex) {
+            logger.error("Error getStoreDeliveryDetails domain {}", getStoreDeliveryDetailsURL, ex);
+        }
+        return null;
+    }
+    
+    
+    /**
+     * 
+     * @param storeId
+     * @param productId
+     * @param itemcode
+     * @return 
+     */
+    public ProductInventory getProductInventoryById(String storeId, String productId, String itemcode) {
+
+        try {
+            getProductInventoryURL = getProductInventoryURL.replace("%STOREID%", storeId);
+            getProductInventoryURL = getProductInventoryURL.replace("%PRODUCTID%", productId);
+            getProductInventoryURL = getProductInventoryURL.replace("%ITEMCODE%", itemcode);
+//            logger.info("getProductByIdURL created: " + getProductByIdURL);
+            RestTemplate restTemplate = new RestTemplate();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Bearer accessToken");
+//            Map<String, Integer> params = new HashMap<>();
+//            params.put("quantity", quantity);
+            HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
+            httpEntity = new HttpEntity(null, headers);
+
+            logger.info("Sending request to product service to get product inventory by id : " + productId +  ", store id: "  + storeId + ", itemcode: " + itemcode  + ", URL: " + getProductInventoryURL);
+            ResponseEntity<String> res = restTemplate.exchange(getProductInventoryURL, HttpMethod.GET, httpEntity, String.class);
+
+            logger.info("Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
+
+            if (res.getStatusCode() == HttpStatus.OK) {
+                logger.info("res : " + res);
+                JSONObject jsonObject = new JSONObject(res.getBody());
+//        
+                //create ObjectMapper instance
+                JSONObject productInventoryObject = jsonObject.getJSONObject("data");
+                logger.info("object of productInventoryObject: " + productInventoryObject);
+                //create ObjectMapper instance
+                ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+                objectMapper.disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
+                objectMapper.disable(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES);
+                //convert json string to object
+                ProductInventory productInventory = objectMapper.readValue(productInventoryObject.toString(), ProductInventory.class);
+
+                logger.info("got productInventoryObject object : " + productInventory.toString());
+                return productInventory;
+            }
+        } catch (RestClientException e) {
+            logger.error("Error getProductInventoryById {}", e);
+            return null;
+        } catch (JsonProcessingException ex) {
+            logger.error("Error getProductInventoryById {}", ex);
         }
         return null;
     }

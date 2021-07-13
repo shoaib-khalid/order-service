@@ -61,8 +61,8 @@ public class SessionRequestFilter extends OncePerRequestFilter {
         // Token is in the form "Bearer token". Remove Bearer word and get only the Token
         if (null != authHeader && authHeader.startsWith("Bearer ")) {
             accessToken = authHeader.replace("Bearer ", "");
-            logger.warn(logprefix, "token: " + accessToken, "");
-            logger.warn(logprefix, "token length: " + accessToken.length(), "");
+            logger.info(logprefix, "token: " + accessToken, "");
+            logger.info(logprefix, "token length: " + accessToken.length(), "");
 
         } else {
             logger.warn(logprefix, "token does not begin with Bearer String", "");

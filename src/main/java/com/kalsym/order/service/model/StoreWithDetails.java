@@ -1,10 +1,13 @@
 package com.kalsym.order.service.model;
 
 
+import com.kalsym.order.service.enums.StorePaymentType;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -64,7 +67,10 @@ public class StoreWithDetails implements Serializable {
 
     private String regionCountryStateId;
 
-    private Integer serviceChargesPercentage;
+    private Double serviceChargesPercentage;
+    
+//    @Enumerated(EnumType.STRING)
+    private String paymentType;
 
     @OneToOne(cascade = CascadeType.ALL,
             fetch = FetchType.EAGER)
@@ -126,6 +132,31 @@ public class StoreWithDetails implements Serializable {
         if (null != store.getServiceChargesPercentage()) {
             serviceChargesPercentage = store.getServiceChargesPercentage();
         }
+        
+        if (null != store.getPaymentType()) {
+            paymentType = store.getPaymentType();
+        }
 
+    }
+    
+    
+    public String getNameAbreviation() {
+        String abbreviation = "";
+
+        if (name.length() <= 3) {
+            abbreviation = name;
+        } else {
+            String[] myName = name.split(" ");
+
+            for (int i = 0; i < myName.length; i++) {
+                String s = myName[i];
+                abbreviation = abbreviation + s.charAt(0);
+
+                if (abbreviation.length() == 3) {
+                    break;
+                }
+            }
+        }
+        return abbreviation;
     }
 }
