@@ -299,7 +299,7 @@ public class OrderPaymentStatusUpdateController {
                                 logger.info("intimation send for out of stock product id: " + orderItems.get(i).getProductId() + ", SKU: " + orderItems.get(i).getSKU() + ", Name: " + productInventory.getProduct().getName());
                             }
                             
-                            if(!product.getAllowOutOfStockPurchases()){
+                            if(!product.getAllowOutOfStockPurchases() && productInventory.getQuantity() <= 0){
                                 // making this product variant outof stock
                                 productInventory = productService.changeProductStatus(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), ProductStatus.OUTOFSTOCK);
                                 logger.info("this product variant is out of stock now storeId: " + order.getStoreId() + ", productId: " + orderItems.get(i).getProductId() + ", itemCode: " + orderItems.get(i).getItemCode());

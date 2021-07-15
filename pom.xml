@@ -105,7 +105,12 @@
             <artifactId>mail</artifactId>
             <version>1.5.0-b01</version>
         </dependency>
-
+        
+        <!--for getting performance, health etc on prod server-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

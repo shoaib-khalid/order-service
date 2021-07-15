@@ -5,6 +5,7 @@ import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
 import java.io.Serializable;
 import java.util.Date;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -63,6 +64,9 @@ public class Order implements Serializable {
     private Date updated;
 
     private String invoiceId;
+    
+    @Column(nullable = true)
+    private double klCommission;
 
     /*
     @OneToOne(fetch=FetchType.LAZY)

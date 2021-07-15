@@ -2,6 +2,7 @@ package com.kalsym.order.service.controller;
 
 import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
+import com.kalsym.order.service.enums.ProductStatus;
 import com.kalsym.order.service.enums.StorePaymentType;
 import com.kalsym.order.service.model.OrderPaymentDetail;
 import javax.servlet.http.HttpServletRequest;
@@ -27,6 +28,7 @@ import com.kalsym.order.service.model.ProductInventory;
 import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.StoreDeliveryDetail;
 import com.kalsym.order.service.model.Cart;
+import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.model.OrderCompletionStatusUpdate;
 import com.kalsym.order.service.model.OrderPaymentStatusUpdate;
 import com.kalsym.order.service.model.Store;
@@ -369,6 +371,8 @@ public class OrderController {
                     // get cart items 
                     List<CartItem> cartItems = cartItemRepository.findByCartId(cartId);
                     logger.info("got cartItems of cartId: {}, {}", cartId, cartItems.toString());
+                    
+                    
                     for (int i = 0; i < cartItems.size(); i++) {
                         // check every items price in product service
                         ProductInventory productInventory = productService.getProductInventoryById(cart.getStoreId(), cartItems.get(i).getProductId(), cartItems.get(i).getItemCode());
@@ -411,6 +415,9 @@ public class OrderController {
                     Double serviceChargesPercentage = storeWithDetials.getServiceChargesPercentage();
                     Double serviceCharges = (serviceChargesPercentage * subTotal) /100;
                     order.setServiceCharges(serviceCharges);
+                    
+                    //setting kl commision
+//                    order.setKlCommission(0.0);
 
                     //setting subTotal
                     order.setSubTotal(subTotal);
@@ -435,12 +442,37 @@ public class OrderController {
                     order.setOrderShipmentDetail(orderShipmentDetailRepository.save(cod.getOrderShipmentDetails()));
                     logger.info("order shipment details inserted successfully: {}", order.getOrderShipmentDetail().toString());
                     OrderItem orderItem = null;
+                    Product product;
+                    ProductInventory productInventory;
                     // inserting order items now
                     for (int i = 0; i < orderItems.size(); i++) {
                         // insert orderItem 
                         orderItems.get(i).setOrderId(order.getId());
                         orderItem = orderItemRepository.save(orderItems.get(i));
                         logger.info("orderItem created with id: {}, orderId: {}", orderItem.getId(), orderItem.getOrderId());
+                        // getting product information if product tracking is enabled we will reduce the quantity
+                        product = productService.getProductById(order.getStoreId(), orderItems.get(i).getProductId());
+                        logger.info("Got product details of orderItem: " + product.toString());
+                        if (product.getTrackQuantity()) {
+                            logger.info("Product tracking is enable");
+                            productInventory = productService.reduceProductInventory(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), orderItems.get(i).getQuantity());
+                            if(!product.getAllowOutOfStockPurchases() && productInventory.getQuantity() <= 0){
+                                // making this product variant outof stock
+                                productInventory = productService.changeProductStatus(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), ProductStatus.OUTOFSTOCK);
+                                logger.info("this product variant is out of stock now storeId: " + order.getStoreId() + ", productId: " + orderItems.get(i).getProductId() + ", itemCode: " + orderItems.get(i).getItemCode());
+                            }
+                            
+                            if (productInventory.getQuantity() <= product.getMinQuantityForAlarm()) {
+                                //sending notification for product is going out of stock
+                                //we can send email as well
+                                orderPostService.sendMinimumQuantityAlarm(order.getId(), order.getStoreId(), orderItems.get(i), productInventory.getQuantity());
+                                logger.info("intimation sent for out of stock product id: " + orderItems.get(i).getProductId() + ", SKU: " + orderItems.get(i).getSKU() + ", Name: " + productInventory.getProduct().getName());
+                            }
+                            
+                            
+                        } else {
+                            logger.info("Product tracking is not enabled by marchant");
+                        }
                     }
                     // push cart to rocket chat
                     orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
