@@ -306,6 +306,7 @@ public class OrderPaymentStatusUpdateController {
                 break;
             case DELIVERED_TO_CUSTOMER:
             case REJECTED_BY_STORE:
+//            case READY_FOR_DELIVERY:
                 //sending email
                 emailService.sendEmail(email);
                 break;
@@ -408,6 +409,7 @@ public class OrderPaymentStatusUpdateController {
         try {
 
             DeliveryOrder deliveryOrder = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), order.getId());
+            status = OrderStatus.AWAITING_PICKUP;
             email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
             email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
             logger.info("delivery confirmed for order: {} awaiting for pickup", orderId);
