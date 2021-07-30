@@ -32,6 +32,7 @@ import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.model.OrderCompletionStatusUpdate;
 import com.kalsym.order.service.model.OrderPaymentStatusUpdate;
 import com.kalsym.order.service.model.Store;
+import com.kalsym.order.service.model.StoreCommission;
 import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
@@ -253,7 +254,8 @@ public class OrderController {
             }
 
             Store store = optStore.get();
-
+            StoreCommission storeCommission = productService.getStoreCommissionByStoreId(store.getId());
+            logger.info("got store commission : " + storeCommission);
 //            while (true) {
             try {
                 String invoiceId = TxIdUtil.generateReferenceId(store.getNameAbreviation());
@@ -265,6 +267,14 @@ public class OrderController {
                 order.setOrderShipmentDetail(null);
                 order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE);
                 order.setPaymentStatus(PaymentStatus.PENDING);
+
+                //setting store commission 
+                if (storeCommission != null) {
+                    double commission = order.getTotal() * (storeCommission.getRate() / 100);
+                    order.setKlCommission((commission < storeCommission.getMinChargeAmount()) ? storeCommission.getMinChargeAmount() : commission);
+                    order.setStoreShare(order.getTotal() - commission);
+                }
+
                 order = orderRepository.save(order);
                 opd.setOrderId(order.getId());
                 osd.setOrderId(order.getId());
@@ -322,10 +332,10 @@ public class OrderController {
      * @return
      * @throws Exception
      */
-    @PostMapping(path = {"/carts/{cartId}/cod/push"}, name = "orders-push-cod")
+    @PostMapping(path = {"/placeOrder"}, name = "orders-push-cod")
     @PreAuthorize("hasAnyAuthority('orders-push-cod', 'all')")
     public ResponseEntity<HttpResponse> pushCODOrder(HttpServletRequest request,
-            @PathVariable(required = true) String cartId,
+            @RequestParam(required = true) String cartId,
             @RequestBody COD cod) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
@@ -362,6 +372,10 @@ public class OrderController {
             //getting store details 
             StoreDeliveryDetail storeDeliveryDetail = productService.getStoreDeliveryDetails(cart.getStoreId());
             logger.info("got store details, {}", storeDeliveryDetail.toString());
+
+            StoreCommission storeCommission = productService.getStoreCommissionByStoreId(cart.getStoreId());
+            logger.info("got store commission : " + storeCommission);
+
             Double subTotal = 0.0;
             List<OrderItem> orderItems = new ArrayList<OrderItem>();
             try {
@@ -371,8 +385,7 @@ public class OrderController {
                     // get cart items 
                     List<CartItem> cartItems = cartItemRepository.findByCartId(cartId);
                     logger.info("got cartItems of cartId: {}, {}", cartId, cartItems.toString());
-                    
-                    
+
                     for (int i = 0; i < cartItems.size(); i++) {
                         // check every items price in product service
                         ProductInventory productInventory = productService.getProductInventoryById(cart.getStoreId(), cartItems.get(i).getProductId(), cartItems.get(i).getItemCode());
@@ -391,7 +404,7 @@ public class OrderController {
                         OrderItem orderItem = new OrderItem();
                         orderItem.setItemCode(cartItems.get(i).getItemCode());
                         orderItem.setProductId(cartItems.get(i).getProductId());
-                        orderItem.setProductName((productInventory.getProduct() !=null) ? productInventory.getProduct().getName(): "" );
+                        orderItem.setProductName((productInventory.getProduct() != null) ? productInventory.getProduct().getName() : "");
                         orderItem.setProductPrice(Float.parseFloat(String.valueOf(productInventory.getPrice())));
                         orderItem.setQuantity(cartItems.get(i).getQuantity());
                         orderItem.setSKU(productInventory.getSKU());
@@ -413,12 +426,11 @@ public class OrderController {
 
                     //setting service charges
                     Double serviceChargesPercentage = storeWithDetials.getServiceChargesPercentage();
-                    Double serviceCharges = (serviceChargesPercentage * subTotal) /100;
+                    Double serviceCharges = (serviceChargesPercentage * subTotal) / 100;
                     order.setServiceCharges(serviceCharges);
-                    
+
                     //setting kl commision
 //                    order.setKlCommission(0.0);
-
                     //setting subTotal
                     order.setSubTotal(subTotal);
                     //setting total 
@@ -430,6 +442,14 @@ public class OrderController {
                     // setting this empty
                     order.setPrivateAdminNotes("");
                     order.setCustomerNotes("");
+
+                    //setting store commission 
+                    if (storeCommission != null) {
+                        double commission = order.getTotal() * (storeCommission.getRate() / 100);
+                        order.setKlCommission((commission < storeCommission.getMinChargeAmount()) ? storeCommission.getMinChargeAmount() : commission);
+                        order.setStoreShare(order.getTotal() - commission);
+                    }
+
                     // saving order object to get order Id
                     order = orderRepository.save(order);
                     logger.info("order posted successfully orderId: {}", order.getId());
@@ -453,23 +473,22 @@ public class OrderController {
                         // getting product information if product tracking is enabled we will reduce the quantity
                         product = productService.getProductById(order.getStoreId(), orderItems.get(i).getProductId());
                         logger.info("Got product details of orderItem: " + product.toString());
-                        if (product.getTrackQuantity()) {
+                        if (product.isTrackQuantity()) {
                             logger.info("Product tracking is enable");
                             productInventory = productService.reduceProductInventory(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), orderItems.get(i).getQuantity());
-                            if(!product.getAllowOutOfStockPurchases() && productInventory.getQuantity() <= 0){
+                            if (!product.isAllowOutOfStockPurchases() && productInventory.getQuantity() <= 0) {
                                 // making this product variant outof stock
                                 productInventory = productService.changeProductStatus(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), ProductStatus.OUTOFSTOCK);
                                 logger.info("this product variant is out of stock now storeId: " + order.getStoreId() + ", productId: " + orderItems.get(i).getProductId() + ", itemCode: " + orderItems.get(i).getItemCode());
                             }
-                            
+
                             if (productInventory.getQuantity() <= product.getMinQuantityForAlarm()) {
                                 //sending notification for product is going out of stock
                                 //we can send email as well
                                 orderPostService.sendMinimumQuantityAlarm(order.getId(), order.getStoreId(), orderItems.get(i), productInventory.getQuantity());
                                 logger.info("intimation sent for out of stock product id: " + orderItems.get(i).getProductId() + ", SKU: " + orderItems.get(i).getSKU() + ", Name: " + productInventory.getProduct().getName());
                             }
-                            
-                            
+
                         } else {
                             logger.info("Product tracking is not enabled by marchant");
                         }
@@ -489,7 +508,7 @@ public class OrderController {
                 response.setMessage(ex.getMessage());
                 return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
             }
-            
+
             logger.info("Everything is fine thanks for using this API for placing order");
             response.setSuccessStatus(HttpStatus.CREATED);
             response.setData(order);

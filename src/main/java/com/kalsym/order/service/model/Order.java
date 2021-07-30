@@ -67,6 +67,13 @@ public class Order implements Serializable {
     
     @Column(nullable = true)
     private double klCommission;
+    
+    @Column(nullable = true)
+    private double storeServiceCharges;
+    
+    @Column(nullable = true)
+    private double storeShare;
+    
 
     /*
     @OneToOne(fetch=FetchType.LAZY)

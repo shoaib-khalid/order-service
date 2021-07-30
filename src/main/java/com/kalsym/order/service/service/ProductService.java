@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
  *
  * @author FaisalHayatJadoon
  */
-
 @Service
 public class ProductService {
 
@@ -31,27 +30,30 @@ public class ProductService {
 
     @Value("${product.reduce.quantity.URL:https://api.symplified.biz/product-service/v1/stores/%STOREID%/products/%PRODUCTID%/inventory/%ITEMCODE%?quantity=}")
     private String reduceProductInventoryURL;
-    
+
     @Value("${get.product.by.id.URL:https://api.symplified.biz/product-service/v1/stores/%STOREID%/products/%PRODUCTID%}")
     private String getProductByIdURL;
-    
+
     @Value("${change.product.status.URL:https://api.symplified.biz/product-service/v1/stores/%STOREID%/products/%PRODUCTID%/inventory/%ITEMCODE%/productStatus?status=}")
     private String changeProductStatusURL;
-    
+
     @Value("${get.store.by.id.URL:https://api.symplified.biz/product-service/v1/stores/%STOREID%}")
     private String getStoreByIdURL;
-    
+
     @Value("${get.store.delivery.details.URL:https://api.symplified.biz/product-service/v1/stores/%STOREID%/deliverydetails}")
     private String getStoreDeliveryDetailsURL;
-    
+
     @Value("${get.product.inventory.URL:https://api.symplified.biz/product-service/v1/stores/%STOREID%/products/%PRODUCTID%/inventory/%ITEMCODE%}")
     private String getProductInventoryURL;
-    
+
+    @Value("${get.store.commission.URL:https://api.symplified.biz/product-service/v1/stores/%STOREID%//commission}")
+    private String getStoreCommissionURL;
+
     /**
-     * 
+     *
      * @param storeId
      * @param productId
-     * @return 
+     * @return
      */
     public Product getProductById(String storeId, String productId) {
 
@@ -68,7 +70,7 @@ public class ProductService {
             HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
             httpEntity = new HttpEntity(null, headers);
 
-            logger.info("Sending request to product service to get product by id : " + productId +  ", store id: "  + storeId + ", URL: " + getProductByIdURL);
+            logger.info("Sending request to product service to get product by id : " + productId + ", store id: " + storeId + ", URL: " + getProductByIdURL);
             ResponseEntity<String> res = restTemplate.exchange(getProductByIdURL, HttpMethod.GET, httpEntity, String.class);
 
             logger.info("Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
@@ -101,12 +103,67 @@ public class ProductService {
     }
 
     /**
-     * 
+     *
+     * @param storeId
+     * @return
+     */
+    public StoreCommission getStoreCommissionByStoreId(String storeId) {
+
+        try {
+            getStoreCommissionURL = getStoreCommissionURL.replace("%STOREID%", storeId);
+
+//            logger.info("getProductByIdURL created: " + getProductByIdURL);
+            RestTemplate restTemplate = new RestTemplate();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Bearer accessToken");
+//            Map<String, Integer> params = new HashMap<>();
+//            params.put("quantity", quantity);
+            HttpEntity<String> httpEntity;
+            httpEntity = new HttpEntity(null, headers);
+
+            logger.info("Sending request to product service to get store commission by store id: " + storeId + ", URL: " + getStoreCommissionURL);
+            ResponseEntity<String> res = restTemplate.exchange(getStoreCommissionURL, HttpMethod.GET, httpEntity, String.class);
+
+            logger.info("Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
+
+            if (res.getStatusCode() == HttpStatus.OK) {
+                logger.info("res : " + res);
+                JSONObject jsonObject = new JSONObject(res.getBody());
+//        
+                //create ObjectMapper instance
+                JSONObject storeCommissionObject = jsonObject.getJSONObject("data");
+                logger.info("object of storeCommissionObject: " + storeCommissionObject);
+                if (storeCommissionObject != null) {
+                    //create ObjectMapper instance
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+                    objectMapper.disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
+                    objectMapper.disable(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES);
+                    //convert json string to object
+                    StoreCommission storeCommission = objectMapper.readValue(storeCommissionObject.toString(), StoreCommission.class);
+
+                    logger.info("got storeCommission object : " + storeCommission.toString());
+                    return storeCommission;
+                }
+
+            }
+        } catch (RestClientException e) {
+            logger.error("Error storeCommission {}", e);
+            return null;
+        } catch (JsonProcessingException ex) {
+            logger.error("Error storeCommission {}", ex);
+        }
+        return null;
+    }
+
+    /**
+     *
      * @param storeId
      * @param productId
      * @param itemcode
      * @param quantity
-     * @return 
+     * @return
      */
     public ProductInventory reduceProductInventory(String storeId, String productId, String itemcode, int quantity) {
 
@@ -156,14 +213,14 @@ public class ProductService {
         }
         return null;
     }
-    
+
     /**
-     * 
+     *
      * @param storeId
      * @param productId
      * @param itemcode
      * @param productStatus
-     * @return 
+     * @return
      */
     public ProductInventory changeProductStatus(String storeId, String productId, String itemcode, ProductStatus productStatus) {
 
@@ -213,12 +270,12 @@ public class ProductService {
         }
         return null;
     }
-    
+
     /**
-     * 
+     *
      * @param storeId
      * @return
-     * @throws JsonProcessingException 
+     * @throws JsonProcessingException
      */
     public StoreWithDetails getStoreById(String storeId) throws JsonProcessingException {
 
@@ -260,13 +317,12 @@ public class ProductService {
         }
         return null;
     }
-    
-    
+
     /**
-     * 
+     *
      * @param storeId
      * @return
-     * @throws JsonProcessingException 
+     * @throws JsonProcessingException
      */
     public StoreDeliveryDetail getStoreDeliveryDetails(String storeId) throws JsonProcessingException {
 
@@ -308,14 +364,13 @@ public class ProductService {
         }
         return null;
     }
-    
-    
+
     /**
-     * 
+     *
      * @param storeId
      * @param productId
      * @param itemcode
-     * @return 
+     * @return
      */
     public ProductInventory getProductInventoryById(String storeId, String productId, String itemcode) {
 
@@ -333,7 +388,7 @@ public class ProductService {
             HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
             httpEntity = new HttpEntity(null, headers);
 
-            logger.info("Sending request to product service to get product inventory by id : " + productId +  ", store id: "  + storeId + ", itemcode: " + itemcode  + ", URL: " + getProductInventoryURL);
+            logger.info("Sending request to product service to get product inventory by id : " + productId + ", store id: " + storeId + ", itemcode: " + itemcode + ", URL: " + getProductInventoryURL);
             ResponseEntity<String> res = restTemplate.exchange(getProductInventoryURL, HttpMethod.GET, httpEntity, String.class);
 
             logger.info("Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());

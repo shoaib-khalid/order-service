@@ -3,6 +3,7 @@ package com.kalsym.order.service.controller;
 import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.enums.ProductStatus;
+import com.kalsym.order.service.enums.StorePaymentType;
 import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.Email;
 import com.kalsym.order.service.model.Order;
@@ -289,7 +290,7 @@ public class OrderPaymentStatusUpdateController {
                         
                         product = productService.getProductById(order.getStoreId(), orderItems.get(i).getProductId());
                         logger.info("Got product details of orderItem: " + product.toString());
-                        if (product.getTrackQuantity()) {
+                        if (product.isTrackQuantity()) {
                             logger.info("Product tracking is enable");
                             productInventory = productService.reduceProductInventory(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), orderItems.get(i).getQuantity());
                             if (productInventory.getQuantity() <= product.getMinQuantityForAlarm()) {
@@ -299,7 +300,7 @@ public class OrderPaymentStatusUpdateController {
                                 logger.info("intimation send for out of stock product id: " + orderItems.get(i).getProductId() + ", SKU: " + orderItems.get(i).getSKU() + ", Name: " + productInventory.getProduct().getName());
                             }
                             
-                            if(!product.getAllowOutOfStockPurchases() && productInventory.getQuantity() <= 0){
+                            if(!product.isAllowOutOfStockPurchases() && productInventory.getQuantity() <= 0){
                                 // making this product variant outof stock
                                 productInventory = productService.changeProductStatus(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), ProductStatus.OUTOFSTOCK);
                                 logger.info("this product variant is out of stock now storeId: " + order.getStoreId() + ", productId: " + orderItems.get(i).getProductId() + ", itemCode: " + orderItems.get(i).getItemCode());
@@ -389,13 +390,7 @@ public class OrderPaymentStatusUpdateController {
         }
         Order order = optOrder.get();
 
-        OrderStatus prevStatus = order.getCompletionStatus();
-        if (!prevStatus.toString().equalsIgnoreCase(OrderStatus.PAYMENT_CONFIRMED.toString())) {
-            // should return error with cause
-            logger.info("Previous status in not valid: {}", order.getCompletionStatus().toString());
-            response.setErrorStatus(HttpStatus.BAD_REQUEST, "You can't change status because previous status is: " + order.getCompletionStatus().toString());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
+        
         Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(order.getStoreId());
         if (!optStore.isPresent()) {
             logger.info("Store not found with storeId: {}", order.getStoreId());
@@ -404,6 +399,14 @@ public class OrderPaymentStatusUpdateController {
         }
 
         StoreWithDetails storeWithDetails = optStore.get();
+        
+        OrderStatus prevStatus = order.getCompletionStatus();
+        if ((!prevStatus.toString().equalsIgnoreCase(OrderStatus.PAYMENT_CONFIRMED.toString()) && !storeWithDetails.getPaymentType().equalsIgnoreCase(StorePaymentType.COD.toString())) || storeWithDetails.getPaymentType().equalsIgnoreCase(StorePaymentType.COD.toString())) {
+            // should return error with cause
+            logger.info("Previous status in not valid: {}", order.getCompletionStatus().toString());
+            response.setErrorStatus(HttpStatus.BAD_REQUEST, "You can't change status because previous status is: " + order.getCompletionStatus().toString() + " and StorePaymentStatus is: " + storeWithDetails.getPaymentType());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
         logger.info("Store details got : " + storeWithDetails.toString());
 //        String status = bodyOrderCompletionStatusUpdate.getStatus();
 //        OrderStatus status = bodyOrderCompletionStatusUpdate.getStatus();
