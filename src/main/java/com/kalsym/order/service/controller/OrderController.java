@@ -272,7 +272,7 @@ public class OrderController {
                 if (storeCommission != null) {
                     double commission = order.getTotal() * (storeCommission.getRate() / 100);
                     order.setKlCommission((commission < storeCommission.getMinChargeAmount()) ? storeCommission.getMinChargeAmount() : commission);
-                    order.setStoreShare(order.getTotal() - commission);
+                    order.setStoreShare(order.getTotal() - order.getKlCommission());
                 }
 
                 order = orderRepository.save(order);
@@ -447,7 +447,7 @@ public class OrderController {
                     if (storeCommission != null) {
                         double commission = order.getTotal() * (storeCommission.getRate() / 100);
                         order.setKlCommission((commission < storeCommission.getMinChargeAmount()) ? storeCommission.getMinChargeAmount() : commission);
-                        order.setStoreShare(order.getTotal() - commission);
+                        order.setStoreShare(order.getTotal() - order.getKlCommission());
                     }
 
                     // saving order object to get order Id
