@@ -43,7 +43,7 @@ public class OrderPostService {
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
 
-    @Value("${liveChatlogin.username:sarosh}")
+    @Value("${liveChatlogin.username:order}")
     private String liveChatLoginUsername;
 
     @Value("${liveChat.login.password:sarosh@1234}")
@@ -96,6 +96,60 @@ public class OrderPostService {
             logger.info("res: " + res);
         } catch (RestClientException e) {
             logger.error("Error posting order on liveChat URL: {}", liveChatMessageURL, e);
+            return null;
+        }
+        return "";
+    }
+    
+    
+    /**
+     * 
+     * @param orderId
+     * @param storeId
+     * @param orderItem
+     * @return 
+     */
+    public String sendMinimumQuantityAlarm(String orderId, String storeId, OrderItem orderItem, int remainingQuantity) {
+
+        String logprefix = "sendMinimumQuantityAlarm";
+
+        if (!loginLiveChat()) {
+            logger.info("live chat not logged in");
+            return "";
+        }
+        logger.info("live chat logged in");
+
+        String storeLiveChatOrdersGroupName = storeNameService.getLiveChatOrdersGroupName(storeId);
+//        String groupName = "#" + storeLiveChatOrdersGroupName + "-orders";
+        String orderItemDetails = "";
+//        for(int i = 0; i< orderItem.size(); i++){
+            orderItemDetails = "SKU: " + orderItem.getSKU() + ",\nName: " + orderItem.getProductName() + ",\nREMAINING QTY: " + remainingQuantity + "\n";
+//        }
+        OrderPostRequestBody orderPostBody = new OrderPostRequestBody();
+        orderPostBody.setAlias("SYMplified Out of stock intimation");
+        orderPostBody.setAvatar("");
+        // Rocket chat accepts groupName in lowerCase
+//        groupName += groupName.toLowerCase();
+        orderPostBody.setChannel(storeLiveChatOrdersGroupName);
+        orderPostBody.setText("Product with below details is going out of stock, \n " + orderItemDetails );
+
+        try {
+
+            RestTemplate restTemplate = new RestTemplate();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("X-Auth-Token", liveChatToken);
+            headers.add("X-User-Id", liveChatUserId);
+
+            HttpEntity<OrderPostRequestBody> httpEntity;
+            httpEntity = new HttpEntity(orderPostBody, headers);
+
+            logger.info("httpEntity: " + httpEntity);
+            logger.info("liveChatMessageURL: " + liveChatMessageURL);
+            ResponseEntity res = restTemplate.exchange(liveChatMessageURL, HttpMethod.POST, httpEntity, String.class);
+            logger.info("res: " + res);
+        } catch (RestClientException e) {
+            logger.error("Error intimating out of stock prdouct on liveChat URL: {}", liveChatMessageURL, e);
             return null;
         }
         return "";

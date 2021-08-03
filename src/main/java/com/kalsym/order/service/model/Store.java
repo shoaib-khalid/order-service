@@ -1,4 +1,3 @@
-
 package com.kalsym.order.service.model;
 
 import javax.persistence.Entity;
@@ -35,6 +34,8 @@ public class Store {
     private String contactName;
     private String phone;
     private String email;
+
+    private Double serviceChargesPercentage;
 
     public String getNameAbreviation() {
         String abbreviation = "";

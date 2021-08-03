@@ -5,6 +5,7 @@ import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
 import java.io.Serializable;
 import java.util.Date;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -42,7 +43,6 @@ public class Order implements Serializable {
 
     private String storeId;
     private Double subTotal;
-    private Double serviceCharges;
     private Double deliveryCharges;
     private Double total;
     @Enumerated(EnumType.STRING)
@@ -63,6 +63,16 @@ public class Order implements Serializable {
     private Date updated;
 
     private String invoiceId;
+
+    @Column(nullable = true)
+    private Double klCommission;
+
+    @Column(nullable = true)
+    private Double storeServiceCharges;
+
+    @Column(nullable = true)
+    private Double storeShare;
+
 
     /*
     @OneToOne(fetch=FetchType.LAZY)
@@ -85,7 +95,7 @@ public class Order implements Serializable {
             this.setStoreId(order.getStoreId());
         }
         subTotal = order.getSubTotal();
-        serviceCharges = order.getServiceCharges();
+        storeServiceCharges = order.getStoreServiceCharges();
         deliveryCharges = order.getDeliveryCharges();
         total = order.getTotal();
         completionStatus = order.getCompletionStatus();

@@ -2,6 +2,8 @@ package com.kalsym.order.service.controller;
 
 import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
+import com.kalsym.order.service.enums.ProductStatus;
+import com.kalsym.order.service.enums.StorePaymentType;
 import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.Email;
 import com.kalsym.order.service.model.Order;
@@ -37,6 +39,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.kalsym.order.service.model.DeliveryOrder;
 import com.kalsym.order.service.model.repository.CartItemRepository;
+import com.kalsym.order.service.service.ProductService;
+import com.kalsym.order.service.model.*;
 
 /**
  *
@@ -56,6 +60,9 @@ public class OrderPaymentStatusUpdateController {
 
     @Autowired
     EmailService emailService;
+
+    @Autowired
+    ProductService productService;
 
     @Autowired
     OrderPostService orderPostService;
@@ -270,9 +277,42 @@ public class OrderPaymentStatusUpdateController {
                 orderPaymentStatusUpdateRepository.save(orderPaymentStatusUpdate);
                 logger.info("orderPaymentStatusUpdate created with orderId: {}", orderId);
                 //inserting order completing status update
-                orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
-                logger.info("orderCompletionStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
+//                orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
+//                logger.info("orderCompletionStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
                 try {
+                    ProductInventory productInventory;
+                    Product product;
+                    //sending request to rocket chat for posting order
+                    orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
+                    for (int i = 0; i < orderItems.size(); i++) {
+                        // get product details
+
+                        product = productService.getProductById(order.getStoreId(), orderItems.get(i).getProductId());
+                        logger.info("Got product details of orderItem: " + product.toString());
+                        if (product.isTrackQuantity()) {
+                            logger.info("Product tracking is enable");
+                            productInventory = productService.reduceProductInventory(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), orderItems.get(i).getQuantity());
+                            if (productInventory.getQuantity() <= product.getMinQuantityForAlarm()) {
+                                //sending notification for product is going out of stock
+                                //we can send email as well
+                                orderPostService.sendMinimumQuantityAlarm(order.getId(), order.getStoreId(), orderItems.get(i), productInventory.getQuantity());
+                                logger.info("intimation send for out of stock product id: " + orderItems.get(i).getProductId() + ", SKU: " + orderItems.get(i).getSKU() + ", Name: " + productInventory.getProduct().getName());
+                            }
+
+                            if (!product.isAllowOutOfStockPurchases() && productInventory.getQuantity() <= 0) {
+                                // making this product variant outof stock
+                                productInventory = productService.changeProductStatus(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), ProductStatus.OUTOFSTOCK);
+                                logger.info("this product variant is out of stock now storeId: " + order.getStoreId() + ", productId: " + orderItems.get(i).getProductId() + ", itemCode: " + orderItems.get(i).getItemCode());
+                            }
+                        } else {
+                            logger.info("Product tracking is not enabled by marchant");
+                        }
+//                        ProductInventory productInventory = productInventoryRepository.findByItemCode(orderItems.get(i).getItemCode());
+//                        logger.info("got product inventory details: " + productInventory.toString());
+                        //reduce quantity of product inventory
+
+                    }
+
                     //check store.verticalCode, if FnB do not request to delivery service
                     // commenting below code reason is: merchant have to request manually to delivery service
 //                    if (!"FNB".equalsIgnoreCase(storeWithDetails.getVerticalCode())) {
@@ -285,14 +325,14 @@ public class OrderPaymentStatusUpdateController {
 //                        logger.info("This order is FnB so no need to call delivery confirmation now, storeId: " + storeWithDetails.getId());
 //                    }
                     //sending request to rocket chat for posting order
-                    orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
+                    //orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
                     logger.info("Order posted to rocket chat");
                 } catch (Exception ex) {
                     //there might be some issue so need to updated email for issue and refund
                     logger.error("Exception occur ", ex);
 //                    if (!"FNB".equalsIgnoreCase(storeWithDetails.getVerticalCode())) {
 //                    status = OrderStatus.REQUESTING_DELIVERY_FAILED;
-                    status = OrderStatus.FAILED;
+//                    status = OrderStatus.FAILED;
 //                    }
 
                 }
@@ -306,7 +346,9 @@ public class OrderPaymentStatusUpdateController {
                 break;
             case DELIVERED_TO_CUSTOMER:
             case REJECTED_BY_STORE:
-//            case READY_FOR_DELIVERY:
+
+            case READY_FOR_DELIVERY:
+
                 //sending email
                 emailService.sendEmail(email);
                 break;
@@ -322,7 +364,6 @@ public class OrderPaymentStatusUpdateController {
 
         orderRepository.save(order);
 
-//        emailService.sendEmail(email);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(order);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
@@ -348,13 +389,6 @@ public class OrderPaymentStatusUpdateController {
         }
         Order order = optOrder.get();
 
-        OrderStatus prevStatus = order.getCompletionStatus();
-        if (!prevStatus.toString().equalsIgnoreCase(OrderStatus.PAYMENT_CONFIRMED.toString())) {
-            // should return error with cause
-            logger.info("Previous status in not valid: {}", order.getCompletionStatus().toString());
-            response.setErrorStatus(HttpStatus.BAD_REQUEST, "You can't change status because previous status is: " + order.getCompletionStatus().toString());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
         Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(order.getStoreId());
         if (!optStore.isPresent()) {
             logger.info("Store not found with storeId: {}", order.getStoreId());
@@ -363,6 +397,14 @@ public class OrderPaymentStatusUpdateController {
         }
 
         StoreWithDetails storeWithDetails = optStore.get();
+
+        OrderStatus prevStatus = order.getCompletionStatus();
+        if ((!prevStatus.toString().equalsIgnoreCase(OrderStatus.PAYMENT_CONFIRMED.toString()) && !storeWithDetails.getPaymentType().equalsIgnoreCase(StorePaymentType.COD.toString())) || storeWithDetails.getPaymentType().equalsIgnoreCase(StorePaymentType.COD.toString())) {
+            // should return error with cause
+            logger.info("Previous status in not valid: {}", order.getCompletionStatus().toString());
+            response.setErrorStatus(HttpStatus.BAD_REQUEST, "You can't change status because previous status is: " + order.getCompletionStatus().toString() + " and StorePaymentStatus is: " + storeWithDetails.getPaymentType());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
         logger.info("Store details got : " + storeWithDetails.toString());
 //        String status = bodyOrderCompletionStatusUpdate.getStatus();
 //        OrderStatus status = bodyOrderCompletionStatusUpdate.getStatus();

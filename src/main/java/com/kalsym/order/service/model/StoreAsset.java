@@ -29,5 +29,4 @@ public class StoreAsset implements Serializable{
         this.logoUrl = logoUrl;
         this.bannerUrl = bannerUrl;
     }
-    
 }
