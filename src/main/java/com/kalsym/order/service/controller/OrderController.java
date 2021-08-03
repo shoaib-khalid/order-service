@@ -267,9 +267,10 @@ public class OrderController {
 
                 logger.info("serviceChargesPercentage: " + store.getServiceChargesPercentage());
 
+                double serviceCharges = 0;
                 if (null != store.getServiceChargesPercentage()) {
 
-                    double serviceCharges = (store.getServiceChargesPercentage() / 100) * order.getTotal();
+                    serviceCharges = (store.getServiceChargesPercentage() / 100) * order.getTotal();
                     logger.info("serviceCharges: " + serviceCharges);
                     order.setStoreServiceCharges(serviceCharges);
                 }
@@ -280,6 +281,13 @@ public class OrderController {
                 order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE);
                 order.setPaymentStatus(PaymentStatus.PENDING);
 
+                
+
+                //calculating total amount
+                order.setTotal(serviceCharges + order.getSubTotal() + order.getDeliveryCharges());
+                
+                
+                
                 //setting store commission 
                 if (storeCommission != null) {
                     double commission = order.getTotal() * (storeCommission.getRate() / 100);
@@ -291,7 +299,7 @@ public class OrderController {
                     order.setKlCommission(commission);
                     order.setStoreShare(order.getTotal() - commission);
                 }
-
+                
                 order = orderRepository.save(order);
                 opd.setOrderId(order.getId());
                 osd.setOrderId(order.getId());

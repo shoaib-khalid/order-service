@@ -350,7 +350,7 @@ public class OrderPaymentStatusUpdateController {
             case READY_FOR_DELIVERY:
 
                 //sending email
-                emailService.sendEmail(email);
+                //emailService.sendEmail(email);
                 break;
         }
         order.setCompletionStatus(status);
