@@ -264,6 +264,16 @@ public class OrderController {
                 order.setInvoiceId(invoiceId);
                 OrderPaymentDetail opd = order.getOrderPaymentDetail();
                 OrderShipmentDetail osd = order.getOrderShipmentDetail();
+
+                logger.info("serviceChargesPercentage: " + store.getServiceChargesPercentage());
+
+                if (null != store.getServiceChargesPercentage()) {
+
+                    double serviceCharges = (store.getServiceChargesPercentage() / 100) * order.getTotal();
+                    logger.info("serviceCharges: " + serviceCharges);
+                    order.setStoreServiceCharges(serviceCharges);
+                }
+
                 order.setDeliveryCharges(opd.getDeliveryQuotationAmount());
                 order.setOrderPaymentDetail(null);
                 order.setOrderShipmentDetail(null);
@@ -273,8 +283,13 @@ public class OrderController {
                 //setting store commission 
                 if (storeCommission != null) {
                     double commission = order.getTotal() * (storeCommission.getRate() / 100);
-                    order.setKlCommission((commission < storeCommission.getMinChargeAmount()) ? storeCommission.getMinChargeAmount() : commission);
-                    order.setStoreShare(order.getTotal() - order.getKlCommission());
+
+                    if (commission < storeCommission.getMinChargeAmount()) {
+                        commission = storeCommission.getMinChargeAmount();
+                    }
+
+                    order.setKlCommission(commission);
+                    order.setStoreShare(order.getTotal() - commission);
                 }
 
                 order = orderRepository.save(order);
@@ -427,9 +442,11 @@ public class OrderController {
                     order.setDeliveryCharges(cod.getOrderPaymentDetails().getDeliveryQuotationAmount());
 
                     //setting service charges
+                    logger.info("serviceChargesPercentage: " + storeWithDetials.getServiceChargesPercentage());
+
                     Double serviceChargesPercentage = storeWithDetials.getServiceChargesPercentage();
                     Double serviceCharges = (serviceChargesPercentage * subTotal) / 100;
-                    order.setServiceCharges(serviceCharges);
+                    order.setStoreServiceCharges(serviceCharges);
 
                     //setting kl commision
 //                    order.setKlCommission(0.0);
