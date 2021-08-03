@@ -1,4 +1,17 @@
 ##################################################
+# order-service-3.0.1-SNAPSHOT(master)
+##################################################
++ Changes:
+
+1. Bug fixes 
+=======
+    1. Fixed issue where two messages being sent to rocket chat after order creation
+    2. Fixed issue in order search, data type for klCommission was double need it to Double.
+
+
+
+
+##################################################
 # order-service-2.1.0-SNAPSHOT(master)
 ##################################################
 + Changes:

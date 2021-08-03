@@ -66,13 +66,13 @@ public class Order implements Serializable {
     private String invoiceId;
     
     @Column(nullable = true)
-    private double klCommission;
+    private Double klCommission;
     
     @Column(nullable = true)
-    private double storeServiceCharges;
+    private Double storeServiceCharges;
     
     @Column(nullable = true)
-    private double storeShare;
+    private Double storeShare;
     
 
     /*

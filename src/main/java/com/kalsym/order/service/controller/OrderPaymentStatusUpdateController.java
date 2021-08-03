@@ -327,7 +327,7 @@ public class OrderPaymentStatusUpdateController {
 //                        logger.info("This order is FnB so no need to call delivery confirmation now, storeId: " + storeWithDetails.getId());
 //                    }
                     //sending request to rocket chat for posting order
-                    orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
+                    //orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
                     logger.info("Order posted to rocket chat");
                 } catch (Exception ex) {
                     //there might be some issue so need to updated email for issue and refund
