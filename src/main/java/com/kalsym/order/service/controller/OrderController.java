@@ -260,46 +260,52 @@ public class OrderController {
             logger.info("got store commission : " + storeCommission);
 //            while (true) {
             try {
+                
+                
+                
+                
+                
                 String invoiceId = TxIdUtil.generateReferenceId(store.getNameAbreviation());
                 order.setInvoiceId(invoiceId);
                 OrderPaymentDetail opd = order.getOrderPaymentDetail();
                 OrderShipmentDetail osd = order.getOrderShipmentDetail();
-
-                logger.info("serviceChargesPercentage: " + store.getServiceChargesPercentage());
-
-                double serviceCharges = 0;
-                if (null != store.getServiceChargesPercentage()) {
-
-                    serviceCharges = (store.getServiceChargesPercentage() / 100) * order.getTotal();
-                    logger.info("serviceCharges: " + serviceCharges);
-                    order.setStoreServiceCharges(serviceCharges);
-                }
-
+                
+                
                 order.setDeliveryCharges(opd.getDeliveryQuotationAmount());
                 order.setOrderPaymentDetail(null);
                 order.setOrderShipmentDetail(null);
                 order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE);
                 order.setPaymentStatus(PaymentStatus.PENDING);
+                
+
+                logger.info("serviceChargesPercentage: " + store.getServiceChargesPercentage());
+
+                double serviceCharges = 0;
+                if (null != store.getServiceChargesPercentage()) {
+                    serviceCharges = (store.getServiceChargesPercentage() / 100) * order.getSubTotal();
+                    logger.info("serviceCharges: " + serviceCharges);
+
+                }
 
                 
 
                 //calculating total amount
-                order.setTotal(serviceCharges + order.getSubTotal() + order.getDeliveryCharges());
-                
-                
-                
                 //setting store commission 
+                double commission = 0;
                 if (storeCommission != null) {
-                    double commission = order.getTotal() * (storeCommission.getRate() / 100);
-
+                    commission = order.getTotal() * (storeCommission.getRate() / 100);
                     if (commission < storeCommission.getMinChargeAmount()) {
                         commission = storeCommission.getMinChargeAmount();
                     }
-
-                    order.setKlCommission(commission);
-                    order.setStoreShare(order.getTotal() - commission);
                 }
-                
+
+                //setting amount values, dont do it anywhere else
+                order.setStoreServiceCharges(serviceCharges);
+                order.setTotal(serviceCharges + order.getSubTotal() + order.getDeliveryCharges());
+                order.setKlCommission(commission);
+                order.setStoreShare(order.getSubTotal() + order.getStoreServiceCharges() - commission);
+                order.setDeliveryCharges(order.getDeliveryCharges());
+
                 order = orderRepository.save(order);
                 opd.setOrderId(order.getId());
                 osd.setOrderId(order.getId());
@@ -450,16 +456,13 @@ public class OrderController {
                     order.setDeliveryCharges(cod.getOrderPaymentDetails().getDeliveryQuotationAmount());
 
                     //setting service charges
+                    order.setSubTotal(subTotal);
                     logger.info("serviceChargesPercentage: " + storeWithDetials.getServiceChargesPercentage());
 
                     Double serviceChargesPercentage = storeWithDetials.getServiceChargesPercentage();
                     Double serviceCharges = (serviceChargesPercentage * subTotal) / 100;
                     order.setStoreServiceCharges(serviceCharges);
 
-                    //setting kl commision
-//                    order.setKlCommission(0.0);
-                    //setting subTotal
-                    order.setSubTotal(subTotal);
                     //setting total 
                     order.setTotal(subTotal + serviceCharges + order.getDeliveryCharges());
                     // setting invoice id
