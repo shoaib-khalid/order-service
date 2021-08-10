@@ -57,7 +57,7 @@ public class DeliveryService {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Sending request to delivery service : " + orderPostBody.toString());
             ResponseEntity<String> res = restTemplate.exchange(deliveryServiceSubmitOrderURL, HttpMethod.POST, httpEntity, String.class);
 
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to delivery service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to delivery service, responseCode: " + res.getStatusCode() + ", responseBody: " + res.getBody());
 
             if (res.getStatusCode() == HttpStatus.OK) {
                 Gson gson = new Gson();
@@ -66,7 +66,7 @@ public class DeliveryService {
                 return response;
             }
         } catch (RestClientException e) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error creating domain {}", deliveryServiceSubmitOrderURL, e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error creating domain: " + deliveryServiceSubmitOrderURL, e);
             return null;
         }
         return null;
@@ -103,10 +103,10 @@ public class DeliveryService {
                 return deliveryOrder;
             }
         } catch (RestClientException e) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery order domain {}", orderDeliveryConfirmationURL, e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery order domain: " + orderDeliveryConfirmationURL, e);
             return null;
         } catch (JsonProcessingException ex) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery order domain {}", orderDeliveryConfirmationURL, ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery order domain: " + orderDeliveryConfirmationURL, ex);
         }
         return null;
     }

@@ -50,13 +50,13 @@ public class OrderPaymentDetailController {
         String logprefix = request.getRequestURI();
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-details-get-by-order, orderId: {}", orderId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-details-get-by-order, orderId: " + orderId);
 
         Optional<Order> order = orderRepository.findById(orderId);
 
         if (!order.isPresent()) {
             response.setErrorStatus(HttpStatus.NOT_FOUND);
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-details-get-by-order, orderId, not found. orderId: {}", orderId);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-details-get-by-order, orderId, not found. orderId: " + orderId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
@@ -75,14 +75,14 @@ public class OrderPaymentDetailController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-details-post, orderId: {}", orderId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-details-post, orderId: " + orderId);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyOrderPaymentDetail.toString(), "");
 
         Optional<Order> savedOrder = null;
 
         savedOrder = orderRepository.findById(orderId);
         if (savedOrder == null) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-details-post, orderId not found, orderId: {}", orderId);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-details-post, orderId not found, orderId: " + orderId);
             response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
@@ -109,14 +109,14 @@ public class OrderPaymentDetailController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-details-delete-by-id, orderId: {}", orderId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-details-delete-by-id, orderId: " + orderId);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyOrderPaymentDetail.toString(), "");
 
         Optional<Order> savedOrder = null;
 
         savedOrder = orderRepository.findById(orderId);
         if (savedOrder == null) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-details-delete-by-id, order not found, orderId: {}", orderId);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-details-delete-by-id, order not found, orderId: " + orderId);
             response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
@@ -142,13 +142,13 @@ public class OrderPaymentDetailController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-details-put-by-id, orderId: {}", orderId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-details-put-by-id, orderId: " + orderId);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyOrderPaymentDetail.toString(), "");
 
         Optional<Order> optOrder = orderRepository.findById(orderId);
 
         if (!optOrder.isPresent()) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order not found with orderId: {}", orderId);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order not found with orderId: " + orderId);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
@@ -156,17 +156,17 @@ public class OrderPaymentDetailController {
         Optional<OrderPaymentDetail> optOrderPaymentDetail = orderPaymentDetailRepository.findById(orderId);
 
         if (!optOrderPaymentDetail.isPresent()) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentDetail not found with orderId: {}", orderId);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentDetail not found with orderId: " + orderId);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentDetail found with orderId: {}", orderId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentDetail found with orderId: " + orderId);
         OrderPaymentDetail orderPaymentDetail = optOrderPaymentDetail.get();
 
         orderPaymentDetail.update(bodyOrderPaymentDetail);
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentDetail updated for orderId: {}", orderId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentDetail updated for orderId: " + orderId);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(orderPaymentDetailRepository.save(orderPaymentDetail));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);

@@ -66,7 +66,7 @@ public class OrderPostService {
         String storeLiveChatOrdersGroupName = storeNameService.getLiveChatOrdersGroupName(storeId);
 //        String groupName = "#" + storeLiveChatOrdersGroupName + "-orders";
         String orderItemDetails = "";
-        for(int i = 0; i< orderItems.size(); i++){
+        for (int i = 0; i < orderItems.size(); i++) {
             orderItemDetails += orderItems.get(i).getSKU() + ", QTY: " + orderItems.get(i).getQuantity() + "\n";
         }
         OrderPostRequestBody orderPostBody = new OrderPostRequestBody();
@@ -75,7 +75,7 @@ public class OrderPostService {
         // Rocket chat accepts groupName in lowerCase
 //        groupName += groupName.toLowerCase();
         orderPostBody.setChannel(storeLiveChatOrdersGroupName);
-        orderPostBody.setText("You have a new order, \n " + orderItemDetails + " please click [here](" + onboardingOrderLink + orderId + ") for details"  );
+        orderPostBody.setText("You have a new order, \n " + orderItemDetails + " please click [here](" + onboardingOrderLink + orderId + ") for details");
 
         try {
 
@@ -93,19 +93,18 @@ public class OrderPostService {
             ResponseEntity res = restTemplate.exchange(liveChatMessageURL, HttpMethod.POST, httpEntity, String.class);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res);
         } catch (RestClientException e) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error posting order on liveChat URL: {}", liveChatMessageURL, e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error posting order on liveChat URL: " + liveChatMessageURL, e);
             return null;
         }
         return "";
     }
-    
-    
+
     /**
-     * 
+     *
      * @param orderId
      * @param storeId
      * @param orderItem
-     * @return 
+     * @return
      */
     public String sendMinimumQuantityAlarm(String orderId, String storeId, OrderItem orderItem, int remainingQuantity) {
 
@@ -121,7 +120,7 @@ public class OrderPostService {
 //        String groupName = "#" + storeLiveChatOrdersGroupName + "-orders";
         String orderItemDetails = "";
 //        for(int i = 0; i< orderItem.size(); i++){
-            orderItemDetails = "SKU: " + orderItem.getSKU() + ",\nName: " + orderItem.getProductName() + ",\nREMAINING QTY: " + remainingQuantity + "\n";
+        orderItemDetails = "SKU: " + orderItem.getSKU() + ",\nName: " + orderItem.getProductName() + ",\nREMAINING QTY: " + remainingQuantity + "\n";
 //        }
         OrderPostRequestBody orderPostBody = new OrderPostRequestBody();
         orderPostBody.setAlias("SYMplified Out of stock intimation");
@@ -129,7 +128,7 @@ public class OrderPostService {
         // Rocket chat accepts groupName in lowerCase
 //        groupName += groupName.toLowerCase();
         orderPostBody.setChannel(storeLiveChatOrdersGroupName);
-        orderPostBody.setText("Product with below details is going out of stock, \n " + orderItemDetails );
+        orderPostBody.setText("Product with below details is going out of stock, \n " + orderItemDetails);
 
         try {
 
@@ -147,7 +146,7 @@ public class OrderPostService {
             ResponseEntity res = restTemplate.exchange(liveChatMessageURL, HttpMethod.POST, httpEntity, String.class);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res);
         } catch (RestClientException e) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error intimating out of stock prdouct on liveChat URL: {}", liveChatMessageURL, e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error intimating out of stock prdouct on liveChat URL: " + liveChatMessageURL, e);
             return null;
         }
         return "";

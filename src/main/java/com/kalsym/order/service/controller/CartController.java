@@ -108,7 +108,7 @@ public class CartController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "carts-post, URL: {} ", request.getRequestURI());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "carts-post, URL:  " + request.getRequestURI());
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "carts-post, bodyCart: ", bodyCart.toString());
 
         Cart savedCart = null;
@@ -132,12 +132,12 @@ public class CartController {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logprefix = request.getRequestURI() + " ";
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "carts-delete-by-id, cartId: {}", id);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "carts-delete-by-id, cartId: " + id);
 
         Optional<Cart> optCart = cartRepository.findById(id);
 
         if (!optCart.isPresent()) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart not found with cartId: {}", id);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart not found with cartId: " + id);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
@@ -145,7 +145,7 @@ public class CartController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart found", "");
         cartRepository.deleteById(id);
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart deleted, with id: {}", id);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart deleted, with id: " + id);
         response.setSuccessStatus(HttpStatus.OK);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -171,18 +171,18 @@ public class CartController {
         Optional<Cart> optCart = cartRepository.findById(id);
 
         if (!optCart.isPresent()) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cart not found with cartId: {}", id);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cart not found with cartId: " + id);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart found with cartId: {}", id);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart found with cartId: " + id);
         Cart cart = optCart.get();
         List<String> errors = new ArrayList<>();
 
         cart.update(bodyCart);
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart updated for cartId: {}", id);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart updated for cartId: " + id);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(cartRepository.save(cart));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);

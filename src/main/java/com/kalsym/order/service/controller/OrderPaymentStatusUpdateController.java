@@ -207,20 +207,20 @@ public class OrderPaymentStatusUpdateController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-status-updates-put-by-order-id, orderId: {}", orderId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-status-updates-put-by-order-id, orderId: " + orderId);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyOrderCompletionStatusUpdate.toString(), "");
 
         Optional<Order> optOrder = orderRepository.findById(orderId);
 
         if (!optOrder.isPresent()) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order not found with orderId: {}", orderId);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order not found with orderId: " + orderId);
             response.setErrorStatus(HttpStatus.NOT_FOUND, "order not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         Order order = optOrder.get();
         Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(order.getStoreId());
         if (!optStore.isPresent()) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store not found with storeId: {}", order.getStoreId());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store not found with storeId: " + order.getStoreId());
             response.setErrorStatus(HttpStatus.NOT_FOUND, "Store not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
@@ -265,7 +265,7 @@ public class OrderPaymentStatusUpdateController {
             case PAYMENT_CONFIRMED:
                 //clear cart item
                 cartItemRepository.clearCartItem(order.getCartId());
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "clear cartItem for cartId: {}", order.getCartId());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "clear cartItem for cartId: " + order.getCartId());
 //                order.setCompletionStatus(OrderStatus.PAYMENT_CONFIRMED);
                 //inserting order payment status update
                 orderPaymentStatusUpdate.setStatus(PaymentStatus.PAID);
@@ -273,7 +273,7 @@ public class OrderPaymentStatusUpdateController {
                 orderPaymentStatusUpdate.setModifiedBy(bodyOrderCompletionStatusUpdate.getModifiedBy());
                 orderPaymentStatusUpdate.setOrderId(orderId);
                 orderPaymentStatusUpdateRepository.save(orderPaymentStatusUpdate);
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentStatusUpdate created with orderId: {}", orderId);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentStatusUpdate created with orderId: " + orderId);
                 //inserting order completing status update
 //                orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
 //                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
@@ -358,7 +358,7 @@ public class OrderPaymentStatusUpdateController {
 
         //inserting order completion status updates
         orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatusUpdate updated for orderId: " + orderId + ", with orderStatus: " + status.toString());
 
         orderRepository.save(order);
 

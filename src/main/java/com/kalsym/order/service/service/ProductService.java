@@ -72,7 +72,7 @@ public class ProductService {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Sending request to product service to get product by id : " + productId + ", store id: " + storeId + ", URL: " + getProductByIdURL);
             ResponseEntity<String> res = restTemplate.exchange(getProductByIdURL, HttpMethod.GET, httpEntity, String.class);
 
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseCode: " + res.getStatusCode() + ", responseBody:" + res.getBody());
 
             if (res.getStatusCode() == HttpStatus.OK) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
@@ -93,10 +93,10 @@ public class ProductService {
                 return product;
             }
         } catch (RestClientException e) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error product {}", e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error product", e);
             return null;
         } catch (JsonProcessingException ex) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error product {}", ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error product", ex);
         }
         return null;
     }
@@ -125,7 +125,7 @@ public class ProductService {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Sending request to product service to get store commission by store id: " + storeId + ", URL: " + getStoreCommissionURL);
             ResponseEntity<String> res = restTemplate.exchange(getStoreCommissionURL, HttpMethod.GET, httpEntity, String.class);
 
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseCode: " + res.getStatusCode() + ", responseBody: " + res.getBody());
 
             if (res.getStatusCode() == HttpStatus.OK) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
@@ -149,10 +149,10 @@ public class ProductService {
 
             }
         } catch (RestClientException e) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error storeCommission {}", e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error storeCommission", e);
             return null;
         } catch (JsonProcessingException ex) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error storeCommission {}", ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error storeCommission", ex);
         }
         return null;
     }
@@ -186,7 +186,8 @@ public class ProductService {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Sending request to product service to reduce " + quantity + " quantity:  " + reduceProductInventoryURL);
             ResponseEntity<String> res = restTemplate.exchange(reduceProductInventoryURL, HttpMethod.PUT, httpEntity, String.class);
 
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseCode: " + res.getStatusCode());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseBody: " + res.getBody());
 
             if (res.getStatusCode() == HttpStatus.OK) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
@@ -207,10 +208,10 @@ public class ProductService {
                 return productInventory;
             }
         } catch (RestClientException e) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error product inventory reduction domain {}", reduceProductInventoryURL, e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error product inventory reduction domain: " + reduceProductInventoryURL, e);
             return null;
         } catch (JsonProcessingException ex) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error product inventory reduction {}", reduceProductInventoryURL, ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error product inventory reduction: " + reduceProductInventoryURL, ex);
         }
         return null;
     }
@@ -244,7 +245,8 @@ public class ProductService {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Sending request to product service to change status of product to: " + productStatus.toString() + changeProductStatusURL);
             ResponseEntity<String> res = restTemplate.exchange(changeProductStatusURL, HttpMethod.PUT, httpEntity, String.class);
 
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseCode: " + res.getStatusCode());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseBody: " + res.getBody());
 
             if (res.getStatusCode() == HttpStatus.OK) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
@@ -265,10 +267,10 @@ public class ProductService {
                 return productInventory;
             }
         } catch (RestClientException e) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error product inventory reduction domain {}", changeProductStatusURL, e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error product inventory reduction domain: " + changeProductStatusURL, e);
             return null;
         } catch (JsonProcessingException ex) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error product inventory reduction {}", changeProductStatusURL, ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error product inventory reduction:" + changeProductStatusURL, ex);
         }
         return null;
     }
@@ -313,10 +315,10 @@ public class ProductService {
                 return storeWithDetails;
             }
         } catch (RestClientException e) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getStoreById domain {}", getStoreByIdURL, e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getStoreById domain: " + getStoreByIdURL, e);
             return null;
         } catch (JsonProcessingException ex) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getStoreById domain {}", getStoreByIdURL, ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getStoreById domain: " + getStoreByIdURL, ex);
         }
         return null;
     }
@@ -360,10 +362,10 @@ public class ProductService {
                 return storeDeliveryDetail;
             }
         } catch (RestClientException e) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getStoreDeliveryDetails domain {}", getStoreDeliveryDetailsURL, e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getStoreDeliveryDetails domain: " + getStoreDeliveryDetailsURL, e);
             return null;
         } catch (JsonProcessingException ex) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getStoreDeliveryDetails domain {}", getStoreDeliveryDetailsURL, ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getStoreDeliveryDetails domain: " + getStoreDeliveryDetailsURL, ex);
         }
         return null;
     }
@@ -395,7 +397,8 @@ public class ProductService {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Sending request to product service to get product inventory by id : " + productId + ", store id: " + storeId + ", itemcode: " + itemcode + ", URL: " + getProductInventoryURL);
             ResponseEntity<String> res = restTemplate.exchange(getProductInventoryURL, HttpMethod.GET, httpEntity, String.class);
 
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseCode: " + res.getStatusCode());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseBody: " + res.getBody());
 
             if (res.getStatusCode() == HttpStatus.OK) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
@@ -416,10 +419,10 @@ public class ProductService {
                 return productInventory;
             }
         } catch (RestClientException e) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getProductInventoryById {}", e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getProductInventoryById", e);
             return null;
         } catch (JsonProcessingException ex) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getProductInventoryById {}", ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getProductInventoryById", ex);
         }
         return null;
     }

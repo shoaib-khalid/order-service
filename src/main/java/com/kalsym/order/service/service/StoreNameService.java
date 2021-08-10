@@ -20,7 +20,6 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class StoreNameService {
 
-
     //@Autowired
     @Value("${product-service.URL:https://api.symplified.biz/product-service/v1/}")
     String productServiceURL;
@@ -49,12 +48,14 @@ public class StoreNameService {
                 //logger.debug("Store orders group (liveChatOrdersGroupName) received: {}, against storeId: {}", storeName, storeId);
                 return storeName;
             } else {
-                Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cannot get storename against storeId: {}", storeId);
+                Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cannot get storename against storeId: " + storeId);
             }
 
             //logger.debug("Request sent to live service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
         } catch (RestClientException e) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getting storeName against storeId:{}, url: {}", storeId, productServiceURL, e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getting storeName against url: " + productServiceURL, e);
+
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getting storeName against storeId: " + storeId, e);
             return null;
         }
         return "";

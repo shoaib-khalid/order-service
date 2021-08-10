@@ -331,7 +331,6 @@ public class OrderController {
 
 //            //clear cart item
 //            cartItemRepository.clearCartItem(cart.getCartId());
-//            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "clear cartItem for cartId: {}", cart.getCartId());
             // pass orderId to OrderPostService, even though the status is not completed yet
             //orderPostService.postOrderLink(cart.getId(), cart.getStoreId());
         } catch (Exception exp) {
@@ -363,7 +362,7 @@ public class OrderController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orders-push-cod request on url: {}", request.getRequestURI());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orders-push-cod request on url: " + request.getRequestURI());
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orders-push-cod request body: " + cod.toString());
 
@@ -379,14 +378,14 @@ public class OrderController {
             }
 
             Cart cart = optCart.get();
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart exists against cartId: {}", cartId);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart exists against cartId: " + cartId);
 
             //getting store details for cart if from product service
             StoreWithDetails storeWithDetials = productService.getStoreById(cart.getStoreId());
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store details of cartId: {}, and storeId: {}, {}", cartId, cart.getStoreId(), storeWithDetials.toString());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store details of cartId: " + cartId + ", and storeId: " + cart.getStoreId());
 
             if (storeWithDetials == null) {
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "store with storeId: {} not found", cart.getStoreId());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "store with storeId: " + cart.getStoreId() + " not found");
                 response.setStatus(HttpStatus.NOT_FOUND.value());
                 response.setMessage("store not found");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
@@ -417,7 +416,7 @@ public class OrderController {
 
                         if (cartItems.get(i).getProductPrice() != Float.parseFloat(String.valueOf(productInventory.getPrice()))) {
                             // should return warning if prices are not same
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prices are not same, price got updated: oldPrice: {}, newPrice: {}" + cartItems.get(i).getProductPrice(), String.valueOf(productInventory.getPrice()));
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
                             response.setSuccessStatus(HttpStatus.CONFLICT);
                             response.setMessage("Conflict in prices, please update prices in cartItems, oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
                             response.setData(cartItems.get(i));
@@ -440,7 +439,7 @@ public class OrderController {
 
                         //adding new orderItem to orderItems list
                         orderItems.add(orderItem);
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added orderItem to order list: {}", orderItem.toString());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added orderItem to order list: " + orderItem.toString());
                     }
 
                     order.setCartId(cartId);
@@ -477,15 +476,15 @@ public class OrderController {
 
                     // saving order object to get order Id
                     order = orderRepository.save(order);
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order posted successfully orderId: {}", order.getId());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order posted successfully orderId: " + order.getId());
                     // save payment details
                     cod.getOrderPaymentDetails().setOrderId(order.getId());
                     order.setOrderPaymentDetail(orderPaymentDetailRepository.save(cod.getOrderPaymentDetails()));
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order payment details inserted successfully: {}", order.getOrderPaymentDetail().toString());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order payment details inserted successfully: " + order.getOrderPaymentDetail().toString());
                     // save shipment detials
                     cod.getOrderShipmentDetails().setOrderId(order.getId());
                     order.setOrderShipmentDetail(orderShipmentDetailRepository.save(cod.getOrderShipmentDetails()));
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order shipment details inserted successfully: {}", order.getOrderShipmentDetail().toString());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order shipment details inserted successfully: " + order.getOrderShipmentDetail().toString());
                     OrderItem orderItem = null;
                     Product product;
                     ProductInventory productInventory;
@@ -494,7 +493,7 @@ public class OrderController {
                         // insert orderItem 
                         orderItems.get(i).setOrderId(order.getId());
                         orderItem = orderItemRepository.save(orderItems.get(i));
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderItem created with id: {}, orderId: {}", orderItem.getId(), orderItem.getOrderId());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderItem created with id: " + orderItem.getId() + ", orderId: " + orderItem.getOrderId());
                         // getting product information if product tracking is enabled we will reduce the quantity
                         product = productService.getProductById(order.getStoreId(), orderItems.get(i).getProductId());
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Got product details of orderItem: " + product.toString());
@@ -520,10 +519,10 @@ public class OrderController {
                     }
                     // push cart to rocket chat
                     orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order pushed to merchant rocket chat orderId: {}", order.getId());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order pushed to merchant rocket chat orderId: " + order.getId());
                 } else {
                     // throw bad request exception
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "You cannot place order through this endpoint: {} because store is not cod", "/orders/carts/" + cartId + "/cod/push");
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "You cannot place order through this endpoint: /orders/carts/" + cartId + "/cod/push because store is not cod");
                     response.setMessage("you cannot post order throgh this endpoint because store is not cod");
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
                 }
@@ -555,12 +554,12 @@ public class OrderController {
         String location = Thread.currentThread().getStackTrace()[1].getMethodName();
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orders-delete-by-id, orderId: {}", id);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orders-delete-by-id, orderId: " + id);
 
         Optional<Order> optProduct = orderRepository.findById(id);
 
         if (!optProduct.isPresent()) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order not found with orderId: {}", id);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order not found with orderId: " + id);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
@@ -568,7 +567,7 @@ public class OrderController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order found", "");
         orderRepository.deleteById(id);
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order deleted, with orderId: {}", id);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order deleted, with orderId: " + id);
         response.setSuccessStatus(HttpStatus.OK);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -595,18 +594,18 @@ public class OrderController {
         Optional<Order> optOrder = orderRepository.findById(id);
 
         if (!optOrder.isPresent()) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order not found with orderId: {}", id);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order not found with orderId: " + id);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order found with orderId: {}", id);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order found with orderId: " + id);
         Order order = optOrder.get();
         List<String> errors = new ArrayList<>();
 
         order.update(bodyOrder);
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order updated for orderId: {}", id);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order updated for orderId: " + id);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(orderRepository.save(order));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
