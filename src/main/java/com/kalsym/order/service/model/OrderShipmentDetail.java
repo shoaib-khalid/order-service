@@ -36,9 +36,11 @@ public class OrderShipmentDetail implements Serializable {
     private String trackingUrl;
     @Id
     private String orderId;
-    
-    public void update(OrderShipmentDetail orderShipmentDetail){
-        
+
+    private Boolean storePickup = false;
+
+    public void update(OrderShipmentDetail orderShipmentDetail) {
+
     }
 
 }
