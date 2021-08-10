@@ -127,7 +127,7 @@ public class OrderPaymentStatusUpdateController {
 //            orderPaymentStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
 //            response.setSuccessStatus(HttpStatus.CREATED);
 //        } catch (Exception exp) {
-//            logger.error("Error saving orderPaymentStatusUpdate", exp);
+//            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error saving orderPaymentStatusUpdate", exp);
 //            response.setMessage(exp.getMessage());
 //            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
 //        }
@@ -158,7 +158,7 @@ public class OrderPaymentStatusUpdateController {
 //            orderPaymentStatusUpdateRepository.delete(bodyOrderCompletionStatusUpdate);
 //            response.setSuccessStatus(HttpStatus.OK);
 //        } catch (Exception exp) {
-//            logger.error("Error deleting orderPaymentStatusUpdate", exp);
+//            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error deleting orderPaymentStatusUpdate", exp);
 //            response.setMessage(exp.getMessage());
 //            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
 //        }
@@ -327,7 +327,7 @@ public class OrderPaymentStatusUpdateController {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order posted to rocket chat");
                 } catch (Exception ex) {
                     //there might be some issue so need to updated email for issue and refund
-                    logger.error("Exception occur ", ex);
+                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Exception occur ", ex);
 //                    if (!"FNB".equalsIgnoreCase(storeWithDetails.getVerticalCode())) {
 //                    status = OrderStatus.REQUESTING_DELIVERY_FAILED;
 //                    status = OrderStatus.FAILED;
@@ -456,7 +456,7 @@ public class OrderPaymentStatusUpdateController {
 
         } catch (Exception ex) {
             //there might be some issue so need to updated email for issue and refund
-            logger.error("Exception occur while confirming order Delivery ", ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Exception occur while confirming order Delivery ", ex);
             status = OrderStatus.REQUESTING_DELIVERY_FAILED;
         }
         //sending email
