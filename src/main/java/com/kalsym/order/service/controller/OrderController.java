@@ -240,7 +240,7 @@ public class OrderController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orders-post request on url: {}", request.getRequestURI());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orders-post request on url: " + request.getRequestURI());
 
 //        OrderObject bodyOrder = new OrderObject();
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, order.toString(), "");
@@ -257,7 +257,7 @@ public class OrderController {
 
             Store store = optStore.get();
             StoreCommission storeCommission = productService.getStoreCommissionByStoreId(store.getId());
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store commission : " + storeCommission);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store commission: " + storeCommission);
 //            while (true) {
             try {
 
@@ -302,9 +302,9 @@ public class OrderController {
                 opd.setOrderId(order.getId());
                 osd.setOrderId(order.getId());
                 orderPaymentDetailRepository.save(opd);
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order payment details created for orderId: {}", order.getId());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order payment details created for orderId:" + order.getId());
                 orderShipmentDetailRepository.save(osd);
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderShipmentDetail created for orderId: {}", order.getId());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderShipmentDetail created for orderId: " + order.getId());
 //                break;
             } catch (Exception ex) {
                 Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "exception occure while storing order ", ex);
@@ -313,21 +313,21 @@ public class OrderController {
             }
 //            }
 
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order created with id: {}", order.getId());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order created with id: " + order.getId());
 
             //inserting ordercompleting statusupdate  to pending
             OrderCompletionStatusUpdate orderCompletionStatusUpdate = new OrderCompletionStatusUpdate();
             orderCompletionStatusUpdate.setOrderId(order.getId());
             orderCompletionStatusUpdate.setStatus(OrderStatus.RECEIVED_AT_STORE);
             orderCompletionStatusUpdateRepository.save(orderCompletionStatusUpdate);
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order completion status update inserted for orderid: {}, with status: {}", order.getId(), orderCompletionStatusUpdate.getStatus().toString());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "update order status:" + orderCompletionStatusUpdate.getStatus().toString());
 
             //inserting paymentstatusupdate
             OrderPaymentStatusUpdate orderPaymentStatusUpdate = new OrderPaymentStatusUpdate();
             orderPaymentStatusUpdate.setOrderId(order.getId());
             orderPaymentStatusUpdate.setStatus(PaymentStatus.PENDING);
             orderPaymentStatusUpdateRepository.save(orderPaymentStatusUpdate);
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order payment status update inserted for orderid: {}, with status: {}", order.getId(), orderPaymentStatusUpdate.getStatus().toString());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "update order status: " + orderPaymentStatusUpdate.getStatus().toString());
 
 //            //clear cart item
 //            cartItemRepository.clearCartItem(cart.getCartId());
