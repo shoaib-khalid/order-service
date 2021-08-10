@@ -1,5 +1,6 @@
 package com.kalsym.order.service.controller;
 
+import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.enums.ProductStatus;
@@ -26,8 +27,6 @@ import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +40,7 @@ import com.kalsym.order.service.model.DeliveryOrder;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.model.*;
+import com.kalsym.order.service.utility.Logger;
 
 /**
  *
@@ -49,8 +49,6 @@ import com.kalsym.order.service.model.*;
 @RestController()
 @RequestMapping("/orders/{orderId}/completion-status-updates")
 public class OrderPaymentStatusUpdateController {
-
-    private static Logger logger = LoggerFactory.getLogger("application");
 
     @Autowired
     OrderRepository orderRepository;
@@ -90,13 +88,13 @@ public class OrderPaymentStatusUpdateController {
 //            @RequestParam(defaultValue = "20") int pageSize) throws Exception {
 //        HttpResponse response = new HttpResponse(request.getRequestURI());
 //
-//        logger.info("order-payment-status-update-get, orderId: {}", orderId);
+//        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-status-update-get, orderId: {}", orderId);
 //
 //        Optional<Order> order = orderRepository.findById(orderId);
 //
 //        if (!order.isPresent()) {
 //            response.setErrorStatus(HttpStatus.NOT_FOUND);
-//            logger.info("order-payment-status-update-get, orderId, not found. orderId: {}", orderId);
+//            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-status-update-get, orderId, not found. orderId: {}", orderId);
 //            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 //        }
 //
@@ -115,13 +113,13 @@ public class OrderPaymentStatusUpdateController {
 //        String logprefix = request.getRequestURI() + " ";
 //        HttpResponse response = new HttpResponse(request.getRequestURI());
 //
-//        logger.info("order-payment-status-update-post, orderId: {}", bodyOrderCompletionStatusUpdate.getOrderId());
-//        logger.info(bodyOrderCompletionStatusUpdate.toString(), "");
+//        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-status-update-post, orderId: {}", bodyOrderCompletionStatusUpdate.getOrderId());
+//        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyOrderCompletionStatusUpdate.toString(), "");
 //
 //        Optional<Order> savedOrder = orderRepository.findById(bodyOrderCompletionStatusUpdate.getOrderId());
 //
 //        if (!savedOrder.isPresent()) {
-//            logger.info("order-payment-status-update-post-by-order, orderId not found, orderId: {}", bodyOrderCompletionStatusUpdate.getOrderId());
+//            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-status-update-post-by-order, orderId not found, orderId: {}", bodyOrderCompletionStatusUpdate.getOrderId());
 //            response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
 //            return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
 //        }
@@ -133,7 +131,7 @@ public class OrderPaymentStatusUpdateController {
 //            response.setMessage(exp.getMessage());
 //            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
 //        }
-//        logger.info("orderPaymentStatusUpdate created with id: " + bodyOrderCompletionStatusUpdate.getOrderId());
+//        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentStatusUpdate created with id: " + bodyOrderCompletionStatusUpdate.getOrderId());
 //        response.setData(bodyOrderCompletionStatusUpdate);
 //        return ResponseEntity.status(HttpStatus.CREATED).body(response);
 //    }
@@ -146,12 +144,12 @@ public class OrderPaymentStatusUpdateController {
 //        String logprefix = request.getRequestURI() + " ";
 //        HttpResponse response = new HttpResponse(request.getRequestURI());
 //
-//        logger.info("order-payment-status-update-delete-by-id, orderId: {}", orderId);
-//        logger.info(bodyOrderCompletionStatusUpdate.toString(), "");
+//        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-status-update-delete-by-id, orderId: {}", orderId);
+//        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyOrderCompletionStatusUpdate.toString(), "");
 //
 //        Optional<Order> savedOrder = orderRepository.findById(orderId);
 //        if (!savedOrder.isPresent()) {
-//            logger.info("order-payment-status-update-delete-by-id, order not found, orderId: {}", orderId);
+//            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-status-update-delete-by-id, order not found, orderId: {}", orderId);
 //            response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
 //            return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
 //        }
@@ -164,7 +162,7 @@ public class OrderPaymentStatusUpdateController {
 //            response.setMessage(exp.getMessage());
 //            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
 //        }
-//        logger.info("orderPaymentStatusUpdate deleted with orderId: " + bodyOrderCompletionStatusUpdate.getOrderId());
+//        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentStatusUpdate deleted with orderId: " + bodyOrderCompletionStatusUpdate.getOrderId());
 //        return ResponseEntity.status(HttpStatus.OK).body(response);
 //    }
 //    @PutMapping(path = {"/"}, name = "order-payment-status-update-put")
@@ -176,27 +174,27 @@ public class OrderPaymentStatusUpdateController {
 //        String logprefix = request.getRequestURI() + " ";
 //        HttpResponse response = new HttpResponse(request.getRequestURI());
 //
-//        logger.info("order-payment-status-update-put, orderId: {}", orderId);
-//        logger.info(bodyOrderCompletionStatusUpdate.toString(), "");
+//        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-status-update-put, orderId: {}", orderId);
+//        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyOrderCompletionStatusUpdate.toString(), "");
 //
 //        Optional<Order> optOrder = orderRepository.findById(orderId);
 //
 //        if (!optOrder.isPresent()) {
-//            logger.info("Order not found with orderId: {}", orderId);
+//            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order not found with orderId: {}", orderId);
 //            response.setErrorStatus(HttpStatus.NOT_FOUND);
 //            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 //        }
 //        Optional<OrderPaymentStatusUpdate> optOrderPaymentStatusUpdate = orderPaymentStatusUpdateRepository.findById(orderId);
 //
 //        if (!optOrderPaymentStatusUpdate.isPresent()) {
-//            logger.info("orderPaymentStatusUpdate not found with orderId: {}", orderId);
+//            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentStatusUpdate not found with orderId: {}", orderId);
 //            response.setErrorStatus(HttpStatus.NOT_FOUND);
 //            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 //        }
-//        logger.info("orderPaymentStatusUpdate found with orderId: {}", orderId);
+//        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentStatusUpdate found with orderId: {}", orderId);
 //        bodyOrderCompletionStatusUpdate = orderPaymentStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
 //
-//        logger.info("orderPaymentStatusUpdate updated for orderId: {}", orderId);
+//        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentStatusUpdate updated for orderId: {}", orderId);
 //        response.setSuccessStatus(HttpStatus.ACCEPTED);
 //        response.setData(orderPaymentStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate));
 //        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
@@ -209,26 +207,26 @@ public class OrderPaymentStatusUpdateController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-completion-status-updates-put-by-order-id, orderId: {}", orderId);
-        logger.info(bodyOrderCompletionStatusUpdate.toString(), "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-status-updates-put-by-order-id, orderId: {}", orderId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyOrderCompletionStatusUpdate.toString(), "");
 
         Optional<Order> optOrder = orderRepository.findById(orderId);
 
         if (!optOrder.isPresent()) {
-            logger.info("Order not found with orderId: {}", orderId);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order not found with orderId: {}", orderId);
             response.setErrorStatus(HttpStatus.NOT_FOUND, "order not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         Order order = optOrder.get();
         Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(order.getStoreId());
         if (!optStore.isPresent()) {
-            logger.info("Store not found with storeId: {}", order.getStoreId());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store not found with storeId: {}", order.getStoreId());
             response.setErrorStatus(HttpStatus.NOT_FOUND, "Store not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
         StoreWithDetails storeWithDetails = optStore.get();
-        logger.info("Store details got : " + storeWithDetails.toString());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store details got : " + storeWithDetails.toString());
 //        String status = bodyOrderCompletionStatusUpdate.getStatus();
         OrderStatus status = bodyOrderCompletionStatusUpdate.getStatus();
         String subject = null;
@@ -267,7 +265,7 @@ public class OrderPaymentStatusUpdateController {
             case PAYMENT_CONFIRMED:
                 //clear cart item
                 cartItemRepository.clearCartItem(order.getCartId());
-                logger.info("clear cartItem for cartId: {}", order.getCartId());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "clear cartItem for cartId: {}", order.getCartId());
 //                order.setCompletionStatus(OrderStatus.PAYMENT_CONFIRMED);
                 //inserting order payment status update
                 orderPaymentStatusUpdate.setStatus(PaymentStatus.PAID);
@@ -275,10 +273,10 @@ public class OrderPaymentStatusUpdateController {
                 orderPaymentStatusUpdate.setModifiedBy(bodyOrderCompletionStatusUpdate.getModifiedBy());
                 orderPaymentStatusUpdate.setOrderId(orderId);
                 orderPaymentStatusUpdateRepository.save(orderPaymentStatusUpdate);
-                logger.info("orderPaymentStatusUpdate created with orderId: {}", orderId);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentStatusUpdate created with orderId: {}", orderId);
                 //inserting order completing status update
 //                orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
-//                logger.info("orderCompletionStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
+//                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
                 try {
                     ProductInventory productInventory;
                     Product product;
@@ -288,27 +286,27 @@ public class OrderPaymentStatusUpdateController {
                         // get product details
 
                         product = productService.getProductById(order.getStoreId(), orderItems.get(i).getProductId());
-                        logger.info("Got product details of orderItem: " + product.toString());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Got product details of orderItem: " + product.toString());
                         if (product.isTrackQuantity()) {
-                            logger.info("Product tracking is enable");
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Product tracking is enable");
                             productInventory = productService.reduceProductInventory(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), orderItems.get(i).getQuantity());
                             if (productInventory.getQuantity() <= product.getMinQuantityForAlarm()) {
                                 //sending notification for product is going out of stock
                                 //we can send email as well
                                 orderPostService.sendMinimumQuantityAlarm(order.getId(), order.getStoreId(), orderItems.get(i), productInventory.getQuantity());
-                                logger.info("intimation send for out of stock product id: " + orderItems.get(i).getProductId() + ", SKU: " + orderItems.get(i).getSKU() + ", Name: " + productInventory.getProduct().getName());
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "intimation send for out of stock product id: " + orderItems.get(i).getProductId() + ", SKU: " + orderItems.get(i).getSKU() + ", Name: " + productInventory.getProduct().getName());
                             }
 
                             if (!product.isAllowOutOfStockPurchases() && productInventory.getQuantity() <= 0) {
                                 // making this product variant outof stock
                                 productInventory = productService.changeProductStatus(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), ProductStatus.OUTOFSTOCK);
-                                logger.info("this product variant is out of stock now storeId: " + order.getStoreId() + ", productId: " + orderItems.get(i).getProductId() + ", itemCode: " + orderItems.get(i).getItemCode());
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "this product variant is out of stock now storeId: " + order.getStoreId() + ", productId: " + orderItems.get(i).getProductId() + ", itemCode: " + orderItems.get(i).getItemCode());
                             }
                         } else {
-                            logger.info("Product tracking is not enabled by marchant");
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Product tracking is not enabled by marchant");
                         }
 //                        ProductInventory productInventory = productInventoryRepository.findByItemCode(orderItems.get(i).getItemCode());
-//                        logger.info("got product inventory details: " + productInventory.toString());
+//                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventory.toString());
                         //reduce quantity of product inventory
 
                     }
@@ -320,13 +318,13 @@ public class OrderPaymentStatusUpdateController {
 ////                    status = OrderStatus.AWAITING_PICKUP;
 //                        email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
 //                        email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
-//                        logger.info("delivery confirmed for order: {} awaiting for pickup", orderId);
+//                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: {} awaiting for pickup", orderId);
 //                    } else {
-//                        logger.info("This order is FnB so no need to call delivery confirmation now, storeId: " + storeWithDetails.getId());
+//                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "This order is FnB so no need to call delivery confirmation now, storeId: " + storeWithDetails.getId());
 //                    }
                     //sending request to rocket chat for posting order
                     //orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
-                    logger.info("Order posted to rocket chat");
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order posted to rocket chat");
                 } catch (Exception ex) {
                     //there might be some issue so need to updated email for issue and refund
                     logger.error("Exception occur ", ex);
@@ -360,7 +358,7 @@ public class OrderPaymentStatusUpdateController {
 
         //inserting order completion status updates
         orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
-        logger.info("orderCompletionStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
 
         orderRepository.save(order);
 
@@ -377,13 +375,13 @@ public class OrderPaymentStatusUpdateController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
         OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate = new OrderCompletionStatusUpdate();
-        logger.info("order-completion-status-updates-put-by-order-id-by-merchant, orderId: {}", orderId);
-//        logger.info(bodyOrderCompletionStatusUpdate.toString(), "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-status-updates-put-by-order-id-by-merchant, orderId: {}", orderId);
+//        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyOrderCompletionStatusUpdate.toString(), "");
 
         Optional<Order> optOrder = orderRepository.findById(orderId);
 
         if (!optOrder.isPresent()) {
-            logger.info("Order not found with orderId: {}", orderId);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order not found with orderId: {}", orderId);
             response.setErrorStatus(HttpStatus.NOT_FOUND, "order not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
@@ -391,7 +389,7 @@ public class OrderPaymentStatusUpdateController {
 
         Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(order.getStoreId());
         if (!optStore.isPresent()) {
-            logger.info("Store not found with storeId: {}", order.getStoreId());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store not found with storeId: {}", order.getStoreId());
             response.setErrorStatus(HttpStatus.NOT_FOUND, "Store not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
@@ -401,11 +399,11 @@ public class OrderPaymentStatusUpdateController {
         OrderStatus prevStatus = order.getCompletionStatus();
         if ((!prevStatus.toString().equalsIgnoreCase(OrderStatus.PAYMENT_CONFIRMED.toString()) && !storeWithDetails.getPaymentType().equalsIgnoreCase(StorePaymentType.COD.toString())) || storeWithDetails.getPaymentType().equalsIgnoreCase(StorePaymentType.COD.toString())) {
             // should return error with cause
-            logger.info("Previous status in not valid: {}", order.getCompletionStatus().toString());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Previous status in not valid: {}", order.getCompletionStatus().toString());
             response.setErrorStatus(HttpStatus.BAD_REQUEST, "You can't change status because previous status is: " + order.getCompletionStatus().toString() + " and StorePaymentStatus is: " + storeWithDetails.getPaymentType());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
-        logger.info("Store details got : " + storeWithDetails.toString());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store details got : " + storeWithDetails.toString());
 //        String status = bodyOrderCompletionStatusUpdate.getStatus();
 //        OrderStatus status = bodyOrderCompletionStatusUpdate.getStatus();
         OrderStatus status = OrderStatus.READY_FOR_DELIVERY;
@@ -447,14 +445,14 @@ public class OrderPaymentStatusUpdateController {
         bodyOrderCompletionStatusUpdate.setOrderId(orderId);
         //inserting order completing status update
         orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
-        logger.info("orderCompletionStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
         try {
 
             DeliveryOrder deliveryOrder = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), order.getId());
             status = OrderStatus.AWAITING_PICKUP;
             email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
             email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
-            logger.info("delivery confirmed for order: {} awaiting for pickup", orderId);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: {} awaiting for pickup", orderId);
 
         } catch (Exception ex) {
             //there might be some issue so need to updated email for issue and refund
@@ -468,7 +466,7 @@ public class OrderPaymentStatusUpdateController {
 
 //        //inserting order completion status updates
 //        orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
-//        logger.info("orderPaymentStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
+//        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
         orderRepository.save(order);
 
         response.setSuccessStatus(HttpStatus.ACCEPTED);
