@@ -1,15 +1,15 @@
 package com.kalsym.order.service.controller;
 
+import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderCompletionStatusUpdate;
 import com.kalsym.order.service.model.repository.OrderCompletionStatusUpdateRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
 import com.kalsym.order.service.utility.HttpResponse;
+import com.kalsym.order.service.utility.Logger;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,8 +34,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/orders/{orderId}/completion-status-updates")
 public class OrderCompletionStatusUpdateController {
 
-    private static Logger logger = LoggerFactory.getLogger("application");
-
     @Autowired
     OrderRepository orderRepository;
 
@@ -48,15 +46,17 @@ public class OrderCompletionStatusUpdateController {
             @PathVariable(required = true) String orderId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) throws Exception {
+        String logprefix = request.getRequestURI() + " ";
+
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-completion-status-update-get, orderId: {}", orderId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-status-update-get, orderId: {}", orderId);
 
         Optional<Order> order = orderRepository.findById(orderId);
 
         if (!order.isPresent()) {
             response.setErrorStatus(HttpStatus.NOT_FOUND);
-            logger.info("order-completion-status-update-get, orderId, not found. orderId: {}", orderId);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-status-update-get, orderId, not found. orderId: {}", orderId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
@@ -72,16 +72,18 @@ public class OrderCompletionStatusUpdateController {
     public ResponseEntity<HttpResponse> postOrderCompletionStatusUpdates(HttpServletRequest request,
             @PathVariable(required = true) String orderId,
             @Valid @RequestBody OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate) throws Exception {
+        String logprefix = request.getRequestURI() + " ";
+
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-completion-status-update-post, orderId: {}", orderId);
-        logger.info(bodyOrderCompletionStatusUpdate.toString(), "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-status-update-post, orderId: {}", orderId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyOrderCompletionStatusUpdate.toString(), "");
 
         Optional<Order> savedOrder = null;
 
         savedOrder = orderRepository.findById(bodyOrderCompletionStatusUpdate.getOrderId());
         if (savedOrder == null) {
-            logger.info("order-completion-status-update-post, orderId not found, orderId: {}", orderId);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-status-update-post, orderId not found, orderId: {}", orderId);
             response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
@@ -90,11 +92,11 @@ public class OrderCompletionStatusUpdateController {
             orderCompletionStatusUpdate = orderCompletionStatusUpdateRepository.save(bodyOrderCompletionStatusUpdate);
             response.setSuccessStatus(HttpStatus.CREATED);
         } catch (Exception exp) {
-            logger.error("Error saving orderCompletionStatusUpdate", exp);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error saving orderCompletionStatusUpdate", exp);
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
-        logger.info("orderCompletionStatusUpdate created for orderId: {}", orderId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatusUpdate created for orderId: {}", orderId);
         response.setData(orderCompletionStatusUpdate);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -108,14 +110,14 @@ public class OrderCompletionStatusUpdateController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-completion-status-update-delete-by-id, orderId: {}", orderId);
-        logger.info(bodyOrderCompletionStatusUpdate.toString(), "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-status-update-delete-by-id, orderId: {}", orderId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyOrderCompletionStatusUpdate.toString(), "");
 
         Optional<Order> savedOrder = null;
 
         savedOrder = orderRepository.findById(orderId);
         if (savedOrder == null) {
-            logger.info("order-completion-status-update-delete-by-id, order not found, orderId: {}", orderId);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-status-update-delete-by-id, order not found, orderId: {}", orderId);
             response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
@@ -124,11 +126,11 @@ public class OrderCompletionStatusUpdateController {
             orderCompletionStatusUpdateRepository.delete(bodyOrderCompletionStatusUpdate);
             response.setSuccessStatus(HttpStatus.OK);
         } catch (Exception exp) {
-            logger.error("Error deleting orderCompletionStatusUpdate", exp);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error deleting orderCompletionStatusUpdate", exp);
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
-        logger.info("orderCompletionStatusUpdate deleted with orderId: " + bodyOrderCompletionStatusUpdate.getOrderId());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatusUpdate deleted with orderId: " + bodyOrderCompletionStatusUpdate.getOrderId());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -141,13 +143,13 @@ public class OrderCompletionStatusUpdateController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-completion-status-update-put-by-id, orderId: {}, id: {}", orderId, id);
-        logger.info(bodyOrderCompletionStatusUpdate.toString(), "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-status-update-put-by-id, orderId: {}, id: {}", orderId, id);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyOrderCompletionStatusUpdate.toString(), "");
 
         Optional<Order> optOrder = orderRepository.findById(orderId);
 
         if (!optOrder.isPresent()) {
-            logger.info("Order not found with orderId: {}", orderId);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order not found with orderId: {}", orderId);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
@@ -155,17 +157,17 @@ public class OrderCompletionStatusUpdateController {
         Optional<OrderCompletionStatusUpdate> optOrderCompletionStatusUpdate = orderCompletionStatusUpdateRepository.findById(orderId);
 
         if (!optOrderCompletionStatusUpdate.isPresent()) {
-            logger.info("orderCompletionStatusUpdate not found with orderId: {}", orderId);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatusUpdate not found with orderId: {}", orderId);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        logger.info("orderCompletionStatusUpdate found with orderId: {}", orderId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatusUpdate found with orderId: {}", orderId);
         OrderCompletionStatusUpdate orderCompletionStatusUpdate = optOrderCompletionStatusUpdate.get();
 
         orderCompletionStatusUpdate.update(bodyOrderCompletionStatusUpdate);
 
-        logger.info("orderCompletionStatusUpdate updated for orderId: {}", orderId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatusUpdate updated for orderId: {}", orderId);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(orderCompletionStatusUpdateRepository.save(orderCompletionStatusUpdate));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);

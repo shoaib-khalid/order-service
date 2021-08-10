@@ -1,7 +1,6 @@
 package com.kalsym.order.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.kalsym.order.service.utility.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -19,8 +18,6 @@ import org.springframework.web.client.RestTemplate;
 @SpringBootApplication
 public class OrderServiceApplication implements CommandLineRunner {
 
-    private static Logger logger = LoggerFactory.getLogger("application");
-
     static {
         System.setProperty("spring.jpa.hibernate.naming.physical-strategy", "org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl");
         /**
@@ -35,7 +32,7 @@ public class OrderServiceApplication implements CommandLineRunner {
     private Environment env;
 
     public static void main(String... args) {
-        logger.info("Staring order-service...");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "main", "Staring order-service...");
         SpringApplication.run(OrderServiceApplication.class, args);
     }
 
@@ -47,7 +44,7 @@ public class OrderServiceApplication implements CommandLineRunner {
         return args -> {
             VERSION = version;
 
-            logger.info("[v{}][{}] {}", VERSION, "", "\n"
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "lookup", "[v{}][{}] {}", VERSION, "", "\n"
                     + "               _                                      _          \n"
                     + "              | |                                    (_)         \n"
                     + "  ___  _ __ __| | ___ _ __ ______ ___  ___ _ ____   ___  ___ ___ \n"

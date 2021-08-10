@@ -1,15 +1,16 @@
 package com.kalsym.order.service.controller;
 
+import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderCompletionStatus;
 import com.kalsym.order.service.model.repository.OrderCompletionStatusRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
 import com.kalsym.order.service.utility.HttpResponse;
+import com.kalsym.order.service.utility.Logger;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,8 +35,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/orders/completion-statuses")
 public class OrderCompletionStatusController {
 
-    private static Logger logger = LoggerFactory.getLogger("application");
-
     @Autowired
     OrderRepository orderRepository;
 
@@ -47,6 +46,8 @@ public class OrderCompletionStatusController {
     public ResponseEntity<HttpResponse> getOrderCompletionStatuses(HttpServletRequest request,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) throws Exception {
+        String logprefix = request.getRequestURI() + " ";
+
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Pageable pageable = PageRequest.of(page, pageSize);
@@ -61,8 +62,9 @@ public class OrderCompletionStatusController {
     public ResponseEntity<HttpResponse> postOrderCompletionStatuses(HttpServletRequest request,
             @Valid @RequestBody OrderCompletionStatus bodyOrderCompletionStatus) throws Exception {
         HttpResponse response = new HttpResponse(request.getRequestURI());
+        String logprefix = request.getRequestURI() + " ";
 
-        logger.info("bodyOrderCompletionStatus.toString(): {}", bodyOrderCompletionStatus.toString());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "bodyOrderCompletionStatus.toString(): {}", bodyOrderCompletionStatus.toString());
 
         Optional<Order> savedOrder = null;
 
@@ -71,11 +73,11 @@ public class OrderCompletionStatusController {
             orderCompletionStatus = orderCompletionStatusRepository.save(bodyOrderCompletionStatus);
             response.setSuccessStatus(HttpStatus.CREATED);
         } catch (Exception exp) {
-            logger.error("Error saving orderCompletionStatus", exp);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error saving orderCompletionStatus", exp);
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
-        logger.info("orderCompletionStatus row added");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatus row added");
         response.setData(orderCompletionStatus);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -88,18 +90,18 @@ public class OrderCompletionStatusController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-completion-statuses-delete-by-status, status: {}", status);
-        logger.info(bodyOrderCompletionStatus.toString(), "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-statuses-delete-by-status, status: {}", status);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyOrderCompletionStatus.toString(), "");
 
         try {
             orderCompletionStatusRepository.deleteById(status);
             response.setSuccessStatus(HttpStatus.OK);
         } catch (Exception exp) {
-            logger.error("Error deleting orderCompletionStatus", exp);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error deleting orderCompletionStatus", exp);
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
-        logger.info("orderCompletionStatus deleted with status: {}", bodyOrderCompletionStatus.getStatus());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatus deleted with status: {}", bodyOrderCompletionStatus.getStatus());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -111,23 +113,23 @@ public class OrderCompletionStatusController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-completion-statuses-put-by-status, status: {}", status);
-        logger.info("bodyOrderCompletionStatus.toString(): {}", bodyOrderCompletionStatus.toString());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-statuses-put-by-status, status: {}", status);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "bodyOrderCompletionStatus.toString(): {}", bodyOrderCompletionStatus.toString());
 
         Optional<OrderCompletionStatus> optOrderCompletionStatus = orderCompletionStatusRepository.findById(status);
 
         if (!optOrderCompletionStatus.isPresent()) {
-            logger.info("orderCompletionStatus not found with status: {}", status);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatus not found with status: {}", status);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        logger.info("orderCompletionStatus found with status: {}", status);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatus found with status: {}", status);
         OrderCompletionStatus orderCompletionStatus = optOrderCompletionStatus.get();
 
         orderCompletionStatus.update(bodyOrderCompletionStatus);
 
-        logger.info("orderCompletionStatus updated for status: {}", status);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatus updated for status: {}", status);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(orderCompletionStatusRepository.save(orderCompletionStatus));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);

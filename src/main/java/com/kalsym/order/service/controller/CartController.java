@@ -1,5 +1,6 @@
 package com.kalsym.order.service.controller;
 
+import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
@@ -9,8 +10,6 @@ import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -30,9 +29,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.repository.OrderRepository;
+import com.kalsym.order.service.utility.Logger;
 
 /**
  *
@@ -41,8 +39,6 @@ import com.kalsym.order.service.model.repository.OrderRepository;
 @RestController()
 @RequestMapping("/carts")
 public class CartController {
-
-    private static Logger logger = LoggerFactory.getLogger("application");
 
     @Autowired
     CartRepository cartRepository;
@@ -62,8 +58,9 @@ public class CartController {
             @RequestParam(required = false) String storeId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
+        String logprefix = request.getRequestURI() + " ";
 
-        logger.info("carts-get request...");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "carts-get request...");
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Cart cartMatch = new Cart();
@@ -87,6 +84,7 @@ public class CartController {
     @PreAuthorize("hasAnyAuthority('carts-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> getCartsById(HttpServletRequest request,
             @RequestParam(required = true) String id) {
+        String logprefix = request.getRequestURI() + " ";
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
@@ -110,8 +108,8 @@ public class CartController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("carts-post, URL: {} ", request.getRequestURI());
-        logger.info("carts-post, bodyCart: ", bodyCart.toString());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "carts-post, URL: {} ", request.getRequestURI());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "carts-post, bodyCart: ", bodyCart.toString());
 
         Cart savedCart = null;
         try {
@@ -119,11 +117,11 @@ public class CartController {
             savedCart = cartRepository.save(bodyCart);
             response.setSuccessStatus(HttpStatus.CREATED);
         } catch (Exception exp) {
-            logger.error("Error saving cart", exp);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error saving cart", exp);
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
-        logger.info("cart created with id: " + savedCart.getId());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart created with id: " + savedCart.getId());
         response.setData(savedCart);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -132,21 +130,22 @@ public class CartController {
     @PreAuthorize("hasAnyAuthority('carts-delete-by-id', 'all')")
     public ResponseEntity<HttpResponse> deleteCartsById(HttpServletRequest request, @PathVariable String id) {
         HttpResponse response = new HttpResponse(request.getRequestURI());
+        String logprefix = request.getRequestURI() + " ";
 
-        logger.info("carts-delete-by-id, cartId: {}", id);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "carts-delete-by-id, cartId: {}", id);
 
         Optional<Cart> optCart = cartRepository.findById(id);
 
         if (!optCart.isPresent()) {
-            logger.info("cart not found with cartId: {}", id);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart not found with cartId: {}", id);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        logger.info("cart found", "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart found", "");
         cartRepository.deleteById(id);
 
-        logger.info("cart deleted, with id: {}", id);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart deleted, with id: {}", id);
         response.setSuccessStatus(HttpStatus.OK);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -166,24 +165,24 @@ public class CartController {
         String location = Thread.currentThread().getStackTrace()[1].getMethodName();
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("", "");
-        logger.info(bodyCart.toString(), "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "", "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyCart.toString(), "");
 
         Optional<Cart> optCart = cartRepository.findById(id);
 
         if (!optCart.isPresent()) {
-            logger.info("Cart not found with cartId: {}", id);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cart not found with cartId: {}", id);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        logger.info("cart found with cartId: {}", id);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart found with cartId: {}", id);
         Cart cart = optCart.get();
         List<String> errors = new ArrayList<>();
 
         cart.update(bodyCart);
 
-        logger.info("cart updated for cartId: {}", id);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart updated for cartId: {}", id);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(cartRepository.save(cart));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
@@ -201,8 +200,9 @@ public class CartController {
     @PreAuthorize("hasAnyAuthority('carts-empty-by-id', 'all')")
     public ResponseEntity<HttpResponse> empty(HttpServletRequest request,
             @PathVariable String id) {
+        String logprefix = request.getRequestURI() + " ";
 
-        logger.info("carts-empty-by-id request...");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "carts-empty-by-id request...");
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Cart cartMatch = new Cart();
@@ -234,8 +234,9 @@ public class CartController {
     @PreAuthorize("hasAnyAuthority('carts-weight-by-id', 'all')")
     public ResponseEntity<HttpResponse> getWeightOfCart(HttpServletRequest request,
             @PathVariable String id) {
+        String logprefix = request.getRequestURI() + " ";
 
-        logger.info("carts-order-by-id request...");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "carts-order-by-id request...");
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         List<CartItem> cartItems = cartItemRepository.findByCartId(id);
@@ -269,10 +270,9 @@ public class CartController {
             }
 
         }
-        
+
         Weight w = new Weight();
         w.setTotalWeight(totalWeight);
-
 
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(w);

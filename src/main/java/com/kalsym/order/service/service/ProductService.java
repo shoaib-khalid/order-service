@@ -3,11 +3,10 @@ package com.kalsym.order.service.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.enums.ProductStatus;
 import com.kalsym.order.service.model.object.DeliveryServiceSubmitOrder;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -17,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import com.kalsym.order.service.model.*;
+import com.kalsym.order.service.utility.Logger;
 import org.springframework.stereotype.Service;
 
 /**
@@ -25,8 +25,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class ProductService {
-
-    private static Logger logger = LoggerFactory.getLogger("application");
 
     @Value("${product.reduce.quantity.URL:https://api.symplified.biz/product-service/v1/stores/%STOREID%/products/%PRODUCTID%/inventory/%ITEMCODE%?quantity=}")
     private String reduceProductInventoryURL;
@@ -56,11 +54,12 @@ public class ProductService {
      * @return
      */
     public Product getProductById(String storeId, String productId) {
+        String logprefix = "getProductById";
 
         try {
             getProductByIdURL = getProductByIdURL.replace("%STOREID%", storeId);
             getProductByIdURL = getProductByIdURL.replace("%PRODUCTID%", productId);
-//            logger.info("getProductByIdURL created: " + getProductByIdURL);
+//            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getProductByIdURL created: " + getProductByIdURL);
             RestTemplate restTemplate = new RestTemplate();
 
             HttpHeaders headers = new HttpHeaders();
@@ -70,18 +69,18 @@ public class ProductService {
             HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
             httpEntity = new HttpEntity(null, headers);
 
-            logger.info("Sending request to product service to get product by id : " + productId + ", store id: " + storeId + ", URL: " + getProductByIdURL);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Sending request to product service to get product by id : " + productId + ", store id: " + storeId + ", URL: " + getProductByIdURL);
             ResponseEntity<String> res = restTemplate.exchange(getProductByIdURL, HttpMethod.GET, httpEntity, String.class);
 
-            logger.info("Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
 
             if (res.getStatusCode() == HttpStatus.OK) {
-                logger.info("res : " + res);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
                 JSONObject jsonObject = new JSONObject(res.getBody());
 //        
                 //create ObjectMapper instance
                 JSONObject productObject = jsonObject.getJSONObject("data");
-                logger.info("object of productObject: " + productObject);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "object of productObject: " + productObject);
                 //create ObjectMapper instance
                 ObjectMapper objectMapper = new ObjectMapper();
                 objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
@@ -90,14 +89,14 @@ public class ProductService {
                 //convert json string to object
                 Product product = objectMapper.readValue(productObject.toString(), Product.class);
 
-                logger.info("got procduct object : " + product.toString());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got procduct object : " + product.toString());
                 return product;
             }
         } catch (RestClientException e) {
-            logger.error("Error product {}", e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error product {}", e);
             return null;
         } catch (JsonProcessingException ex) {
-            logger.error("Error product {}", ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error product {}", ex);
         }
         return null;
     }
@@ -108,11 +107,12 @@ public class ProductService {
      * @return
      */
     public StoreCommission getStoreCommissionByStoreId(String storeId) {
+        String logprefix = "getStoreCommissionByStoreId";
 
         try {
             getStoreCommissionURL = getStoreCommissionURL.replace("%STOREID%", storeId);
 
-//            logger.info("getProductByIdURL created: " + getProductByIdURL);
+//            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getProductByIdURL created: " + getProductByIdURL);
             RestTemplate restTemplate = new RestTemplate();
 
             HttpHeaders headers = new HttpHeaders();
@@ -122,18 +122,18 @@ public class ProductService {
             HttpEntity<String> httpEntity;
             httpEntity = new HttpEntity(null, headers);
 
-            logger.info("Sending request to product service to get store commission by store id: " + storeId + ", URL: " + getStoreCommissionURL);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Sending request to product service to get store commission by store id: " + storeId + ", URL: " + getStoreCommissionURL);
             ResponseEntity<String> res = restTemplate.exchange(getStoreCommissionURL, HttpMethod.GET, httpEntity, String.class);
 
-            logger.info("Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
 
             if (res.getStatusCode() == HttpStatus.OK) {
-                logger.info("res : " + res);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
                 JSONObject jsonObject = new JSONObject(res.getBody());
 //        
                 //create ObjectMapper instance
                 JSONObject storeCommissionObject = jsonObject.getJSONObject("data");
-                logger.info("object of storeCommissionObject: " + storeCommissionObject);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "object of storeCommissionObject: " + storeCommissionObject);
                 if (storeCommissionObject != null) {
                     //create ObjectMapper instance
                     ObjectMapper objectMapper = new ObjectMapper();
@@ -143,16 +143,16 @@ public class ProductService {
                     //convert json string to object
                     StoreCommission storeCommission = objectMapper.readValue(storeCommissionObject.toString(), StoreCommission.class);
 
-                    logger.info("got storeCommission object : " + storeCommission.toString());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got storeCommission object : " + storeCommission.toString());
                     return storeCommission;
                 }
 
             }
         } catch (RestClientException e) {
-            logger.error("Error storeCommission {}", e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error storeCommission {}", e);
             return null;
         } catch (JsonProcessingException ex) {
-            logger.error("Error storeCommission {}", ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error storeCommission {}", ex);
         }
         return null;
     }
@@ -166,13 +166,14 @@ public class ProductService {
      * @return
      */
     public ProductInventory reduceProductInventory(String storeId, String productId, String itemcode, int quantity) {
+        String logprefix = "reduceProductInventory";
 
         try {
             reduceProductInventoryURL = reduceProductInventoryURL.replace("%STOREID%", storeId);
             reduceProductInventoryURL = reduceProductInventoryURL.replace("%PRODUCTID%", productId);
             reduceProductInventoryURL = reduceProductInventoryURL.replace("%ITEMCODE%", itemcode);
             reduceProductInventoryURL = reduceProductInventoryURL + quantity;
-            logger.info("reduceProductInventoryURL created: " + reduceProductInventoryURL);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "reduceProductInventoryURL created: " + reduceProductInventoryURL);
             RestTemplate restTemplate = new RestTemplate();
 
             HttpHeaders headers = new HttpHeaders();
@@ -182,18 +183,18 @@ public class ProductService {
             HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
             httpEntity = new HttpEntity(null, headers);
 
-            logger.info("Sending request to product service to reduce " + quantity + " quantity:  " + reduceProductInventoryURL);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Sending request to product service to reduce " + quantity + " quantity:  " + reduceProductInventoryURL);
             ResponseEntity<String> res = restTemplate.exchange(reduceProductInventoryURL, HttpMethod.PUT, httpEntity, String.class);
 
-            logger.info("Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
 
             if (res.getStatusCode() == HttpStatus.OK) {
-                logger.info("res : " + res);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
                 JSONObject jsonObject = new JSONObject(res.getBody());
 //        
                 //create ObjectMapper instance
                 JSONObject productInventoryObject = jsonObject.getJSONObject("data");
-                logger.info("object of productInventory: " + productInventoryObject);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "object of productInventory: " + productInventoryObject);
                 //create ObjectMapper instance
                 ObjectMapper objectMapper = new ObjectMapper();
                 objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
@@ -202,14 +203,14 @@ public class ProductService {
                 //convert json string to object
                 ProductInventory productInventory = objectMapper.readValue(productInventoryObject.toString(), ProductInventory.class);
 
-                logger.info("got procduct Inventory object : " + productInventory.toString());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got procduct Inventory object : " + productInventory.toString());
                 return productInventory;
             }
         } catch (RestClientException e) {
-            logger.error("Error product inventory reduction domain {}", reduceProductInventoryURL, e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error product inventory reduction domain {}", reduceProductInventoryURL, e);
             return null;
         } catch (JsonProcessingException ex) {
-            logger.error("Error product inventory reduction {}", reduceProductInventoryURL, ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error product inventory reduction {}", reduceProductInventoryURL, ex);
         }
         return null;
     }
@@ -223,13 +224,14 @@ public class ProductService {
      * @return
      */
     public ProductInventory changeProductStatus(String storeId, String productId, String itemcode, ProductStatus productStatus) {
+        String logprefix = "changeProductStatus";
 
         try {
             changeProductStatusURL = changeProductStatusURL.replace("%STOREID%", storeId);
             changeProductStatusURL = changeProductStatusURL.replace("%PRODUCTID%", productId);
             changeProductStatusURL = changeProductStatusURL.replace("%ITEMCODE%", itemcode);
             changeProductStatusURL = changeProductStatusURL + productStatus.toString();
-            logger.info("changeProductStatusURL created: " + changeProductStatusURL);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "changeProductStatusURL created: " + changeProductStatusURL);
             RestTemplate restTemplate = new RestTemplate();
 
             HttpHeaders headers = new HttpHeaders();
@@ -239,18 +241,18 @@ public class ProductService {
             HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
             httpEntity = new HttpEntity(null, headers);
 
-            logger.info("Sending request to product service to change status of product to: " + productStatus.toString() + changeProductStatusURL);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Sending request to product service to change status of product to: " + productStatus.toString() + changeProductStatusURL);
             ResponseEntity<String> res = restTemplate.exchange(changeProductStatusURL, HttpMethod.PUT, httpEntity, String.class);
 
-            logger.info("Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
 
             if (res.getStatusCode() == HttpStatus.OK) {
-                logger.info("res : " + res);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
                 JSONObject jsonObject = new JSONObject(res.getBody());
 //        
                 //create ObjectMapper instance
                 JSONObject productInventoryObject = jsonObject.getJSONObject("data");
-                logger.info("object of productInventory: " + productInventoryObject);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "object of productInventory: " + productInventoryObject);
                 //create ObjectMapper instance
                 ObjectMapper objectMapper = new ObjectMapper();
                 objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
@@ -259,14 +261,14 @@ public class ProductService {
                 //convert json string to object
                 ProductInventory productInventory = objectMapper.readValue(productInventoryObject.toString(), ProductInventory.class);
 
-                logger.info("got procduct Inventory object : " + productInventory.toString());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got procduct Inventory object : " + productInventory.toString());
                 return productInventory;
             }
         } catch (RestClientException e) {
-            logger.error("Error product inventory reduction domain {}", changeProductStatusURL, e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error product inventory reduction domain {}", changeProductStatusURL, e);
             return null;
         } catch (JsonProcessingException ex) {
-            logger.error("Error product inventory reduction {}", changeProductStatusURL, ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error product inventory reduction {}", changeProductStatusURL, ex);
         }
         return null;
     }
@@ -278,6 +280,7 @@ public class ProductService {
      * @throws JsonProcessingException
      */
     public StoreWithDetails getStoreById(String storeId) throws JsonProcessingException {
+        String logprefix = "getStoreById";
 
         RestTemplate restTemplate = new RestTemplate();
 
@@ -288,12 +291,12 @@ public class ProductService {
 
         try {
             getStoreByIdURL = getStoreByIdURL.replace("%STOREID%", storeId);
-            logger.info("getStoreByIdURL : " + getStoreByIdURL);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getStoreByIdURL : " + getStoreByIdURL);
             ResponseEntity<String> res = restTemplate.exchange(getStoreByIdURL, HttpMethod.GET, httpEntity, String.class);
-            logger.info("res : " + res);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
 
             if (res.getStatusCode() == HttpStatus.OK) {
-                logger.info("res : " + res);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
                 JSONObject jsonObject = new JSONObject(res.getBody());
 //        
                 //create ObjectMapper instance
@@ -306,14 +309,14 @@ public class ProductService {
                 //convert json string to object
                 StoreWithDetails storeWithDetails = objectMapper.readValue(storeObject.toString(), StoreWithDetails.class);
 
-                logger.info("got store object : " + storeWithDetails.toString());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store object : " + storeWithDetails.toString());
                 return storeWithDetails;
             }
         } catch (RestClientException e) {
-            logger.error("Error getStoreById domain {}", getStoreByIdURL, e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getStoreById domain {}", getStoreByIdURL, e);
             return null;
         } catch (JsonProcessingException ex) {
-            logger.error("Error getStoreById domain {}", getStoreByIdURL, ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getStoreById domain {}", getStoreByIdURL, ex);
         }
         return null;
     }
@@ -325,7 +328,7 @@ public class ProductService {
      * @throws JsonProcessingException
      */
     public StoreDeliveryDetail getStoreDeliveryDetails(String storeId) throws JsonProcessingException {
-
+        String logprefix = "getStoreDeliveryDetails";
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
@@ -335,12 +338,12 @@ public class ProductService {
 
         try {
             getStoreDeliveryDetailsURL = getStoreDeliveryDetailsURL.replace("%STOREID%", storeId);
-            logger.info("getStoreDeliveryDetailsURL : " + getStoreDeliveryDetailsURL);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getStoreDeliveryDetailsURL : " + getStoreDeliveryDetailsURL);
             ResponseEntity<String> res = restTemplate.exchange(getStoreDeliveryDetailsURL, HttpMethod.GET, httpEntity, String.class);
-            logger.info("res : " + res);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
 
             if (res.getStatusCode() == HttpStatus.OK) {
-                logger.info("res : " + res);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
                 JSONObject jsonObject = new JSONObject(res.getBody());
 //        
                 //create ObjectMapper instance
@@ -353,14 +356,14 @@ public class ProductService {
                 //convert json string to object
                 StoreDeliveryDetail storeDeliveryDetail = objectMapper.readValue(storeDeliveryDetailsObject.toString(), StoreDeliveryDetail.class);
 
-                logger.info("got store delivery object : " + storeDeliveryDetail.toString());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store delivery object : " + storeDeliveryDetail.toString());
                 return storeDeliveryDetail;
             }
         } catch (RestClientException e) {
-            logger.error("Error getStoreDeliveryDetails domain {}", getStoreDeliveryDetailsURL, e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getStoreDeliveryDetails domain {}", getStoreDeliveryDetailsURL, e);
             return null;
         } catch (JsonProcessingException ex) {
-            logger.error("Error getStoreDeliveryDetails domain {}", getStoreDeliveryDetailsURL, ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getStoreDeliveryDetails domain {}", getStoreDeliveryDetailsURL, ex);
         }
         return null;
     }
@@ -373,12 +376,13 @@ public class ProductService {
      * @return
      */
     public ProductInventory getProductInventoryById(String storeId, String productId, String itemcode) {
+        String logprefix = "getProductInventoryById";
 
         try {
             getProductInventoryURL = getProductInventoryURL.replace("%STOREID%", storeId);
             getProductInventoryURL = getProductInventoryURL.replace("%PRODUCTID%", productId);
             getProductInventoryURL = getProductInventoryURL.replace("%ITEMCODE%", itemcode);
-//            logger.info("getProductByIdURL created: " + getProductByIdURL);
+//            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getProductByIdURL created: " + getProductByIdURL);
             RestTemplate restTemplate = new RestTemplate();
 
             HttpHeaders headers = new HttpHeaders();
@@ -388,18 +392,18 @@ public class ProductService {
             HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
             httpEntity = new HttpEntity(null, headers);
 
-            logger.info("Sending request to product service to get product inventory by id : " + productId + ", store id: " + storeId + ", itemcode: " + itemcode + ", URL: " + getProductInventoryURL);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Sending request to product service to get product inventory by id : " + productId + ", store id: " + storeId + ", itemcode: " + itemcode + ", URL: " + getProductInventoryURL);
             ResponseEntity<String> res = restTemplate.exchange(getProductInventoryURL, HttpMethod.GET, httpEntity, String.class);
 
-            logger.info("Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
 
             if (res.getStatusCode() == HttpStatus.OK) {
-                logger.info("res : " + res);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
                 JSONObject jsonObject = new JSONObject(res.getBody());
 //        
                 //create ObjectMapper instance
                 JSONObject productInventoryObject = jsonObject.getJSONObject("data");
-                logger.info("object of productInventoryObject: " + productInventoryObject);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "object of productInventoryObject: " + productInventoryObject);
                 //create ObjectMapper instance
                 ObjectMapper objectMapper = new ObjectMapper();
                 objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
@@ -408,14 +412,14 @@ public class ProductService {
                 //convert json string to object
                 ProductInventory productInventory = objectMapper.readValue(productInventoryObject.toString(), ProductInventory.class);
 
-                logger.info("got productInventoryObject object : " + productInventory.toString());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got productInventoryObject object : " + productInventory.toString());
                 return productInventory;
             }
         } catch (RestClientException e) {
-            logger.error("Error getProductInventoryById {}", e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getProductInventoryById {}", e);
             return null;
         } catch (JsonProcessingException ex) {
-            logger.error("Error getProductInventoryById {}", ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getProductInventoryById {}", ex);
         }
         return null;
     }

@@ -1,15 +1,14 @@
 package com.kalsym.order.service.controller;
 
-import com.kalsym.order.service.model.Order;
+import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.model.OrderPaymentStatus;
 import com.kalsym.order.service.model.repository.OrderPaymentStatusRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
 import com.kalsym.order.service.utility.HttpResponse;
+import com.kalsym.order.service.utility.Logger;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,8 +32,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController()
 @RequestMapping("/orders/payment-statuseses")
 public class OrderPaymentStatusController {
-
-    private static Logger logger = LoggerFactory.getLogger("application");
 
     @Autowired
     OrderRepository orderRepository;
@@ -63,17 +60,16 @@ public class OrderPaymentStatusController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-       
         OrderPaymentStatus orderPaymentStatusUpdate;
         try {
             orderPaymentStatusUpdate = orderPaymentStatusRepository.save(bodyOrderPaymentStatus);
             response.setSuccessStatus(HttpStatus.CREATED);
         } catch (Exception exp) {
-            logger.error("Error saving orderPaymentStatus", exp);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error saving orderPaymentStatus", exp);
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
-        logger.info("orderPaymentStatus created with status: " + orderPaymentStatusUpdate.getStatus());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentStatus created with status: " + orderPaymentStatusUpdate.getStatus());
         response.setData(orderPaymentStatusUpdate);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -86,17 +82,17 @@ public class OrderPaymentStatusController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("bodyOrderPaymentStatus.toString(): {}", bodyOrderPaymentStatus.toString());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "bodyOrderPaymentStatus.toString(): {}", bodyOrderPaymentStatus.toString());
 
         try {
             orderPaymentStatusRepository.delete(bodyOrderPaymentStatus);
             response.setSuccessStatus(HttpStatus.OK);
         } catch (Exception exp) {
-            logger.error("Error deleting orderPaymentStatus", exp);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error deleting orderPaymentStatus", exp);
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
-        logger.info("orderPaymentStatusUpdate deleted with orderId: " + bodyOrderPaymentStatus.getStatus());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentStatusUpdate deleted with orderId: " + bodyOrderPaymentStatus.getStatus());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -108,23 +104,23 @@ public class OrderPaymentStatusController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        logger.info("order-payment-statuses-put-by-id, status: {}", status);
-        logger.info("bodyOrderPaymentStatus.toString(): {}", bodyOrderPaymentStatus.toString());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-payment-statuses-put-by-id, status: {}", status);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "bodyOrderPaymentStatus.toString(): {}", bodyOrderPaymentStatus.toString());
 
         Optional<OrderPaymentStatus> optOrderPaymentStatus = orderPaymentStatusRepository.findById(status);
 
         if (!optOrderPaymentStatus.isPresent()) {
-            logger.info("orderPaymentStatusUpdate not found with orderId: {}", status);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentStatusUpdate not found with orderId: {}", status);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        logger.info("orderPaymentStatus found with status: {}", status);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentStatus found with status: {}", status);
         OrderPaymentStatus orderPaymentStatus = optOrderPaymentStatus.get();
 
         orderPaymentStatus.update(bodyOrderPaymentStatus);
 
-        logger.info("orderPaymentStatusUpdate updated for status: {}", status);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentStatusUpdate updated for status: {}", status);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(orderPaymentStatusRepository.save(orderPaymentStatus));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);

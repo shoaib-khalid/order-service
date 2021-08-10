@@ -1,13 +1,13 @@
 package com.kalsym.order.service.service;
 
+import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.livechat.LiveChatLoginReponse;
+import com.kalsym.order.service.utility.Logger;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -27,8 +27,6 @@ import org.springframework.web.client.RestTemplate;
  * Used to post the order in live.symplifed (rocket chat)
  */
 public class OrderPostService {
-
-    private static Logger logger = LoggerFactory.getLogger("application");
 
     //@Autowired
     @Value("${liveChat.sendMessage.URL:http://209.58.160.20:3000/api/v1/chat.postMessage}")
@@ -60,10 +58,10 @@ public class OrderPostService {
         String logprefix = "postOrderLink";
 
         if (!loginLiveChat()) {
-            logger.info("live chat not logged in");
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "live chat not logged in");
             return "";
         }
-        logger.info("live chat logged in");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "live chat logged in");
 
         String storeLiveChatOrdersGroupName = storeNameService.getLiveChatOrdersGroupName(storeId);
 //        String groupName = "#" + storeLiveChatOrdersGroupName + "-orders";
@@ -90,12 +88,12 @@ public class OrderPostService {
             HttpEntity<OrderPostRequestBody> httpEntity;
             httpEntity = new HttpEntity(orderPostBody, headers);
 
-            logger.info("httpEntity: " + httpEntity);
-            logger.info("liveChatMessageURL: " + liveChatMessageURL);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "liveChatMessageURL: " + liveChatMessageURL);
             ResponseEntity res = restTemplate.exchange(liveChatMessageURL, HttpMethod.POST, httpEntity, String.class);
-            logger.info("res: " + res);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res);
         } catch (RestClientException e) {
-            logger.error("Error posting order on liveChat URL: {}", liveChatMessageURL, e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error posting order on liveChat URL: {}", liveChatMessageURL, e);
             return null;
         }
         return "";
@@ -114,10 +112,10 @@ public class OrderPostService {
         String logprefix = "sendMinimumQuantityAlarm";
 
         if (!loginLiveChat()) {
-            logger.info("live chat not logged in");
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "live chat not logged in");
             return "";
         }
-        logger.info("live chat logged in");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "live chat logged in");
 
         String storeLiveChatOrdersGroupName = storeNameService.getLiveChatOrdersGroupName(storeId);
 //        String groupName = "#" + storeLiveChatOrdersGroupName + "-orders";
@@ -144,12 +142,12 @@ public class OrderPostService {
             HttpEntity<OrderPostRequestBody> httpEntity;
             httpEntity = new HttpEntity(orderPostBody, headers);
 
-            logger.info("httpEntity: " + httpEntity);
-            logger.info("liveChatMessageURL: " + liveChatMessageURL);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "liveChatMessageURL: " + liveChatMessageURL);
             ResponseEntity res = restTemplate.exchange(liveChatMessageURL, HttpMethod.POST, httpEntity, String.class);
-            logger.info("res: " + res);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res);
         } catch (RestClientException e) {
-            logger.error("Error intimating out of stock prdouct on liveChat URL: {}", liveChatMessageURL, e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error intimating out of stock prdouct on liveChat URL: {}", liveChatMessageURL, e);
             return null;
         }
         return "";
@@ -207,11 +205,11 @@ public class OrderPostService {
 
         try {
 
-            logger.info("liveChatLoginUrl: " + liveChatLoginUrl);
-            logger.info("httpEntity: " + httpEntity);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "liveChatLoginUrl: " + liveChatLoginUrl);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity);
 
             ResponseEntity<LiveChatLoginReponse> res = restTemplate.exchange(liveChatLoginUrl, HttpMethod.POST, httpEntity, LiveChatLoginReponse.class);
-            logger.info("res: " + res);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res);
 
             LiveChatLoginReponse liveChatLoginReponse = res.getBody();
 
@@ -219,7 +217,7 @@ public class OrderPostService {
             liveChatToken = liveChatLoginReponse.getData().authToken;
             return true;
         } catch (Exception e) {
-            logger.error("Error loging in livechat ", e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error loging in livechat ", e);
             return false;
         }
     }

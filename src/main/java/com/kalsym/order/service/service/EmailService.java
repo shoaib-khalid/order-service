@@ -5,16 +5,10 @@
  */
 package com.kalsym.order.service.service;
 
-import com.google.gson.Gson;
-import java.util.Properties;
-import javax.mail.*;
-import javax.mail.internet.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.kalsym.order.service.OrderServiceApplication;
 import org.springframework.beans.factory.annotation.Value;
 import com.kalsym.order.service.model.Email;
-import com.kalsym.order.service.model.object.DeliveryServiceResponse;
-import com.kalsym.order.service.model.object.DeliveryServiceSubmitOrder;
+import com.kalsym.order.service.utility.Logger;
 import java.util.Arrays;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -31,8 +25,6 @@ import org.springframework.web.client.RestTemplate;
 @org.springframework.stereotype.Service
 public class EmailService {
 
-    private static Logger logger = LoggerFactory.getLogger("application");
-
     //@Autowired
 //    @Value("${emailService.SenderAddress:mcmc.lms@gmail.com}")
 //    static String emailServiceSenderAddress;
@@ -40,9 +32,11 @@ public class EmailService {
     String sendEmailURL;
 
     public void sendEmail(Email email) {
-        logger.info("SendEmail() starting");
+        String logprefix = "sendEmail";
 
-        logger.info("mail to :" + Arrays.toString(email.getTo()));
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "SendEmail() starting");
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "mail to :" + Arrays.toString(email.getTo()));
         try {
 
             RestTemplate restTemplate = new RestTemplate();
@@ -51,18 +45,18 @@ public class EmailService {
             headers.add("Authorization", "Bearer accessToken");
             HttpEntity<Email> httpEntity = new HttpEntity(email, headers);
 
-            logger.info("Sending request to email service : " + email.toString());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Sending request to email service : " + email.toString());
             ResponseEntity<String> res = restTemplate.exchange(sendEmailURL, HttpMethod.POST, httpEntity, String.class);
 
-            logger.info("Request sent to email service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to email service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
 
             if (res.getStatusCode() == HttpStatus.OK) {
-                logger.info("EmailServiceResponse:" + res);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "EmailServiceResponse:" + res);
             } else {
-                logger.info("EmailServiceResponse:" + res);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "EmailServiceResponse:" + res);
             }
         } catch (RestClientException ex) {
-            logger.error("Exception while sending email to email service: ", ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Exception while sending email to email service: ", ex);
         }
 
     }

@@ -1,20 +1,16 @@
 package com.kalsym.order.service;
 
 //import com.kalsym.product.service.utility.Logger;
+import com.kalsym.order.service.utility.Logger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import javax.persistence.Column;
-import javax.persistence.Id;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 //import javax.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -29,8 +25,6 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 @Component
 public class ListenerBean {
 
-    private static Logger logger = LoggerFactory.getLogger("application");
-
     @Autowired
     RestTemplate restTemplate;
 
@@ -39,6 +33,7 @@ public class ListenerBean {
 
     @EventListener
     public void handleEvent(ContextRefreshedEvent event) {
+        String logprefix = "handleEvent";
 
         if (event instanceof ContextRefreshedEvent) {
             ApplicationContext applicationContext = ((ContextRefreshedEvent) event).getApplicationContext();
@@ -91,9 +86,9 @@ public class ListenerBean {
                 try {
                     if (!handlerMethod.getMethod().getName().equalsIgnoreCase("error")
                             && !handlerMethod.getMethod().getName().equalsIgnoreCase("errorHtml")) {
-                        logger.info(OrderServiceApplication.VERSION, "", "name: " + requestMappingInfo.getName());
-                        logger.info(OrderServiceApplication.VERSION, "", "method: " + handlerMethod.getMethod().getName());
-                        logger.info(OrderServiceApplication.VERSION, "", "description: " + requestMappingInfo.toString());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, OrderServiceApplication.VERSION, "", "name: " + requestMappingInfo.getName());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, OrderServiceApplication.VERSION, "", "method: " + handlerMethod.getMethod().getName());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, OrderServiceApplication.VERSION, "", "description: " + requestMappingInfo.toString());
 
                         Authority authority = new Authority();
                         authority.setId(requestMappingInfo.getName());
@@ -104,18 +99,18 @@ public class ListenerBean {
                         if (null != authority.getId()) {
                             authorities.add(authority);
                         }
-                        logger.info(OrderServiceApplication.VERSION, "", "inserted authority", "");
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, OrderServiceApplication.VERSION, "", "inserted authority", "");
 
                     }
 
                 } catch (Exception e) {
-                    logger.error(OrderServiceApplication.VERSION, "error inserting authority", e.getMessage());
+                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, OrderServiceApplication.VERSION, "error inserting authority", e.getMessage());
                 }
 
             });
 
             ResponseEntity<String> response = restTemplate.postForEntity(userServiceUrl, authorities, String.class);
-            logger.info(OrderServiceApplication.VERSION, "response: " + response);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, OrderServiceApplication.VERSION, "response: " + response);
 
         }
     }

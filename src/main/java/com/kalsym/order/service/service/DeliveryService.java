@@ -3,11 +3,8 @@ package com.kalsym.order.service.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import com.kalsym.order.service.model.DeliveryOrder;
-import com.kalsym.order.service.model.Product;
+import com.kalsym.order.service.OrderServiceApplication;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -19,10 +16,9 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import com.kalsym.order.service.model.object.DeliveryServiceSubmitOrder;
 import com.kalsym.order.service.model.object.DeliveryServiceResponse;
-import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import com.kalsym.order.service.model.DeliveryOrder;
-import java.util.logging.Level;
+import com.kalsym.order.service.utility.Logger;
 import org.json.JSONObject;
 
 /**
@@ -35,8 +31,6 @@ import org.json.JSONObject;
  */
 public class DeliveryService {
 
-    private static Logger logger = LoggerFactory.getLogger("application");
-
     //@Autowired
     @Value("${deliveryService.submitOrder.URL:https://api.symplified.biz/delivery-service/v1/orders/submitorder}")
     String deliveryServiceSubmitOrderURL;
@@ -48,6 +42,7 @@ public class DeliveryService {
     StoreNameService storeNameService;
 
     public DeliveryServiceResponse submitDeliveryOrder(DeliveryServiceSubmitOrder orderPostBody) {
+        String logprefix = "submitDeliveryOrder";
 
         try {
 
@@ -59,25 +54,26 @@ public class DeliveryService {
             HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
             httpEntity = new HttpEntity(orderPostBody, headers);
 
-            logger.info("Sending request to delivery service : " + orderPostBody.toString());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Sending request to delivery service : " + orderPostBody.toString());
             ResponseEntity<String> res = restTemplate.exchange(deliveryServiceSubmitOrderURL, HttpMethod.POST, httpEntity, String.class);
 
-            logger.info("Request sent to delivery service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to delivery service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
 
             if (res.getStatusCode() == HttpStatus.OK) {
                 Gson gson = new Gson();
                 DeliveryServiceResponse response = gson.fromJson(res.getBody(), DeliveryServiceResponse.class);
-                logger.info("DeliveryServiceResponse:" + response.toString());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliveryServiceResponse:" + response.toString());
                 return response;
             }
         } catch (RestClientException e) {
-            logger.error("Error creating domain {}", deliveryServiceSubmitOrderURL, e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error creating domain {}", deliveryServiceSubmitOrderURL, e);
             return null;
         }
         return null;
     }
 
     public DeliveryOrder confirmOrderDelivery(String refId, String orderId) throws JsonProcessingException {
+        String logprefix = "confirmOrderDelivery";
 
         RestTemplate restTemplate = new RestTemplate();
 
@@ -88,12 +84,12 @@ public class DeliveryService {
 
         try {
             String url = orderDeliveryConfirmationURL + refId + "/" + orderId;
-            logger.info("orderDeliveryConfirmationURL : " + url);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderDeliveryConfirmationURL : " + url);
             ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class);
-            logger.info("res : " + res);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
 
             if (res.getStatusCode() == HttpStatus.OK) {
-                logger.info("res : " + res);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
                 JSONObject jsonObject = new JSONObject(res.getBody());
 //        
                 //create ObjectMapper instance
@@ -103,14 +99,14 @@ public class DeliveryService {
                 //convert json string to object
                 DeliveryOrder deliveryOrder = objectMapper.readValue(deliveryObject.toString(), DeliveryOrder.class);
 
-                logger.info("got delivery order object : " + deliveryOrder.toString());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got delivery order object : " + deliveryOrder.toString());
                 return deliveryOrder;
             }
         } catch (RestClientException e) {
-            logger.error("Error delivery order domain {}", orderDeliveryConfirmationURL, e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery order domain {}", orderDeliveryConfirmationURL, e);
             return null;
         } catch (JsonProcessingException ex) {
-            logger.error("Error delivery order domain {}", orderDeliveryConfirmationURL, ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery order domain {}", orderDeliveryConfirmationURL, ex);
         }
         return null;
     }
