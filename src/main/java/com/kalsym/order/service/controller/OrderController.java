@@ -394,28 +394,30 @@ public class OrderController {
 
             //getting store details 
             StoreDeliveryDetail storeDeliveryDetail = productService.getStoreDeliveryDetails(cart.getStoreId());
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store details, {}", storeDeliveryDetail.toString());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store details: " + storeDeliveryDetail.toString());
 
             StoreCommission storeCommission = productService.getStoreCommissionByStoreId(cart.getStoreId());
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store commission : " + storeCommission);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store commission: " + storeCommission);
 
             Double subTotal = 0.0;
             List<OrderItem> orderItems = new ArrayList<OrderItem>();
             try {
                 // check store payment type
                 if (storeWithDetials.getPaymentType().equalsIgnoreCase(StorePaymentType.COD.toString())) {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store with storeId: {} is COD", cart.getStoreId());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store with storeId: " + cart.getStoreId() + " is COD");
                     // get cart items 
                     List<CartItem> cartItems = cartItemRepository.findByCartId(cartId);
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got cartItems of cartId: {}, {}", cartId, cartItems.toString());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got cartItems of cartId: " + cartId + ", items: " + cartItems.toString());
 
                     for (int i = 0; i < cartItems.size(); i++) {
                         // check every items price in product service
                         ProductInventory productInventory = productService.getProductInventoryById(cart.getStoreId(), cartItems.get(i).getProductId(), cartItems.get(i).getItemCode());
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got productinventory against itemcode: {}, {}", cartItems.get(i).getItemCode(), productInventory);
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got productinventory against itemcode:" + cartItems.get(i).getItemCode());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got productinventory: " + cartItems.get(i).getItemCode(), productInventory);
+
                         if (cartItems.get(i).getProductPrice() != Float.parseFloat(String.valueOf(productInventory.getPrice()))) {
                             // should return warning if prices are not same
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prices are not same, price got updated: oldPrice: {}, newPrice: {}", cartItems.get(i).getProductPrice(), String.valueOf(productInventory.getPrice()));
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prices are not same, price got updated: oldPrice: {}, newPrice: {}" + cartItems.get(i).getProductPrice(), String.valueOf(productInventory.getPrice()));
                             response.setSuccessStatus(HttpStatus.CONFLICT);
                             response.setMessage("Conflict in prices, please update prices in cartItems, oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
                             response.setData(cartItems.get(i));
@@ -434,6 +436,7 @@ public class OrderController {
                         orderItem.setSpecialInstruction(cartItems.get(i).getSpecialInstruction());
                         orderItem.setWeight(cartItems.get(i).getWeight());
                         orderItem.setPrice(cartItems.get(i).getQuantity() * Float.parseFloat(String.valueOf(productInventory.getPrice())));
+                        orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
 
                         //adding new orderItem to orderItems list
                         orderItems.add(orderItem);
