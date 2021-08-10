@@ -1,12 +1,13 @@
 package com.kalsym.order.service.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.model.Auth;
 import com.kalsym.order.service.utility.HttpResponse;
 import com.kalsym.order.service.model.MySQLUserDetails;
 import com.kalsym.order.service.service.MySQLUserDetailsService;
-//import com.kalsym.order.service.utility.Logger;
 import com.kalsym.order.service.utility.DateTimeUtil;
+import com.kalsym.order.service.utility.Logger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.io.IOException;
@@ -15,8 +16,6 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +34,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class SessionRequestFilter extends OncePerRequestFilter {
 
-    private static Logger logger = LoggerFactory.getLogger("application");
     @Autowired
     private MySQLUserDetailsService jwtUserDetailsService;
 
@@ -51,25 +49,25 @@ public class SessionRequestFilter extends OncePerRequestFilter {
 
         String logprefix = request.getRequestURI() + " ";
 
-        logger.info("-------------" + logprefix + "-------------", "", "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "-------------" + logprefix + "-------------", "", "");
 
         final String authHeader = request.getHeader("Authorization");
-        logger.warn(logprefix, "Authorization: " + authHeader, "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, logprefix, "Authorization: " + authHeader, "");
 
         String accessToken = null;
 
         // Token is in the form "Bearer token". Remove Bearer word and get only the Token
         if (null != authHeader && authHeader.startsWith("Bearer ")) {
             accessToken = authHeader.replace("Bearer ", "");
-            logger.info(logprefix, "token: " + accessToken, "");
-            logger.info(logprefix, "token length: " + accessToken.length(), "");
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, logprefix, "token: " + accessToken, "");
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, logprefix, "token length: " + accessToken.length(), "");
 
         } else {
-            logger.warn(logprefix, "token does not begin with Bearer String", "");
+            Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, logprefix, "token does not begin with Bearer String", "");
         }
 
         if (accessToken != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            //logger.info(logprefix, "sessionId: " + sessionId, "");
+            //Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, logprefix, "sessionId: " + sessionId, "");
             ResponseEntity<HttpResponse> authResponse = restTemplate.postForEntity(userServiceSessionDetailsUrl, accessToken, HttpResponse.class);
 
             Date expiryTime = null;
@@ -79,11 +77,14 @@ public class SessionRequestFilter extends OncePerRequestFilter {
 
             if (authResponse.getStatusCode() == HttpStatus.ACCEPTED) {
                 ObjectMapper mapper = new ObjectMapper();
-                logger.warn(logprefix, "data: " + authResponse.getBody().getData(), "");
+                //logger.warn(logprefix, "data: " + authResponse.getBody().getData(), "");
 
                 auth = mapper.convertValue(authResponse.getBody().getData(), Auth.class);
                 username = auth.getSession().getUsername();
                 expiryTime = auth.getSession().getExpiry();
+
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, logprefix, "got session for token: " + accessToken, "");
+
             }
 
             if (null != expiryTime && null != username) {
@@ -93,9 +94,9 @@ public class SessionRequestFilter extends OncePerRequestFilter {
                     Date currentTime = sdf.parse(DateTimeUtil.currentTimestamp());
                     diff = expiryTime.getTime() - currentTime.getTime();
                 } catch (ParseException e) {
-                    logger.warn(logprefix, "error calculating time to session expiry", "");
+                    Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, logprefix, "error calculating time to session expiry", "");
                 }
-                logger.info(logprefix, "time to session expiry: " + diff + "ms", "");
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, logprefix, "time to session expiry: " + diff + "ms", "");
                 if (0 < diff) {
                     MySQLUserDetails userDetails = new MySQLUserDetails(auth, auth.getAuthorities());
 
@@ -106,7 +107,7 @@ public class SessionRequestFilter extends OncePerRequestFilter {
 
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
                 } else {
-                    logger.warn(logprefix, "session expired", "");
+                    Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, logprefix, "session expired", "");
                     //response.setStatus(HttpStatus.UNAUTHORIZED);
                     response.getWriter().append("Session expired");
                 }
