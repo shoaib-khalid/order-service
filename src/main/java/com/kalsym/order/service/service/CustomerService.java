@@ -4,6 +4,7 @@ import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.utility.HttpResponse;
 import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.utility.Logger;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,7 +21,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class CustomerService {
 
-    @Value("${user.service.customer.registration.URL:https://api.symplified.it/user-service/v1/customers/register}")
+    @Value("${user.service.customer.registration.URL:https://api.symplified.it/user-service/v1/stores/$%storeId$%/customers/register}")
     String userServiceCustomerRegisterationURL;
 
     public String addCustomer(OrderShipmentDetail orderShipmentDetail, String storeId) {
@@ -86,6 +87,11 @@ public class CustomerService {
                 this.name = name;
             }
 
+            @Override
+            public String toString() {
+                return "Customer{" + "id=" + id + ", username=" + username + ", email=" + email + ", roleId=" + roleId + ", storeId=" + storeId + ", name=" + name + '}';
+            }
+
         }
 
         Customer customer = new Customer();
@@ -106,12 +112,20 @@ public class CustomerService {
 
         String id = null;
         try {
-            ResponseEntity<HttpResponse> res = restTemplate.exchange(userServiceCustomerRegisterationURL, HttpMethod.POST, entity, HttpResponse.class);
+            String url = userServiceCustomerRegisterationURL.replace("$%storeId$%", storeId);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " url: " + url);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " entity: " + entity);
+
+            ResponseEntity<HttpResponse> res = restTemplate.exchange(url, HttpMethod.POST, entity, HttpResponse.class);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " created customer " + res);
 
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " data: " + res.getBody().getData());
+
             if (res.getBody().getData() != null) {
-                Customer newCustomer = (Customer) res.getBody().getData();
-                id = newCustomer.getId();
+                JSONObject newCustomer = new JSONObject((String) res.getBody().getData());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " newCustomer: " + newCustomer);
+
+                id = newCustomer.getString("id");
             }
 
         } catch (RestClientException e) {
