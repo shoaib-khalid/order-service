@@ -309,7 +309,9 @@ public class OrderController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order payment details created for orderId:" + order.getId());
                 orderShipmentDetailRepository.save(osd);
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderShipmentDetail created for orderId: " + order.getId());
-//                break;
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "create customer from OrderShipmentDetails");
+
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order customer Id: " + order.getCustomerId());
 
                 if (order.getCustomerId() == null) {
                     String customerId = customerService.addCustomer(osd, order.getStoreId());
