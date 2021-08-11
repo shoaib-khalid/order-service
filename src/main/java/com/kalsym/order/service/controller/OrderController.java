@@ -44,6 +44,7 @@ import com.kalsym.order.service.model.repository.OrderRepository;
 import com.kalsym.order.service.model.repository.ProductRepository;
 import com.kalsym.order.service.model.repository.StoreRepository;
 import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
+import com.kalsym.order.service.service.CustomerService;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.OrderPostService;
 import com.kalsym.order.service.service.ProductService;
@@ -74,6 +75,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController()
 @RequestMapping("/orders")
 public class OrderController {
+
+    @Autowired
+    CustomerService customerService;
 
     @Autowired
     OrderRepository orderRepository;
@@ -306,6 +310,17 @@ public class OrderController {
                 orderShipmentDetailRepository.save(osd);
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderShipmentDetail created for orderId: " + order.getId());
 //                break;
+                String customerId = customerService.addCustomer(osd, order.getStoreId());
+
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerId: " + customerId);
+
+                if (customerId != null) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer created with id: " + customerId);
+                    order.setCustomerId(customerId);
+                    orderRepository.save(order);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added customerId: " + customerId + " to order: " + order.getId());
+
+                }
             } catch (Exception ex) {
                 Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "exception occure while storing order ", ex);
                 response.setMessage(ex.getMessage());

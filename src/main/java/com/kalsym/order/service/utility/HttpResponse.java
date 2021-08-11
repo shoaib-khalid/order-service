@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.springframework.http.HttpStatus;
 
 /**
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus;
 @Setter
 @JsonInclude(Include.NON_NULL)
 @NoArgsConstructor
+@ToString
 public class HttpResponse {
 
     public HttpResponse(String requestUri) {
@@ -63,4 +65,3 @@ public class HttpResponse {
         this.error = message;
     }
 }
-
