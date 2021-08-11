@@ -199,7 +199,7 @@ public class OrderController {
                 .matchingAll()
                 .withIgnoreCase()
                 .withIgnoreNullValues()
-                .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         Example<Order> orderExample = Example.of(orderMatch, matcher);
 
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
@@ -312,8 +312,9 @@ public class OrderController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "create customer from OrderShipmentDetails");
 
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order customer Id: " + order.getCustomerId());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order check: " +  "undefined".equalsIgnoreCase(order.getCustomerId()));
 
-                if (order.getCustomerId() == null && "undefined".equalsIgnoreCase(order.getCustomerId())) {
+                if (order.getCustomerId() == null || "undefined".equalsIgnoreCase(order.getCustomerId())) {
                     String customerId = customerService.addCustomer(osd, order.getStoreId());
 
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerId: " + customerId);
