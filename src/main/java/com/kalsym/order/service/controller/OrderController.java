@@ -310,17 +310,24 @@ public class OrderController {
                 orderShipmentDetailRepository.save(osd);
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderShipmentDetail created for orderId: " + order.getId());
 //                break;
-                String customerId = customerService.addCustomer(osd, order.getStoreId());
 
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerId: " + customerId);
+                if (order.getCustomerId() == null) {
+                    String customerId = customerService.addCustomer(osd, order.getStoreId());
 
-                if (customerId != null) {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer created with id: " + customerId);
-                    order.setCustomerId(customerId);
-                    orderRepository.save(order);
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added customerId: " + customerId + " to order: " + order.getId());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerId: " + customerId);
+
+                    if (customerId != null) {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer created with id: " + customerId);
+                        order.setCustomerId(customerId);
+                        orderRepository.save(order);
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added customerId: " + customerId + " to order: " + order.getId());
+
+                    }
+                } else {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer already created with id: " + order.getCustomerId());
 
                 }
+
             } catch (Exception ex) {
                 Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "exception occure while storing order ", ex);
                 response.setMessage(ex.getMessage());
