@@ -8,7 +8,7 @@
     </parent>
     <groupId>com.kalsym</groupId>
     <artifactId>order-service</artifactId>
-    <version>3.0.14-SNAPSHOT</version>
+    <version>3.0.15-SNAPSHOT</version>
     <name>order-service</name>
     <properties>
         <java.version>1.8</java.version>

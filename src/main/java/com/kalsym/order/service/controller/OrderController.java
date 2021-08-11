@@ -314,6 +314,7 @@ public class OrderController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order customer Id: " + order.getCustomerId());
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order check: " +  "undefined".equalsIgnoreCase(order.getCustomerId()));
 
+                //TODO: Uncomment this and fix
 //                if (order.getCustomerId() == null || "undefined".equalsIgnoreCase(order.getCustomerId())) {
 //                    String customerId = customerService.addCustomer(osd, order.getStoreId());
 //
