@@ -8,7 +8,7 @@
     </parent>
     <groupId>com.kalsym</groupId>
     <artifactId>order-service</artifactId>
-    <version>3.0.11-SNAPSHOT</version>
+    <version>3.0.12-SNAPSHOT</version>
     <name>order-service</name>
     <properties>
         <java.version>1.8</java.version>
@@ -147,16 +147,21 @@
                         </manifest>
                     </archive>
                     <include resource="logback.xml"/>
+<!--                    <include respurce="application.properties"></include>
+                    <include respurce="application-dev.properties"></include>
+                    <include respurce="application-prod.properties"></include>-->
+   
                 </configuration>
             </plugin>
         </plugins>
         <resources>
             <resource>
                 <filtering>true</filtering>
-                <directory>./</directory>
+                <directory>src/main/resources</directory>
                 <includes>
                     <include>application.properties</include>
-                    <include resource="logback.xml"/>
+                    <include>application-dev.properties</include>
+                    <include>application-prod.properties</include>
                 </includes>
             </resource>
         </resources>

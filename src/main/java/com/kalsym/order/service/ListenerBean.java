@@ -79,6 +79,7 @@ public class ListenerBean {
                 }
 
             }
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "userServiceUrl: " + userServiceUrl);
 
             List<Authority> authorities = new ArrayList<>();
 
@@ -86,9 +87,9 @@ public class ListenerBean {
                 try {
                     if (!handlerMethod.getMethod().getName().equalsIgnoreCase("error")
                             && !handlerMethod.getMethod().getName().equalsIgnoreCase("errorHtml")) {
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, OrderServiceApplication.VERSION, "", "name: " + requestMappingInfo.getName());
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, OrderServiceApplication.VERSION, "", "method: " + handlerMethod.getMethod().getName());
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, OrderServiceApplication.VERSION, "", "description: " + requestMappingInfo.toString());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "", "name: " + requestMappingInfo.getName());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "", "method: " + handlerMethod.getMethod().getName());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "", "description: " + requestMappingInfo.toString());
 
                         Authority authority = new Authority();
                         authority.setId(requestMappingInfo.getName());
@@ -99,12 +100,12 @@ public class ListenerBean {
                         if (null != authority.getId()) {
                             authorities.add(authority);
                         }
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, OrderServiceApplication.VERSION, "", "inserted authority", "");
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "", "inserted authority", "");
 
                     }
 
                 } catch (Exception e) {
-                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, OrderServiceApplication.VERSION, "error inserting authority", e.getMessage());
+                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "error inserting authority", e.getMessage());
                 }
 
             });
