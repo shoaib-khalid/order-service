@@ -67,7 +67,7 @@ public class SessionRequestFilter extends OncePerRequestFilter {
         }
 
         if (accessToken != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            //Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, logprefix, "sessionId: " + sessionId, "");
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, logprefix, "userServiceSessionDetailsUrl: " + userServiceSessionDetailsUrl, "");
             ResponseEntity<HttpResponse> authResponse = restTemplate.postForEntity(userServiceSessionDetailsUrl, accessToken, HttpResponse.class);
 
             Date expiryTime = null;
