@@ -4,6 +4,7 @@ import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.utility.HttpResponse;
 import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.utility.Logger;
+import java.util.LinkedHashMap;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -122,7 +123,7 @@ public class CustomerService {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " data: " + res.getBody().getData());
 
             if (res.getBody().getData() != null) {
-                JSONObject newCustomer = new JSONObject((String) res.getBody().getData());
+                JSONObject newCustomer = new JSONObject((LinkedHashMap) res.getBody().getData());
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " newCustomer: " + newCustomer);
 
                 id = newCustomer.getString("id");
