@@ -237,10 +237,12 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    //TODO: add save customer info request parameter
     @PostMapping(path = {""}, name = "orders-post")
     @PreAuthorize("hasAnyAuthority('orders-post', 'all')")
     public ResponseEntity<HttpResponse> postOrders(HttpServletRequest request,
-            @Valid @RequestBody Order order) throws Exception {
+            @Valid @RequestBody Order order,
+            @RequestParam(required = false) Boolean saveCustomerInformation) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
@@ -312,23 +314,29 @@ public class OrderController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "create customer from OrderShipmentDetails");
 
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order customer Id: " + order.getCustomerId());
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order check: " +  "undefined".equalsIgnoreCase(order.getCustomerId()));
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order check: " + "undefined".equalsIgnoreCase(order.getCustomerId()));
 
                 //TODO: Uncomment this and fix
-                if (order.getCustomerId() == null || "undefined".equalsIgnoreCase(order.getCustomerId())) {
-                    String customerId = customerService.addCustomer(osd, order.getStoreId());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "saveCustomerInformation: " + saveCustomerInformation);
 
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerId: " + customerId);
+                if (saveCustomerInformation != null && saveCustomerInformation == true) {
+                    if (order.getCustomerId() == null || "undefined".equalsIgnoreCase(order.getCustomerId())) {
+                        String customerId = customerService.addCustomer(osd, order.getStoreId());
 
-                    if (customerId != null) {
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer created with id: " + customerId);
-                        order.setCustomerId(customerId);
-                        orderRepository.save(order);
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added customerId: " + customerId + " to order: " + order.getId());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerId: " + customerId);
 
+                        if (customerId != null) {
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer created with id: " + customerId);
+                            order.setCustomerId(customerId);
+                            orderRepository.save(order);
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added customerId: " + customerId + " to order: " + order.getId());
+
+                        }
+                    } else {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer already created with id: " + order.getCustomerId());
                     }
                 } else {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer already created with id: " + order.getCustomerId());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "user information not saved");
                 }
 
             } catch (Exception ex) {
