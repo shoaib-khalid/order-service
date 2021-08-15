@@ -37,7 +37,7 @@ public class OrderShipmentDetail implements Serializable {
     @Id
     private String orderId;
 
-    private Boolean storePickup = false;
+    private Boolean storePickup;
 
     public void update(OrderShipmentDetail orderShipmentDetail) {
 
