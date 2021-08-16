@@ -36,16 +36,16 @@ import com.kalsym.order.service.utility.Logger;
 @RestController()
 @RequestMapping("/carts/{cartId}/items")
 public class CartItemController {
-
+    
     @Autowired
     CartRepository cartRepository;
-
+    
     @Autowired
     CartItemRepository cartItemRepository;
-
+    
     @Autowired
     ProductInventoryRepository productInventoryRepository;
-
+    
     @GetMapping(path = {""}, name = "cart-items-get")
     @PreAuthorize("hasAnyAuthority('cart-items-get', 'all')")
     public ResponseEntity<HttpResponse> getCartItems(HttpServletRequest request,
@@ -53,27 +53,27 @@ public class CartItemController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) throws Exception {
         String logprefix = request.getRequestURI() + " ";
-
+        
         HttpResponse response = new HttpResponse(request.getRequestURI());
-
+        
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-get, URL: " + request.getRequestURI(), cartId);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-get, cartId: " + cartId);
-
+        
         Optional<Cart> cart = cartRepository.findById(cartId);
-
+        
         if (!cart.isPresent()) {
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-get, cartId, not found. cartId: " + cartId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
-
+        
         Pageable pageable = PageRequest.of(page, pageSize);
-
+        
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(cartItemRepository.findByCartId(cartId, pageable));
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
+    
     @GetMapping(path = {"/{id}"}, name = "cart-items-get-by-id")
     @PreAuthorize("hasAnyAuthority('cart-items-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> getCartItemsByCartItemId(HttpServletRequest request,
@@ -82,40 +82,40 @@ public class CartItemController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) throws Exception {
         String logprefix = request.getRequestURI() + " ";
-
+        
         HttpResponse response = new HttpResponse(request.getRequestURI());
-
+        
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-get-by-id, cartItemId: " + id);
-
+        
         Optional<CartItem> cartItem = cartItemRepository.findById(id);
-
+        
         if (!cartItem.isPresent()) {
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-get-by-id, cartItemId, not found. cartItemId: " + id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
-
+        
         Pageable pageable = PageRequest.of(page, pageSize);
-
+        
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(cartItemRepository.findById(id));
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
+    
     @PostMapping(path = {""}, name = "cart-items-post")
     @PreAuthorize("hasAnyAuthority('cart-items-post', 'all')")
     public ResponseEntity<HttpResponse> postCartItems(HttpServletRequest request,
             @PathVariable(required = true) String cartId,
             @Valid @RequestBody CartItem bodyCartItem) throws Exception {
         String logprefix = request.getRequestURI() + " ";
-
+        
         HttpResponse response = new HttpResponse(request.getRequestURI());
-
+        
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-post, cartId: " + cartId);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "bodyCartItem: " + bodyCartItem.toString());
-
+        
         Optional<Cart> savedCart = null;
-
+        
         savedCart = cartRepository.findById(cartId);
         if (savedCart == null) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-post, cartId not found, cartId: " + cartId);
@@ -132,9 +132,10 @@ public class CartItemController {
             if (existingItem != null) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "item already exist for cartId: " + bodyCartItem.getCartId());
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "item already exist for productId: " + bodyCartItem.getProductId());
-
+                
                 int newQty = existingItem.getQuantity() + bodyCartItem.getQuantity();
                 existingItem.setQuantity(newQty);
+                existingItem.setPrice(newQty * existingItem.getProductPrice());
                 existingItem.setProductName(productInventory.getProduct().getName());
                 cartItem = cartItemRepository.save(existingItem);
             } else {
@@ -149,31 +150,31 @@ public class CartItemController {
         }
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem added in cartId: " + cartId);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem added in cart with cartItemId: " + cartItem.getId());
-
+        
         response.setData(cartItem);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-
+    
     @DeleteMapping(path = {"/{id}"}, name = "cart-items-delete-by-id")
     @PreAuthorize("hasAnyAuthority('cart-items-delete-by-id', 'all')")
     public ResponseEntity<HttpResponse> deleteCartItemsById(HttpServletRequest request,
             @PathVariable(required = true) String cartId,
             @PathVariable(required = true) String id) throws Exception {
         String logprefix = request.getRequestURI() + " ";
-
+        
         HttpResponse response = new HttpResponse(request.getRequestURI());
-
+        
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-delete-by-id, cartId: " + cartId + ", cartItemId: " + id);
-
+        
         Optional<Cart> savedCart = null;
-
+        
         savedCart = cartRepository.findById(cartId);
         if (savedCart == null) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-delete-by-id, cartId not found, cartId: " + id);
             response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
-
+        
         try {
             cartItemRepository.deleteById(id);
             response.setSuccessStatus(HttpStatus.OK);
@@ -185,7 +186,7 @@ public class CartItemController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem deleted with id: " + id);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
+    
     @PutMapping(path = {"/{id}"}, name = "cart-items-put-by-id")
     @PreAuthorize("hasAnyAuthority('cart-items-put-by-id', 'all')")
     public ResponseEntity<HttpResponse> putCartItemsById(HttpServletRequest request,
@@ -193,9 +194,9 @@ public class CartItemController {
             @PathVariable(required = true) String id,
             @Valid @RequestBody CartItem bodyCartItem) throws Exception {
         String logprefix = request.getRequestURI() + " ";
-
+        
         HttpResponse response = new HttpResponse(request.getRequestURI());
-
+        
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-put-by-id, cartId: " + cartId);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyCartItem.toString(), "");
 
@@ -207,42 +208,42 @@ public class CartItemController {
 //            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 //        }
         Optional<CartItem> optCartItem = cartItemRepository.findById(id);
-
+        
         if (!optCartItem.isPresent()) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "CartItem not found with cartItemId: " + id);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
-
+        
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem found with cartItemId: " + id);
         CartItem cartItem = optCartItem.get();
-
+        
         cartItem.update(bodyCartItem);
-
+        
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem updated for cartItemId: " + id);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(cartItemRepository.save(cartItem));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
-
+    
     @DeleteMapping(path = {"/clear"}, name = "cart-items-clear-by-id")
     @PreAuthorize("hasAnyAuthority('cart-items-clear-by-id', 'all')")
     public ResponseEntity<HttpResponse> clearCartItems(HttpServletRequest request,
             @PathVariable(required = true) String cartId) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
-
+        
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-delete-by-id, cartId: " + cartId);
-
+        
         Optional<Cart> savedCart = null;
-
+        
         savedCart = cartRepository.findById(cartId);
         if (savedCart == null) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-clear-by-id, cartId not found, cartId: " + cartId);
             response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
-
+        
         try {
             cartItemRepository.clearCartItem(cartId);
             response.setSuccessStatus(HttpStatus.OK);
@@ -254,7 +255,7 @@ public class CartItemController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem deleted with id: " + cartId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
+    
     @PostMapping(path = {"/updatequantiy/{id}/{quantityChange}"}, name = "cart-items-updatequantity-by-id")
     @PreAuthorize("hasAnyAuthority('cart-items-updatequantity-by-id', 'all')")
     public ResponseEntity<HttpResponse> updateQuantityCartItemsById(HttpServletRequest request,
@@ -263,11 +264,11 @@ public class CartItemController {
             @PathVariable(required = true) int quantityChange) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
-
+        
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-delete-by-id, cartId: " + cartId + ", cartItemId: " + id);
-
+        
         Optional<Cart> savedCart = null;
-
+        
         savedCart = cartRepository.findById(cartId);
         if (savedCart == null) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-updatequantity-by-id, cartId not found, cartId: " + id);
@@ -299,5 +300,5 @@ public class CartItemController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem deleted with id: " + id);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
+    
 }
