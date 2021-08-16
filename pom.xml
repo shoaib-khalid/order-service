@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -8,11 +9,13 @@
     </parent>
     <groupId>com.kalsym</groupId>
     <artifactId>order-service</artifactId>
-    <version>3.0.19-SNAPSHOT</version>
+    <version>3.0.20-SNAPSHOT</version>
     <name>order-service</name>
+    <description>Product service</description>
     <properties>
         <java.version>1.8</java.version>
     </properties>
+    
     <dependencies>
         <!--spring boot web-->
         <dependency>
@@ -68,7 +71,6 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20180813</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>javax.xml.bind</groupId>
@@ -80,7 +82,6 @@
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger2</artifactId>
             <version>2.9.2</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.springfox</groupId>
@@ -147,10 +148,6 @@
                         </manifest>
                     </archive>
                     <include resource="logback.xml"/>
-<!--                    <include respurce="application.properties"></include>
-                    <include respurce="application-dev.properties"></include>
-                    <include respurce="application-prod.properties"></include>-->
-   
                 </configuration>
             </plugin>
         </plugins>
