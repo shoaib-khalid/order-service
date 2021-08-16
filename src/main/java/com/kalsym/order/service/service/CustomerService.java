@@ -29,7 +29,7 @@ public class CustomerService {
     @Value("${user.service.customer.registration.URL:https://api.symplified.it/user-service/v1/stores/$%storeId$%/customers/register}")
     String userServiceCustomerRegisterationURL;
 
-    @Value("${user.service.customer.registration.URL:https://api.symplified.it/user-service/v1/customer/$%customerId$%/address}")
+    @Value("${user.service.customer.address.URL:https://api.symplified.it/user-service/v1/customer/$%customerId$%/address}")
     String userServiceCustomerAddressURL;
 
     public String addCustomer(OrderShipmentDetail orderShipmentDetail, String storeId) {
@@ -257,8 +257,6 @@ public class CustomerService {
                 public String toString() {
                     return "CustomerAddress{" + "name=" + name + ", address=" + address + ", email=" + email + ", phoneNumber=" + phoneNumber + ", postCode=" + postCode + ", city=" + city + ", state=" + state + ", country=" + country + ", customerId=" + customerId + '}';
                 }
-                
-                
 
             }
 
