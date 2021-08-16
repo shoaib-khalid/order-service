@@ -139,6 +139,7 @@ public class CartItemController {
                 existingItem.setProductName(productInventory.getProduct().getName());
                 cartItem = cartItemRepository.save(existingItem);
             } else {
+                bodyCartItem.setPrice(bodyCartItem.getQuantity() * bodyCartItem.getProductPrice());
                 bodyCartItem.setProductName(productInventory.getProduct().getName());
                 cartItem = cartItemRepository.save(bodyCartItem);
             }
