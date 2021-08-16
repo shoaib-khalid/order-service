@@ -253,6 +253,13 @@ public class CustomerService {
                     this.customerId = customerId;
                 }
 
+                @Override
+                public String toString() {
+                    return "CustomerAddress{" + "name=" + name + ", address=" + address + ", email=" + email + ", phoneNumber=" + phoneNumber + ", postCode=" + postCode + ", city=" + city + ", state=" + state + ", country=" + country + ", customerId=" + customerId + '}';
+                }
+                
+                
+
             }
 
             CustomerAddress customerAddress = new CustomerAddress();
