@@ -26,13 +26,13 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class CustomerService {
 
-    @Value("${user.service.customer.registration.URL:https://api.symplified.it/user-service/v1/stores/$%storeId$%/customers/register}")
+    @Value("${user.service.customer.registration.URL:https://api.symplified.biz/user-service/v1/stores/$%storeId$%/customers/register}")
     String userServiceCustomerRegisterationURL;
 
-    @Value("${user.service.customer.udate.URL:https://api.symplified.it/user-service/v1/stores/$%storeId$%/customers/$%customerId$%}")
+    @Value("${user.service.customer.udate.URL:https://api.symplified.biz/user-service/v1/stores/$%storeId$%/customers/$%customerId$%}")
     String userServiceCustomerUpdateURL;
 
-    @Value("${user.service.customer.address.URL:https://api.symplified.it/user-service/v1/customer/$%customerId$%/address}")
+    @Value("${user.service.customer.address.URL:https://api.symplified.biz/user-service/v1/customer/$%customerId$%/address}")
     String userServiceCustomerAddressURL;
 
     public String addCustomer(OrderShipmentDetail orderShipmentDetail, String storeId) {
