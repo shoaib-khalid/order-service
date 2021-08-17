@@ -402,7 +402,7 @@ public class CustomerService {
         String id = null;
         try {
             String url = userServiceCustomerUpdateURL.replace("$%storeId$%", storeId);
-            url = userServiceCustomerUpdateURL.replace("$%customerId$%", storeId);
+            url = url.replace("$%customerId$%", storeId);
             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " url: " + url);
             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " entity: " + entity);
 
@@ -427,6 +427,5 @@ public class CustomerService {
 
         return id;
     }
-
 
 }
