@@ -334,6 +334,9 @@ public class OrderController {
                         }
                     } else {
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer already created with id: " + order.getCustomerId());
+                        String customerId = customerService.updateCustomer(osd, order.getStoreId(), order.getCustomerId());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "updated customer information for id: " + customerId);
+
                     }
                 } else {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "user information not saved");
