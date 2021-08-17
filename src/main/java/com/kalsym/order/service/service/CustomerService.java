@@ -270,6 +270,7 @@ public class CustomerService {
             customerAddress.setState(osd.getState());
             customerAddress.setPhoneNumber(osd.getPhoneNumber());
             customerAddress.setPostCode(osd.getZipcode());
+            customerAddress.setEmail(osd.getEmail());
             
             RestTemplate restTemplate = new RestTemplate();
             
