@@ -438,6 +438,8 @@ public class OrderController {
             List<OrderItem> orderItems = new ArrayList<OrderItem>();
             try {
                 // check store payment type
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store with payment type: " + storeWithDetials.getPaymentType());
+
                 if (storeWithDetials.getPaymentType().equalsIgnoreCase(StorePaymentType.COD.toString())) {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store with storeId: " + cart.getStoreId() + " is COD");
                     // get cart items 
