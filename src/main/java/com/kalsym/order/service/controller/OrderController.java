@@ -649,6 +649,14 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
+    void updateQuantityInInventory(ProductInventory productInventory, int quantity) {
+        String logprefix = "updateQuantityInInventory";
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "productInventoryId: " + productInventory.getItemCode() + "productQuantity: " + productInventory.getQuantity());
+        int newQuantity = productInventory.getQuantity() - quantity;
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "productInventoryId: " + productInventory.getItemCode() + "newQuantity: " + newQuantity);
+        productInventory.setQuantity(quantity);
+    }
+
 //    /**
 //     *
 //     * @param request

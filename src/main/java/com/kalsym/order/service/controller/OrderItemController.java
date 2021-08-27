@@ -13,6 +13,7 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -44,6 +45,9 @@ public class OrderItemController {
 
     @Autowired
     ProductInventoryRepository productInventoryRepository;
+
+    @Value("${order.item.price.update:false}")
+    Boolean orderItemPriceUpdate;
 
     @GetMapping(path = {""}, name = "order-items-get")
     @PreAuthorize("hasAnyAuthority('order-items-get', 'all')")
@@ -114,6 +118,14 @@ public class OrderItemController {
         //find product invertory against itemcode to set sku
         ProductInventory productInventory = productInventoryRepository.findByItemCode(bodyOrderItem.getItemCode());
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventory.toString());
+
+        if (orderItemPriceUpdate) {
+            Float productPrice = bodyOrderItem.getProductPrice();
+
+            Double productInventoryPrice = productInventory.getPrice();
+            productPrice = productInventory.getPrice();
+        }
+
         bodyOrderItem.setPrice(bodyOrderItem.getProductPrice() * bodyOrderItem.getQuantity());
         bodyOrderItem.setSKU(productInventory.getSKU());
 //        bodyOrderItem.setProductName(productInventory.getProduct().getName());
