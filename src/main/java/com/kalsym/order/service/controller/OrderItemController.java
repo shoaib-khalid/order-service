@@ -120,10 +120,9 @@ public class OrderItemController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventory.toString());
 
         if (orderItemPriceUpdate) {
-            Float productPrice = bodyOrderItem.getProductPrice();
-
             Double productInventoryPrice = productInventory.getPrice();
-            productPrice = productInventory.getPrice();
+            Float productInventoryPriceF = productInventoryPrice.floatValue();
+            bodyOrderItem.setProductPrice(productInventoryPriceF);
         }
 
         bodyOrderItem.setPrice(bodyOrderItem.getProductPrice() * bodyOrderItem.getQuantity());
