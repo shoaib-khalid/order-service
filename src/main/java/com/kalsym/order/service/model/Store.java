@@ -37,6 +37,8 @@ public class Store {
 
     private Double serviceChargesPercentage;
 
+    private String paymentType;
+
     public String getNameAbreviation() {
         String abbreviation = "";
 

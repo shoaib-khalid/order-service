@@ -262,6 +262,8 @@ public class OrderController {
             }
 
             Store store = optStore.get();
+            order.setPaymentType(store.getPaymentType());
+
             StoreCommission storeCommission = productService.getStoreCommissionByStoreId(store.getId());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store commission: " + storeCommission);
 //            while (true) {

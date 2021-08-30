@@ -73,6 +73,7 @@ public class Order implements Serializable {
     @Column(nullable = true)
     private Double storeShare;
 
+    private String paymentType;
 
     /*
     @OneToOne(fetch=FetchType.LAZY)
