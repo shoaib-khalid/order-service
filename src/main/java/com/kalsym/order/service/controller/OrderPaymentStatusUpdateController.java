@@ -40,6 +40,7 @@ import com.kalsym.order.service.model.DeliveryOrder;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.model.*;
+import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
 import com.kalsym.order.service.utility.Logger;
 
 /**
@@ -67,6 +68,9 @@ public class OrderPaymentStatusUpdateController {
 
     @Autowired
     OrderItemRepository orderItemRepository;
+
+    @Autowired
+    OrderShipmentDetailRepository orderShipmentDetailRepository;
 
     @Autowired
     OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository;
@@ -452,6 +456,14 @@ public class OrderPaymentStatusUpdateController {
             status = OrderStatus.AWAITING_PICKUP;
             email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
             email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
+
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: {} awaiting for pickup", orderId);
+
+            //TODO: 
+            OrderShipmentDetail orderShipmentDetail = orderShipmentDetailRepository.findByOrderId(orderId);
+            orderShipmentDetail.setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
+            orderShipmentDetail.setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
+            orderShipmentDetailRepository.save(orderShipmentDetail);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: {} awaiting for pickup", orderId);
 
         } catch (Exception ex) {

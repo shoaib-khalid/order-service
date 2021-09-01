@@ -39,6 +39,9 @@ public class OrderShipmentDetail implements Serializable {
 
     private Boolean storePickup;
 
+    private String merchantTrackingUrl;
+    private String customerTrackingUrl;
+
     public void update(OrderShipmentDetail orderShipmentDetail) {
 
     }
