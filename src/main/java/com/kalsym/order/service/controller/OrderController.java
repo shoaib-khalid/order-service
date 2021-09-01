@@ -136,6 +136,7 @@ public class OrderController {
             @RequestParam(required = false) String phoneNumber,
             @RequestParam(required = false) String zipcode,
             @RequestParam(required = false) String city,
+            @RequestParam(required = false) OrderStatus completionStatus,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
         String logprefix = request.getRequestURI() + " ";
@@ -163,6 +164,9 @@ public class OrderController {
             orderMatch.setInvoiceId(invoiceId);
         }
 
+        if (completionStatus != null) {
+            orderMatch.setCompletionStatus(completionStatus);
+        }
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderMatch: " + orderMatch);
 
         OrderPaymentDetail opd = new OrderPaymentDetail();
