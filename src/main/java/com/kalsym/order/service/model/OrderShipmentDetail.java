@@ -42,8 +42,20 @@ public class OrderShipmentDetail implements Serializable {
     private String merchantTrackingUrl;
     private String customerTrackingUrl;
 
-    public void update(OrderShipmentDetail orderShipmentDetail) {
+    private String trackingNumber;
 
+    public void update(OrderShipmentDetail orderShipmentDetail) {
+        if (orderShipmentDetail.getTrackingNumber() != null) {
+            trackingNumber = orderShipmentDetail.getTrackingNumber();
+        }
+
+        if (orderShipmentDetail.getCustomerTrackingUrl() != null) {
+            customerTrackingUrl = orderShipmentDetail.getCustomerTrackingUrl();
+        }
+        
+        if (orderShipmentDetail.getCustomerTrackingUrl() != null) {
+            merchantTrackingUrl = orderShipmentDetail.getMerchantTrackingUrl();
+        }
     }
 
 }
