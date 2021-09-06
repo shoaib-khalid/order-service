@@ -88,6 +88,10 @@ public class StoreWithDetails implements Serializable {
     @JoinColumn(name = "storeId", insertable = false, updatable = false, nullable = true)
     private List<StoreTiming> storeTiming;
 
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id", insertable = false, updatable = false, nullable = true)
+    private StoreDeliveryDetail storeDeliveryDetail;
+
     public void update(StoreWithDetails store) {
 
         if (null != store.getCity()) {

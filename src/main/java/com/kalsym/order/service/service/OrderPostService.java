@@ -53,6 +53,49 @@ public class OrderPostService {
     @Autowired
     StoreNameService storeNameService;
 
+    public String postOrderLink(String message, String storeId) {
+
+        String logprefix = "postOrderLink";
+
+        if (!loginLiveChat()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "live chat not logged in");
+            return "";
+        }
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "live chat logged in");
+
+        String storeLiveChatOrdersGroupName = storeNameService.getLiveChatOrdersGroupName(storeId);
+
+        OrderPostRequestBody orderPostBody = new OrderPostRequestBody();
+        orderPostBody.setAlias("SYMplified order");
+        orderPostBody.setAvatar("");
+        // Rocket chat accepts groupName in lowerCase
+//        groupName += groupName.toLowerCase();
+        orderPostBody.setChannel(storeLiveChatOrdersGroupName);
+        orderPostBody.setText(message);
+
+        try {
+
+            RestTemplate restTemplate = new RestTemplate();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("X-Auth-Token", liveChatToken);
+            headers.add("X-User-Id", liveChatUserId);
+
+            HttpEntity<OrderPostRequestBody> httpEntity;
+            httpEntity = new HttpEntity(orderPostBody, headers);
+
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "liveChatMessageURL: " + liveChatMessageURL);
+            ResponseEntity res = restTemplate.exchange(liveChatMessageURL, HttpMethod.POST, httpEntity, String.class);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res);
+        } catch (RestClientException e) {
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error posting order on liveChat URL: " + liveChatMessageURL, e);
+            return null;
+        }
+        return "";
+    }
+
+
     public String postOrderLink(String orderId, String storeId, List<OrderItem> orderItems) {
 
         String logprefix = "postOrderLink";
@@ -98,7 +141,6 @@ public class OrderPostService {
         }
         return "";
     }
-
     /**
      *
      * @param orderId

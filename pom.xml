@@ -9,7 +9,7 @@
     </parent>
     <groupId>com.kalsym</groupId>
     <artifactId>order-service</artifactId>
-    <version>3.0.34-SNAPSHOT</version>
+    <version>3.0.34=5-SNAPSHOT</version>
     <name>order-service</name>
     <description>Product service</description>
     <properties>
@@ -147,7 +147,6 @@
                             </mainClass>
                         </manifest>
                     </archive>
-                    <include resource="logback.xml"/>
                 </configuration>
             </plugin>
         </plugins>
@@ -155,6 +154,7 @@
             <resource>
                 <filtering>true</filtering>
                 <directory>src/main/resources</directory>
+<!--                <targetPath>target</targetPath>-->
                 <includes>
                     <include>application.properties</include>
                     <include>application-dev.properties</include>
