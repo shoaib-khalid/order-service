@@ -128,10 +128,10 @@ public class CartItemController {
             ProductInventory productInventory = productInventoryRepository.findByItemCode(bodyCartItem.getItemCode());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventory.toString());
             //find item in current cart, increase quantity if already exist
-            CartItem existingItem = cartItemRepository.findByCartIdAndProductId(bodyCartItem.getCartId(), bodyCartItem.getProductId());
+            CartItem existingItem = cartItemRepository.findByCartIdAndItemCodeAndSpecialInstruction(bodyCartItem.getCartId(), bodyCartItem.getItemCode(), bodyCartItem.getSpecialInstruction());
             if (existingItem != null) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "item already exist for cartId: " + bodyCartItem.getCartId());
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "item already exist for productId: " + bodyCartItem.getProductId());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "item already exist for itemCode: " + bodyCartItem.getItemCode());
                 
                 int newQty = existingItem.getQuantity() + bodyCartItem.getQuantity();
                 existingItem.setQuantity(newQty);

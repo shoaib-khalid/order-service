@@ -23,6 +23,8 @@ public interface CartItemRepository extends PagingAndSortingRepository<CartItem,
     
     CartItem findByCartIdAndProductId(@Param("cartId") String cartId, @Param("productId") String productId);
     
+    CartItem findByCartIdAndItemCodeAndSpecialInstruction(@Param("cartId") String cartId, @Param("itemCode") String itemCode, @Param("specialInstruction") String specialInstruction);
+    
     List<CartItem> findByCartId(@Param("cartId") String cartId);
     
     /**
