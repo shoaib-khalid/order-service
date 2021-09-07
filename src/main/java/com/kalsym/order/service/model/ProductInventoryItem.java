@@ -24,26 +24,17 @@ import lombok.ToString;
 @Setter
 @ToString
 @Entity
-@Table(name = "product_inventory")
+@Table(name = "product_inventory_item")
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProductInventory implements Serializable {
+public class ProductInventoryItem implements Serializable {
 
     @Id
     private String itemCode;
-
-    private Double price;
-    private Double compareAtprice;
-
-    private String SKU;
-
-    //private String name;
-    private Integer quantity;
+    @Id
+    private String productVariantAvailableId;
+   
     @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
-    @JoinColumn(name = "productId", referencedColumnName = "id", insertable = false, updatable = false, nullable = true)
-    private Product product;
-    
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "itemCode", referencedColumnName = "itemCode", insertable = false, updatable = false, nullable = true)    
-    private List<ProductInventoryItem> productInventoryItemList;
+    @JoinColumn(name = "productVariantAvailableId", referencedColumnName = "id", insertable = false, updatable = false, nullable = true)
+    private ProductVariantAvailable productVariantAvailable;
 }
