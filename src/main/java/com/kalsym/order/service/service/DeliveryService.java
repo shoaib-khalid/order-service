@@ -32,10 +32,10 @@ import org.json.JSONObject;
 public class DeliveryService {
 
     //@Autowired
-    @Value("${deliveryService.submitOrder.URL:https://api.symplified.biz/delivery-service/v1/orders/submitorder}")
+    @Value("${deliveryService.submitOrder.URL:not-set}")
     String deliveryServiceSubmitOrderURL;
 
-    @Value("${deliveryService.confirmation.URL:https://api.symplified.biz/delivery-service/v1/orders/confirmDelivery/}")
+    @Value("${deliveryService.confirmation.URL:not-set}")
     String orderDeliveryConfirmationURL;
 
     @Autowired

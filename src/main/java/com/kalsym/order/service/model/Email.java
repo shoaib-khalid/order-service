@@ -19,5 +19,6 @@ import lombok.ToString;
 public class Email {
     private String[] to;
     private String subject;
+    private String rawBody;
     private Body body;
 }
