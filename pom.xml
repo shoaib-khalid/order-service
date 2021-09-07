@@ -147,7 +147,6 @@
                             </mainClass>
                         </manifest>
                     </archive>
-                    <include resource="logback.xml"/>
                 </configuration>
             </plugin>
         </plugins>
@@ -155,6 +154,7 @@
             <resource>
                 <filtering>true</filtering>
                 <directory>src/main/resources</directory>
+<!--                <targetPath>target</targetPath>-->
                 <includes>
                     <include>application.properties</include>
                     <include>application-dev.properties</include>

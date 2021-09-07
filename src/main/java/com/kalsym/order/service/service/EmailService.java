@@ -34,7 +34,7 @@ public class EmailService {
     public void sendEmail(Email email) {
         String logprefix = "sendEmail";
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "SendEmail() starting");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "starting");
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "mail to :" + Arrays.toString(email.getTo()));
         try {
@@ -45,7 +45,8 @@ public class EmailService {
             headers.add("Authorization", "Bearer accessToken");
             HttpEntity<Email> httpEntity = new HttpEntity(email, headers);
 
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Sending request to email service : " + email.toString());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "sendEmailURL : " + sendEmailURL);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity : " + email.toString());
             ResponseEntity<String> res = restTemplate.exchange(sendEmailURL, HttpMethod.POST, httpEntity, String.class);
 
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to email service, responseCode: {}, responseBody: {}", res.getStatusCode(), res.getBody());
