@@ -4,6 +4,8 @@ import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.ProductInventory;
+import com.kalsym.order.service.model.ProductInventoryItem;
+import com.kalsym.order.service.model.ProductVariantAvailable;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
 import com.kalsym.order.service.model.repository.ProductInventoryRepository;
@@ -118,7 +120,19 @@ public class OrderItemController {
         //find product invertory against itemcode to set sku
         ProductInventory productInventory = productInventoryRepository.findByItemCode(bodyOrderItem.getItemCode());
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventory.toString());
-
+        //get product variant
+        String variantList = null;
+        if (productInventory.getProductInventoryItemList().size()>0) {
+            for (int i=0;i<productInventory.getProductInventoryItemList().size();i++) {
+                ProductInventoryItem productInventoryItem = productInventory.getProductInventoryItemList().get(i);
+                ProductVariantAvailable productVariantAvailable = productInventoryItem.getProductVariantAvailable();
+                String variant = productVariantAvailable.getValue();
+                if (variantList==null)
+                    variantList = variant;
+                else
+                    variantList = variantList + "," + variant;
+            }
+        }
         if (orderItemPriceUpdate) {
             Double productInventoryPrice = productInventory.getPrice();
             Float productInventoryPriceF = productInventoryPrice.floatValue();
@@ -127,6 +141,9 @@ public class OrderItemController {
 
         bodyOrderItem.setPrice(bodyOrderItem.getProductPrice() * bodyOrderItem.getQuantity());
         bodyOrderItem.setSKU(productInventory.getSKU());
+        if (variantList!=null) {
+            bodyOrderItem.setProductVariant(variantList);
+        }
 //        bodyOrderItem.setProductName(productInventory.getProduct().getName());
         orderItem = orderItemRepository.save(bodyOrderItem);
         response.setSuccessStatus(HttpStatus.CREATED);

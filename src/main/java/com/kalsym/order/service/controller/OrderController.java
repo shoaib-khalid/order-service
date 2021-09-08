@@ -34,6 +34,8 @@ import com.kalsym.order.service.model.Store;
 import com.kalsym.order.service.model.StoreCommission;
 import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.OrderShipmentDetail;
+import com.kalsym.order.service.model.ProductInventoryItem;
+import com.kalsym.order.service.model.ProductVariantAvailable;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.CartRepository;
@@ -44,6 +46,7 @@ import com.kalsym.order.service.model.repository.OrderRepository;
 import com.kalsym.order.service.model.repository.ProductRepository;
 import com.kalsym.order.service.model.repository.StoreRepository;
 import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
+import com.kalsym.order.service.model.repository.ProductInventoryRepository;
 import com.kalsym.order.service.service.CustomerService;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.OrderPostService;
@@ -120,7 +123,10 @@ public class OrderController {
 
     @Autowired
     OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository;
-
+    
+    @Autowired
+    ProductInventoryRepository productInventoryRepository;
+    
     @GetMapping(path = {""}, name = "orders-get", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-get', 'all')")
     public ResponseEntity<HttpResponse> getOrders(HttpServletRequest request,
@@ -457,7 +463,22 @@ public class OrderController {
                         ProductInventory productInventory = productService.getProductInventoryById(cart.getStoreId(), cartItems.get(i).getProductId(), cartItems.get(i).getItemCode());
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got productinventory against itemcode:" + cartItems.get(i).getItemCode());
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got productinventory: " + cartItems.get(i).getItemCode(), productInventory);
-
+                        
+                        //get product variant
+                        ProductInventory productInventoryDB = productInventoryRepository.findByItemCode(cartItems.get(i).getItemCode());       
+                        String variantList = null;
+                        if (productInventory.getProductInventoryItemList().size()>0) {
+                            for (int x=0;x<productInventoryDB.getProductInventoryItemList().size();x++) {
+                                ProductInventoryItem productInventoryItem = productInventory.getProductInventoryItemList().get(x);
+                                ProductVariantAvailable productVariantAvailable = productInventoryItem.getProductVariantAvailable();
+                                String variant = productVariantAvailable.getValue();
+                                if (variantList==null)
+                                    variantList = variant;
+                                else
+                                    variantList = variantList + "," + variant;
+                            }
+                        }
+                        
                         if (cartItems.get(i).getProductPrice() != Float.parseFloat(String.valueOf(productInventory.getPrice()))) {
                             // should return warning if prices are not same
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
@@ -479,6 +500,9 @@ public class OrderController {
                         orderItem.setSpecialInstruction(cartItems.get(i).getSpecialInstruction());
                         orderItem.setWeight(cartItems.get(i).getWeight());
                         orderItem.setPrice(cartItems.get(i).getQuantity() * Float.parseFloat(String.valueOf(productInventory.getPrice())));
+                        if (variantList!=null) {
+                            orderItem.setProductVariant(variantList);
+                        }
                         orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
 
                         //adding new orderItem to orderItems list
