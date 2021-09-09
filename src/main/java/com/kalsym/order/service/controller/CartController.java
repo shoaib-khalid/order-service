@@ -4,10 +4,13 @@ import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
+import com.kalsym.order.service.model.repository.StoreDiscountRepository;
+import com.kalsym.order.service.model.repository.StoreDiscountTierRepository;
 import com.kalsym.order.service.utility.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.kalsym.order.service.model.repository.OrderRepository;
 import com.kalsym.order.service.utility.Logger;
+import com.kalsym.order.service.model.object.Discount;
+import com.kalsym.order.service.model.StoreDiscount;
+import com.kalsym.order.service.model.StoreDiscountTier;
+import com.kalsym.order.service.enums.DiscountType;
+import com.kalsym.order.service.enums.DiscountCalculationType;
+import com.kalsym.order.service.utility.StoreDiscountCalculation;
 
 /**
  *
@@ -50,7 +59,13 @@ public class CartController {
     OrderItemRepository orderItemRepository;
     @Autowired
     OrderRepository orderRepository;
-
+    
+    @Autowired
+    StoreDiscountRepository storeDiscountRepository;
+    
+    @Autowired
+    StoreDiscountTierRepository storeDiscountTierRepository;
+    
     @GetMapping(path = {""}, name = "carts-get", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('carts-get', 'all')")
     public ResponseEntity<HttpResponse> getCarts(HttpServletRequest request,
@@ -279,5 +294,32 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
 
     }
+    
+    
+    @GetMapping(path = {"/{id}/discount"}, name = "carts-discount-by-id", produces = "application/json")
+    @PreAuthorize("hasAnyAuthority('carts-discount-by-id', 'all')")
+    public ResponseEntity<HttpResponse> getDiscountOfCart(HttpServletRequest request,
+            @PathVariable String id,
+            @RequestParam(defaultValue = "0") Double deliveryCharge) {
+        String logprefix = request.getRequestURI() + " ";
 
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "carts-order-by-id request...");
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        
+        Optional<Cart> cartOptional = cartRepository.findById(id);
+        if (!cartOptional.isPresent()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cart not found with cartId: " + id);
+            response.setErrorStatus(HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
+        Cart cart = cartOptional.get();        
+        Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);        
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:"+id+" deliveryCharge:"+deliveryCharge+" totalSubTotalDiscount:"+discount.getSubTotalDiscount()+" totalShipmentDiscount:"+discount.getDeliveryDiscount());
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(discount);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+
+    }
+   
 }
