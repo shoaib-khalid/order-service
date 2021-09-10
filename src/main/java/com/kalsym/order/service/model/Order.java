@@ -74,6 +74,16 @@ public class Order implements Serializable {
     private Double storeShare;
 
     private String paymentType;
+    
+    @Column(nullable = true)
+    private Double appliedDiscount;
+    
+     @Column(nullable = true)
+    private Double deliveryDiscount;
+     
+    private String appliedDiscountDescription ;
+     
+    private String deliveryDiscountDescription ;
 
     /*
     @OneToOne(fetch=FetchType.LAZY)

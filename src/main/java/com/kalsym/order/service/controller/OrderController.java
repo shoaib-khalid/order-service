@@ -36,6 +36,8 @@ import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.ProductInventoryItem;
 import com.kalsym.order.service.model.ProductVariantAvailable;
+import com.kalsym.order.service.model.object.Discount;
+import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.CartRepository;
@@ -47,11 +49,15 @@ import com.kalsym.order.service.model.repository.ProductRepository;
 import com.kalsym.order.service.model.repository.StoreRepository;
 import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
 import com.kalsym.order.service.model.repository.ProductInventoryRepository;
+import com.kalsym.order.service.model.repository.StoreDiscountRepository;
+import com.kalsym.order.service.model.repository.StoreDiscountTierRepository;
 import com.kalsym.order.service.service.CustomerService;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.OrderPostService;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.utility.Logger;
+import com.kalsym.order.service.utility.OrderCalculation;
+import com.kalsym.order.service.utility.StoreDiscountCalculation;
 import com.kalsym.order.service.utility.TxIdUtil;
 import java.util.ArrayList;
 import java.util.Date;
@@ -126,6 +132,12 @@ public class OrderController {
     
     @Autowired
     ProductInventoryRepository productInventoryRepository;
+    
+    @Autowired
+    StoreDiscountRepository storeDiscountRepository;
+    
+    @Autowired
+    StoreDiscountTierRepository storeDiscountTierRepository;
     
     @GetMapping(path = {""}, name = "orders-get", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-get', 'all')")
@@ -291,32 +303,31 @@ public class OrderController {
                 order.setPaymentStatus(PaymentStatus.PENDING);
 
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceChargesPercentage: " + store.getServiceChargesPercentage());
-
-                double serviceCharges = 0;
-                if (null != store.getServiceChargesPercentage()) {
-                    serviceCharges = (store.getServiceChargesPercentage() / 100) * order.getSubTotal();
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceCharges: " + serviceCharges);
-
-                }
-
-                //calculating total amount
-                //setting store commission 
-                double commission = 0;
-                if (storeCommission != null) {
-                    commission = order.getTotal() * (storeCommission.getRate() / 100);
-                    if (commission < storeCommission.getMinChargeAmount()) {
-                        commission = storeCommission.getMinChargeAmount();
-                    }
-                }
-
-                //setting amount values, dont do it anywhere else
-                order.setStoreServiceCharges(serviceCharges);
-                order.setTotal(serviceCharges + order.getSubTotal() + order.getDeliveryCharges());
-                order.setKlCommission(commission);
-                order.setStoreShare(order.getSubTotal() + order.getStoreServiceCharges() - commission);
-                order.setDeliveryCharges(order.getDeliveryCharges());
-
+                
+                //calculate Store discount
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Validate cartId: " + order.getCartId());
+                Optional<Cart> optCart = cartRepository.findById(order.getCartId());
+                if (!optCart.isPresent()) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart with id " + order.getCartId() + " not found");
+                    response.setStatus(HttpStatus.NOT_FOUND.value());
+                    response.setMessage("cart with id " + order.getCartId() + " not found");
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                } 
+                
+                Cart cart = optCart.get();
+                OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, order, store.getServiceChargesPercentage(), storeCommission, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
+                order.setSubTotal(orderTotalObject.getSubTotal());
+                order.setAppliedDiscount(orderTotalObject.getAppliedDiscount());
+                order.setAppliedDiscountDescription(orderTotalObject.getAppliedDiscountDescription());
+                order.setDeliveryDiscount(orderTotalObject.getDeliveryDiscount());
+                order.setDeliveryDiscountDescription(orderTotalObject.getDeliveryDiscountDescription());                
+                order.setStoreServiceCharges(orderTotalObject.getStoreServiceCharge());
+                order.setTotal(orderTotalObject.getTotal());
+                order.setKlCommission(orderTotalObject.getKlCommission());
+                order.setStoreShare(orderTotalObject.getStoreShare());
+                order.setDeliveryCharges(order.getDeliveryCharges());                                
                 order = orderRepository.save(order);
+                
                 opd.setOrderId(order.getId());
                 osd.setOrderId(order.getId());
                 orderPaymentDetailRepository.save(opd);
@@ -516,17 +527,9 @@ public class OrderController {
                     order.setPaymentStatus(PaymentStatus.PENDING);
                     order.setCustomerId(cod.getCustomerId());
                     order.setDeliveryCharges(cod.getOrderPaymentDetails().getDeliveryQuotationAmount());
-
-                    //setting service charges
-                    order.setSubTotal(subTotal);
+                    
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceChargesPercentage: " + storeWithDetials.getServiceChargesPercentage());
-
-                    Double serviceChargesPercentage = storeWithDetials.getServiceChargesPercentage();
-                    Double serviceCharges = (serviceChargesPercentage * subTotal) / 100;
-                    order.setStoreServiceCharges(serviceCharges);
-
-                    //setting total 
-                    order.setTotal(subTotal + serviceCharges + order.getDeliveryCharges());
+                    
                     // setting invoice id
                     String invoiceId = TxIdUtil.generateReferenceId(storeWithDetials.getNameAbreviation());
                     order.setInvoiceId(invoiceId);
@@ -535,15 +538,21 @@ public class OrderController {
                     order.setPrivateAdminNotes("");
                     order.setCustomerNotes("");
 
-                    //setting store commission 
-                    if (storeCommission != null) {
-                        double commission = order.getTotal() * (storeCommission.getRate() / 100);
-                        order.setKlCommission((commission < storeCommission.getMinChargeAmount()) ? storeCommission.getMinChargeAmount() : commission);
-                        order.setStoreShare(order.getTotal() - order.getKlCommission());
-                    }
-
+                    OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, order, storeWithDetials.getServiceChargesPercentage(), storeCommission, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
+                    order.setSubTotal(orderTotalObject.getSubTotal());
+                    order.setAppliedDiscount(orderTotalObject.getAppliedDiscount());
+                    order.setAppliedDiscountDescription(orderTotalObject.getAppliedDiscountDescription());
+                    order.setDeliveryDiscount(orderTotalObject.getDeliveryDiscount());
+                    order.setDeliveryDiscountDescription(orderTotalObject.getDeliveryDiscountDescription());                
+                    order.setStoreServiceCharges(orderTotalObject.getStoreServiceCharge());
+                    order.setTotal(orderTotalObject.getTotal());
+                    order.setKlCommission(orderTotalObject.getKlCommission());
+                    order.setStoreShare(orderTotalObject.getStoreShare());
+                    order.setDeliveryCharges(order.getDeliveryCharges());                                
                     // saving order object to get order Id
                     order = orderRepository.save(order);
+                    
+                    
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order posted successfully orderId: " + order.getId());
                     // save payment details
                     cod.getOrderPaymentDetails().setOrderId(order.getId());

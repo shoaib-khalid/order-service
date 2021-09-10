@@ -20,8 +20,8 @@ import lombok.ToString;
 public class OrderObject {
 
     private String storeId;
-    private Float subTotal;
-    private Float total;
+    private Double subTotal;
+    private Double total;
     private String completionStatus;
     private String paymentStatus;
     private String customerNotes;
@@ -45,4 +45,13 @@ public class OrderObject {
     private String orderId;
     private String deliveryQuotationReferenceId;
     private Double deliveryQuotationAmount;
+    
+    private Double appliedDiscount;
+    private String appliedDiscountDescription;
+    private Double deliveryDiscount;
+    private String deliveryDiscountDescription;
+    private Double storeServiceCharge;
+    private Double klCommission;
+    private Double grandTotal;
+    private Double storeShare;
 }

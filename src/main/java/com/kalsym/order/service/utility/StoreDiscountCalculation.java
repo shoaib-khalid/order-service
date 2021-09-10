@@ -42,6 +42,7 @@ public class StoreDiscountCalculation {
                 CartItem item = cartItems.get(i);
                 salesAmount = salesAmount + item.getPrice();
             }
+            discount.setCartSubTotal(salesAmount);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "total sales amount:"+salesAmount);    
             double totalSubTotalDiscount=0;
             double totalShipmentDiscount=0;

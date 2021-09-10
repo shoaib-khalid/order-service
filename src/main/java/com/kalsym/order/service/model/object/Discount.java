@@ -23,5 +23,5 @@ public class Discount {
     Double deliveryDiscount;
     String subTotalDiscountDescription;
     String deliveryDiscountDescription;
-            
+    Double cartSubTotal;        
 }

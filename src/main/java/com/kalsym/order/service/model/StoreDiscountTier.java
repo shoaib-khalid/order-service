@@ -12,6 +12,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 import java.util.Date;
+import javax.persistence.Column;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -38,7 +39,10 @@ public class StoreDiscountTier implements Serializable {
     private String storeDiscountId;
     private Double startTotalSalesAmount;
     private Double endTotalSalesAmount;
+    
+    @Column(nullable = true)
     private Double discountAmount;
+    
     private String calculationType;
 
 }
