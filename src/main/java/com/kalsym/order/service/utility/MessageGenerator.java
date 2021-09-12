@@ -8,11 +8,12 @@ import com.kalsym.order.service.model.StoreWithDetails;
 import java.util.List;
 
 public class MessageGenerator {
+
     public static String generateEmailContent(String emailContent,
-                                Order order,
-                                StoreWithDetails storeWithDetails,
-                                List<OrderItem> orderItems,
-                                OrderShipmentDetail orderShipmentDetail) {
+            Order order,
+            StoreWithDetails storeWithDetails,
+            List<OrderItem> orderItems,
+            OrderShipmentDetail orderShipmentDetail) {
         if (emailContent != null) {
             emailContent = emailContent.replace("{{store-name}}", storeWithDetails.getName());
             emailContent = emailContent.replace("{{store-address}}", storeWithDetails.getStoreAsset().getLogoUrl());
@@ -28,6 +29,25 @@ public class MessageGenerator {
                 emailContent = emailContent.replace("{{delivery-charges}}", order.getOrderPaymentDetail().getDeliveryQuotationAmount() + "");
             }
 
+            if (null != order.getStoreServiceCharges()) {
+                emailContent = emailContent.replace("{{service-charges}}", order.getStoreServiceCharges() + "");
+            } else {
+                emailContent = emailContent.replace("{{service-charges}}", "N/A");
+            }
+
+            if (null != order.getAppliedDiscount()) {
+                emailContent = emailContent.replace("{{applied-discount}}", order.getAppliedDiscount() + "");
+            } else {
+                emailContent = emailContent.replace("{{applied-discount}}", "N/A");
+            }
+            
+            
+            if(null!=order.getDeliveryDiscount()){
+                 emailContent = emailContent.replace("{{delivery-discount}}", order.getDeliveryDiscount() + "");
+            } else {
+                emailContent = emailContent.replace("{{delivery-discount}}", "N/A");
+            }
+            
             emailContent = emailContent.replace("{{sub-total}}", order.getSubTotal() + "");
             emailContent = emailContent.replace("{{store-contact}}", storeWithDetails.getPhoneNumber());
             emailContent = emailContent.replace("{{store-contact}}", storeWithDetails.getPhoneNumber());
@@ -62,10 +82,8 @@ public class MessageGenerator {
             itemList = itemList + item;
         }
 
-
         return itemList;
     }
-
 
     public static String generateRocketChatMessageContent(String messageContent, Order order, List<OrderItem> orderItems, String onboardingOrderLink) {
         messageContent = messageContent.replace("{{order-items}}", getOrderItemsRcContent(orderItems));
