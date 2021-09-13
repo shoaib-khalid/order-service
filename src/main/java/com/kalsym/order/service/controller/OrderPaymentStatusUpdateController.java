@@ -160,6 +160,7 @@ public class OrderPaymentStatusUpdateController {
         String verticalId = storeWithDetails.getVerticalCode();
         Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
         String storeDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
+        newStatus = newStatus.replace(" ", "_");
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "newStatus: " + newStatus);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "storePickup: " + storePickup);
