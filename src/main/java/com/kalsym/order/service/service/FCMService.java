@@ -33,6 +33,7 @@ public class FCMService {
     String fcmBody;
 
     public void sendPushNotification(Order order, String storeId, String storeName, OrderStatus status) {
+        String logprefix = "sendPushNotification";
         RestTemplate restTemplate = new RestTemplate();
 
         FCMNotification fcmNotification = new FCMNotification();
