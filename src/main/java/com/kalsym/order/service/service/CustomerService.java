@@ -134,8 +134,8 @@ public class CustomerService {
         String id = null;
         try {
             String url = userServiceCustomerRegisterationURL.replace("$%storeId$%", storeId);
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " url: " + url);
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " entity: " + entity);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " url: " + url);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " entity: " + entity);
 
             ResponseEntity<HttpResponse> res = restTemplate.exchange(url, HttpMethod.POST, entity, HttpResponse.class);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " created customer " + res);

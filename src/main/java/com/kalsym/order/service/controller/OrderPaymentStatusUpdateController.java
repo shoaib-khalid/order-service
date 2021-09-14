@@ -40,6 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kalsym.order.service.model.DeliveryOrder;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.model.*;
+import com.kalsym.order.service.service.FCMService;
 import com.kalsym.order.service.utility.Logger;
 
 /**
@@ -54,6 +55,9 @@ public class OrderPaymentStatusUpdateController {
 
     @Autowired
     DeliveryService deliveryService;
+
+    @Autowired
+    FCMService fcmService;
 
     @Autowired
     EmailService emailService;
@@ -91,12 +95,11 @@ public class OrderPaymentStatusUpdateController {
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
 
-
     @PutMapping(path = {""}, name = "order-completion-status-updates-put-by-order-id")
     @PreAuthorize("hasAnyAuthority('order-completion-status-updates-put-by-order-id', 'all')")
     public ResponseEntity<HttpResponse> putOrderCompletionStatusUpdatesConfirm(HttpServletRequest request,
-                                                                               @PathVariable(required = true) String orderId,
-                                                                               @Valid @RequestBody OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate) throws Exception {
+            @PathVariable(required = true) String orderId,
+            @Valid @RequestBody OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
@@ -155,7 +158,6 @@ public class OrderPaymentStatusUpdateController {
         String[] to = Utilities.convertArrayListToStringArray(tos);
         email.setTo(to);
 
-
         String newStatus = bodyOrderCompletionStatusUpdate.getStatus().toString();
         String verticalId = storeWithDetails.getVerticalCode();
         Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
@@ -166,7 +168,6 @@ public class OrderPaymentStatusUpdateController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "storePickup: " + storePickup);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "storeDeliveryType: " + storeDeliveryType);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "verticalId: " + verticalId);
-
 
         List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryType(verticalId, newStatus, storePickup, storeDeliveryType);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
@@ -231,11 +232,7 @@ public class OrderPaymentStatusUpdateController {
                         }
 
                         //reduce quantity of product inventory
-
-
-
                     }
-
 
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order posted to rocket chat");
                 } catch (Exception ex) {
@@ -320,7 +317,6 @@ public class OrderPaymentStatusUpdateController {
             }
         }
 
-
         //send rocket chat message
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message to store: " + orderCompletionStatusConfig.getRcMessage());
         if (orderCompletionStatusConfig.getRcMessage()) {
@@ -338,6 +334,17 @@ public class OrderPaymentStatusUpdateController {
             }
 
         }
+
+        //send push notification to DCM message
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat to store: " + orderCompletionStatusConfig.getPushNotificationToMerchat());
+        if (orderCompletionStatusConfig.getPushNotificationToMerchat()) {
+            try {
+                fcmService.sendPushNotification(order, storeWithDetails.getId(), storeWithDetails.getName(), status);
+            } catch (Exception e) {
+                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
+            }
+
+        }
         order.setCompletionStatus(status);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatusUpdate updated for orderId: " + orderId + ", with orderStatus: " + status.toString());
         orderRepository.save(order);
@@ -350,7 +357,7 @@ public class OrderPaymentStatusUpdateController {
     @PutMapping(path = {"/request-delivery"}, name = "order-completion-status-updates-put-by-order-id-by-merchant")
     @PreAuthorize("hasAnyAuthority('order-completion-status-updates-put-by-order-id-by-merchant', 'all')")
     public ResponseEntity<HttpResponse> requestToDelivery(HttpServletRequest request,
-                                                          @PathVariable(required = true) String orderId) throws Exception {
+            @PathVariable(required = true) String orderId) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
         OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate = new OrderCompletionStatusUpdate();
@@ -462,10 +469,6 @@ public class OrderPaymentStatusUpdateController {
 
     }
 
-
-
-
-
     void insertOrderPaymentStatusUpdate(PaymentStatus paymentStatus, String comments, String modifiedBy, String orderId) {
         String logprefix = "insertOrderPaymentStatusUpdate";
         OrderPaymentStatusUpdate orderPaymentStatusUpdate = new OrderPaymentStatusUpdate();
@@ -489,6 +492,5 @@ public class OrderPaymentStatusUpdateController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "inserted orderPaymentStatusUpdate: " + completionStatus + " for orderId: " + orderId);
 
     }
-
 
 }
