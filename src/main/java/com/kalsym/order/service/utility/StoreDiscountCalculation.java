@@ -34,6 +34,13 @@ public class StoreDiscountCalculation {
         if (discountAvailable.isEmpty()) {
             discount.setDeliveryDiscount(0.00);
             discount.setSubTotalDiscount(0.00);
+            double salesAmount=0;
+            List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
+            for (int i=0;i<cartItems.size();i++) {
+                CartItem item = cartItems.get(i);
+                salesAmount = salesAmount + item.getPrice();
+            }
+            discount.setCartSubTotal(salesAmount);
         } else {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "discountAvailable found:"+discountAvailable.size());
             double salesAmount=0;
