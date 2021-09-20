@@ -1,4 +1,17 @@
 ##################################################
+# order-service-3.0.41-SNAPSHOT | 15-September-2021
+##################################################
+### Code Changes:
+* Added fcm notification on order status change.
+
+### Properties Changes:
+fcm.url=https://fcm.googleapis.com/fcm/send
+fcm.token=key=AAAAj5hNRLI:APA91bEBW0gxueP0sjTtvixEb41IK7mZvDxyiSMDalS6ombzXoidlwGmvsagaF520jTxZxxLd1qsX4H-8iSs2qsgqY-rpdLvpTJFOYq0EGj7Mssjno0A7Xwd7nV8pt29HmewypxfaQ65
+fcm.title=New Order
+fcm.body=You have new order at $%storeName$%
+
+
+##################################################
 # order-service-3.0.35 | 3-September-2021
 ##################################################
 ### Code Changes:

@@ -39,7 +39,9 @@ public class OrderCompletionStatusConfig implements Serializable {
     public Boolean emailToStore;
     public Boolean rcMessage;
     public Boolean requestDelivery;
+    public Boolean pushNotificationToMerchat;
 
+    
     public String customerEmailContent;
     public String storeEmailContent;
     public String rcMessageContent;
