@@ -34,6 +34,8 @@ public class OrderCalculation {
         
         //calculate Store discount
         Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, order.getDeliveryCharges(), cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "subTotalDiscount: " +discount.getSubTotalDiscount());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "deliveryDiscount: " +discount.getDeliveryDiscount());
         orderTotal.setAppliedDiscount(discount.getSubTotalDiscount());
         orderTotal.setAppliedDiscountDescription(discount.getSubTotalDiscountDescription());
         orderTotal.setDeliveryDiscount(discount.getDeliveryDiscount());
