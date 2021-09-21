@@ -103,7 +103,7 @@ public class OrderPaymentStatusUpdateController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-status-updates-put-by-order-id, orderId: " + orderId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-status-updates-confirm-put-by-order-id, orderId: " + orderId);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyOrderCompletionStatusUpdate.toString(), "");
 
         Optional<Order> optOrder = orderRepository.findById(orderId);
@@ -173,6 +173,7 @@ public class OrderPaymentStatusUpdateController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
 
         if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
+            Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + newStatus);
             response.setSuccessStatus(HttpStatus.NOT_FOUND);
             response.setMessage("Status config not found for status: " + newStatus);
             response.setError("Status config not found for status: " + newStatus);

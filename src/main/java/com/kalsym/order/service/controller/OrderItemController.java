@@ -122,9 +122,9 @@ public class OrderItemController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventory.toString());
         //get product variant
         String variantList = null;
-        if (productInventory.getProductInventoryItemList().size()>0) {
-            for (int i=0;i<productInventory.getProductInventoryItemList().size();i++) {
-                ProductInventoryItem productInventoryItem = productInventory.getProductInventoryItemList().get(i);
+        if (productInventory.getProductInventoryItems().size()>0) {
+            for (int i=0;i<productInventory.getProductInventoryItems().size();i++) {
+                ProductInventoryItem productInventoryItem = productInventory.getProductInventoryItems().get(i);
                 ProductVariantAvailable productVariantAvailable = productInventoryItem.getProductVariantAvailable();
                 String variant = productVariantAvailable.getValue();
                 if (variantList==null)

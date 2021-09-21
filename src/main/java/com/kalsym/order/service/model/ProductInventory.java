@@ -45,5 +45,5 @@ public class ProductInventory implements Serializable {
     
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "itemCode", referencedColumnName = "itemCode", insertable = false, updatable = false, nullable = true)    
-    private List<ProductInventoryItem> productInventoryItemList;
+    private List<ProductInventoryItem> productInventoryItems;
 }

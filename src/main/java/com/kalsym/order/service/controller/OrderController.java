@@ -478,9 +478,9 @@ public class OrderController {
                         //get product variant
                         ProductInventory productInventoryDB = productInventoryRepository.findByItemCode(cartItems.get(i).getItemCode());       
                         String variantList = null;
-                        if (productInventory.getProductInventoryItemList().size()>0) {
-                            for (int x=0;x<productInventoryDB.getProductInventoryItemList().size();x++) {
-                                ProductInventoryItem productInventoryItem = productInventory.getProductInventoryItemList().get(x);
+                        if (productInventory.getProductInventoryItems().size()>0) {
+                            for (int x=0;x<productInventoryDB.getProductInventoryItems().size();x++) {
+                                ProductInventoryItem productInventoryItem = productInventory.getProductInventoryItems().get(x);
                                 ProductVariantAvailable productVariantAvailable = productInventoryItem.getProductVariantAvailable();
                                 String variant = productVariantAvailable.getValue();
                                 if (variantList==null)
