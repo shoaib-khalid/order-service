@@ -310,9 +310,13 @@ public class OrderPaymentStatusUpdateController {
             if (emailContent != null) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is not null");
                 //sending email
-                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail);
-                email.setRawBody(emailContent);
-                emailService.sendEmail(email);
+                try {
+                    emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail);
+                    email.setRawBody(emailContent);
+                    emailService.sendEmail(email);
+                } catch (Exception ex) {
+                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending email :", ex);
+                }
             } else {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is null");
             }
@@ -323,13 +327,16 @@ public class OrderPaymentStatusUpdateController {
         if (orderCompletionStatusConfig.getRcMessage()) {
             String rcMessageContent = orderCompletionStatusConfig.getRcMessageContent();
             if (rcMessageContent != null) {
+                
+                try {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message content is not null");
+                    rcMessageContent = MessageGenerator.generateRocketChatMessageContent(rcMessageContent, order, orderItems, onboardingOrderLink);
+                    //sending rc messsage
 
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message content is not null");
-                rcMessageContent = MessageGenerator.generateRocketChatMessageContent(rcMessageContent, order, orderItems, onboardingOrderLink);
-                //sending rc messsage
-
-                orderPostService.postOrderLink(rcMessageContent, order.getStoreId());
-
+                    orderPostService.postOrderLink(rcMessageContent, order.getStoreId());
+                } catch (Exception ex) {
+                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending rc message :", ex);
+                }
             } else {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message content null");
             }

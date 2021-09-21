@@ -16,7 +16,9 @@ public class MessageGenerator {
             OrderShipmentDetail orderShipmentDetail) {
         if (emailContent != null) {
             if ( storeWithDetails.getStoreAsset()!=null) {
-                emailContent = emailContent.replace("{{store-logo}}", storeWithDetails.getStoreAsset().getLogoUrl());            
+                if ( storeWithDetails.getStoreAsset().getLogoUrl()!=null) {
+                    emailContent = emailContent.replace("{{store-logo}}", storeWithDetails.getStoreAsset().getLogoUrl());            
+                }
             }
             emailContent = emailContent.replace("{{store-name}}", storeWithDetails.getName());
             emailContent = emailContent.replace("{{store-address}}", storeWithDetails.getAddress());
