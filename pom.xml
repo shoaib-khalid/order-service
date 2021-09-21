@@ -9,9 +9,9 @@
     </parent>
     <groupId>com.kalsym</groupId>
     <artifactId>order-service</artifactId>
-    <version>3.0.43-SNAPSHOT</version>
+    <version>3.0.44-SNAPSHOT</version>
     <name>order-service</name>
-    <description>Product service</description>
+    <description>Order service</description>
     <properties>
         <java.version>1.8</java.version>
     </properties>

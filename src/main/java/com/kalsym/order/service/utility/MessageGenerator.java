@@ -15,8 +15,11 @@ public class MessageGenerator {
             List<OrderItem> orderItems,
             OrderShipmentDetail orderShipmentDetail) {
         if (emailContent != null) {
+            if ( storeWithDetails.getStoreAsset()!=null) {
+                emailContent = emailContent.replace("{{store-logo}}", storeWithDetails.getStoreAsset().getLogoUrl());            
+            }
             emailContent = emailContent.replace("{{store-name}}", storeWithDetails.getName());
-            emailContent = emailContent.replace("{{store-address}}", storeWithDetails.getStoreAsset().getLogoUrl());
+            emailContent = emailContent.replace("{{store-address}}", storeWithDetails.getAddress());
             emailContent = emailContent.replace("{{invoice-number}}", order.getInvoiceId());
             emailContent = emailContent.replace("{{item-list}}", getOrderItemsEmailContent(orderItems));
 
