@@ -170,8 +170,7 @@ public class OrderPaymentStatusUpdateController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "verticalId: " + verticalId);
 
         List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryType(verticalId, newStatus, storePickup, storeDeliveryType);
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
-
+        
         if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
             Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + newStatus);
             response.setSuccessStatus(HttpStatus.NOT_FOUND);
@@ -179,7 +178,8 @@ public class OrderPaymentStatusUpdateController {
             response.setError("Status config not found for status: " + newStatus);
             return ResponseEntity.status(response.getStatus()).body(response);
         }
-
+        
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
         OrderCompletionStatusConfig orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
 
         switch (status) {
