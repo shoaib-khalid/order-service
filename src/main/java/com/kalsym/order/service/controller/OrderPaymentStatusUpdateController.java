@@ -170,18 +170,19 @@ public class OrderPaymentStatusUpdateController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "verticalId: " + verticalId);
 
         List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryType(verticalId, newStatus, storePickup, storeDeliveryType);
-        
+        OrderCompletionStatusConfig orderCompletionStatusConfig = null;
         if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
-            Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + newStatus);
-            response.setSuccessStatus(HttpStatus.NOT_FOUND);
-            response.setMessage("Status config not found for status: " + newStatus);
-            response.setError("Status config not found for status: " + newStatus);
-            return ResponseEntity.status(response.getStatus()).body(response);
+            //Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + newStatus);
+            //response.setSuccessStatus(HttpStatus.NOT_FOUND);
+            //response.setMessage("Status config not found for status: " + newStatus);
+            //response.setError("Status config not found for status: " + newStatus);
+            //return ResponseEntity.status(response.getStatus()).body(response);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatusConfigs not found!");
+        } else {        
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
+            orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
         }
         
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
-        OrderCompletionStatusConfig orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
-
         switch (status) {
             case PAYMENT_CONFIRMED:
                 //clear cart item
@@ -272,87 +273,90 @@ public class OrderPaymentStatusUpdateController {
                 break;
 
         }
-
-        OrderShipmentDetail orderShipmentDetail = orderShipmentDetailRepository.findByOrderId(orderId);
-        //request delivery
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "request delivery: " + orderCompletionStatusConfig.getRequestDelivery());
-        if (orderCompletionStatusConfig.getRequestDelivery()) {
-            try {
-                DeliveryOrder deliveryOrder = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), order.getId());
-                status = OrderStatus.AWAITING_PICKUP;
-                email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
-                email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
-
-                orderShipmentDetail.setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
-                orderShipmentDetail.setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
-                orderShipmentDetailRepository.save(orderShipmentDetail);
-
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added tracking urls to orderId:" + orderId);
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
-
-            } catch (Exception ex) {
-                //there might be some issue so need to updated email for issue and refund
-                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Exception occur while confirming order Delivery ", ex);
-                status = OrderStatus.REQUESTING_DELIVERY_FAILED;
-                insertOrderCompletionStatusUpdate(OrderStatus.REQUESTING_DELIVERY_FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
-                response.setSuccessStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-                response.setMessage("Requesting delivery failed");
-                response.setError("Requesting delivery failed");
-                return ResponseEntity.status(response.getStatus()).body(response);
-            }
-        }
-
-        //send email to customer if config allows
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email to customer: " + orderCompletionStatusConfig.getEmailToCustomer());
-        if (orderCompletionStatusConfig.getEmailToCustomer()) {
-            String emailContent = orderCompletionStatusConfig.getCustomerEmailContent();
-            if (emailContent != null) {
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is not null");
-                //sending email
+        
+        if (orderCompletionStatusConfig!=null) {
+            OrderShipmentDetail orderShipmentDetail = orderShipmentDetailRepository.findByOrderId(orderId);
+            //request delivery
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "request delivery: " + orderCompletionStatusConfig.getRequestDelivery());
+            if (orderCompletionStatusConfig.getRequestDelivery()) {
                 try {
-                    emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail);
-                    email.setRawBody(emailContent);
-                    emailService.sendEmail(email);
-                } catch (Exception ex) {
-                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending email :", ex);
-                }
-            } else {
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is null");
-            }
-        }
+                    DeliveryOrder deliveryOrder = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), order.getId());
+                    status = OrderStatus.AWAITING_PICKUP;
+                    email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
+                    email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
 
-        //send rocket chat message
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message to store: " + orderCompletionStatusConfig.getRcMessage());
-        if (orderCompletionStatusConfig.getRcMessage()) {
-            String rcMessageContent = orderCompletionStatusConfig.getRcMessageContent();
-            if (rcMessageContent != null) {
-                
+                    orderShipmentDetail.setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
+                    orderShipmentDetail.setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
+                    orderShipmentDetailRepository.save(orderShipmentDetail);
+
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added tracking urls to orderId:" + orderId);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
+
+                } catch (Exception ex) {
+                    //there might be some issue so need to updated email for issue and refund
+                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Exception occur while confirming order Delivery ", ex);
+                    status = OrderStatus.REQUESTING_DELIVERY_FAILED;
+                    insertOrderCompletionStatusUpdate(OrderStatus.REQUESTING_DELIVERY_FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
+                    response.setSuccessStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+                    response.setMessage("Requesting delivery failed");
+                    response.setError("Requesting delivery failed");
+                    return ResponseEntity.status(response.getStatus()).body(response);
+                }
+            }
+
+            //send email to customer if config allows
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email to customer: " + orderCompletionStatusConfig.getEmailToCustomer());
+            if (orderCompletionStatusConfig.getEmailToCustomer()) {
+                String emailContent = orderCompletionStatusConfig.getCustomerEmailContent();
+                if (emailContent != null) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is not null");
+                    //sending email
+                    try {
+                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail);
+                        email.setRawBody(emailContent);
+                        emailService.sendEmail(email);
+                    } catch (Exception ex) {
+                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending email :", ex);
+                    }
+                } else {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is null");
+                }
+            }
+
+            //send rocket chat message
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message to store: " + orderCompletionStatusConfig.getRcMessage());
+            if (orderCompletionStatusConfig.getRcMessage()) {
+                String rcMessageContent = orderCompletionStatusConfig.getRcMessageContent();
+                if (rcMessageContent != null) {
+
+                    try {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message content is not null");
+                        rcMessageContent = MessageGenerator.generateRocketChatMessageContent(rcMessageContent, order, orderItems, onboardingOrderLink);
+                        //sending rc messsage
+
+                        orderPostService.postOrderLink(rcMessageContent, order.getStoreId());
+                    } catch (Exception ex) {
+                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending rc message :", ex);
+                    }
+                } else {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message content null");
+                }
+
+            }
+
+            //send push notification to DCM message
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat to store: " + orderCompletionStatusConfig.getPushNotificationToMerchat());
+            if (orderCompletionStatusConfig.getPushNotificationToMerchat()) {
                 try {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message content is not null");
-                    rcMessageContent = MessageGenerator.generateRocketChatMessageContent(rcMessageContent, order, orderItems, onboardingOrderLink);
-                    //sending rc messsage
-
-                    orderPostService.postOrderLink(rcMessageContent, order.getStoreId());
-                } catch (Exception ex) {
-                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending rc message :", ex);
+                    fcmService.sendPushNotification(order, storeWithDetails.getId(), storeWithDetails.getName(), status);
+                } catch (Exception e) {
+                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
                 }
-            } else {
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message content null");
+
             }
-
         }
-
-        //send push notification to DCM message
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat to store: " + orderCompletionStatusConfig.getPushNotificationToMerchat());
-        if (orderCompletionStatusConfig.getPushNotificationToMerchat()) {
-            try {
-                fcmService.sendPushNotification(order, storeWithDetails.getId(), storeWithDetails.getName(), status);
-            } catch (Exception e) {
-                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
-            }
-
-        }
+        
         order.setCompletionStatus(status);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatusUpdate updated for orderId: " + orderId + ", with orderStatus: " + status.toString());
         orderRepository.save(order);
