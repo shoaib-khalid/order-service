@@ -79,7 +79,11 @@ public class MessageGenerator {
         String itemList = "";
         for (OrderItem oi : orderItems) {
             String item = orderItem;
-            item = item.replace("{{item-name}}", oi.getProductName()+" | "+oi.getProductVariant());
+            if (oi.getProductVariant()!=null && !"".equals(oi.getProductVariant()) && !"null".equals(oi.getProductVariant())) {
+                item = item.replace("{{item-name}}", oi.getProductName()+" | "+oi.getProductVariant());
+            } else{
+                item = item.replace("{{item-name}}", oi.getProductName());
+            }
             item = item.replace("{{item-price}}", oi.getProductPrice() + "");
             item = item.replace("{{item-quantity}}", oi.getQuantity() + "");
             item = item.replace("{{item-total}}", oi.getPrice() + "");
