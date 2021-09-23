@@ -33,7 +33,7 @@ public class ProductVariantAvailable implements Serializable {
     private String value;
     private String productVariantId;
     
-    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "productVariantId", referencedColumnName = "id", insertable = false, updatable = false, nullable = true)
     private ProductVariant productVariant;
 }

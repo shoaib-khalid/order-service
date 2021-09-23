@@ -39,7 +39,7 @@ public class ProductInventory implements Serializable {
 
     //private String name;
     private Integer quantity;
-    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "productId", referencedColumnName = "id", insertable = false, updatable = false, nullable = true)
     private Product product;
     

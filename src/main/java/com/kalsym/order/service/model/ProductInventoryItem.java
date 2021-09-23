@@ -34,7 +34,7 @@ public class ProductInventoryItem implements Serializable {
     @Id
     private String productVariantAvailableId;
    
-    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "productVariantAvailableId", referencedColumnName = "id", insertable = false, updatable = false, nullable = true)
     private ProductVariantAvailable productVariantAvailable;
 }
