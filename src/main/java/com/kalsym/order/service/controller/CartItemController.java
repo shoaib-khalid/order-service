@@ -165,19 +165,28 @@ public class CartItemController {
         
         HttpResponse response = new HttpResponse(request.getRequestURI());
         
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-delete-by-id, cartId: " + cartId + ", cartItemId: " + id);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-delete-by-id, cartId:[" + cartId + "], cartItemId:[" + id +"]");
         
         Optional<Cart> savedCart = null;
         
         savedCart = cartRepository.findById(cartId);
         if (savedCart == null) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-delete-by-id, cartId not found, cartId: " + id);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-delete-by-id, cartId not found, cartId: " + cartId);
             response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
         
+        Optional<CartItem> savedItem = cartItemRepository.findById(id);
+        if (savedItem == null) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-delete-by-id, itemId not found, id: " + id);
+            response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
+            return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
+        } 
+        
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-delete-by-id, Item found! Proceed to delete");
+        
         try {
-            cartItemRepository.deleteById(id);
+            cartItemRepository.delete(savedItem.get());
             response.setSuccessStatus(HttpStatus.OK);
         } catch (Exception exp) {
             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error deleting cart item with id: " + id, exp);
@@ -249,7 +258,7 @@ public class CartItemController {
             cartItemRepository.clearCartItem(cartId);
             response.setSuccessStatus(HttpStatus.OK);
         } catch (Exception exp) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error deleting cart item with id: " + cartId, exp);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error clear cart item with cartId: " + cartId, exp);
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
