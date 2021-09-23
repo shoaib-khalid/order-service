@@ -55,6 +55,7 @@ public class MessageGenerator {
             }
             
             emailContent = emailContent.replace("{{sub-total}}", order.getSubTotal() + "");
+            emailContent = emailContent.replace("{{grand-total}}", order.getTotal() + "");
             emailContent = emailContent.replace("{{store-contact}}", storeWithDetails.getPhoneNumber());
            
             if (orderShipmentDetail != null) {

@@ -105,6 +105,13 @@ public class StoreDiscountCalculation {
         } else if (calculationType.equals(DiscountCalculationType.SHIPAMT.toString())) {
             subdiscount = deliveryCharge;
         }
+        
+        if (discountType.equals(DiscountType.TOTALSALES.toString()) && subdiscount > salesAmount ) {
+            subdiscount = salesAmount;
+        } else if (discountType.equals(DiscountType.SHIPPING.toString()) && subdiscount > deliveryCharge ) {
+            subdiscount = deliveryCharge;
+        }
+        
         return subdiscount;
     }
     
