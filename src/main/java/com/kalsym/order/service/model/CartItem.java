@@ -49,7 +49,7 @@ public class CartItem {
     private Cart cartMain;
      */
     
-    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "itemCode", referencedColumnName = "itemCode", insertable = false, updatable = false, nullable = true)
     private ProductInventory productInventory;
   
