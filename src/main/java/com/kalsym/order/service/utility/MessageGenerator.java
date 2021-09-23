@@ -29,9 +29,10 @@ public class MessageGenerator {
                 emailContent = emailContent.replace("{{delivery-charges}}", "N/A");
                 emailContent = emailContent.replace("{{delivery-address}}", "N/A");
                 emailContent = emailContent.replace("{{delivery-city}}", "N/A");
-
             } else {
                 emailContent = emailContent.replace("{{delivery-charges}}", order.getOrderPaymentDetail().getDeliveryQuotationAmount() + "");
+                emailContent = emailContent.replace("{{delivery-address}}", orderShipmentDetail.getAddress());
+                emailContent = emailContent.replace("{{delivery-city}}", orderShipmentDetail.getCity());
             }
 
             if (null != order.getStoreServiceCharges()) {
@@ -55,8 +56,7 @@ public class MessageGenerator {
             
             emailContent = emailContent.replace("{{sub-total}}", order.getSubTotal() + "");
             emailContent = emailContent.replace("{{store-contact}}", storeWithDetails.getPhoneNumber());
-            emailContent = emailContent.replace("{{store-contact}}", storeWithDetails.getPhoneNumber());
-
+           
             if (orderShipmentDetail != null) {
                 if (orderShipmentDetail.getCustomerTrackingUrl() != null) {
                     emailContent = emailContent.replace("customer-tracking-url}}", orderShipmentDetail.getCustomerTrackingUrl());
