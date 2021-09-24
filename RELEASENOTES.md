@@ -5,6 +5,9 @@
 * New features : Handle discount calculation
 * Bug fix for email template
 
+### DB changes:
+ALTER TABLE order_item ADD productVariant VARCHAR(500);
+
 ##################################################
 # order-service-3.0.41-SNAPSHOT | 15-September-2021
 ##################################################
