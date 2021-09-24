@@ -1,4 +1,11 @@
 ##################################################
+# order-service-3.0.53-SNAPSHOT | 24-September-2021
+##################################################
+### Code Changes:
+* New features : Handle discount calculation
+* Bug fix for email template
+
+##################################################
 # order-service-3.0.41-SNAPSHOT | 15-September-2021
 ##################################################
 ### Code Changes:
