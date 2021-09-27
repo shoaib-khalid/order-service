@@ -9,7 +9,7 @@
     </parent>
     <groupId>com.kalsym</groupId>
     <artifactId>order-service</artifactId>
-    <version>3.0.54-SNAPSHOT</version>
+    <version>3.0.55-SNAPSHOT</version>
     <name>order-service</name>
     <description>Order service</description>
     <properties>

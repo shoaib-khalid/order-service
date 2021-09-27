@@ -281,22 +281,29 @@ public class OrderPaymentStatusUpdateController {
             if (orderCompletionStatusConfig.getRequestDelivery()) {
                 try {
                     DeliveryOrder deliveryOrder = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), order.getId());
-                    status = OrderStatus.AWAITING_PICKUP;
-                    email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
-                    email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
+                    if (deliveryOrder!=null) {
+                        status = OrderStatus.AWAITING_PICKUP;
+                        email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
+                        email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
 
-                    orderShipmentDetail.setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
-                    orderShipmentDetail.setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
-                    orderShipmentDetailRepository.save(orderShipmentDetail);
+                        orderShipmentDetail.setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
+                        orderShipmentDetail.setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
+                        orderShipmentDetailRepository.save(orderShipmentDetail);
 
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added tracking urls to orderId:" + orderId);
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
-
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added tracking urls to orderId:" + orderId);
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
+                    } else {
+                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Exception occur while confirming order Delivery ");
+                        insertOrderCompletionStatusUpdate(OrderStatus.REQUESTING_DELIVERY_FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
+                        response.setSuccessStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+                        response.setMessage("Requesting delivery failed");
+                        response.setError("Requesting delivery failed");
+                        return ResponseEntity.status(response.getStatus()).body(response);
+                    }
                 } catch (Exception ex) {
                     //there might be some issue so need to updated email for issue and refund
                     Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Exception occur while confirming order Delivery ", ex);
-                    status = OrderStatus.REQUESTING_DELIVERY_FAILED;
                     insertOrderCompletionStatusUpdate(OrderStatus.REQUESTING_DELIVERY_FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
                     response.setSuccessStatus(HttpStatus.INTERNAL_SERVER_ERROR);
                     response.setMessage("Requesting delivery failed");
