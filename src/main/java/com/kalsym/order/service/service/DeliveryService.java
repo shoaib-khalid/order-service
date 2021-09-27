@@ -72,7 +72,7 @@ public class DeliveryService {
         return null;
     }
 
-    public DeliveryOrder confirmOrderDelivery(String refId, String orderId) throws JsonProcessingException {
+    public DeliveryOrder confirmOrderDelivery(String refId, String orderId)  {
         String logprefix = "confirmOrderDelivery";
 
         RestTemplate restTemplate = new RestTemplate();
@@ -104,8 +104,9 @@ public class DeliveryService {
             }
         } catch (RestClientException e) {
             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery order domain: " + orderDeliveryConfirmationURL, e);
-            return null;
         } catch (JsonProcessingException ex) {
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery order domain: " + orderDeliveryConfirmationURL, ex);
+        } catch (Exception ex) {
             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery order domain: " + orderDeliveryConfirmationURL, ex);
         }
         return null;

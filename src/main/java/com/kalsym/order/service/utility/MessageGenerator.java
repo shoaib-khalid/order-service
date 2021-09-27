@@ -60,7 +60,7 @@ public class MessageGenerator {
            
             if (orderShipmentDetail != null) {
                 if (orderShipmentDetail.getCustomerTrackingUrl() != null) {
-                    emailContent = emailContent.replace("customer-tracking-url}}", orderShipmentDetail.getCustomerTrackingUrl());
+                    emailContent = emailContent.replace("{{customer-tracking-url}}", orderShipmentDetail.getCustomerTrackingUrl());
                 }
             }
 
