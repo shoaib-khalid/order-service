@@ -1,4 +1,13 @@
 ##################################################
+# order-service-3.0.56-SNAPSHOT | 28-September-2021
+##################################################
+### Code Changes:
+* Bug fix for FCM Notification
+
+### DB changes:
+ALTER TABLE order_completion_status_config ADD pushNotificationContent VARCHAR(500);
+
+##################################################
 # order-service-3.0.53-SNAPSHOT | 24-September-2021
 ##################################################
 ### Code Changes:

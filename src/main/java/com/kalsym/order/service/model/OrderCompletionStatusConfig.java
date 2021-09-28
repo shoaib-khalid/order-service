@@ -45,6 +45,8 @@ public class OrderCompletionStatusConfig implements Serializable {
     public String customerEmailContent;
     public String storeEmailContent;
     public String rcMessageContent;
+    public String storePushNotificationContent;
+    public String storePushNotificationTitle;
     public String comments;
     
     @CreationTimestamp

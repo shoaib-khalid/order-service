@@ -26,13 +26,7 @@ public class FCMService {
     @Value("${fcm.token:key=AAAAj5hNRLI:APA91bEBW0gxueP0sjTtvixEb41IK7mZvDxyiSMDalS6ombzXoidlwGmvsagaF520jTxZxxLd1qsX4H-8iSs2qsgqY-rpdLvpTJFOYq0EGj7Mssjno0A7Xwd7nV8pt29HmewypxfaQ65}")
     String fcmToken;
 
-    @Value("${fcm.title:title-prop-not-set}")
-    String fcmTitle;
-
-    @Value("${fcm.title:title-prop-not-setbody-prop-not-set}")
-    String fcmBody;
-
-    public void sendPushNotification(Order order, String storeId, String storeName, OrderStatus status) {
+    public void sendPushNotification(Order order, String storeId, String storeName, String title, String content, OrderStatus orderStatus) {
         String logprefix = "sendPushNotification";
         RestTemplate restTemplate = new RestTemplate();
 
@@ -40,9 +34,11 @@ public class FCMService {
 
         fcmNotification.setTo("/topics/" + storeId);
         FCMNotificationData fcmNotificationData = new FCMNotificationData();
-        fcmNotificationData.setTitle(fcmTitle);
+        fcmNotificationData.setTitle(title);
         fcmNotificationData.setStoreName(storeName);
-        String body = fcmBody.replace("$%storeName$%", storeName);
+        String body = content.replace("$%storeName$%", storeName);
+        body = body.replace("$%orderStatus$%", orderStatus.toString());
+        body = body.replace("$%invoiceNo$%", order.getInvoiceId());
         fcmNotificationData.setBody(body);
         fcmNotification.setData(fcmNotificationData);
 

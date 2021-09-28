@@ -355,8 +355,10 @@ public class OrderPaymentStatusUpdateController {
             //send push notification to DCM message
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat to store: " + orderCompletionStatusConfig.getPushNotificationToMerchat());
             if (orderCompletionStatusConfig.getPushNotificationToMerchat()) {
+                String pushNotificationTitle = orderCompletionStatusConfig.getStorePushNotificationTitle();
+                String pushNotificationContent = orderCompletionStatusConfig.getStorePushNotificationContent();
                 try {
-                    fcmService.sendPushNotification(order, storeWithDetails.getId(), storeWithDetails.getName(), status);
+                    fcmService.sendPushNotification(order, storeWithDetails.getId(), storeWithDetails.getName(), pushNotificationTitle, pushNotificationContent, status);
                 } catch (Exception e) {
                     Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
                 }
