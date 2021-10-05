@@ -6,7 +6,7 @@
 2. Add order created date time in email template, show in merchant time zone.
 
 ### DB changes:
-1. ALTER TABLE store ADD invoiceSeqNo INT;
+1. ALTER TABLE store ADD invoiceSeqNo INT default 0;
 
 2. create new function:
 

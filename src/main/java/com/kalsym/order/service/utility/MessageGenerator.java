@@ -47,26 +47,26 @@ public class MessageGenerator {
             }
 
             if (null != order.getStoreServiceCharges()) {
-                emailContent = emailContent.replace("{{service-charges}}", order.getStoreServiceCharges() + "");
+                emailContent = emailContent.replace("{{service-charges}}", String.format("%.2f",order.getStoreServiceCharges()) + "");
             } else {
                 emailContent = emailContent.replace("{{service-charges}}", "N/A");
             }
 
             if (null != order.getAppliedDiscount()) {
-                emailContent = emailContent.replace("{{applied-discount}}", order.getAppliedDiscount() + "");
+                emailContent = emailContent.replace("{{applied-discount}}", String.format("%.2f",order.getAppliedDiscount()) + "");
             } else {
                 emailContent = emailContent.replace("{{applied-discount}}", "N/A");
             }
             
             
             if(null!=order.getDeliveryDiscount()){
-                 emailContent = emailContent.replace("{{delivery-discount}}", order.getDeliveryDiscount() + "");
+                 emailContent = emailContent.replace("{{delivery-discount}}", String.format("%.2f",order.getDeliveryDiscount()) + "");
             } else {
                 emailContent = emailContent.replace("{{delivery-discount}}", "N/A");
             }
             
-            emailContent = emailContent.replace("{{sub-total}}", order.getSubTotal() + "");
-            emailContent = emailContent.replace("{{grand-total}}", order.getTotal() + "");
+            emailContent = emailContent.replace("{{sub-total}}", String.format("%.2f",order.getSubTotal()) + "");
+            emailContent = emailContent.replace("{{grand-total}}", String.format("%.2f",order.getTotal()) + "");
             emailContent = emailContent.replace("{{store-contact}}", storeWithDetails.getPhoneNumber());
            
             if (orderShipmentDetail != null) {
@@ -83,9 +83,9 @@ public class MessageGenerator {
     public static String getOrderItemsEmailContent(List<OrderItem> orderItems) {
         String orderItem = "                <tr>\n"
                 + "                    <td>{{item-name}}</td>\n"
-                + "                    <td>{{item-price}}</td>\n"
-                + "                    <td>{{item-quantity}}</td>\n"
-                + "                    <td>{{item-total}}</td>\n"
+                + "                    <td  style=\"text-align: right;\">{{item-price}}</td>\n"
+                + "                    <td  style=\"text-align: right;\">{{item-quantity}}</td>\n"
+                + "                    <td  style=\"text-align: right;\">{{item-total}}</td>\n"
                 + "                </tr>";
 
         String itemList = "";
@@ -96,9 +96,9 @@ public class MessageGenerator {
             } else{
                 item = item.replace("{{item-name}}", oi.getProductName());
             }
-            item = item.replace("{{item-price}}", oi.getProductPrice() + "");
+            item = item.replace("{{item-price}}", String.format("%.2f",oi.getProductPrice()) + "");
             item = item.replace("{{item-quantity}}", oi.getQuantity() + "");
-            item = item.replace("{{item-total}}", oi.getPrice() + "");
+            item = item.replace("{{item-total}}", String.format("%.2f",oi.getPrice()) + "");
 
             itemList = itemList + item;
         }
