@@ -34,7 +34,7 @@ public class MessageGenerator {
             //convert time to merchant timezone
             if (regionCountry!=null) {
                 LocalDateTime startLocalTime = DateTimeUtil.convertToLocalDateTimeViaInstant(order.getCreated(), ZoneId.of(regionCountry.getTimezone()) );                
-                DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm:ss, zzzz");
+                DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("dd-MM-yyyy h:mm a");
                 emailContent = emailContent.replace("{{order-created-date-time}}", formatter1.format(startLocalTime));                
             }            
             
