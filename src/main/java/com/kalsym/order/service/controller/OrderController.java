@@ -291,7 +291,7 @@ public class OrderController {
 //            while (true) {
             try {
 
-                String invoiceId = TxIdUtil.generateReferenceId(store.getNameAbreviation());
+                String invoiceId = TxIdUtil.generateInvoiceId(store.getId(), store.getNameAbreviation(), storeRepository);
                 order.setInvoiceId(invoiceId);
                 OrderPaymentDetail opd = order.getOrderPaymentDetail();
                 OrderShipmentDetail osd = order.getOrderShipmentDetail();
@@ -531,7 +531,7 @@ public class OrderController {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceChargesPercentage: " + storeWithDetials.getServiceChargesPercentage());
                     
                     // setting invoice id
-                    String invoiceId = TxIdUtil.generateReferenceId(storeWithDetials.getNameAbreviation());
+                    String invoiceId = TxIdUtil.generateInvoiceId(storeWithDetials.getId(), storeWithDetials.getNameAbreviation(), storeRepository);
                     order.setInvoiceId(invoiceId);
 
                     // setting this empty
@@ -849,5 +849,53 @@ public class OrderController {
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
+    
+    
+    @GetMapping(path = {"/countsummary/{storeId}"}, name = "orders-get", produces = "application/json")
+    @PreAuthorize("hasAnyAuthority('orders-get', 'all')")
+    public ResponseEntity<HttpResponse> getCountSummary(HttpServletRequest request,
+            @PathVariable(required = true) String storeId
+           ) {
+        String logprefix = request.getRequestURI() + " ";
+    
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orders-get request " + request.getRequestURL());
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        
+        Optional<Store> optStore = storeRepository.findById(storeId);
+
+        if (!optStore.isPresent()) {
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            response.setMessage("store not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
+        class DataSummary {
+            String completionStatus;
+            Long count;
+            
+            public String getCompletionStatus() {
+                return completionStatus;
+            }
+            
+             public Long getCount() {
+                return count;
+            }
+        }
+        
+        List<Object> dataSummaryList = new ArrayList<Object>();
+        List<Object[]> countSummaryList = orderRepository.getCountSummary();
+        for (int i=0;i<countSummaryList.size();i++) {
+            Object[] summary = countSummaryList.get(i);
+            DataSummary dataSummary = new DataSummary();
+            dataSummary.completionStatus = String.valueOf(summary[0]);
+            dataSummary.count = (Long)summary[1];
+            dataSummaryList.add(dataSummary);
+        }
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(dataSummaryList);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
 
 }

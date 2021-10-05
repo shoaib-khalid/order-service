@@ -1,4 +1,32 @@
 ##################################################
+# order-service-3.1.0-SNAPSHOT | 4-October-2021
+##################################################
+### Code Changes:
+1. Change invoice number format : Store prefix + 5 digit sequence number
+2. Add order created date time in email template, show in merchant time zone.
+
+### DB changes:
+1. ALTER TABLE store ADD invoiceSeqNo INT;
+
+2. create new function:
+
+DELIMITER $$
+
+USE `symplified`$$
+
+DROP FUNCTION IF EXISTS `getInvoiceSeqNo`$$
+
+CREATE FUNCTION `getInvoiceSeqNo`(storeId VARCHAR(50)) RETURNS INT
+    DETERMINISTIC
+BEGIN
+UPDATE store SET invoiceSeqNo=LAST_INSERT_ID(invoiceSeqNo+1) WHERE id=storeId;
+RETURN LAST_INSERT_ID();
+END$$
+
+DELIMITER ;
+
+
+##################################################
 # order-service-3.0.56-SNAPSHOT | 28-September-2021
 ##################################################
 ### Code Changes:
@@ -6,6 +34,7 @@
 
 ### DB changes:
 ALTER TABLE order_completion_status_config ADD pushNotificationContent VARCHAR(500);
+ALTER TABLE order_completion_status_config ADD storePushNotificationTitle VARCHAR(100);
 
 ##################################################
 # order-service-3.0.53-SNAPSHOT | 24-September-2021

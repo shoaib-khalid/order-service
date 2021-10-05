@@ -3,9 +3,13 @@ package com.kalsym.order.service.utility;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.OrderShipmentDetail;
+import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.StoreWithDetails;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import java.util.List;
+import java.util.Optional;
 
 public class MessageGenerator {
 
@@ -13,7 +17,8 @@ public class MessageGenerator {
             Order order,
             StoreWithDetails storeWithDetails,
             List<OrderItem> orderItems,
-            OrderShipmentDetail orderShipmentDetail) {
+            OrderShipmentDetail orderShipmentDetail,
+            RegionCountry regionCountry) {
         if (emailContent != null) {
             if ( storeWithDetails.getStoreAsset()!=null) {
                 if ( storeWithDetails.getStoreAsset().getLogoUrl()!=null) {
@@ -24,7 +29,13 @@ public class MessageGenerator {
             emailContent = emailContent.replace("{{store-address}}", storeWithDetails.getAddress());
             emailContent = emailContent.replace("{{invoice-number}}", order.getInvoiceId());
             emailContent = emailContent.replace("{{item-list}}", getOrderItemsEmailContent(orderItems));
-
+            
+            //convert time to merchant timezone
+            if (regionCountry!=null) {
+                LocalDateTime startLocalTime = DateTimeUtil.convertToLocalDateTimeViaInstant(order.getCreated(), ZoneId.of(regionCountry.getTimezone()) );
+                emailContent = emailContent.replace("{{order-created-date-time}}", startLocalTime.toString());                
+            }            
+            
             if (order.getOrderShipmentDetail().getStorePickup()) {
                 emailContent = emailContent.replace("{{delivery-charges}}", "N/A");
                 emailContent = emailContent.replace("{{delivery-address}}", "N/A");

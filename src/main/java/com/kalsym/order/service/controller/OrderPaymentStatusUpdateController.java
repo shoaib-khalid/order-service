@@ -91,7 +91,10 @@ public class OrderPaymentStatusUpdateController {
 
     @Autowired
     ProductInventoryRepository productInventoryRepository;
-
+    
+    @Autowired
+    RegionCountriesRepository regionCountriesRepository;
+    
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
 
@@ -320,7 +323,12 @@ public class OrderPaymentStatusUpdateController {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is not null");
                     //sending email
                     try {
-                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail);
+                        RegionCountry regionCountry = null;
+                        Optional<RegionCountry> t = regionCountriesRepository.findById(storeWithDetails.getRegionCountryId());
+                        if (t.isPresent()) {
+                            regionCountry = t.get();
+                        }
+                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, regionCountry);
                         email.setRawBody(emailContent);
                         emailService.sendEmail(email);
                     } catch (Exception ex) {

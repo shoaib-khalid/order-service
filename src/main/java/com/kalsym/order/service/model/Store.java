@@ -38,7 +38,8 @@ public class Store {
     private Double serviceChargesPercentage;
 
     private String paymentType;
-
+    private int invoiceSeqNo;
+    
     public String getNameAbreviation() {
         String abbreviation = "";
 

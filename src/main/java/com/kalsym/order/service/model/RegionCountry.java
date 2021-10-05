@@ -34,7 +34,8 @@ public class RegionCountry implements Serializable {
     private String currency;
     private String currencyCode;
     private String currencySymbol;
-
+    private String timezone;
+    
     public void update(RegionCountry regionVertical) {
         if (null != regionVertical.getName()) {
             name = regionVertical.getName();
