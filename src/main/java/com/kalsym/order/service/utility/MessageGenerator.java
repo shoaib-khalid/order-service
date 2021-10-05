@@ -6,6 +6,7 @@ import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.StoreWithDetails;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.ZoneId;
 
 import java.util.List;
@@ -32,8 +33,9 @@ public class MessageGenerator {
             
             //convert time to merchant timezone
             if (regionCountry!=null) {
-                LocalDateTime startLocalTime = DateTimeUtil.convertToLocalDateTimeViaInstant(order.getCreated(), ZoneId.of(regionCountry.getTimezone()) );
-                emailContent = emailContent.replace("{{order-created-date-time}}", startLocalTime.toString());                
+                LocalDateTime startLocalTime = DateTimeUtil.convertToLocalDateTimeViaInstant(order.getCreated(), ZoneId.of(regionCountry.getTimezone()) );                
+                DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm:ss, zzzz");
+                emailContent = emailContent.replace("{{order-created-date-time}}", formatter1.format(startLocalTime));                
             }            
             
             if (order.getOrderShipmentDetail().getStorePickup()) {
@@ -83,8 +85,8 @@ public class MessageGenerator {
     public static String getOrderItemsEmailContent(List<OrderItem> orderItems) {
         String orderItem = "                <tr>\n"
                 + "                    <td>{{item-name}}</td>\n"
-                + "                    <td  style=\"text-align: right;\">{{item-price}}</td>\n"
-                + "                    <td  style=\"text-align: right;\">{{item-quantity}}</td>\n"
+                + "                    <td  style=\"text-align: center;\">{{item-price}}</td>\n"
+                + "                    <td  style=\"text-align: center;\">{{item-quantity}}</td>\n"
                 + "                    <td  style=\"text-align: right;\">{{item-total}}</td>\n"
                 + "                </tr>";
 
