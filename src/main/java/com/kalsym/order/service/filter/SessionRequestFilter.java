@@ -1,6 +1,7 @@
 package com.kalsym.order.service.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.model.Auth;
 import com.kalsym.order.service.utility.HttpResponse;
@@ -77,6 +78,7 @@ public class SessionRequestFilter extends OncePerRequestFilter {
 
             if (authResponse.getStatusCode() == HttpStatus.ACCEPTED) {
                 ObjectMapper mapper = new ObjectMapper();
+                mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                 //Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, (logprefix, "data: " + authResponse.getBody().getData(), "");
 
                 auth = mapper.convertValue(authResponse.getBody().getData(), Auth.class);

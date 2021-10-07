@@ -23,14 +23,17 @@ public class Auth {
 
     private String role;
     private List<String> authorities;
-
+    private String sessionType;
+    
     @JsonCreator
     public Auth(@JsonProperty("session") Session session, 
             @JsonProperty("role") String role,  
-            @JsonProperty("authorities") List<String> authorities) {
+            @JsonProperty("authorities") List<String> authorities,
+            @JsonProperty("sessionType") String sessionType ) {
         this.session = session;
         this.role = role;
         this.authorities = authorities;
+        this.sessionType = sessionType;
     }
 
 }
