@@ -22,5 +22,6 @@ import lombok.ToString;
 public class FCMNotification implements Serializable {
 
     private String to;
+    private String priority;
     private FCMNotificationData data;
 }

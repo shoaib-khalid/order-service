@@ -33,6 +33,7 @@ public class FCMService {
         FCMNotification fcmNotification = new FCMNotification();
 
         fcmNotification.setTo("/topics/" + storeId);
+        fcmNotification.setPriority("high");
         FCMNotificationData fcmNotificationData = new FCMNotificationData();
         fcmNotificationData.setTitle(title);
         fcmNotificationData.setStoreName(storeName);
