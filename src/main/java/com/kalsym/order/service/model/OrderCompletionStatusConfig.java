@@ -35,6 +35,7 @@ public class OrderCompletionStatusConfig implements Serializable {
     @Id
     public String storeDeliveryType;
 
+    public int statusSequence;
     public Boolean emailToCustomer;
     public Boolean emailToStore;
     public Boolean rcMessage;

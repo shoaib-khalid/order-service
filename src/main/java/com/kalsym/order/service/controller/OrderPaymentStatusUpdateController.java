@@ -123,11 +123,12 @@ public class OrderPaymentStatusUpdateController {
             response.setErrorStatus(HttpStatus.NOT_FOUND, "Store not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
-
+  
         StoreWithDetails storeWithDetails = optStore.get();
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store details got : " + storeWithDetails.toString());
 //        String status = bodyOrderCompletionStatusUpdate.getStatus();
         OrderStatus status = bodyOrderCompletionStatusUpdate.getStatus();
+            
         String subject = null;
         String content = null;
         //String[] url = deliveryResponse.data.trackingUrl;
@@ -175,15 +176,37 @@ public class OrderPaymentStatusUpdateController {
         List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryType(verticalId, newStatus, storePickup, storeDeliveryType);
         OrderCompletionStatusConfig orderCompletionStatusConfig = null;
         if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
-            //Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + newStatus);
-            //response.setSuccessStatus(HttpStatus.NOT_FOUND);
-            //response.setMessage("Status config not found for status: " + newStatus);
-            //response.setError("Status config not found for status: " + newStatus);
-            //return ResponseEntity.status(response.getStatus()).body(response);
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatusConfigs not found!");
+            Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + newStatus);
+            response.setSuccessStatus(HttpStatus.NOT_FOUND);
+            response.setMessage("Status config not found for status: " + newStatus);
+            response.setError("Status config not found for status: " + newStatus);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);            
         } else {        
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
             orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
+        }
+        
+        //check current status if in correct sequence
+        OrderCompletionStatusConfig prevOrderCompletionStatusConfig = null;
+        OrderStatus previousStatus = order.getCompletionStatus();
+        List<OrderCompletionStatusConfig> prevOrderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryType(verticalId, previousStatus.name(), storePickup, storeDeliveryType);
+        if (prevOrderCompletionStatusConfigs == null || prevOrderCompletionStatusConfigs.isEmpty()) {
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prevOrderCompletionStatusConfigs not found!");
+        } else {
+            prevOrderCompletionStatusConfig = prevOrderCompletionStatusConfigs.get(0);
+            int prevSequence = prevOrderCompletionStatusConfig.getStatusSequence();
+            int newSequence = prevSequence + 1;
+            int orderSequence = orderCompletionStatusConfig.getStatusSequence();
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prev status: " + prevOrderCompletionStatusConfig.getStatus()+" sequence:"+prevOrderCompletionStatusConfig.getStatusSequence());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "current status: " + orderCompletionStatusConfig.getStatus()+" sequence:"+orderCompletionStatusConfig.getStatusSequence());
+            if (orderSequence != newSequence) {
+                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "New Sequence not correct! CorrectSequence:"+newSequence+" OrderSequence:"+orderSequence);
+                Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + newStatus);
+                response.setSuccessStatus(HttpStatus.NOT_ACCEPTABLE);
+                response.setMessage("Wrong status sent: " + newStatus);
+                response.setError("Wrong status sent: " + newStatus);
+                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(response);
+            }
         }
         
         switch (status) {
