@@ -157,7 +157,7 @@ public class OrderController {
             @RequestParam(required = false) OrderStatus completionStatus,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
-        String logprefix = request.getRequestURI() + " ";
+        String logprefix = request.getRequestURI() + " getOrders() ";
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "before from : " + from + ", to : " + to);
 //        to.setDate(to.getDate() + 1);
@@ -233,7 +233,7 @@ public class OrderController {
     }
 
     @GetMapping(path = {"/{id}"}, name = "orders-get-by-id", produces = "application/json")
-    @PreAuthorize("hasAnyAuthority('orders-get-by-id', 'all') and @customOwnerVerifier.VerifyOrder(#id)")
+    @PreAuthorize("hasAnyAuthority('orders-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> getOrdersById(HttpServletRequest request,
             @PathVariable(required = true) String id) {
 
