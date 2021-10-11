@@ -139,8 +139,10 @@ public class OrderController {
     @Autowired
     StoreDiscountTierRepository storeDiscountTierRepository;
     
+    //@PreAuthorize("hasAnyAuthority('orders-get', 'all') and (@customOwnerVerifier.VerifyStore(#storeId) or @customOwnerVerifier.VerifyCustomer(#customerId))")
+    
     @GetMapping(path = {""}, name = "orders-get", produces = "application/json")
-    @PreAuthorize("hasAnyAuthority('orders-get', 'all') and (@customOwnerVerifier.VerifyStore(#storeId) or @customOwnerVerifier.VerifyCustomer(#customerId))")
+    @PreAuthorize("hasAnyAuthority('orders-get', 'all')")
     public ResponseEntity<HttpResponse> getOrders(HttpServletRequest request,
             @RequestParam(required = false) String customerId,
             @RequestParam(required = false) String storeId,
@@ -899,3 +901,4 @@ public class OrderController {
 
 
 }
+

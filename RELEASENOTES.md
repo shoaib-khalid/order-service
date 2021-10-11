@@ -1,4 +1,11 @@
 ##################################################
+# order-service-3.1.8-SNAPSHOT | 11-October-2021
+##################################################
+### Code Changes:
+Remove pre-authorize token checking for getorder() function
+
+
+##################################################
 # order-service-3.1.7-SNAPSHOT | 11-October-2021
 ##################################################
 ### Code Changes:
