@@ -1,4 +1,11 @@
 ##################################################
+# order-service-3.1.6-SNAPSHOT | 11-October-2021
+##################################################
+### Code Changes:
+Add custom pre-authorize function to check if session token is authorize to view/edit/delete spesific order
+
+
+##################################################
 # order-service-3.1.0-SNAPSHOT | 4-October-2021
 ##################################################
 ### Code Changes:
