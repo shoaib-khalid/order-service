@@ -140,7 +140,7 @@ public class OrderController {
     StoreDiscountTierRepository storeDiscountTierRepository;
     
     @GetMapping(path = {""}, name = "orders-get", produces = "application/json")
-    @PreAuthorize("hasAnyAuthority('orders-get', 'all')")
+    @PreAuthorize("hasAnyAuthority('orders-get', 'all') and (@customOwnerVerifier.VerifyStore(#storeId) or @customOwnerVerifier.VerifyCustomer(#customerId))")
     public ResponseEntity<HttpResponse> getOrders(HttpServletRequest request,
             @RequestParam(required = false) String customerId,
             @RequestParam(required = false) String storeId,
@@ -233,7 +233,7 @@ public class OrderController {
     }
 
     @GetMapping(path = {"/{id}"}, name = "orders-get-by-id", produces = "application/json")
-    @PreAuthorize("hasAnyAuthority('orders-get-by-id', 'all')")
+    @PreAuthorize("hasAnyAuthority('orders-get-by-id', 'all') and @customOwnerVerifier.VerifyOrder(#id)")
     public ResponseEntity<HttpResponse> getOrdersById(HttpServletRequest request,
             @PathVariable(required = true) String id) {
 
@@ -624,7 +624,7 @@ public class OrderController {
     }
 
     @DeleteMapping(path = {"/{id}"}, name = "orders-delete-by-id")
-    @PreAuthorize("hasAnyAuthority('orders-delete-by-id', 'all')")
+    @PreAuthorize("hasAnyAuthority('orders-delete-by-id', 'all') and @customOwnerVerifier.VerifyOrder(#id)")
     public ResponseEntity<HttpResponse> deleteOrdersById(HttpServletRequest request,
             @PathVariable(required = true) String id) {
         String logprefix = request.getRequestURI() + " ";
@@ -657,7 +657,7 @@ public class OrderController {
      * @return
      */
     @PutMapping(path = {"/{id}"}, name = "orders-put-by-id")
-    @PreAuthorize("hasAnyAuthority('orders-put-by-id', 'all')")
+    @PreAuthorize("hasAnyAuthority('orders-put-by-id', 'all') and @customOwnerVerifier.VerifyOrder(#id)")
     public ResponseEntity<HttpResponse> putOrdersById(HttpServletRequest request,
             @PathVariable String id,
             @RequestBody Order bodyOrder) {
@@ -852,7 +852,7 @@ public class OrderController {
     
     
     @GetMapping(path = {"/countsummary/{storeId}"}, name = "orders-get", produces = "application/json")
-    @PreAuthorize("hasAnyAuthority('orders-get', 'all')")
+    @PreAuthorize("hasAnyAuthority('orders-get', 'all') and @customOwnerVerifier.VerifyStore(#storeId)")
     public ResponseEntity<HttpResponse> getCountSummary(HttpServletRequest request,
             @PathVariable(required = true) String storeId
            ) {

@@ -18,7 +18,10 @@ public class MySQLUserDetails implements UserDetails {
     private boolean locked;
     private boolean expired;
     private String role;
-
+    private String ownerId;
+    private String sessionType;
+    private boolean isSuperUser;
+    
     private List<GrantedAuthority> grantedAuthorities;
 
     public MySQLUserDetails() {
@@ -28,12 +31,19 @@ public class MySQLUserDetails implements UserDetails {
         this.userName = username;
     }
 
-    public MySQLUserDetails(Auth auth, List<String> auths) {
+    public MySQLUserDetails(Auth auth, List<String> auths, String ownerId, String sessionType) {
         this.userName = auth.getSession().getUsername();
         this.password = auth.getRole();
+        this.ownerId = ownerId;
+        this.sessionType = sessionType;
         this.locked = false;
         //Logger.application.info(Logger.pattern, VersionHolder.VERSION, "user: ", auth, "");
-
+        
+        if (auth.getRole().equals("SUPER_USER")) 
+            isSuperUser=true;
+        else
+            isSuperUser=false;
+        
         this.expired = false;
         this.role = auth.getRole();
         grantedAuthorities = new ArrayList<>();
@@ -84,6 +94,30 @@ public class MySQLUserDetails implements UserDetails {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+     public String getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(String ownerId) {
+        this.ownerId = ownerId;
+    }
+    
+    public String getSessionType() {
+        return sessionType;
+    }
+
+    public void setSessionType(String sessionType) {
+        this.sessionType = sessionType;
+    }
+    
+    public boolean getIsSuperUser() {
+        return isSuperUser;
+    }
+
+    public void setIsSuperUser(boolean isSuperUser) {
+        this.isSuperUser = isSuperUser;
     }
 
 }
