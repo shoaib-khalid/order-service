@@ -14,8 +14,9 @@ Add custom pre-authorize function to check if session token is authorize to view
 
 ### DB changes:
 1. ALTER TABLE store ADD invoiceSeqNo INT default 0;
+2. ALTER TABLE `order_completion_status_config` ADD `statusSequence` TINYINT(1) AFTER `storeDeliveryType`;
 
-2. create new function:
+3. create new function:
 
 DELIMITER $$
 
