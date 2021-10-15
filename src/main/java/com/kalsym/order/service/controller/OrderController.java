@@ -144,6 +144,7 @@ public class OrderController {
     @GetMapping(path = {""}, name = "orders-get", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-get', 'all')")
     public ResponseEntity<HttpResponse> getOrders(HttpServletRequest request,
+            @RequestParam(required = false) String clientId,
             @RequestParam(required = false) String customerId,
             @RequestParam(required = false) String storeId,
             @RequestParam(required = false) PaymentStatus paymentStatus,
@@ -188,7 +189,14 @@ public class OrderController {
             orderMatch.setCompletionStatus(completionStatus);
         }
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderMatch: " + orderMatch);
-
+        
+        Store storeDetail = new Store();
+        if (clientId != null && !clientId.isEmpty()) {
+            storeDetail.setClientId(clientId);
+        }
+        
+        orderMatch.setStore(storeDetail);        
+        
         OrderPaymentDetail opd = new OrderPaymentDetail();
         if (accountName != null && !accountName.isEmpty()) {
             opd.setAccountName(accountName);
@@ -233,7 +241,7 @@ public class OrderController {
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
+    
     @GetMapping(path = {"/{id}"}, name = "orders-get-by-id", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> getOrdersById(HttpServletRequest request,

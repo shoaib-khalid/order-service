@@ -32,7 +32,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Getter
 @Setter
 @ToString
-//@Table(name = "`order`")
 @Table(name = "order")
 public class Order implements Serializable {
 
@@ -97,6 +96,11 @@ public class Order implements Serializable {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id", insertable = false, updatable = false)
     private OrderPaymentDetail orderPaymentDetail;
+    
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "storeId", insertable = false, updatable = false)
+    private Store store;
+
 
     /*    @OneToMany(fetch = FetchType.LAZY, mappedBy = "orderMain")
     private List<OrderItem> orderItem;

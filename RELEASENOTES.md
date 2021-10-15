@@ -1,4 +1,11 @@
 ##################################################
+# order-service-3.1.8-SNAPSHOT | 15-October-2021
+##################################################
+### Code Changes:
+Add new request parameter 'clientId' in getOrder to retrieve all order by clientId
+
+
+##################################################
 # order-service-3.1.8-SNAPSHOT | 11-October-2021
 ##################################################
 ### Code Changes:

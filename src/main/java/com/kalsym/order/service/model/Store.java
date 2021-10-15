@@ -1,5 +1,6 @@
 package com.kalsym.order.service.model;
 
+import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -18,7 +19,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Setter
 @ToString
 @Table(name = "store")
-public class Store {
+public class Store implements Serializable {
 
     @Id
     @GeneratedValue(generator = "uuid2")
