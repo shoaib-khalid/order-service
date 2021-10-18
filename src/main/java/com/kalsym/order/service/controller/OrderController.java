@@ -188,15 +188,13 @@ public class OrderController {
         if (completionStatus != null) {
             orderMatch.setCompletionStatus(completionStatus);
         }
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderMatch: " + orderMatch);
         
-        /*Store storeDetail = new Store();
+        Store storeDetail = new Store();
         if (clientId != null && !clientId.isEmpty()) {
             storeDetail.setClientId(clientId);
         }
         
         orderMatch.setStore(storeDetail);        
-        */
         
         OrderPaymentDetail opd = new OrderPaymentDetail();
         if (accountName != null && !accountName.isEmpty()) {
@@ -228,6 +226,8 @@ public class OrderController {
 
         orderMatch.setOrderShipmentDetail(osd);
 
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderMatch: " + orderMatch);
+        
         ExampleMatcher matcher = ExampleMatcher
                 .matchingAll()
                 .withIgnoreCase()
