@@ -98,7 +98,7 @@ public class Order implements Serializable {
     @JoinColumn(name = "id", insertable = false, updatable = false)
     private OrderPaymentDetail orderPaymentDetail;
     
-    @OneToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "storeId", insertable = false, updatable = false)
     private Store store;
 
