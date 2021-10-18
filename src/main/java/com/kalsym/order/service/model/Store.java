@@ -39,7 +39,7 @@ public class Store implements Serializable {
     private Double serviceChargesPercentage;
 
     private String paymentType;
-    private int invoiceSeqNo;
+    private Integer invoiceSeqNo;
     
     public String getNameAbreviation() {
         String abbreviation = "";
