@@ -190,12 +190,13 @@ public class OrderController {
         }
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderMatch: " + orderMatch);
         
-        Store storeDetail = new Store();
+        /*Store storeDetail = new Store();
         if (clientId != null && !clientId.isEmpty()) {
             storeDetail.setClientId(clientId);
         }
         
         orderMatch.setStore(storeDetail);        
+        */
         
         OrderPaymentDetail opd = new OrderPaymentDetail();
         if (accountName != null && !accountName.isEmpty()) {
