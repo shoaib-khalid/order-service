@@ -477,10 +477,12 @@ public class OrderController {
 
                 if (storeWithDetials.getPaymentType().equalsIgnoreCase(StorePaymentType.COD.toString())) {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store with storeId: " + cart.getStoreId() + " is COD");
+                    order.setStoreId(storeWithDetials.getId());
+                    
                     // get cart items 
                     List<CartItem> cartItems = cartItemRepository.findByCartId(cartId);
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got cartItems of cartId: " + cartId + ", items: " + cartItems.toString());
-
+                    
                     for (int i = 0; i < cartItems.size(); i++) {
                         // check every items price in product service
                         ProductInventory productInventory = productService.getProductInventoryById(cart.getStoreId(), cartItems.get(i).getProductId(), cartItems.get(i).getItemCode());
@@ -533,8 +535,7 @@ public class OrderController {
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added orderItem to order list: " + orderItem.toString());
                     }
 
-                    order.setCartId(cartId);
-                    order.setStoreId(storeWithDetials.getId());
+                    order.setCartId(cartId);                    
                     order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE);
                     order.setPaymentStatus(PaymentStatus.PENDING);
                     order.setCustomerId(cod.getCustomerId());
