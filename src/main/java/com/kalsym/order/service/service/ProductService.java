@@ -381,6 +381,7 @@ public class ProductService {
         String logprefix = "getProductInventoryById";
 
         try {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getProductInventoryById URL: " + getProductInventoryURL);
             getProductInventoryURL = getProductInventoryURL.replace("%STOREID%", storeId);
             getProductInventoryURL = getProductInventoryURL.replace("%PRODUCTID%", productId);
             getProductInventoryURL = getProductInventoryURL.replace("%ITEMCODE%", itemcode);
