@@ -27,5 +27,5 @@ public class OrderCompletionStatusConfigId implements Serializable {
     public String status;
     public Boolean storePickup;
     public String storeDeliveryType;
-
+    public String paymentType;
 }

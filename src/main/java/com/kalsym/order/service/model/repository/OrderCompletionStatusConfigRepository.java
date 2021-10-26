@@ -17,7 +17,7 @@ import java.util.List;
 public interface OrderCompletionStatusConfigRepository extends PagingAndSortingRepository<OrderCompletionStatusConfig, OrderCompletionStatusConfigId>,
         JpaRepository<OrderCompletionStatusConfig, OrderCompletionStatusConfigId> {
 
-    public List<OrderCompletionStatusConfig> findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryType(
+    public List<OrderCompletionStatusConfig> findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(
             String verticalId,
             String status,
             Boolean storePickup,
