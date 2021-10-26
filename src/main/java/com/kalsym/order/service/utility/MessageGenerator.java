@@ -38,6 +38,9 @@ public class MessageGenerator {
                 emailContent = emailContent.replace("{{order-created-date-time}}", formatter1.format(startLocalTime));                
             }            
             
+            if (order.getOrderShipmentDetail().getStorePickup()==null) {
+                order.getOrderShipmentDetail().setStorePickup(Boolean.FALSE);
+            }
             if (order.getOrderShipmentDetail().getStorePickup()) {
                 emailContent = emailContent.replace("{{delivery-charges}}", "N/A");
                 emailContent = emailContent.replace("{{delivery-address}}", "N/A");
