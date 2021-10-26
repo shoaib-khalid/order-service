@@ -51,6 +51,7 @@ public class OrderCompletionStatusConfig implements Serializable {
     public String storePushNotificationContent;
     public String storePushNotificationTitle;
     public String comments;
+    public String nextActionText;
     
     @CreationTimestamp
     Date created;

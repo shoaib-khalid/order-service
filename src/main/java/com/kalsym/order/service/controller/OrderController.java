@@ -910,6 +910,32 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @GetMapping(path = {"/details/{id}"}, name = "orders-details-get-by-id", produces = "application/json")
+    @PreAuthorize("hasAnyAuthority('orders-details-get-by-id', 'all')")
+    public ResponseEntity<HttpResponse> getOrdersDetailsById(HttpServletRequest request,
+            @PathVariable(required = true) String id) {
+
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Order orderMatch = new Order();
+        orderMatch.setId(id);
+
+//        ExampleMatcher matcher = ExampleMatcher
+//                .matchingAll()
+//                .withIgnoreCase()
+//                .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
+//        Example<Order> orderExample = Example.of(orderMatch, matcher);
+//        Pageable pageable = PageRequest.of(page, pageSize);
+        Optional<Order> optOrder = orderRepository.findById(id);
+        if (!optOrder.isPresent()) {
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            response.setMessage("order with id " + id + " not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(optOrder.get());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 
 }
 

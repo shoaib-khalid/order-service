@@ -381,10 +381,11 @@ public class ProductService {
         String logprefix = "getProductInventoryById";
 
         try {
+            String targetUrl = getProductInventoryURL;
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getProductInventoryById URL: " + getProductInventoryURL);
-            getProductInventoryURL = getProductInventoryURL.replace("%STOREID%", storeId);
-            getProductInventoryURL = getProductInventoryURL.replace("%PRODUCTID%", productId);
-            getProductInventoryURL = getProductInventoryURL.replace("%ITEMCODE%", itemcode);
+            targetUrl = targetUrl.replace("%STOREID%", storeId);
+            targetUrl = targetUrl.replace("%PRODUCTID%", productId);
+            targetUrl = targetUrl.replace("%ITEMCODE%", itemcode);
 //            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getProductByIdURL created: " + getProductByIdURL);
             RestTemplate restTemplate = new RestTemplate();
 
@@ -396,7 +397,7 @@ public class ProductService {
             httpEntity = new HttpEntity(null, headers);
 
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Sending request to product service to get product inventory by id : " + productId + ", store id: " + storeId + ", itemcode: " + itemcode + ", URL: " + getProductInventoryURL);
-            ResponseEntity<String> res = restTemplate.exchange(getProductInventoryURL, HttpMethod.GET, httpEntity, String.class);
+            ResponseEntity<String> res = restTemplate.exchange(targetUrl, HttpMethod.GET, httpEntity, String.class);
 
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseCode: " + res.getStatusCode());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseBody: " + res.getBody());
