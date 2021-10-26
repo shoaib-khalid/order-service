@@ -21,7 +21,8 @@ public interface OrderCompletionStatusConfigRepository extends PagingAndSortingR
             String verticalId,
             String status,
             Boolean storePickup,
-            String storeDeliveryType
+            String storeDeliveryType,
+            String orderPaymentType
     );
 
 }

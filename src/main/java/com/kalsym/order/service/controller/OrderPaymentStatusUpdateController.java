@@ -173,7 +173,7 @@ public class OrderPaymentStatusUpdateController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "storeDeliveryType: " + storeDeliveryType);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "verticalId: " + verticalId);
 
-        List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryType(verticalId, newStatus, storePickup, storeDeliveryType);
+        List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryType(verticalId, newStatus, storePickup, storeDeliveryType, order.getPaymentType());
         OrderCompletionStatusConfig orderCompletionStatusConfig = null;
         if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
             Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + newStatus);
@@ -189,7 +189,7 @@ public class OrderPaymentStatusUpdateController {
         //check current status if in correct sequence
         OrderCompletionStatusConfig prevOrderCompletionStatusConfig = null;
         OrderStatus previousStatus = order.getCompletionStatus();
-        List<OrderCompletionStatusConfig> prevOrderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryType(verticalId, previousStatus.name(), storePickup, storeDeliveryType);
+        List<OrderCompletionStatusConfig> prevOrderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryType(verticalId, previousStatus.name(), storePickup, storeDeliveryType, order.getPaymentType());
         if (prevOrderCompletionStatusConfigs == null || prevOrderCompletionStatusConfigs.isEmpty()) {
             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prevOrderCompletionStatusConfigs not found!");
         } else {

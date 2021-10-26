@@ -1,4 +1,11 @@
 ##################################################
+# order-service-3.2.7-SNAPSHOT | 26-October-2021
+##################################################
+### Code Changes:
+Add new criteria for order completion status config : payment type
+
+
+##################################################
 # order-service-3.2.6-SNAPSHOT | 25-October-2021
 ##################################################
 ### Code Changes:
