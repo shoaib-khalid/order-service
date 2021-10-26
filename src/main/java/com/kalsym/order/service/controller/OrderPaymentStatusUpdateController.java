@@ -168,10 +168,7 @@ public class OrderPaymentStatusUpdateController {
         String storeDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
         newStatus = newStatus.replace(" ", "_");
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "newStatus: " + newStatus);
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "storePickup: " + storePickup);
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "storeDeliveryType: " + storeDeliveryType);
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "verticalId: " + verticalId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "newStatus:"+newStatus+" CompletionCriteria = [verticalId:"+verticalId+" storePickup:"+storePickup+" storeDeliveryType: " + storeDeliveryType+" orderPaymentType:"+order.getPaymentType()+"]");        
 
         List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, newStatus, storePickup, storeDeliveryType, order.getPaymentType());
         OrderCompletionStatusConfig orderCompletionStatusConfig = null;
