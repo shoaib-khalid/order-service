@@ -5,6 +5,7 @@ import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.enums.ProductStatus;
 import com.kalsym.order.service.enums.StorePaymentType;
+import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.OrderPaymentDetail;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.PageRequest;
@@ -675,6 +676,21 @@ public class OrderController {
                                     String[] to = Utilities.convertArrayListToStringArray(tos);
                                     email.setTo(to);
                                     email.setRawBody(emailContent);
+                                    Body body = new Body();
+                                    body.setCurrency(storeWithDetials.getRegionCountry().getCurrencyCode());
+                                    body.setDeliveryAddress(order.getOrderShipmentDetail().getAddress());
+                                    body.setDeliveryCity(order.getOrderShipmentDetail().getCity());
+                                    body.setOrderStatus(OrderStatus.RECEIVED_AT_STORE);
+                                    body.setDeliveryCharges(order.getOrderPaymentDetail().getDeliveryQuotationAmount());
+                                    body.setTotal(order.getTotal());
+                                    body.setInvoiceId(order.getInvoiceId());
+
+                                    body.setStoreAddress(storeWithDetials.getAddress());
+                                    body.setStoreContact(storeWithDetials.getPhoneNumber());
+                                    body.setLogoUrl(storeWithDetials.getStoreAsset() == null ? "" : storeWithDetials.getStoreAsset().getLogoUrl());
+                                    body.setStoreName(storeWithDetials.getName());
+                                    body.setOrderItems(orderItems);
+                                    email.setBody(body);
                                     emailService.sendEmail(email);
                                 } catch (Exception ex) {
                                     Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending email :", ex);
