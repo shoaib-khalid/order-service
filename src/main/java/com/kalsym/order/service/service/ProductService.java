@@ -396,7 +396,7 @@ public class ProductService {
             HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
             httpEntity = new HttpEntity(null, headers);
 
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Sending request to product service to get product inventory by id : " + productId + ", store id: " + storeId + ", itemcode: " + itemcode + ", URL: " + getProductInventoryURL);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Sending request to product service to get product inventory by id : " + productId + ", store id: " + storeId + ", itemcode: " + itemcode + ", URL: " + targetUrl);
             ResponseEntity<String> res = restTemplate.exchange(targetUrl, HttpMethod.GET, httpEntity, String.class);
 
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request sent to product service, responseCode: " + res.getStatusCode());

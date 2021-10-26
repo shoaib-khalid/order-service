@@ -56,7 +56,7 @@ public class OrderCalculation {
         //calculating Kalsym commission 
         double commission = 0;
         if (storeCommission != null) {
-            commission = order.getTotal() * (storeCommission.getRate() / 100);
+            commission = orderTotal.getTotal() * (storeCommission.getRate() / 100);
             if (commission < storeCommission.getMinChargeAmount()) {
                 commission = storeCommission.getMinChargeAmount();
             }
