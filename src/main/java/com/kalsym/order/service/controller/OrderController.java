@@ -643,19 +643,18 @@ public class OrderController {
                     
                     //get order completion config
                     String verticalId = storeWithDetials.getVerticalCode();
-                    Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
+                    Boolean storePickup = cod.getOrderShipmentDetails().getStorePickup();
+                    if (storePickup==null) storePickup=false;
                     String storeDeliveryType = storeDeliveryDetail.getType();
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status:"+OrderStatus.RECEIVED_AT_STORE.name()+" VerticalId:"+verticalId+" storePickup:"+storePickup+" deliveryType:"+storeDeliveryType+" paymentType:"+order.getPaymentType());
-                    List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, OrderStatus.RECEIVED_AT_STORE.name(), storePickup, storeDeliveryType, order.getPaymentType());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status:"+OrderStatus.RECEIVED_AT_STORE.name()+" VerticalId:"+verticalId+" storePickup:"+storePickup+" deliveryType:"+storeDeliveryType+" paymentType:"+storeWithDetials.getPaymentType());
+                    List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, OrderStatus.RECEIVED_AT_STORE.name(), storePickup, storeDeliveryType, storeWithDetials.getPaymentType());
                     OrderCompletionStatusConfig orderCompletionStatusConfig = null;
                     if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
                         Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + OrderStatus.RECEIVED_AT_STORE.name());             
                     } else {        
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
                         orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);                        
-                    } 
-                    
-                    if (orderCompletionStatusConfigs!=null) {                        
+                                           
                         //send email to customer if config allows
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email to customer: " + orderCompletionStatusConfig.getEmailToCustomer());
                         if (orderCompletionStatusConfig.getEmailToCustomer()) {
