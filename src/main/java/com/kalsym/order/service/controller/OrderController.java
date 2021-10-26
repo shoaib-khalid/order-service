@@ -27,6 +27,8 @@ import com.kalsym.order.service.model.ProductInventory;
 import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.StoreDeliveryDetail;
 import com.kalsym.order.service.model.Cart;
+import com.kalsym.order.service.model.Email;
+import com.kalsym.order.service.model.OrderCompletionStatusConfig;
 import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.model.OrderCompletionStatusUpdate;
 import com.kalsym.order.service.model.OrderPaymentStatusUpdate;
@@ -36,11 +38,13 @@ import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.ProductInventoryItem;
 import com.kalsym.order.service.model.ProductVariantAvailable;
+import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.object.Discount;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.CartRepository;
+import com.kalsym.order.service.model.repository.OrderCompletionStatusConfigRepository;
 import com.kalsym.order.service.model.repository.OrderCompletionStatusUpdateRepository;
 import com.kalsym.order.service.model.repository.OrderPaymentDetailRepository;
 import com.kalsym.order.service.model.repository.OrderPaymentStatusUpdateRepository;
@@ -49,22 +53,27 @@ import com.kalsym.order.service.model.repository.ProductRepository;
 import com.kalsym.order.service.model.repository.StoreRepository;
 import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
 import com.kalsym.order.service.model.repository.ProductInventoryRepository;
+import com.kalsym.order.service.model.repository.RegionCountriesRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountTierRepository;
 import com.kalsym.order.service.service.CustomerService;
 import com.kalsym.order.service.service.DeliveryService;
+import com.kalsym.order.service.service.FCMService;
 import com.kalsym.order.service.service.OrderPostService;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.utility.Logger;
+import com.kalsym.order.service.utility.MessageGenerator;
 import com.kalsym.order.service.utility.OrderCalculation;
 import com.kalsym.order.service.utility.StoreDiscountCalculation;
 import com.kalsym.order.service.utility.TxIdUtil;
+import com.kalsym.order.service.utility.Utilities;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.validation.Valid;
 import java.util.Optional;
 import javax.persistence.criteria.Predicate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.convert.QueryByExamplePredicateBuilder;
@@ -105,7 +114,10 @@ public class OrderController {
 
     @Autowired
     EmailService emailService;
-
+    
+    @Autowired
+    FCMService fcmService;
+    
     @Autowired
     ProductRepository productRepository;
 
@@ -139,6 +151,15 @@ public class OrderController {
     @Autowired
     StoreDiscountTierRepository storeDiscountTierRepository;
     
+    @Autowired
+    OrderCompletionStatusConfigRepository orderCompletionStatusConfigRepository;
+    
+    @Autowired
+    RegionCountriesRepository regionCountriesRepository;
+    
+    @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
+    private String onboardingOrderLink;
+     
     //@PreAuthorize("hasAnyAuthority('orders-get', 'all') and (@customOwnerVerifier.VerifyStore(#storeId) or @customOwnerVerifier.VerifyCustomer(#customerId))")
     
     @GetMapping(path = {""}, name = "orders-get", produces = "application/json")
@@ -587,29 +608,116 @@ public class OrderController {
                         // getting product information if product tracking is enabled we will reduce the quantity
                         product = productService.getProductById(order.getStoreId(), orderItems.get(i).getProductId());
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Got product details of orderItem: " + product.toString());
+                        
                         if (product.isTrackQuantity()) {
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Product tracking is enable");
-                            productInventory = productService.reduceProductInventory(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), orderItems.get(i).getQuantity());
-                            if (!product.isAllowOutOfStockPurchases() && productInventory.getQuantity() <= 0) {
+//                            productInventory = productService.reduceProductInventory(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), orderItems.get(i).getQuantity());
+
+                            ProductInventory reduceQuantityProductInventory = productInventoryRepository.findByItemCode(orderItems.get(i).getItemCode());
+                            int oldQuantity = reduceQuantityProductInventory.getQuantity();
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "oldQuantity: " + oldQuantity + " for itemCode:" + orderItems.get(i).getItemCode());
+                            int newQuantity = oldQuantity - orderItems.get(i).getQuantity();
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "oldQuantity: " + oldQuantity + " for itemCode:" + orderItems.get(i).getItemCode());
+                            reduceQuantityProductInventory.setQuantity(newQuantity);
+                            productInventoryRepository.save(reduceQuantityProductInventory);
+                            if (reduceQuantityProductInventory.getQuantity() <= product.getMinQuantityForAlarm()) {
+                                //sending notification for product is going out of stock
+                                //we can send email as well
+                                orderPostService.sendMinimumQuantityAlarm(order.getId(), order.getStoreId(), orderItems.get(i), reduceQuantityProductInventory.getQuantity());
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "intimation send for out of stock product id: " + orderItems.get(i).getProductId() + ", SKU: " + orderItems.get(i).getSKU() + ", Name: " + reduceQuantityProductInventory.getProduct().getName());
+                            }
+
+                            if (!product.isAllowOutOfStockPurchases() && reduceQuantityProductInventory.getQuantity() <= 0) {
                                 // making this product variant outof stock
                                 productInventory = productService.changeProductStatus(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), ProductStatus.OUTOFSTOCK);
                                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "this product variant is out of stock now storeId: " + order.getStoreId() + ", productId: " + orderItems.get(i).getProductId() + ", itemCode: " + orderItems.get(i).getItemCode());
                             }
-
-                            if (productInventory.getQuantity() <= product.getMinQuantityForAlarm()) {
-                                //sending notification for product is going out of stock
-                                //we can send email as well
-                                orderPostService.sendMinimumQuantityAlarm(order.getId(), order.getStoreId(), orderItems.get(i), productInventory.getQuantity());
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "intimation sent for out of stock product id: " + orderItems.get(i).getProductId() + ", SKU: " + orderItems.get(i).getSKU() + ", Name: " + productInventory.getProduct().getName());
-                            }
-
-                        } else {
+                            
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Product tracking is not enabled by marchant");
                         }
+                        
                     }
-                    // push cart to rocket chat
-                    orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order pushed to merchant rocket chat orderId: " + order.getId());
+                    
+                    //clear cart item
+                    cartItemRepository.clearCartItem(cart.getId());
+                    
+                    //get order completion config
+                    String verticalId = storeWithDetials.getVerticalCode();
+                    Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
+                    String storeDeliveryType = storeWithDetials.getStoreDeliveryDetail().getType();
+                    List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, OrderStatus.RECEIVED_AT_STORE.name(), storePickup, storeDeliveryType, order.getPaymentType());
+                    OrderCompletionStatusConfig orderCompletionStatusConfig = null;
+                    if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
+                        Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + OrderStatus.RECEIVED_AT_STORE.name());             
+                    } else {        
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
+                        orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);                        
+                    } 
+                    
+                    if (orderCompletionStatusConfigs!=null) {                        
+                        //send email to customer if config allows
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email to customer: " + orderCompletionStatusConfig.getEmailToCustomer());
+                        if (orderCompletionStatusConfig.getEmailToCustomer()) {
+                            String emailContent = orderCompletionStatusConfig.getCustomerEmailContent();
+                            if (emailContent != null) {
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is not null");
+                                //sending email
+                                try {
+                                    RegionCountry regionCountry = null;
+                                    Optional<RegionCountry> t = regionCountriesRepository.findById(storeWithDetials.getRegionCountryId());
+                                    if (t.isPresent()) {
+                                        regionCountry = t.get();
+                                    }
+                                    emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, order.getOrderShipmentDetail(), regionCountry);
+                                    Email email = new Email();
+                                    ArrayList<String> tos = new ArrayList<>();
+                                    tos.add(order.getOrderShipmentDetail().getEmail());
+                                    String[] to = Utilities.convertArrayListToStringArray(tos);
+                                    email.setTo(to);
+                                    email.setRawBody(emailContent);
+                                    emailService.sendEmail(email);
+                                } catch (Exception ex) {
+                                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending email :", ex);
+                                }
+                            } else {
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is null");
+                            }
+                        }
+
+                        //send rocket chat message
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message to store: " + orderCompletionStatusConfig.getRcMessage());
+                        if (orderCompletionStatusConfig.getRcMessage()) {
+                            String rcMessageContent = orderCompletionStatusConfig.getRcMessageContent();
+                            if (rcMessageContent != null) {
+
+                                try {
+                                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message content is not null");
+                                    rcMessageContent = MessageGenerator.generateRocketChatMessageContent(rcMessageContent, order, orderItems, onboardingOrderLink);
+                                    //sending rc messsage
+
+                                    orderPostService.postOrderLink(rcMessageContent, order.getStoreId());
+                                } catch (Exception ex) {
+                                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending rc message :", ex);
+                                }
+                            } else {
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message content null");
+                            }
+
+                        }
+
+                        //send push notification to DCM message
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat to store: " + orderCompletionStatusConfig.getPushNotificationToMerchat());
+                        if (orderCompletionStatusConfig.getPushNotificationToMerchat()) {
+                            String pushNotificationTitle = orderCompletionStatusConfig.getStorePushNotificationTitle();
+                            String pushNotificationContent = orderCompletionStatusConfig.getStorePushNotificationContent();
+                            try {
+                                fcmService.sendPushNotification(order, storeWithDetials.getId(), storeWithDetials.getName(), pushNotificationTitle, pushNotificationContent, OrderStatus.RECEIVED_AT_STORE);
+                            } catch (Exception e) {
+                                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
+                            }
+
+                        }
+                    }
                 } else {
                     // throw bad request exception
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "You cannot place order through this endpoint: /orders/carts/" + cartId + "/cod/push because store is not cod");

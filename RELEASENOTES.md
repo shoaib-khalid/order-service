@@ -4,6 +4,10 @@
 ### Code Changes:
 Add new criteria for order completion status config : payment type
 
+### DB Changes:
+
+ALTER table order_completion_status_config ADD `paymentType` enum('ONLINEPAYMENT','COD') NOT NULL after storeDeliveryType;
+ALTER table order_completion_status_config ADD `nextActionText` varchar(100) DEFAULT NULL COMMENT 'text to show in button for ext action';
 
 ##################################################
 # order-service-3.2.6-SNAPSHOT | 25-October-2021
