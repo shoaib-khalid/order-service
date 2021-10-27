@@ -18,6 +18,7 @@ public class COD implements Serializable {
     
     private String cartId;
     private String customerId;
+    private String customerNotes;
     private OrderShipmentDetail orderShipmentDetails;
     private OrderPaymentDetail orderPaymentDetails;
 

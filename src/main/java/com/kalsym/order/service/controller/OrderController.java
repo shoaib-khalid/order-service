@@ -208,7 +208,9 @@ public class OrderController {
         }
 
         if (completionStatus != null) {
-            orderMatch.setCompletionStatus(completionStatus);
+            if (completionStatus == OrderStatus.PAYMENT_CONFIRMED) {
+                orderMatch.setCompletionStatus(completionStatus);
+            }
         }
         
         Store storeDetail = new Store();
@@ -443,6 +445,7 @@ public class OrderController {
      *
      * @param request
      * @param cartId
+     * @param orderId
      * @param cod
      * @return
      * @throws Exception
@@ -450,7 +453,7 @@ public class OrderController {
     @PostMapping(path = {"/placeOrder"}, name = "orders-push-cod")
     @PreAuthorize("hasAnyAuthority('orders-push-cod', 'all')")
     public ResponseEntity<HttpResponse> pushCODOrder(HttpServletRequest request,
-            @RequestParam(required = true) String cartId,
+            @RequestParam(required = true) String cartId,            
             @RequestBody COD cod) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
@@ -562,6 +565,8 @@ public class OrderController {
                     order.setPaymentStatus(PaymentStatus.PENDING);
                     order.setCustomerId(cod.getCustomerId());
                     order.setDeliveryCharges(cod.getOrderPaymentDetails().getDeliveryQuotationAmount());
+                    order.setPaymentType(storeWithDetials.getPaymentType());
+                    order.setCustomerNotes(cod.getCustomerNotes());
                     
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceChargesPercentage: " + storeWithDetials.getServiceChargesPercentage());
                     
@@ -571,8 +576,7 @@ public class OrderController {
 
                     // setting this empty
                     order.setPrivateAdminNotes("");
-                    order.setCustomerNotes("");
-
+                    
                     OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, order, storeWithDetials.getServiceChargesPercentage(), storeCommission, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
                     order.setSubTotal(orderTotalObject.getSubTotal());
                     order.setAppliedDiscount(orderTotalObject.getAppliedDiscount());
