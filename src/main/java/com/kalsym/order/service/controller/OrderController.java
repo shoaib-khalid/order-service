@@ -207,9 +207,9 @@ public class OrderController {
             orderMatch.setInvoiceId(invoiceId);
         }
 
-        if (completionStatus != null) {            
+        /*if (completionStatus != null) {            
             orderMatch.setCompletionStatus(completionStatus);            
-        }
+        }*/
         
         Store storeDetail = new Store();
         if (clientId != null && !clientId.isEmpty()) {
@@ -261,7 +261,7 @@ public class OrderController {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
 
         response.setSuccessStatus(HttpStatus.OK);
-        response.setData(orderRepository.findAll(getSpecWithDatesBetween(from, to, orderExample), pageable));
+        response.setData(orderRepository.findAll(getSpecWithDatesBetween(from, to, completionStatus, orderExample), pageable));
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -451,7 +451,8 @@ public class OrderController {
     @PostMapping(path = {"/placeOrder"}, name = "orders-push-cod")
     @PreAuthorize("hasAnyAuthority('orders-push-cod', 'all')")
     public ResponseEntity<HttpResponse> pushCODOrder(HttpServletRequest request,
-            @RequestParam(required = true) String cartId,            
+            @RequestParam(required = true) String cartId,  
+            @RequestParam(required = false) Boolean saveCustomerInformation,
             @RequestBody COD cod) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
@@ -484,7 +485,30 @@ public class OrderController {
                 response.setMessage("store not found");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
+            
+            if (saveCustomerInformation != null && saveCustomerInformation == true) {
+                if (order.getCustomerId() == null || "undefined".equalsIgnoreCase(order.getCustomerId())) {
+                    String customerId = customerService.addCustomer(cod.getOrderShipmentDetails(), order.getStoreId());
 
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerId: " + customerId);
+
+                    if (customerId != null) {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer created with id: " + customerId);
+                        order.setCustomerId(customerId);
+                        orderRepository.save(order);
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added customerId: " + customerId + " to order: " + order.getId());
+
+                    }
+                } else {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer already created with id: " + order.getCustomerId());
+                    String customerId = customerService.updateCustomer(cod.getOrderShipmentDetails(), order.getStoreId(), order.getCustomerId());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "updated customer information for id: " + customerId);
+
+                }
+            } else {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "user information not saved");
+            }
+            
             //getting store details 
             StoreDeliveryDetail storeDeliveryDetail = productService.getStoreDeliveryDetails(cart.getStoreId());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store details: " + storeDeliveryDetail.toString());
@@ -973,7 +997,7 @@ public class OrderController {
      * @return
      */
     public Specification<Order> getSpecWithDatesBetween(
-            Date from, Date to, Example<Order> example) {
+            Date from, Date to, OrderStatus completionStatus, Example<Order> example) {
 
         return (Specification<Order>) (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
@@ -982,6 +1006,16 @@ public class OrderController {
                 to.setDate(to.getDate() + 1);
                 predicates.add(builder.greaterThanOrEqualTo(root.get("created"), from));
                 predicates.add(builder.lessThanOrEqualTo(root.get("created"), to));
+            }
+            if (completionStatus==OrderStatus.PAYMENT_CONFIRMED) {
+                Predicate predicateForOnlinePayment = builder.equal(root.get("completionStatus"), completionStatus);
+                Predicate predicateForCompletionStatus = builder.equal(root.get("completionStatus"), OrderStatus.RECEIVED_AT_STORE);
+                Predicate predicateForPaymentType = builder.equal(root.get("paymentType"), "COD");
+                Predicate predicateForCOD = builder.and(predicateForCompletionStatus, predicateForPaymentType);
+                Predicate finalPredicate = builder.or(predicateForOnlinePayment, predicateForCOD);
+                predicates.add(finalPredicate);
+            } else {
+                predicates.add(builder.equal(root.get("completionStatus"), completionStatus));
             }
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
