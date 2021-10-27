@@ -485,30 +485,7 @@ public class OrderController {
                 response.setMessage("store not found");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
-            
-            if (saveCustomerInformation != null && saveCustomerInformation == true) {
-                if (order.getCustomerId() == null || "undefined".equalsIgnoreCase(order.getCustomerId())) {
-                    String customerId = customerService.addCustomer(cod.getOrderShipmentDetails(), order.getStoreId());
 
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerId: " + customerId);
-
-                    if (customerId != null) {
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer created with id: " + customerId);
-                        order.setCustomerId(customerId);
-                        orderRepository.save(order);
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added customerId: " + customerId + " to order: " + order.getId());
-
-                    }
-                } else {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer already created with id: " + order.getCustomerId());
-                    String customerId = customerService.updateCustomer(cod.getOrderShipmentDetails(), order.getStoreId(), order.getCustomerId());
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "updated customer information for id: " + customerId);
-
-                }
-            } else {
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "user information not saved");
-            }
-            
             //getting store details 
             StoreDeliveryDetail storeDeliveryDetail = productService.getStoreDeliveryDetails(cart.getStoreId());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store details: " + storeDeliveryDetail.toString());
@@ -667,6 +644,29 @@ public class OrderController {
                     
                     //clear cart item
                     cartItemRepository.clearCartItem(cart.getId());
+                    
+                    if (saveCustomerInformation != null && saveCustomerInformation == true) {
+                        if (order.getCustomerId() == null || "undefined".equalsIgnoreCase(order.getCustomerId())) {
+                            String customerId = customerService.addCustomer(cod.getOrderShipmentDetails(), order.getStoreId());
+
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerId: " + customerId);
+
+                            if (customerId != null) {
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer created with id: " + customerId);
+                                order.setCustomerId(customerId);
+                                orderRepository.save(order);
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added customerId: " + customerId + " to order: " + order.getId());
+
+                            }
+                        } else {
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer already created with id: " + order.getCustomerId());
+                            String customerId = customerService.updateCustomer(cod.getOrderShipmentDetails(), order.getStoreId(), order.getCustomerId());
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "updated customer information for id: " + customerId);
+
+                        }
+                    } else {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "user information not saved");
+                    }
                     
                     //get order completion config
                     String verticalId = storeWithDetials.getVerticalCode();
