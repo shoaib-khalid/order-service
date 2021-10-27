@@ -207,10 +207,8 @@ public class OrderController {
             orderMatch.setInvoiceId(invoiceId);
         }
 
-        if (completionStatus != null) {
-            if (completionStatus == OrderStatus.PAYMENT_CONFIRMED) {
-                orderMatch.setCompletionStatus(completionStatus);
-            }
+        if (completionStatus != null) {            
+            orderMatch.setCompletionStatus(completionStatus);            
         }
         
         Store storeDetail = new Store();
