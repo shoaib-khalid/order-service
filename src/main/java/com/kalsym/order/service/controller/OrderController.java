@@ -55,6 +55,7 @@ import com.kalsym.order.service.model.repository.StoreRepository;
 import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
 import com.kalsym.order.service.model.repository.ProductInventoryRepository;
 import com.kalsym.order.service.model.repository.RegionCountriesRepository;
+import com.kalsym.order.service.model.repository.StoreDetailsRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountTierRepository;
 import com.kalsym.order.service.service.CustomerService;
@@ -157,6 +158,9 @@ public class OrderController {
     
     @Autowired
     RegionCountriesRepository regionCountriesRepository;
+    
+    @Autowired
+    StoreDetailsRepository storeDetailsRepository;
     
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
@@ -1070,30 +1074,84 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping(path = {"/details/{id}"}, name = "orders-details-get-by-id", produces = "application/json")
-    @PreAuthorize("hasAnyAuthority('orders-details-get-by-id', 'all')")
+    @GetMapping(path = {"/details/{id}"}, name = "orders-get-by-id", produces = "application/json")
+    @PreAuthorize("hasAnyAuthority('orders-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> getOrdersDetailsById(HttpServletRequest request,
             @PathVariable(required = true) String id) {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        Order orderMatch = new Order();
-        orderMatch.setId(id);
-
-//        ExampleMatcher matcher = ExampleMatcher
-//                .matchingAll()
-//                .withIgnoreCase()
-//                .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
-//        Example<Order> orderExample = Example.of(orderMatch, matcher);
-//        Pageable pageable = PageRequest.of(page, pageSize);
         Optional<Order> optOrder = orderRepository.findById(id);
         if (!optOrder.isPresent()) {
             response.setStatus(HttpStatus.NOT_FOUND.value());
             response.setMessage("order with id " + id + " not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
+        
+        class OrderDetails {
+            Order order;
+            String currentCompletionStatus;
+            String nextCompletionStatus;
+            String nextActionText;
+            
+            public Order getOrder() {
+                return order;
+            }
+            
+            public String getCurrentCompletionStatus() {
+                return currentCompletionStatus;
+            }
+            
+            public String getNextCompletionStatus() {
+                return nextCompletionStatus;
+            }
+            
+            public String getNextActionText() {
+                return nextActionText;
+            }
+        }
+        
+        String logprefix = request.getRequestURI() + " ";
+        
+        Order order = optOrder.get();
+        OrderDetails orderDetails = new OrderDetails();
+        orderDetails.order = order;
+        orderDetails.currentCompletionStatus = order.getCompletionStatus().name();
+        
+        Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(order.getStoreId());
+        StoreWithDetails storeWithDetails = optStore.get();
+        String verticalId = storeWithDetails.getVerticalCode();
+        Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
+        String storeDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
+        
+        //get current status
+        String currentStatus = order.getCompletionStatus().name();
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find config for current status VerticalId:"+verticalId+" Status:"+currentStatus+" storePickup:"+storePickup+" deliveryType:"+storeDeliveryType+" paymentType:"+order.getPaymentType());
+        List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, currentStatus, storePickup, storeDeliveryType, order.getPaymentType());
+        OrderCompletionStatusConfig orderCompletionStatusConfig = null;
+        if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
+            Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for current status: " + currentStatus);            
+        } else {        
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
+            orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
+                
+            //get next action
+            OrderCompletionStatusConfig nextCompletionStatusConfig = null;
+            int nextSequence = orderCompletionStatusConfig.getStatusSequence()+1;
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find config for next status VerticalId:"+verticalId+" NextSequence:"+nextSequence+" storePickup:"+storePickup+" deliveryType:"+storeDeliveryType+" paymentType:"+order.getPaymentType());
+            List<OrderCompletionStatusConfig> nextActionCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusSequenceAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, nextSequence, storePickup, storeDeliveryType, order.getPaymentType());
+            if (nextActionCompletionStatusConfigs == null || nextActionCompletionStatusConfigs.isEmpty()) {
+                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for next sequence:"+nextSequence);
+            } else {
+                nextCompletionStatusConfig = nextActionCompletionStatusConfigs.get(0);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Next action status: " + nextCompletionStatusConfig.getStatus()+" sequence:"+nextCompletionStatusConfig.getStatusSequence());
+                orderDetails.nextCompletionStatus = nextCompletionStatusConfig.status;
+                orderDetails.nextActionText = nextCompletionStatusConfig.nextActionText;
+            }
+        }
+        
         response.setSuccessStatus(HttpStatus.OK);
-        response.setData(optOrder.get());
+        response.setData(orderDetails);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
