@@ -601,6 +601,11 @@ public class OrderController {
                     order.setOrderPaymentDetail(orderPaymentDetailRepository.save(cod.getOrderPaymentDetails()));
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order payment details inserted successfully: " + order.getOrderPaymentDetail().toString());
                     // save shipment detials
+                    Boolean storePickup = cod.getOrderShipmentDetails().getStorePickup();
+                    if (storePickup==null) {
+                        storePickup=false;
+                        cod.getOrderShipmentDetails().setStorePickup(false);
+                    }
                     cod.getOrderShipmentDetails().setOrderId(order.getId());
                     order.setOrderShipmentDetail(orderShipmentDetailRepository.save(cod.getOrderShipmentDetails()));
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order shipment details inserted successfully: " + order.getOrderShipmentDetail().toString());
@@ -673,9 +678,7 @@ public class OrderController {
                     }
                     
                     //get order completion config
-                    String verticalId = storeWithDetials.getVerticalCode();
-                    Boolean storePickup = cod.getOrderShipmentDetails().getStorePickup();
-                    if (storePickup==null) storePickup=false;
+                    String verticalId = storeWithDetials.getVerticalCode();                    
                     String storeDeliveryType = storeDeliveryDetail.getType();
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status:"+OrderStatus.RECEIVED_AT_STORE.name()+" VerticalId:"+verticalId+" storePickup:"+storePickup+" deliveryType:"+storeDeliveryType+" paymentType:"+storeWithDetials.getPaymentType());
                     List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, OrderStatus.RECEIVED_AT_STORE.name(), storePickup, storeDeliveryType, storeWithDetials.getPaymentType());
