@@ -1,4 +1,13 @@
 ##################################################
+# order-service-3.2.12-SNAPSHOT | 27-October-2021
+##################################################
+### Code Changes:
+To cater COD processing, when front-end query order with completionStatus=PAYMENT_CONFIRMED, order-service will query from db based on criteria:
+1. payment=ONLINE_PAYMENT and completionStatus=PAYMENT_CONFIRMED
+2. payment=COD and completionStatus=ORDER_RECEIVED (because COD only receive payment after item delivered) 
+
+
+##################################################
 # order-service-3.2.7-SNAPSHOT | 26-October-2021
 ##################################################
 ### Code Changes:
