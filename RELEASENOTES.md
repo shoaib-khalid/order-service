@@ -2,7 +2,7 @@
 # order-service-3.2.13-SNAPSHOT | 27-October-2021
 ##################################################
 ### Code Changes:
-Bug fix
+Bug fix for placeOrder
 
 
 ##################################################
