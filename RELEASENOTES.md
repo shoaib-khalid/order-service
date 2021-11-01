@@ -1,4 +1,15 @@
 ##################################################
+# order-service-3.2.14-SNAPSHOT | 1-November-2021
+##################################################
+### Code Changes:
+Bug fix for getOrders
+Order Reminder scheduler to send alert through WA if order not process more than 5 minutes. Only for FnB
+
+### New Config:
+order.reminder.enabled=false
+
+
+##################################################
 # order-service-3.2.13-SNAPSHOT | 27-October-2021
 ##################################################
 ### Code Changes:

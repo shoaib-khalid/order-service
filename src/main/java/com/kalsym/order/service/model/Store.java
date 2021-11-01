@@ -34,8 +34,10 @@ public class Store implements Serializable {
     private String state;
     private String contactName;
     private String phone;
+    private String phoneNumber;
     private String email;
-
+    private String verticalCode;
+    
     private Double serviceChargesPercentage;
 
     private String paymentType;

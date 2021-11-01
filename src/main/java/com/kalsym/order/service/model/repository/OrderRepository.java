@@ -16,43 +16,11 @@ import java.util.List;
 @Repository
 public interface OrderRepository extends PagingAndSortingRepository<Order, String>, JpaRepository<Order, String>, JpaSpecificationExecutor<Order> {
 
-//    List<Order> findByCustomerId(@Param("customerId") String customerId);
-    
-//    Page<Order> findAllByCreatedBetween(Date from, Date to, Pageable pageable);
-    
     @Query("SELECT c.completionStatus, COUNT(c.id) FROM Order AS c GROUP BY c.completionStatus")
     List<Object[]> getCountSummary();
     
-    /*
-    public List<Order> findByConditions(String name, Integer price, Integer stock) {  
-        messageRequestRepository.findAll((Specification<MessageRequest>) (itemRoot, query, criteriaBuilder) -> {
-            //List is used here to store various query conditions for dynamic query
-            List<Predicate> predicatesList = new ArrayList<>();
-            //name fuzzy query, like statement
-            if (name != null) {
-                predicatesList.add(
-                    criteriaBuilder.and(
-                        criteriaBuilder.like(
-                            itemRoot.get("name"), "%" + name + "%")));
-            }
-            // itemPrice less than or equal to <=statement
-            if (price != null) {
-                predicatesList.add(
-                    criteriaBuilder.and(
-                        criteriaBuilder.le(
-                            itemRoot.get("price"), price)));
-            }
-            //itemStock greater than or equal to >=statement
-            if (stock != null) {
-                predicatesList.add(
-                    criteriaBuilder.and(
-                        criteriaBuilder.ge(
-                            itemRoot.get("stock"), stock)));
-            }
-            //where() splicing query criteria
-            query.where(predicatesList.toArray(new Predicate[predicatesList.size()]));
-            //Return the redicate assembled with CriteriaQuery
-            return query.getRestriction();
-        });
-    }*/
+    @Query(value = "SELECT A.id, A.invoiceId, B.phoneNumber, B.name  FROM `order` A INNER JOIN `store` B ON A.storeId=B.id  "
+            + "WHERE completionStatus='PAYMENT_CONFIRMED' AND verticalCode='FNB' "
+            + "AND DATE_ADD(A.created, INTERVAL 5 MINUTE) < NOW()", nativeQuery = true)
+    List<Object[]> getFnBNotProcessOrder();
 }

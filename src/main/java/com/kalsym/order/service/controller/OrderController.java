@@ -1021,7 +1021,7 @@ public class OrderController {
                 Predicate predicateForCOD = builder.and(predicateForCompletionStatus, predicateForPaymentType);
                 Predicate finalPredicate = builder.or(predicateForOnlinePayment, predicateForCOD);
                 predicates.add(finalPredicate);
-            } else {
+            } else if (completionStatus!=null) {
                 predicates.add(builder.equal(root.get("completionStatus"), completionStatus));
             }
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
