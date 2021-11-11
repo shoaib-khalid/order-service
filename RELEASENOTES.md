@@ -7,8 +7,8 @@ New parameter for putOrderCompletionStatusUpdatesConfirm :
 -pickupTime
 
 ### Database Changes:
-ALTER TABLE order_completion_status_update ADD pickupDate DATE;
-ALTER TABLE order_completion_status_update ADD pickupTime TIME;
+ALTER TABLE order_completion_status_update ADD pickupDate VARCHAR(20);
+ALTER TABLE order_completion_status_update ADD pickupTime VARCHAR(20);
 
 
 ##################################################

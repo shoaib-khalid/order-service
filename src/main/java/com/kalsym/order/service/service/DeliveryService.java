@@ -75,7 +75,7 @@ public class DeliveryService {
         return null;
     }
 
-    public DeliveryOrder confirmOrderDelivery(String refId, String orderId, Date pickupDate, Time pickupTime)  {
+    public DeliveryOrder confirmOrderDelivery(String refId, String orderId, String pickupDate, String pickupTime)  {
         String logprefix = "confirmOrderDelivery";
 
         RestTemplate restTemplate = new RestTemplate();

@@ -45,8 +45,8 @@ public class OrderCompletionStatusUpdate {
     private Date created;
     private String modifiedBy;
     private String comments;
-    private Date pickupDate;
-    private Time pickupTime;
+    private String pickupDate;
+    private String pickupTime;
     
     public void update(OrderCompletionStatusUpdate orderCompletionStatusUpdate) {
         orderId = orderCompletionStatusUpdate.getOrderId();

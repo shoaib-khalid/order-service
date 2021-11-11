@@ -4,15 +4,12 @@
  * and open the template in the editor.
  */
 package com.kalsym.order.service.model.object;
-
-import java.util.Date;
-import java.sql.Time;
         
 /**
  *
  * @author taufik
  */
 public class DeliveryPickup {
-    public Date scheduleDate;
-    public Time scheduleTime;
+    public String scheduleDate;
+    public String scheduleTime;
 }
