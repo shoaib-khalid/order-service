@@ -1,4 +1,17 @@
 ##################################################
+# order-service-3.2.15-SNAPSHOT | 11-November-2021
+##################################################
+### Code Changes:
+New parameter for putOrderCompletionStatusUpdatesConfirm :
+-pickupDate
+-pickupTime
+
+### Database Changes:
+ALTER TABLE order_completion_status_update ADD pickupDate DATE;
+ALTER TABLE order_completion_status_update ADD pickupTime TIME;
+
+
+##################################################
 # order-service-3.2.14-SNAPSHOT | 1-November-2021
 ##################################################
 ### Code Changes:

@@ -3,6 +3,7 @@ package com.kalsym.order.service.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.kalsym.order.service.enums.OrderStatus;
 import java.util.Date;
+import java.sql.Time;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -44,7 +45,9 @@ public class OrderCompletionStatusUpdate {
     private Date created;
     private String modifiedBy;
     private String comments;
-
+    private Date pickupDate;
+    private Time pickupTime;
+    
     public void update(OrderCompletionStatusUpdate orderCompletionStatusUpdate) {
         orderId = orderCompletionStatusUpdate.getOrderId();
         status = orderCompletionStatusUpdate.getStatus();

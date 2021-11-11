@@ -16,10 +16,13 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import com.kalsym.order.service.model.object.DeliveryServiceSubmitOrder;
 import com.kalsym.order.service.model.object.DeliveryServiceResponse;
+import com.kalsym.order.service.model.object.DeliveryPickup;
 import org.springframework.http.HttpStatus;
 import com.kalsym.order.service.model.DeliveryOrder;
 import com.kalsym.order.service.utility.Logger;
 import org.json.JSONObject;
+import java.util.Date;
+import java.sql.Time;
 
 /**
  *
@@ -50,7 +53,7 @@ public class DeliveryService {
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", "Bearer accessToken");
-
+            
             HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
             httpEntity = new HttpEntity(orderPostBody, headers);
 
@@ -72,16 +75,20 @@ public class DeliveryService {
         return null;
     }
 
-    public DeliveryOrder confirmOrderDelivery(String refId, String orderId)  {
+    public DeliveryOrder confirmOrderDelivery(String refId, String orderId, Date pickupDate, Time pickupTime)  {
         String logprefix = "confirmOrderDelivery";
 
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer accessToken");
-        HttpEntity<DeliveryServiceSubmitOrder> httpEntity;
-        httpEntity = new HttpEntity(headers);
-
+        
+        DeliveryPickup deliveryPickup = new DeliveryPickup();
+        deliveryPickup.scheduleDate = pickupDate;
+        deliveryPickup.scheduleTime = pickupTime;
+        HttpEntity<DeliveryPickup> httpEntity;
+        httpEntity = new HttpEntity<>(deliveryPickup, headers);
+        
         try {
             String url = orderDeliveryConfirmationURL + refId + "/" + orderId;
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderDeliveryConfirmationURL : " + url);
