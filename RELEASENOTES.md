@@ -2,8 +2,13 @@
 # order-service-3.2.16-SNAPSHOT | 12-November-2021
 ##################################################
 ### Code Changes:
-Bug fix for confirm order delivery
-
+Bug fix for confirm order with delivery-service, new request format :
+{
+    "startPickScheduleDate": "2021-11-11",
+    "endPickScheduleDate": "2021-11-11",
+    "startPickScheduleTime": "10:15:00",
+    "endPickScheduleTime": "10:20:00"
+}
 
 ##################################################
 # order-service-3.2.15-SNAPSHOT | 11-November-2021
