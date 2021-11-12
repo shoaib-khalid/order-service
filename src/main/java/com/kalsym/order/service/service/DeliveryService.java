@@ -84,8 +84,8 @@ public class DeliveryService {
         headers.add("Authorization", "Bearer accessToken");
         
         DeliveryPickup deliveryPickup = new DeliveryPickup();
-        deliveryPickup.scheduleDate = pickupDate;
-        deliveryPickup.scheduleTime = pickupTime;
+        deliveryPickup.startPickScheduleDate = pickupDate;
+        deliveryPickup.startPickScheduleTime = pickupTime;
         HttpEntity<DeliveryPickup> httpEntity;
         httpEntity = new HttpEntity<>(deliveryPickup, headers);
         

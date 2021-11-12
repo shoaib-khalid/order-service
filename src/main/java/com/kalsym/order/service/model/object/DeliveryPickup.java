@@ -10,6 +10,8 @@ package com.kalsym.order.service.model.object;
  * @author taufik
  */
 public class DeliveryPickup {
-    public String scheduleDate;
-    public String scheduleTime;
+    public String startPickScheduleDate;
+    public String endPickScheduleDate;
+    public String startPickScheduleTime;
+    public String endPickScheduleTime;
 }
