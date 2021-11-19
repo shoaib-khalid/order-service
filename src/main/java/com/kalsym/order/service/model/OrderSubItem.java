@@ -13,7 +13,6 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 import java.util.List;
-import javax.persistence.CascadeType;
 
 /**
  *
@@ -23,15 +22,15 @@ import javax.persistence.CascadeType;
 @Getter
 @Setter
 @ToString
-@Table(name = "order_item")
-public class OrderItem {
+@Table(name = "order_subitem")
+public class OrderSubItem {
 
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
-    private String orderId;
+    private String orderItemId;
     private String productId;
     private Float price;
     private Float productPrice;
@@ -44,19 +43,11 @@ public class OrderItem {
     private String specialInstruction;
     private String productVariant;
     
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "orderItemId", insertable = false, updatable = false, nullable = true)
-    private List<OrderSubItem> orderSubItem;
     
-    /*
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "orderId", insertable=false, updatable=false)
-    private Order orderMain;
-    */
    
     public void update(OrderItem orderitem) {
         id = orderitem.getId();
-        orderId = orderitem.getOrderId();
+        orderItemId = orderitem.getOrderId();
         productId = orderitem.getProductId();
         price = orderitem.getPrice();
         productPrice = orderitem.getProductPrice();

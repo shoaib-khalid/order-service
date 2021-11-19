@@ -24,6 +24,7 @@ import com.kalsym.order.service.service.EmailService;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.COD;
 import com.kalsym.order.service.model.CartItem;
+import com.kalsym.order.service.model.CartSubItem;
 import com.kalsym.order.service.model.ProductInventory;
 import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.StoreDeliveryDetail;
@@ -36,6 +37,7 @@ import com.kalsym.order.service.model.OrderPaymentStatusUpdate;
 import com.kalsym.order.service.model.Store;
 import com.kalsym.order.service.model.StoreCommission;
 import com.kalsym.order.service.model.OrderItem;
+import com.kalsym.order.service.model.OrderSubItem;
 import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.ProductInventoryItem;
 import com.kalsym.order.service.model.ProductVariantAvailable;
@@ -43,6 +45,7 @@ import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.object.Discount;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
+import com.kalsym.order.service.model.repository.OrderSubItemRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.model.repository.OrderCompletionStatusConfigRepository;
@@ -126,6 +129,9 @@ public class OrderController {
     @Autowired
     OrderItemRepository orderItemRepository;
 
+    @Autowired
+    OrderSubItemRepository orderSubItemRepository;
+    
     @Autowired
     CartItemRepository cartItemRepository;
 
@@ -503,277 +509,328 @@ public class OrderController {
                 // check store payment type
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store with payment type: " + storeWithDetials.getPaymentType());
 
-                if (storeWithDetials.getPaymentType().equalsIgnoreCase(StorePaymentType.COD.toString())) {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store with storeId: " + cart.getStoreId() + " is COD");
-                    order.setStoreId(storeWithDetials.getId());
+                order.setStoreId(storeWithDetials.getId());
                     
-                    // get cart items 
-                    List<CartItem> cartItems = cartItemRepository.findByCartId(cartId);
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got cartItems of cartId: " + cartId + ", items: " + cartItems.toString());
-                    
-                    for (int i = 0; i < cartItems.size(); i++) {
-                        // check every items price in product service
-                        ProductInventory productInventory = productService.getProductInventoryById(cart.getStoreId(), cartItems.get(i).getProductId(), cartItems.get(i).getItemCode());
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got productinventory against itemcode:" + cartItems.get(i).getItemCode());
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got productinventory: " + cartItems.get(i).getItemCode(), productInventory);
-                        
-                        //get product variant
-                        ProductInventory productInventoryDB = productInventoryRepository.findByItemCode(cartItems.get(i).getItemCode());       
-                        String variantList = null;
-                        if (productInventory.getProductInventoryItems().size()>0) {
-                            for (int x=0;x<productInventoryDB.getProductInventoryItems().size();x++) {
-                                ProductInventoryItem productInventoryItem = productInventory.getProductInventoryItems().get(x);
-                                ProductVariantAvailable productVariantAvailable = productInventoryItem.getProductVariantAvailable();
-                                String variant = productVariantAvailable.getValue();
-                                if (variantList==null)
-                                    variantList = variant;
-                                else
-                                    variantList = variantList + "," + variant;
+                // get cart items 
+                List<CartItem> cartItems = cartItemRepository.findByCartId(cartId);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got cartItems of cartId: " + cartId + ", items: " + cartItems.toString());
+
+                for (int i = 0; i < cartItems.size(); i++) {
+                    // check every items price in product service
+                    ProductInventory productInventory = productService.getProductInventoryById(cart.getStoreId(), cartItems.get(i).getProductId(), cartItems.get(i).getItemCode());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got productinventory against itemcode:" + cartItems.get(i).getItemCode());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got productinventory: " + cartItems.get(i).getItemCode(), productInventory);
+
+                    //get product variant
+                    ProductInventory productInventoryDB = productInventoryRepository.findByItemCode(cartItems.get(i).getItemCode());       
+                    String variantList = null;
+                    if (productInventory.getProductInventoryItems().size()>0) {
+                        for (int x=0;x<productInventoryDB.getProductInventoryItems().size();x++) {
+                            ProductInventoryItem productInventoryItem = productInventory.getProductInventoryItems().get(x);
+                            ProductVariantAvailable productVariantAvailable = productInventoryItem.getProductVariantAvailable();
+                            String variant = productVariantAvailable.getValue();
+                            if (variantList==null)
+                                variantList = variant;
+                            else
+                                variantList = variantList + "," + variant;
+                        }
+                    }
+
+                    if (cartItems.get(i).getProductPrice() != Float.parseFloat(String.valueOf(productInventory.getPrice()))) {
+                        // should return warning if prices are not same
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
+                        response.setSuccessStatus(HttpStatus.CONFLICT);
+                        response.setMessage("Conflict in prices, please update prices in cartItems, oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
+                        response.setData(cartItems.get(i));
+                        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+                    }
+                    subTotal += productInventory.getPrice();
+
+                    //creating orderItem
+                    OrderItem orderItem = new OrderItem();
+                    orderItem.setItemCode(cartItems.get(i).getItemCode());
+                    orderItem.setProductId(cartItems.get(i).getProductId());
+                    orderItem.setProductName((productInventory.getProduct() != null) ? productInventory.getProduct().getName() : "");
+                    orderItem.setProductPrice(Float.parseFloat(String.valueOf(productInventory.getPrice())));
+                    orderItem.setQuantity(cartItems.get(i).getQuantity());
+                    orderItem.setSKU(productInventory.getSKU());
+                    orderItem.setSpecialInstruction(cartItems.get(i).getSpecialInstruction());
+                    orderItem.setWeight(cartItems.get(i).getWeight());
+                    orderItem.setPrice(cartItems.get(i).getQuantity() * Float.parseFloat(String.valueOf(productInventory.getPrice())));
+                    if (variantList!=null) {
+                        orderItem.setProductVariant(variantList);
+                    }
+                    orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
+
+
+                    //add cart subitem if any
+                    List<OrderSubItem> orderSubItemList=null;
+                    if (cartItems.get(i).getCartSubItem()!=null) {
+                        orderSubItemList = new ArrayList();
+                        for (int x=0;x<cartItems.get(i).getCartSubItem().size();x++) {
+                            CartSubItem cartSubItem = cartItems.get(i).getCartSubItem().get(x);
+
+                             // check every items price in product service
+                            ProductInventory subProductInventory = productService.getProductInventoryById(cart.getStoreId(), cartSubItem.getProductId(), cartSubItem.getItemCode());
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got subproductinventory against itemcode:" + cartSubItem.getItemCode());
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got subproductinventory: " + cartSubItem.getItemCode(), subProductInventory);
+
+                            //get product variant
+                            ProductInventory subProductInventoryDB = productInventoryRepository.findByItemCode(cartItems.get(i).getItemCode());       
+                            String subVariantList = null;
+                            if (productInventory.getProductInventoryItems().size()>0) {
+                                for (int y=0;y<subProductInventoryDB.getProductInventoryItems().size();y++) {
+                                    ProductInventoryItem productInventoryItem = productInventory.getProductInventoryItems().get(y);
+                                    ProductVariantAvailable productVariantAvailable = productInventoryItem.getProductVariantAvailable();
+                                    String variant = productVariantAvailable.getValue();
+                                    if (subVariantList==null)
+                                        subVariantList = variant;
+                                    else
+                                        subVariantList = subVariantList + "," + variant;
+                                }
                             }
+
+                            OrderSubItem orderSubItem = new OrderSubItem();
+                            orderSubItem.setItemCode(cartSubItem.getItemCode());
+                            orderSubItem.setProductId(cartSubItem.getProductId());
+                            orderSubItem.setProductName(cartSubItem.getProductName());
+                            orderItem.setProductName((subProductInventory.getProduct() != null) ? subProductInventory.getProduct().getName() : "");
+                            if (subVariantList!=null) {
+                                orderSubItem.setProductVariant(subVariantList);
+                            }
+                            orderSubItem.setQuantity(cartSubItem.getQuantity());
+                            orderSubItem.setSpecialInstruction(cartSubItem.getSpecialInstruction());
+                            orderSubItem.setSKU(subProductInventory.getSKU());
+                            orderSubItem.setWeight(cartSubItem.getWeight());
+                            orderSubItemList.add(orderSubItem);
                         }
+                        orderItem.setOrderSubItem(orderSubItemList);
+                    }
                         
-                        if (cartItems.get(i).getProductPrice() != Float.parseFloat(String.valueOf(productInventory.getPrice()))) {
-                            // should return warning if prices are not same
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
-                            response.setSuccessStatus(HttpStatus.CONFLICT);
-                            response.setMessage("Conflict in prices, please update prices in cartItems, oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
-                            response.setData(cartItems.get(i));
-                            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-                        }
-                        subTotal += productInventory.getPrice();
+                    //adding new orderItem to orderItems list
+                    orderItems.add(orderItem);
 
-                        //creating orderItem
-                        OrderItem orderItem = new OrderItem();
-                        orderItem.setItemCode(cartItems.get(i).getItemCode());
-                        orderItem.setProductId(cartItems.get(i).getProductId());
-                        orderItem.setProductName((productInventory.getProduct() != null) ? productInventory.getProduct().getName() : "");
-                        orderItem.setProductPrice(Float.parseFloat(String.valueOf(productInventory.getPrice())));
-                        orderItem.setQuantity(cartItems.get(i).getQuantity());
-                        orderItem.setSKU(productInventory.getSKU());
-                        orderItem.setSpecialInstruction(cartItems.get(i).getSpecialInstruction());
-                        orderItem.setWeight(cartItems.get(i).getWeight());
-                        orderItem.setPrice(cartItems.get(i).getQuantity() * Float.parseFloat(String.valueOf(productInventory.getPrice())));
-                        if (variantList!=null) {
-                            orderItem.setProductVariant(variantList);
-                        }
-                        orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added orderItem to order list: " + orderItem.toString());
+                }
 
-                        //adding new orderItem to orderItems list
-                        orderItems.add(orderItem);
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added orderItem to order list: " + orderItem.toString());
+                order.setCartId(cartId);                    
+                order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE);
+                order.setPaymentStatus(PaymentStatus.PENDING);
+                order.setCustomerId(cod.getCustomerId());
+                order.setDeliveryCharges(cod.getOrderPaymentDetails().getDeliveryQuotationAmount());
+                order.setPaymentType(storeWithDetials.getPaymentType());
+                order.setCustomerNotes(cod.getCustomerNotes());
+
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceChargesPercentage: " + storeWithDetials.getServiceChargesPercentage());
+
+                // setting invoice id
+                String invoiceId = TxIdUtil.generateInvoiceId(storeWithDetials.getId(), storeWithDetials.getNameAbreviation(), storeRepository);
+                order.setInvoiceId(invoiceId);
+
+                // setting this empty
+                order.setPrivateAdminNotes("");
+
+                OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, order, storeWithDetials.getServiceChargesPercentage(), storeCommission, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
+                order.setSubTotal(orderTotalObject.getSubTotal());
+                order.setAppliedDiscount(orderTotalObject.getAppliedDiscount());
+                order.setAppliedDiscountDescription(orderTotalObject.getAppliedDiscountDescription());
+                order.setDeliveryDiscount(orderTotalObject.getDeliveryDiscount());
+                order.setDeliveryDiscountDescription(orderTotalObject.getDeliveryDiscountDescription());                
+                order.setStoreServiceCharges(orderTotalObject.getStoreServiceCharge());
+                order.setTotal(orderTotalObject.getTotal());
+                order.setKlCommission(orderTotalObject.getKlCommission());
+                order.setStoreShare(orderTotalObject.getStoreShare());
+                order.setDeliveryCharges(order.getDeliveryCharges());                                
+                // saving order object to get order Id
+                order = orderRepository.save(order);
+
+                    
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order posted successfully orderId: " + order.getId());
+                // save payment details
+                cod.getOrderPaymentDetails().setOrderId(order.getId());
+                order.setOrderPaymentDetail(orderPaymentDetailRepository.save(cod.getOrderPaymentDetails()));
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order payment details inserted successfully: " + order.getOrderPaymentDetail().toString());
+                // save shipment detials
+                Boolean storePickup = cod.getOrderShipmentDetails().getStorePickup();
+                if (storePickup==null) {
+                    storePickup=false;
+                    cod.getOrderShipmentDetails().setStorePickup(false);
+                }
+                cod.getOrderShipmentDetails().setOrderId(order.getId());
+                order.setOrderShipmentDetail(orderShipmentDetailRepository.save(cod.getOrderShipmentDetails()));
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order shipment details inserted successfully: " + order.getOrderShipmentDetail().toString());
+                OrderItem orderItem = null;
+                Product product;
+                ProductInventory productInventory;
+
+                // inserting order items now
+                for (int i = 0; i < orderItems.size(); i++) {
+                    // insert orderItem 
+                    orderItems.get(i).setOrderId(order.getId());
+                    orderItem = orderItemRepository.save(orderItems.get(i));
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderItem created with id: " + orderItem.getId() + ", orderId: " + orderItem.getOrderId());
+
+                    //add cart subitem if any
+                    List<OrderSubItem> orderSubItemList=null;
+                    if (orderItem.getOrderSubItem()!=null) {
+                        orderSubItemList = new ArrayList();
+                        for (int x=0;x<orderItem.getOrderSubItem().size();x++) {                                
+                            OrderSubItem orderSubItem = orderItem.getOrderSubItem().get(x);
+                            orderSubItem.setOrderItemId(orderItem.getId());
+                            orderSubItemRepository.save(orderSubItem);
+                        }                            
                     }
 
-                    order.setCartId(cartId);                    
-                    order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE);
-                    order.setPaymentStatus(PaymentStatus.PENDING);
-                    order.setCustomerId(cod.getCustomerId());
-                    order.setDeliveryCharges(cod.getOrderPaymentDetails().getDeliveryQuotationAmount());
-                    order.setPaymentType(storeWithDetials.getPaymentType());
-                    order.setCustomerNotes(cod.getCustomerNotes());
-                    
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceChargesPercentage: " + storeWithDetials.getServiceChargesPercentage());
-                    
-                    // setting invoice id
-                    String invoiceId = TxIdUtil.generateInvoiceId(storeWithDetials.getId(), storeWithDetials.getNameAbreviation(), storeRepository);
-                    order.setInvoiceId(invoiceId);
+                    // getting product information if product tracking is enabled we will reduce the quantity
+                    product = productService.getProductById(order.getStoreId(), orderItems.get(i).getProductId());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Got product details of orderItem: " + product.toString());
 
-                    // setting this empty
-                    order.setPrivateAdminNotes("");
-                    
-                    OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, order, storeWithDetials.getServiceChargesPercentage(), storeCommission, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
-                    order.setSubTotal(orderTotalObject.getSubTotal());
-                    order.setAppliedDiscount(orderTotalObject.getAppliedDiscount());
-                    order.setAppliedDiscountDescription(orderTotalObject.getAppliedDiscountDescription());
-                    order.setDeliveryDiscount(orderTotalObject.getDeliveryDiscount());
-                    order.setDeliveryDiscountDescription(orderTotalObject.getDeliveryDiscountDescription());                
-                    order.setStoreServiceCharges(orderTotalObject.getStoreServiceCharge());
-                    order.setTotal(orderTotalObject.getTotal());
-                    order.setKlCommission(orderTotalObject.getKlCommission());
-                    order.setStoreShare(orderTotalObject.getStoreShare());
-                    order.setDeliveryCharges(order.getDeliveryCharges());                                
-                    // saving order object to get order Id
-                    order = orderRepository.save(order);
-                    
-                    
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order posted successfully orderId: " + order.getId());
-                    // save payment details
-                    cod.getOrderPaymentDetails().setOrderId(order.getId());
-                    order.setOrderPaymentDetail(orderPaymentDetailRepository.save(cod.getOrderPaymentDetails()));
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order payment details inserted successfully: " + order.getOrderPaymentDetail().toString());
-                    // save shipment detials
-                    Boolean storePickup = cod.getOrderShipmentDetails().getStorePickup();
-                    if (storePickup==null) {
-                        storePickup=false;
-                        cod.getOrderShipmentDetails().setStorePickup(false);
-                    }
-                    cod.getOrderShipmentDetails().setOrderId(order.getId());
-                    order.setOrderShipmentDetail(orderShipmentDetailRepository.save(cod.getOrderShipmentDetails()));
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order shipment details inserted successfully: " + order.getOrderShipmentDetail().toString());
-                    OrderItem orderItem = null;
-                    Product product;
-                    ProductInventory productInventory;
-                    // inserting order items now
-                    for (int i = 0; i < orderItems.size(); i++) {
-                        // insert orderItem 
-                        orderItems.get(i).setOrderId(order.getId());
-                        orderItem = orderItemRepository.save(orderItems.get(i));
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderItem created with id: " + orderItem.getId() + ", orderId: " + orderItem.getOrderId());
-                        // getting product information if product tracking is enabled we will reduce the quantity
-                        product = productService.getProductById(order.getStoreId(), orderItems.get(i).getProductId());
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Got product details of orderItem: " + product.toString());
-                        
-                        if (product.isTrackQuantity()) {
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Product tracking is enable");
+                    if (product.isTrackQuantity()) {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Product tracking is enable");
 //                            productInventory = productService.reduceProductInventory(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), orderItems.get(i).getQuantity());
 
-                            ProductInventory reduceQuantityProductInventory = productInventoryRepository.findByItemCode(orderItems.get(i).getItemCode());
-                            int oldQuantity = reduceQuantityProductInventory.getQuantity();
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "oldQuantity: " + oldQuantity + " for itemCode:" + orderItems.get(i).getItemCode());
-                            int newQuantity = oldQuantity - orderItems.get(i).getQuantity();
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "oldQuantity: " + oldQuantity + " for itemCode:" + orderItems.get(i).getItemCode());
-                            reduceQuantityProductInventory.setQuantity(newQuantity);
-                            productInventoryRepository.save(reduceQuantityProductInventory);
-                            if (reduceQuantityProductInventory.getQuantity() <= product.getMinQuantityForAlarm()) {
-                                //sending notification for product is going out of stock
-                                //we can send email as well
-                                orderPostService.sendMinimumQuantityAlarm(order.getId(), order.getStoreId(), orderItems.get(i), reduceQuantityProductInventory.getQuantity());
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "intimation send for out of stock product id: " + orderItems.get(i).getProductId() + ", SKU: " + orderItems.get(i).getSKU() + ", Name: " + reduceQuantityProductInventory.getProduct().getName());
-                            }
-
-                            if (!product.isAllowOutOfStockPurchases() && reduceQuantityProductInventory.getQuantity() <= 0) {
-                                // making this product variant outof stock
-                                productInventory = productService.changeProductStatus(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), ProductStatus.OUTOFSTOCK);
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "this product variant is out of stock now storeId: " + order.getStoreId() + ", productId: " + orderItems.get(i).getProductId() + ", itemCode: " + orderItems.get(i).getItemCode());
-                            }
-                            
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Product tracking is not enabled by marchant");
+                        ProductInventory reduceQuantityProductInventory = productInventoryRepository.findByItemCode(orderItems.get(i).getItemCode());
+                        int oldQuantity = reduceQuantityProductInventory.getQuantity();
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "oldQuantity: " + oldQuantity + " for itemCode:" + orderItems.get(i).getItemCode());
+                        int newQuantity = oldQuantity - orderItems.get(i).getQuantity();
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "oldQuantity: " + oldQuantity + " for itemCode:" + orderItems.get(i).getItemCode());
+                        reduceQuantityProductInventory.setQuantity(newQuantity);
+                        productInventoryRepository.save(reduceQuantityProductInventory);
+                        if (reduceQuantityProductInventory.getQuantity() <= product.getMinQuantityForAlarm()) {
+                            //sending notification for product is going out of stock
+                            //we can send email as well
+                            orderPostService.sendMinimumQuantityAlarm(order.getId(), order.getStoreId(), orderItems.get(i), reduceQuantityProductInventory.getQuantity());
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "intimation send for out of stock product id: " + orderItems.get(i).getProductId() + ", SKU: " + orderItems.get(i).getSKU() + ", Name: " + reduceQuantityProductInventory.getProduct().getName());
                         }
-                        
+
+                        if (!product.isAllowOutOfStockPurchases() && reduceQuantityProductInventory.getQuantity() <= 0) {
+                            // making this product variant outof stock
+                            productInventory = productService.changeProductStatus(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), ProductStatus.OUTOFSTOCK);
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "this product variant is out of stock now storeId: " + order.getStoreId() + ", productId: " + orderItems.get(i).getProductId() + ", itemCode: " + orderItems.get(i).getItemCode());
+                        }
+
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Product tracking is not enabled by marchant");
                     }
+
+                }
                     
-                    //clear cart item
-                    cartItemRepository.clearCartItem(cart.getId());
-                    
-                    if (saveCustomerInformation != null && saveCustomerInformation == true) {
-                        if (order.getCustomerId() == null || "undefined".equalsIgnoreCase(order.getCustomerId())) {
-                            String customerId = customerService.addCustomer(cod.getOrderShipmentDetails(), order.getStoreId());
+                //clear cart item
+                cartItemRepository.clearCartItem(cart.getId());
 
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerId: " + customerId);
+                if (saveCustomerInformation != null && saveCustomerInformation == true) {
+                    if (order.getCustomerId() == null || "undefined".equalsIgnoreCase(order.getCustomerId())) {
+                        String customerId = customerService.addCustomer(cod.getOrderShipmentDetails(), order.getStoreId());
 
-                            if (customerId != null) {
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer created with id: " + customerId);
-                                order.setCustomerId(customerId);
-                                orderRepository.save(order);
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added customerId: " + customerId + " to order: " + order.getId());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerId: " + customerId);
 
-                            }
-                        } else {
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer already created with id: " + order.getCustomerId());
-                            String customerId = customerService.updateCustomer(cod.getOrderShipmentDetails(), order.getStoreId(), order.getCustomerId());
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "updated customer information for id: " + customerId);
+                        if (customerId != null) {
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer created with id: " + customerId);
+                            order.setCustomerId(customerId);
+                            orderRepository.save(order);
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added customerId: " + customerId + " to order: " + order.getId());
 
                         }
                     } else {
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "user information not saved");
-                    }
-                    
-                    //get order completion config
-                    String verticalId = storeWithDetials.getVerticalCode();                    
-                    String storeDeliveryType = storeDeliveryDetail.getType();
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status:"+OrderStatus.RECEIVED_AT_STORE.name()+" VerticalId:"+verticalId+" storePickup:"+storePickup+" deliveryType:"+storeDeliveryType+" paymentType:"+storeWithDetials.getPaymentType());
-                    List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, OrderStatus.RECEIVED_AT_STORE.name(), storePickup, storeDeliveryType, storeWithDetials.getPaymentType());
-                    OrderCompletionStatusConfig orderCompletionStatusConfig = null;
-                    if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
-                        Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + OrderStatus.RECEIVED_AT_STORE.name());             
-                    } else {        
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
-                        orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);                        
-                                           
-                        //send email to customer if config allows
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email to customer: " + orderCompletionStatusConfig.getEmailToCustomer());
-                        if (orderCompletionStatusConfig.getEmailToCustomer()) {
-                            String emailContent = orderCompletionStatusConfig.getCustomerEmailContent();
-                            if (emailContent != null) {
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is not null");
-                                //sending email
-                                try {
-                                    RegionCountry regionCountry = null;
-                                    Optional<RegionCountry> t = regionCountriesRepository.findById(storeWithDetials.getRegionCountryId());
-                                    if (t.isPresent()) {
-                                        regionCountry = t.get();
-                                    }
-                                    emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, order.getOrderShipmentDetail(), regionCountry);
-                                    Email email = new Email();
-                                    ArrayList<String> tos = new ArrayList<>();
-                                    tos.add(order.getOrderShipmentDetail().getEmail());
-                                    String[] to = Utilities.convertArrayListToStringArray(tos);
-                                    email.setTo(to);
-                                    email.setRawBody(emailContent);
-                                    Body body = new Body();
-                                    body.setCurrency(storeWithDetials.getRegionCountry().getCurrencyCode());
-                                    body.setDeliveryAddress(order.getOrderShipmentDetail().getAddress());
-                                    body.setDeliveryCity(order.getOrderShipmentDetail().getCity());
-                                    body.setOrderStatus(OrderStatus.RECEIVED_AT_STORE);
-                                    body.setDeliveryCharges(order.getOrderPaymentDetail().getDeliveryQuotationAmount());
-                                    body.setTotal(order.getTotal());
-                                    body.setInvoiceId(order.getInvoiceId());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer already created with id: " + order.getCustomerId());
+                        String customerId = customerService.updateCustomer(cod.getOrderShipmentDetails(), order.getStoreId(), order.getCustomerId());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "updated customer information for id: " + customerId);
 
-                                    body.setStoreAddress(storeWithDetials.getAddress());
-                                    body.setStoreContact(storeWithDetials.getPhoneNumber());
-                                    body.setLogoUrl(storeWithDetials.getStoreAsset() == null ? "" : storeWithDetials.getStoreAsset().getLogoUrl());
-                                    body.setStoreName(storeWithDetials.getName());
-                                    body.setOrderItems(orderItems);
-                                    email.setBody(body);
-                                    emailService.sendEmail(email);
-                                } catch (Exception ex) {
-                                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending email :", ex);
-                                }
-                            } else {
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is null");
-                            }
-                        }
-
-                        //send rocket chat message
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message to store: " + orderCompletionStatusConfig.getRcMessage());
-                        if (orderCompletionStatusConfig.getRcMessage()) {
-                            String rcMessageContent = orderCompletionStatusConfig.getRcMessageContent();
-                            if (rcMessageContent != null) {
-
-                                try {
-                                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message content is not null");
-                                    rcMessageContent = MessageGenerator.generateRocketChatMessageContent(rcMessageContent, order, orderItems, onboardingOrderLink);
-                                    //sending rc messsage
-
-                                    orderPostService.postOrderLink(rcMessageContent, order.getStoreId());
-                                } catch (Exception ex) {
-                                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending rc message :", ex);
-                                }
-                            } else {
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message content null");
-                            }
-
-                        }
-
-                        //send push notification to DCM message
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat to store: " + orderCompletionStatusConfig.getPushNotificationToMerchat());
-                        if (orderCompletionStatusConfig.getPushNotificationToMerchat()) {
-                            String pushNotificationTitle = orderCompletionStatusConfig.getStorePushNotificationTitle();
-                            String pushNotificationContent = orderCompletionStatusConfig.getStorePushNotificationContent();
-                            try {
-                                fcmService.sendPushNotification(order, storeWithDetials.getId(), storeWithDetials.getName(), pushNotificationTitle, pushNotificationContent, OrderStatus.RECEIVED_AT_STORE);
-                            } catch (Exception e) {
-                                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
-                            }
-
-                        }
                     }
                 } else {
-                    // throw bad request exception
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "You cannot place order through this endpoint: /orders/carts/" + cartId + "/cod/push because store is not cod");
-                    response.setMessage("you cannot post order throgh this endpoint because store is not cod");
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "user information not saved");
                 }
+                    
+                //get order completion config
+                String verticalId = storeWithDetials.getVerticalCode();                    
+                String storeDeliveryType = storeDeliveryDetail.getType();
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status:"+OrderStatus.RECEIVED_AT_STORE.name()+" VerticalId:"+verticalId+" storePickup:"+storePickup+" deliveryType:"+storeDeliveryType+" paymentType:"+storeWithDetials.getPaymentType());
+                List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, OrderStatus.RECEIVED_AT_STORE.name(), storePickup, storeDeliveryType, storeWithDetials.getPaymentType());
+                OrderCompletionStatusConfig orderCompletionStatusConfig = null;
+                if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
+                    Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + OrderStatus.RECEIVED_AT_STORE.name());             
+                } else {        
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
+                    orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);                        
 
+                    //send email to customer if config allows
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email to customer: " + orderCompletionStatusConfig.getEmailToCustomer());
+                    if (orderCompletionStatusConfig.getEmailToCustomer()) {
+                        String emailContent = orderCompletionStatusConfig.getCustomerEmailContent();
+                        if (emailContent != null) {
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is not null");
+                            //sending email
+                            try {
+                                RegionCountry regionCountry = null;
+                                Optional<RegionCountry> t = regionCountriesRepository.findById(storeWithDetials.getRegionCountryId());
+                                if (t.isPresent()) {
+                                    regionCountry = t.get();
+                                }
+                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, order.getOrderShipmentDetail(), regionCountry);
+                                Email email = new Email();
+                                ArrayList<String> tos = new ArrayList<>();
+                                tos.add(order.getOrderShipmentDetail().getEmail());
+                                String[] to = Utilities.convertArrayListToStringArray(tos);
+                                email.setTo(to);
+                                email.setRawBody(emailContent);
+                                Body body = new Body();
+                                body.setCurrency(storeWithDetials.getRegionCountry().getCurrencyCode());
+                                body.setDeliveryAddress(order.getOrderShipmentDetail().getAddress());
+                                body.setDeliveryCity(order.getOrderShipmentDetail().getCity());
+                                body.setOrderStatus(OrderStatus.RECEIVED_AT_STORE);
+                                body.setDeliveryCharges(order.getOrderPaymentDetail().getDeliveryQuotationAmount());
+                                body.setTotal(order.getTotal());
+                                body.setInvoiceId(order.getInvoiceId());
+
+                                body.setStoreAddress(storeWithDetials.getAddress());
+                                body.setStoreContact(storeWithDetials.getPhoneNumber());
+                                body.setLogoUrl(storeWithDetials.getStoreAsset() == null ? "" : storeWithDetials.getStoreAsset().getLogoUrl());
+                                body.setStoreName(storeWithDetials.getName());
+                                body.setOrderItems(orderItems);
+                                email.setBody(body);
+                                emailService.sendEmail(email);
+                            } catch (Exception ex) {
+                                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending email :", ex);
+                            }
+                        } else {
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is null");
+                        }
+                    }
+
+                    //send rocket chat message
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message to store: " + orderCompletionStatusConfig.getRcMessage());
+                    if (orderCompletionStatusConfig.getRcMessage()) {
+                        String rcMessageContent = orderCompletionStatusConfig.getRcMessageContent();
+                        if (rcMessageContent != null) {
+
+                            try {
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message content is not null");
+                                rcMessageContent = MessageGenerator.generateRocketChatMessageContent(rcMessageContent, order, orderItems, onboardingOrderLink);
+                                //sending rc messsage
+
+                                orderPostService.postOrderLink(rcMessageContent, order.getStoreId());
+                            } catch (Exception ex) {
+                                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending rc message :", ex);
+                            }
+                        } else {
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message content null");
+                        }
+
+                    }
+
+                    //send push notification to DCM message
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat to store: " + orderCompletionStatusConfig.getPushNotificationToMerchat());
+                    if (orderCompletionStatusConfig.getPushNotificationToMerchat()) {
+                        String pushNotificationTitle = orderCompletionStatusConfig.getStorePushNotificationTitle();
+                        String pushNotificationContent = orderCompletionStatusConfig.getStorePushNotificationContent();
+                        try {
+                            fcmService.sendPushNotification(order, storeWithDetials.getId(), storeWithDetials.getName(), pushNotificationTitle, pushNotificationContent, OrderStatus.RECEIVED_AT_STORE);
+                        } catch (Exception e) {
+                            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
+                        }
+
+                    }
+                }
+               
             } catch (Exception ex) {
                 Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "exception occur while pushing order to rocket chat ", ex);
                 response.setMessage(ex.getMessage());

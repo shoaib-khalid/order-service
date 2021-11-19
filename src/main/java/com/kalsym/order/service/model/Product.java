@@ -46,7 +46,7 @@ public class Product {
     private boolean trackQuantity;
     private boolean allowOutOfStockPurchases;
     private int minQuantityForAlarm;
-    
+    private Boolean isPackage;
     
     public enum Status {
         ACTIVE,

@@ -3,9 +3,13 @@ package com.kalsym.order.service.controller;
 import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.model.Cart;
 import com.kalsym.order.service.model.ProductInventory;
+import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.model.CartItem;
+import com.kalsym.order.service.model.CartSubItem;
 import com.kalsym.order.service.model.repository.CartItemRepository;
+import com.kalsym.order.service.model.repository.CartSubItemRepository;
 import com.kalsym.order.service.model.repository.CartRepository;
+import com.kalsym.order.service.model.repository.ProductRepository;
 import com.kalsym.order.service.utility.HttpResponse;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
@@ -44,7 +48,13 @@ public class CartItemController {
     CartItemRepository cartItemRepository;
     
     @Autowired
+    CartSubItemRepository cartSubItemRepository;
+    
+    @Autowired
     ProductInventoryRepository productInventoryRepository;
+    
+    @Autowired
+    ProductRepository productRepository;
     
     @GetMapping(path = {""}, name = "cart-items-get")
     @PreAuthorize("hasAnyAuthority('cart-items-get', 'all')")
@@ -127,21 +137,43 @@ public class CartItemController {
             //find product invertory against itemcode to set sku
             ProductInventory productInventory = productInventoryRepository.findByItemCode(bodyCartItem.getItemCode());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventory.toString());
-            //find item in current cart, increase quantity if already exist
-            CartItem existingItem = cartItemRepository.findByCartIdAndItemCodeAndSpecialInstruction(bodyCartItem.getCartId(), bodyCartItem.getItemCode(), bodyCartItem.getSpecialInstruction());
-            if (existingItem != null) {
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "item already exist for cartId: " + bodyCartItem.getCartId());
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "item already exist for itemCode: " + bodyCartItem.getItemCode());
-                
-                int newQty = existingItem.getQuantity() + bodyCartItem.getQuantity();
-                existingItem.setQuantity(newQty);
-                existingItem.setPrice(newQty * existingItem.getProductPrice());
-                existingItem.setProductName(productInventory.getProduct().getName());
-                cartItem = cartItemRepository.save(existingItem);
-            } else {
+            //check if product is package
+            Optional<Product> optProduct = productRepository.findById(bodyCartItem.getProductId());
+            boolean isPackage=false;
+            if (optProduct.isPresent()) {
+                isPackage = optProduct.get().getIsPackage();
+            }
+            if (isPackage) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Product is package");
                 bodyCartItem.setPrice(bodyCartItem.getQuantity() * bodyCartItem.getProductPrice());
                 bodyCartItem.setProductName(productInventory.getProduct().getName());
                 cartItem = cartItemRepository.save(bodyCartItem);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Saved cartItem id:"+cartItem.getId());
+                //save sub cart item
+                if (bodyCartItem.getCartSubItem()!=null) {
+                    for (int i=0;i<bodyCartItem.getCartSubItem().size();i++) {
+                        CartSubItem subItem = bodyCartItem.getCartSubItem().get(i);
+                        subItem.setCartItemId(cartItem.getId());
+                        cartSubItemRepository.save(subItem);
+                    }
+                }
+            } else {
+                //find item in current cart, increase quantity if already exist
+                CartItem existingItem = cartItemRepository.findByCartIdAndItemCodeAndSpecialInstruction(bodyCartItem.getCartId(), bodyCartItem.getItemCode(), bodyCartItem.getSpecialInstruction());
+                if (existingItem != null) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "item already exist for cartId: " + bodyCartItem.getCartId());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "item already exist for itemCode: " + bodyCartItem.getItemCode());
+
+                    int newQty = existingItem.getQuantity() + bodyCartItem.getQuantity();
+                    existingItem.setQuantity(newQty);
+                    existingItem.setPrice(newQty * existingItem.getProductPrice());
+                    existingItem.setProductName(productInventory.getProduct().getName());
+                    cartItem = cartItemRepository.save(existingItem);
+                } else {
+                    bodyCartItem.setPrice(bodyCartItem.getQuantity() * bodyCartItem.getProductPrice());
+                    bodyCartItem.setProductName(productInventory.getProduct().getName());
+                    cartItem = cartItemRepository.save(bodyCartItem);
+                } 
             }
             response.setSuccessStatus(HttpStatus.CREATED);
         } catch (Exception exp) {
@@ -228,8 +260,28 @@ public class CartItemController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem found with cartItemId: " + id);
         CartItem cartItem = optCartItem.get();
         
-        cartItem.update(bodyCartItem);
-        
+        //check if product is package
+        Optional<Product> optProduct = productRepository.findById(cartItem.getProductId());
+        boolean isPackage=false;
+        if (optProduct.isPresent()) {
+            isPackage = optProduct.get().getIsPackage();
+        }
+        if (isPackage) {
+            cartItem.update(bodyCartItem);
+            //clear sub item
+            cartSubItemRepository.clearCartSubItem(cartItem.getId());
+            //save sub cart item
+            if (bodyCartItem.getCartSubItem()!=null) {
+                for (int i=0;i<bodyCartItem.getCartSubItem().size();i++) {
+                    CartSubItem subItem = bodyCartItem.getCartSubItem().get(i);
+                    subItem.setCartItemId(cartItem.getId());
+                    cartSubItemRepository.save(subItem);
+                }
+            }
+        } else {
+            cartItem.update(bodyCartItem);
+        }
+                
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem updated for cartItemId: " + id);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(cartItemRepository.save(cartItem));

@@ -8,7 +8,6 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import lombok.Getter;
@@ -24,8 +23,8 @@ import org.hibernate.annotations.GenericGenerator;
 @Setter
 @Getter
 @ToString
-@Table(name = "cart_item")
-public class CartItem {
+@Table(name = "cart_subitem")
+public class CartSubItem {
 
     @Id
     @GeneratedValue(generator = "uuid2")
@@ -34,7 +33,7 @@ public class CartItem {
 
     private int quantity;
 
-    private String cartId;
+    private String cartItemId;
     private String productId;
     private String itemCode;
     private Float price;
@@ -44,11 +43,7 @@ public class CartItem {
     private String SKU;
     private String productName;
     private String specialInstruction;
-    
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cartItemId", insertable = false, updatable = false, nullable = true)
-    private List<CartSubItem> cartSubItem;
-    
+
     /*@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cartId", insertable=false, updatable=false)
     private Cart cartMain;

@@ -1,4 +1,56 @@
 ##################################################
+# order-service-3.2.17-SNAPSHOT | 19-November-2021
+##################################################
+### Code Changes:
+1. New feature for add item to cart :
+	-allow to add subitem (for combo product)
+2. New response parameter in get cart item	:
+	-orderSubItem[] (for combo product, it have subitem list)
+3. Remove checking for paymentType=COD for function placeOrder
+
+### DB Changes:	
+
+CREATE TABLE `cart_subitem` (
+  `id` varchar(50) NOT NULL,
+  `quantity` int DEFAULT NULL COMMENT 'Once the cart is order the quantity is subtracted from option.',
+  `cartItemId` varchar(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL,
+  `productId` varchar(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL COMMENT 'A cart can have same product listed multiple times with different options. ',
+  `itemCode` varchar(50) DEFAULT NULL,
+  `price` decimal(10,2) DEFAULT NULL,
+  `productPrice` decimal(10,2) DEFAULT NULL,
+  `weight` decimal(6,2) DEFAULT NULL,
+  `SKU` varchar(500) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  `productName` varchar(500) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  `specialInstruction` varchar(1000) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `productId` (`productId`,`itemCode`),
+  KEY `itemCode` (`itemCode`),
+  KEY `cartId` (`cartItemId`),
+  CONSTRAINT `cart_subitem_ibfk_1` FOREIGN KEY (`cartItemId`) REFERENCES `cart_item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `order_subitem` (
+  `id` varchar(50) NOT NULL,
+  `orderItemId` varchar(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  `productId` varchar(50) DEFAULT NULL,
+  `price` decimal(10,2) DEFAULT NULL COMMENT '	Price of ordered item in the cart',
+  `productPrice` decimal(10,2) DEFAULT NULL COMMENT 'Basic product price without options markups, wholesale discounts etc.',
+  `weight` decimal(6,2) DEFAULT NULL,
+  `SKU` varchar(500) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  `quantity` int DEFAULT NULL,
+  `itemCode` varchar(50) DEFAULT NULL,
+  `productName` varchar(500) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  `specialInstruction` varchar(1000) DEFAULT NULL,
+  `productVariant` varchar(500) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `productId` (`productId`),
+  KEY `orderId` (`orderItemId`),
+  CONSTRAINT `order_subitem_ibfk_1` FOREIGN KEY (`orderItemId`) REFERENCES `order_item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+
+##################################################
 # order-service-3.2.16-SNAPSHOT | 12-November-2021
 ##################################################
 ### Code Changes:
