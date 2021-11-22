@@ -5,8 +5,9 @@
 Add whatsapp alert referenceId & templateName in config
 
 ### New Config:
-whatsapp.service.order.reminder.templatename:welcome_to_symplified_7
-whatsapp.service.order.reminder.refid:60133429331
+whatsapp.service.push.url=https://waw.symplified.it/360dialog/callback/templatemessage/push
+whatsapp.service.order.reminder.templatename=welcome_to_symplified_7
+whatsapp.service.order.reminder.refid=60133429331
 
 
 ##################################################
