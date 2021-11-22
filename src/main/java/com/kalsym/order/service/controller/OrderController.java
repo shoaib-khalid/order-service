@@ -832,7 +832,7 @@ public class OrderController {
                 }
                
             } catch (Exception ex) {
-                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "exception occur while pushing order to rocket chat ", ex);
+                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "exception occur while creating order ", ex);
                 response.setMessage(ex.getMessage());
                 return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
             }
@@ -848,7 +848,7 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
 
-    }
+    }    
 
     @DeleteMapping(path = {"/{id}"}, name = "orders-delete-by-id")
     @PreAuthorize("hasAnyAuthority('orders-delete-by-id', 'all') and @customOwnerVerifier.VerifyOrder(#id)")

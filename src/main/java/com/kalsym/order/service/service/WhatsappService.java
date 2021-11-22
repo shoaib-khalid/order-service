@@ -38,6 +38,12 @@ public class WhatsappService {
     @Value("${whatsapp.service.push.url:https://waw.symplified.it/360dialog/callback/templatemessage/push}")
     private String whatsappServiceUrl;
     
+    @Value("${whatsapp.service.order.reminder.templatename:welcome_to_symplified_7}")
+    private String orderReminderTemplateName;
+    
+    @Value("${whatsapp.service.order.reminder.refid:60133429331}")
+    private String orderReminderRefId;
+    
     public boolean sendOrderReminder(String[] recipients, String storeName, String invoiceNo) throws Exception {
         String logprefix = "sendWhatsappMessage";
         RestTemplate restTemplate = new RestTemplate();        
@@ -46,9 +52,9 @@ public class WhatsappService {
         request.setGuest(false);
         request.setRecipientIds(recipients);
         request.setRefId(recipients[0]);
-        request.setReferenceId("60133429331");
+        request.setReferenceId(orderReminderRefId);
         Template template = new Template();
-        template.setName("welcome_to_symplified_7");
+        template.setName(orderReminderTemplateName);
         String[] message = {storeName, invoiceNo};
         template.setParameters(message);
         request.setTemplate(template);

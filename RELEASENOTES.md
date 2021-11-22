@@ -1,10 +1,21 @@
 ##################################################
+# order-service-3.2.18-SNAPSHOT | 22-November-2021
+##################################################
+### Code Changes:
+Add whatsapp alert referenceId & templateName in config
+
+### New Config:
+whatsapp.service.order.reminder.templatename:welcome_to_symplified_7
+whatsapp.service.order.reminder.refid:60133429331
+
+
+##################################################
 # order-service-3.2.17-SNAPSHOT | 19-November-2021
 ##################################################
 ### Code Changes:
 1. New feature for add item to cart :
 	-allow to add subitem (for combo product)
-2. New response parameter in get cart item	:
+2. New response parameter in get order item	:
 	-orderSubItem[] (for combo product, it have subitem list)
 3. Remove checking for paymentType=COD for function placeOrder
 
