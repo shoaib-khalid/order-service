@@ -42,7 +42,6 @@ public class Store implements Serializable {
 
     private String paymentType;
     private Integer invoiceSeqNo;
-    private String invoicePrefix;
     
     public String getNameAbreviation() {
         String abbreviation = "";
