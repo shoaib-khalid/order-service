@@ -1,5 +1,5 @@
 ##################################################
-# order-service-3.2.19-SNAPSHOT | 26-November-2021
+# order-service-3.2.20-SNAPSHOT | 26-November-2021
 ##################################################
 ### Code Changes:
 Add new field in order table : deliveryType
@@ -10,7 +10,7 @@ ALTER TABLE `order` ADD `deliveryType` enum('ADHOC','SCHEDULED','SELF') DEFAULT 
 
 
 ##################################################
-# order-service-3.2.18-SNAPSHOT | 25-November-2021
+# order-service-3.2.19-SNAPSHOT | 25-November-2021
 ##################################################
 ### Code Changes:
 Bug fix for order history
