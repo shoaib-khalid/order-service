@@ -75,6 +75,8 @@ public class Order implements Serializable {
 
     private String paymentType;
     
+    private String deliveryType;
+    
     @Column(nullable = true)
     private Double appliedDiscount;
     

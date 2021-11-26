@@ -7,6 +7,7 @@ import com.kalsym.order.service.enums.ProductStatus;
 import com.kalsym.order.service.enums.StorePaymentType;
 import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.OrderPaymentDetail;
+import com.kalsym.order.service.model.object.CustomPageable;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -44,6 +45,7 @@ import com.kalsym.order.service.model.ProductVariantAvailable;
 import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.object.Discount;
 import com.kalsym.order.service.model.object.OrderObject;
+import com.kalsym.order.service.model.object.OrderDetails;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.OrderSubItemRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
@@ -61,6 +63,7 @@ import com.kalsym.order.service.model.repository.RegionCountriesRepository;
 import com.kalsym.order.service.model.repository.StoreDetailsRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountTierRepository;
+import com.kalsym.order.service.model.repository.StoreDeliveryDetailRepository;
 import com.kalsym.order.service.service.CustomerService;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.FCMService;
@@ -72,6 +75,8 @@ import com.kalsym.order.service.utility.OrderCalculation;
 import com.kalsym.order.service.utility.StoreDiscountCalculation;
 import com.kalsym.order.service.utility.TxIdUtil;
 import com.kalsym.order.service.utility.Utilities;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -80,6 +85,7 @@ import java.util.Optional;
 import javax.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.convert.QueryByExamplePredicateBuilder;
 import org.springframework.data.jpa.domain.Specification;
@@ -167,6 +173,9 @@ public class OrderController {
     
     @Autowired
     StoreDetailsRepository storeDetailsRepository;
+    
+    @Autowired
+    StoreDeliveryDetailRepository storeDeliveryDetailRepository;
     
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
@@ -270,11 +279,177 @@ public class OrderController {
 
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
 
+        Page<Order> orderWithPage = orderRepository.findAll(getSpecWithDatesBetween(from, to, completionStatus, orderExample), pageable);
+        
         response.setSuccessStatus(HttpStatus.OK);
-        response.setData(orderRepository.findAll(getSpecWithDatesBetween(from, to, completionStatus, orderExample), pageable));
+        response.setData(orderWithPage);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+    
+    
+    @GetMapping(path = {"/search"}, name = "orders-get", produces = "application/json")
+    @PreAuthorize("hasAnyAuthority('orders-get', 'all')")
+    public ResponseEntity<HttpResponse> searchOrderDetails(HttpServletRequest request,
+            @RequestParam(required = false) String clientId,
+            @RequestParam(required = false) String customerId,
+            @RequestParam(required = false) String storeId,
+            @RequestParam(required = false) PaymentStatus paymentStatus,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+            @RequestParam(required = false) String invoiceId,
+            @RequestParam(required = false) String accountName,
+            @RequestParam(required = false) String deliveryQuotationReferenceId,
+            @RequestParam(required = false) String receiverName,
+            @RequestParam(required = false) String phoneNumber,
+            @RequestParam(required = false) String zipcode,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) OrderStatus completionStatus,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize) {
+        String logprefix = request.getRequestURI() + " getOrders() ";
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "before from : " + from + ", to : " + to);
+//        to.setDate(to.getDate() + 1);
+//        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "after adding 1 day to (todate) from : " + from + ", to : " + to);
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orders-get request " + request.getRequestURL());
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Order orderMatch = new Order();
+        if (storeId != null && !storeId.isEmpty()) {
+            orderMatch.setStoreId(storeId);
+        }
+        if (customerId != null && !customerId.isEmpty()) {
+            orderMatch.setCustomerId(customerId);
+        }
+
+        if (paymentStatus != null) {
+            orderMatch.setPaymentStatus(paymentStatus);
+        }
+
+        if (invoiceId != null && !invoiceId.isEmpty()) {
+            orderMatch.setInvoiceId(invoiceId);
+        }
+
+        /*if (completionStatus != null) {            
+            orderMatch.setCompletionStatus(completionStatus);            
+        }*/
+        
+        Store storeDetail = new Store();
+        if (clientId != null && !clientId.isEmpty()) {
+            storeDetail.setClientId(clientId);
+        }
+        
+        orderMatch.setStore(storeDetail);        
+        
+        
+        OrderPaymentDetail opd = new OrderPaymentDetail();
+        if (accountName != null && !accountName.isEmpty()) {
+            opd.setAccountName(accountName);
+        }
+
+        if (deliveryQuotationReferenceId != null && !deliveryQuotationReferenceId.isEmpty()) {
+            opd.setDeliveryQuotationReferenceId(deliveryQuotationReferenceId);
+        }
+
+        orderMatch.setOrderPaymentDetail(opd);
+
+        OrderShipmentDetail osd = new OrderShipmentDetail();
+        if (receiverName != null && !receiverName.isEmpty()) {
+            osd.setReceiverName(receiverName);
+        }
+
+        if (phoneNumber != null && !phoneNumber.isEmpty()) {
+            osd.setPhoneNumber(phoneNumber);
+        }
+
+        if (city != null && !city.isEmpty()) {
+            osd.setCity(city);
+        }
+
+        if (zipcode != null && !zipcode.isEmpty()) {
+            osd.setZipcode(zipcode);
+        }
+
+        orderMatch.setOrderShipmentDetail(osd);
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderMatch: " + orderMatch);
+        
+        ExampleMatcher matcher = ExampleMatcher
+                .matchingAll()
+                .withIgnoreCase()
+                .withIgnoreNullValues()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        Example<Order> orderExample = Example.of(orderMatch, matcher);
+
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
+
+        Page<Order> orderWithPage = orderRepository.findAll(getSpecWithDatesBetween(from, to, completionStatus, orderExample), pageable);
+        List<Order> orderList = orderWithPage.getContent();
+        
+        OrderDetails[] orderDetailsList = new OrderDetails[orderList.size()];
+        for (int i=0;i<orderList.size();i++) {
+            Order order = orderList.get(i);
+            OrderDetails orderDetails = new OrderDetails();
+            orderDetails.setOrder(order);            
+            orderDetails.setCurrentCompletionStatus(order.getCompletionStatus().name());
+        
+            Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(order.getStoreId());
+            StoreWithDetails storeWithDetails = optStore.get();
+            String verticalId = storeWithDetails.getVerticalCode();
+            Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
+            String storeDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
+        
+            //get current status
+            String currentStatus = order.getCompletionStatus().name();
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find config for current status VerticalId:"+verticalId+" Status:"+currentStatus+" storePickup:"+storePickup+" deliveryType:"+storeDeliveryType+" paymentType:"+order.getPaymentType());
+            List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, currentStatus, storePickup, storeDeliveryType, order.getPaymentType());
+            OrderCompletionStatusConfig orderCompletionStatusConfig = null;
+            if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
+                Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for current status: " + currentStatus);            
+            } else {        
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
+                orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
+
+                //get next action
+                OrderCompletionStatusConfig nextCompletionStatusConfig = null;
+                int nextSequence = orderCompletionStatusConfig.getStatusSequence()+1;
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find config for next status VerticalId:"+verticalId+" NextSequence:"+nextSequence+" storePickup:"+storePickup+" deliveryType:"+storeDeliveryType+" paymentType:"+order.getPaymentType());
+                List<OrderCompletionStatusConfig> nextActionCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusSequenceAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, nextSequence, storePickup, storeDeliveryType, order.getPaymentType());
+                if (nextActionCompletionStatusConfigs == null || nextActionCompletionStatusConfigs.isEmpty()) {
+                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for next sequence:"+nextSequence);
+                } else {
+                    nextCompletionStatusConfig = nextActionCompletionStatusConfigs.get(0);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Next action status: " + nextCompletionStatusConfig.getStatus()+" sequence:"+nextCompletionStatusConfig.getStatusSequence());
+                    orderDetails.setNextCompletionStatus(nextCompletionStatusConfig.status);
+                    orderDetails.setNextActionText(nextCompletionStatusConfig.nextActionText);
+                }
+            }
+                    
+            orderDetailsList[i] = orderDetails;
+        }
+        
+        //create custom pageable object with modified content
+        CustomPageable customPageable = new CustomPageable();
+        customPageable.content = orderDetailsList;
+        customPageable.pageable = orderWithPage.getPageable();
+        customPageable.totalPages = orderWithPage.getTotalPages();
+        customPageable.totalElements = orderWithPage.getTotalElements();
+        customPageable.last = orderWithPage.isLast();
+        customPageable.size = orderWithPage.getSize();
+        customPageable.number = orderWithPage.getNumber();
+        customPageable.sort = orderWithPage.getSort();        
+        customPageable.numberOfElements = orderWithPage.getNumberOfElements();
+        customPageable.first  = orderWithPage.isFirst();
+        customPageable.empty = orderWithPage.isEmpty();
+        
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(customPageable);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    
     
     @GetMapping(path = {"/{id}"}, name = "orders-get-by-id", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-get-by-id', 'all')")
@@ -326,6 +501,14 @@ public class OrderController {
                 response.setMessage("store not found");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
+            
+            Optional<StoreDeliveryDetail> optStoreDeliveryDetail = storeDeliveryDetailRepository.findByStoreId(order.getStoreId());
+
+            if (!optStoreDeliveryDetail.isPresent()) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("store delivery detail not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
 
             Store store = optStore.get();
             order.setPaymentType(store.getPaymentType());
@@ -369,7 +552,8 @@ public class OrderController {
                 order.setTotal(orderTotalObject.getTotal());
                 order.setKlCommission(orderTotalObject.getKlCommission());
                 order.setStoreShare(orderTotalObject.getStoreShare());
-                order.setDeliveryCharges(order.getDeliveryCharges());                                
+                order.setDeliveryCharges(order.getDeliveryCharges());  
+                order.setDeliveryType(optStoreDeliveryDetail.get().getType());
                 order = orderRepository.save(order);
                 
                 opd.setOrderId(order.getId());
@@ -496,6 +680,14 @@ public class OrderController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
 
+            Optional<StoreDeliveryDetail> optStoreDeliveryDetail = storeDeliveryDetailRepository.findByStoreId(cart.getStoreId());
+
+            if (!optStoreDeliveryDetail.isPresent()) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("store delivery detail not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
             //getting store details 
             StoreDeliveryDetail storeDeliveryDetail = productService.getStoreDeliveryDetails(cart.getStoreId());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store details: " + storeDeliveryDetail.toString());
@@ -619,6 +811,7 @@ public class OrderController {
                 order.setCustomerId(cod.getCustomerId());
                 order.setDeliveryCharges(cod.getOrderPaymentDetails().getDeliveryQuotationAmount());
                 order.setPaymentType(storeWithDetials.getPaymentType());
+                order.setDeliveryType(optStoreDeliveryDetail.get().getType());
                 order.setCustomerNotes(cod.getCustomerNotes());
 
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceChargesPercentage: " + storeWithDetials.getServiceChargesPercentage());
@@ -1148,35 +1341,14 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         
-        class OrderDetails {
-            Order order;
-            String currentCompletionStatus;
-            String nextCompletionStatus;
-            String nextActionText;
-            
-            public Order getOrder() {
-                return order;
-            }
-            
-            public String getCurrentCompletionStatus() {
-                return currentCompletionStatus;
-            }
-            
-            public String getNextCompletionStatus() {
-                return nextCompletionStatus;
-            }
-            
-            public String getNextActionText() {
-                return nextActionText;
-            }
-        }
+        
         
         String logprefix = request.getRequestURI() + " ";
         
         Order order = optOrder.get();
         OrderDetails orderDetails = new OrderDetails();
-        orderDetails.order = order;
-        orderDetails.currentCompletionStatus = order.getCompletionStatus().name();
+        orderDetails.setOrder(order);
+        orderDetails.setCurrentCompletionStatus(order.getCompletionStatus().name());
         
         Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(order.getStoreId());
         StoreWithDetails storeWithDetails = optStore.get();
@@ -1205,8 +1377,8 @@ public class OrderController {
             } else {
                 nextCompletionStatusConfig = nextActionCompletionStatusConfigs.get(0);
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Next action status: " + nextCompletionStatusConfig.getStatus()+" sequence:"+nextCompletionStatusConfig.getStatusSequence());
-                orderDetails.nextCompletionStatus = nextCompletionStatusConfig.status;
-                orderDetails.nextActionText = nextCompletionStatusConfig.nextActionText;
+                orderDetails.setNextCompletionStatus(nextCompletionStatusConfig.status);
+                orderDetails.setNextActionText(nextCompletionStatusConfig.nextActionText);
             }
         }
         

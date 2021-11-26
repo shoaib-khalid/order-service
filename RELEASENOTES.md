@@ -1,4 +1,15 @@
 ##################################################
+# order-service-3.2.19-SNAPSHOT | 26-November-2021
+##################################################
+### Code Changes:
+Add new field in order table : deliveryType
+new function searchOrderDetails() -> return order list, current status and next status
+
+### Code Changes:
+ALTER TABLE `order` ADD `deliveryType` enum('ADHOC','SCHEDULED','SELF') DEFAULT NULL;
+
+
+##################################################
 # order-service-3.2.18-SNAPSHOT | 25-November-2021
 ##################################################
 ### Code Changes:
