@@ -123,6 +123,12 @@ public class OrderPaymentStatusUpdateController {
             response.setErrorStatus(HttpStatus.NOT_FOUND, "Store not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
+        
+        if (order.getBeingProcess()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order is being processed. orderId: " + orderId);
+            response.setErrorStatus(HttpStatus.CONFLICT, "Order is being processed");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
   
         StoreWithDetails storeWithDetails = optStore.get();
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store details got : " + storeWithDetails.toString());
@@ -205,6 +211,9 @@ public class OrderPaymentStatusUpdateController {
                 return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(response);
             }
         }
+        
+        //update order to being process
+        orderRepository.UpdateOrderBeingProcess(orderId);
         
         switch (status) {
             case PAYMENT_CONFIRMED:
@@ -396,12 +405,16 @@ public class OrderPaymentStatusUpdateController {
 
             }
         }
-        
+                
         order.setCompletionStatus(status);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatusUpdate updated for orderId: " + orderId + ", with orderStatus: " + status.toString());
         orderRepository.save(order);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(order);
+        
+        //update order to finish process
+        orderRepository.UpdateOrderFinishProcess(orderId);
+        
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
 
     }

@@ -1,11 +1,21 @@
 ##################################################
+# order-service-3.2.21-SNAPSHOT | 30-November-2021
+##################################################
+### Code Changes:
+Block request if order being process for putOrderCompletionStatusUpdatesConfirm()
+
+### DB Changes:
+ALTER TABLE `order` ADD beingProcess TINYINT(1) DEFAULT 0;
+
+
+##################################################
 # order-service-3.2.20-SNAPSHOT | 26-November-2021
 ##################################################
 ### Code Changes:
 Add new field in order table : deliveryType
 new function searchOrderDetails() -> return order list, current status and next status
 
-### Code Changes:
+### DB Changes:
 ALTER TABLE `order` ADD `deliveryType` enum('ADHOC','SCHEDULED','SELF') DEFAULT NULL;
 
 

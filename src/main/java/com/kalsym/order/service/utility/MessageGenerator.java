@@ -2,6 +2,7 @@ package com.kalsym.order.service.utility;
 
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderItem;
+import com.kalsym.order.service.model.OrderSubItem;
 import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.StoreWithDetails;
@@ -98,6 +99,15 @@ public class MessageGenerator {
             String item = orderItem;
             if (oi.getProductVariant()!=null && !"".equals(oi.getProductVariant()) && !"null".equals(oi.getProductVariant())) {
                 item = item.replace("{{item-name}}", oi.getProductName()+" | "+oi.getProductVariant());
+            } else if (oi.getOrderSubItem()!=null) {
+                String subItemList = "";
+                for (OrderSubItem subItem : oi.getOrderSubItem()) {
+                    if (subItemList.equals("")) 
+                        subItemList = subItem.getProductName();
+                    else
+                        subItemList = subItemList +" | "+subItem.getProductName();
+                }
+                item = item.replace("{{item-name}}", oi.getProductName()+" | "+subItemList);
             } else{
                 item = item.replace("{{item-name}}", oi.getProductName());
             }

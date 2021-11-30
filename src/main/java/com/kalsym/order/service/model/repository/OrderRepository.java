@@ -8,6 +8,8 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 //import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import java.util.List;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.repository.query.Param;
 
 /**
  *
@@ -23,4 +25,16 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
             + "WHERE completionStatus='PAYMENT_CONFIRMED' AND verticalCode='FNB' "
             + "AND DATE_ADD(A.created, INTERVAL 5 MINUTE) < NOW()", nativeQuery = true)
     List<Object[]> getFnBNotProcessOrder();
+    
+    @Modifying
+    @Query("UPDATE Order m SET m.beingProcess=1 WHERE m.id = :orderId") 
+    void UpdateOrderBeingProcess(
+            @Param("orderId") String orderId
+            );
+    
+    @Modifying
+    @Query("UPDATE Order m SET m.beingProcess=0 WHERE m.id = :orderId") 
+    void UpdateOrderFinishProcess(
+            @Param("orderId") String orderId
+            );
 }
