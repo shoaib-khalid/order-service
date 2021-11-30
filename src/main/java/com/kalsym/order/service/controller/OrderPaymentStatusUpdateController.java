@@ -124,10 +124,12 @@ public class OrderPaymentStatusUpdateController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         
-        if (order.getBeingProcess()) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order is being processed. orderId: " + orderId);
-            response.setErrorStatus(HttpStatus.CONFLICT, "Order is being processed");
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        if (order.getBeingProcess()!=null) {
+            if (order.getBeingProcess()) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order is being processed. orderId: " + orderId);
+                response.setErrorStatus(HttpStatus.CONFLICT, "Order is being processed");
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+            }
         }
   
         StoreWithDetails storeWithDetails = optStore.get();
