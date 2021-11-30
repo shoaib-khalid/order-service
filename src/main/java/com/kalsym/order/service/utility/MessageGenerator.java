@@ -1,5 +1,6 @@
 package com.kalsym.order.service.utility;
 
+import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.OrderSubItem;
@@ -100,13 +101,17 @@ public class MessageGenerator {
             if (oi.getProductVariant()!=null && !"".equals(oi.getProductVariant()) && !"null".equals(oi.getProductVariant())) {
                 item = item.replace("{{item-name}}", oi.getProductName()+" | "+oi.getProductVariant());
             } else if (oi.getOrderSubItem()!=null) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "", "Order subitem size:"+oi.getOrderSubItem().size());
                 String subItemList = "";
                 for (OrderSubItem subItem : oi.getOrderSubItem()) {
-                    if (subItemList.equals("")) 
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "", "subitem product:"+subItem.getProductName());                
+                    if (subItemList.equals("")) {
                         subItemList = subItem.getProductName();
-                    else
+                    } else {
                         subItemList = subItemList +" | "+subItem.getProductName();
+                    }
                 }
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "", "combo item product:"+oi.getProductName());                
                 item = item.replace("{{item-name}}", oi.getProductName()+" | "+subItemList);
             } else{
                 item = item.replace("{{item-name}}", oi.getProductName());
