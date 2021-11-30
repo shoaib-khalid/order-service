@@ -105,10 +105,12 @@ public class MessageGenerator {
                 String subItemList = "";
                 for (OrderSubItem subItem : oi.getOrderSubItem()) {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "", "subitem product:"+subItem.getProductName());                
-                    if (subItemList.equals("")) {
-                        subItemList = subItem.getProductName();
-                    } else {
-                        subItemList = subItemList +" | "+subItem.getProductName();
+                    if (subItem.getProductName()!=null) {
+                        if (subItemList.equals("")) {
+                            subItemList = subItem.getProductName();
+                        } else {
+                            subItemList = subItemList +" | "+subItem.getProductName();
+                        }
                     }
                 }
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "", "combo item product:"+oi.getProductName());                
