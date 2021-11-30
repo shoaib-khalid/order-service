@@ -786,7 +786,7 @@ public class OrderController {
                             orderSubItem.setItemCode(cartSubItem.getItemCode());
                             orderSubItem.setProductId(cartSubItem.getProductId());
                             orderSubItem.setProductName(cartSubItem.getProductName());
-                            orderItem.setProductName((subProductInventory.getProduct() != null) ? subProductInventory.getProduct().getName() : "");
+                            orderSubItem.setProductName((subProductInventory.getProduct() != null) ? subProductInventory.getProduct().getName() : "");
                             if (subVariantList!=null) {
                                 orderSubItem.setProductVariant(subVariantList);
                             }
