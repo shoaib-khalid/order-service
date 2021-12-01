@@ -270,7 +270,7 @@ public class CartItemController {
             isPackage = optProduct.get().getIsPackage();
         }
         if (isPackage) {
-            cartItem.update(bodyCartItem);
+            cartItem.update(bodyCartItem, 0);
             //clear sub item
             cartSubItemRepository.clearCartSubItem(cartItem.getId());
             //save sub cart item
@@ -282,7 +282,11 @@ public class CartItemController {
                 }
             }
         } else {
-            cartItem.update(bodyCartItem);
+            //find product invertory against itemcode to set sku
+            ProductInventory productInventory = productInventoryRepository.findByItemCode(bodyCartItem.getItemCode());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventory.toString());
+            double itemPrice = productInventory.getPrice();            
+            cartItem.update(bodyCartItem, (float)itemPrice);
         }
                 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem updated for cartItemId: " + id);

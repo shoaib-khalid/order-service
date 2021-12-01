@@ -58,9 +58,9 @@ public class CartItem {
     @JoinColumn(name = "itemCode", referencedColumnName = "itemCode", insertable = false, updatable = false, nullable = true)
     private ProductInventory productInventory;
   
-    public void update(CartItem cartItem) {
+    public void update(CartItem cartItem, float itemPrice) {
         quantity = cartItem.getQuantity();
-        price = (Float.parseFloat(String.valueOf(quantity))) * this.productPrice;
+        price = (Float.parseFloat(String.valueOf(quantity))) * itemPrice;
 //        id = cartItem.getId();
 //        cartId = cartItem.getCartId();
 //        productId = cartItem.getProductId();
