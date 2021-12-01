@@ -137,6 +137,9 @@ public class CartItemController {
             //find product invertory against itemcode to set sku
             ProductInventory productInventory = productInventoryRepository.findByItemCode(bodyCartItem.getItemCode());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventory.toString());
+            double itemPrice = productInventory.getPrice();
+            bodyCartItem.setProductPrice((float)itemPrice);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "itemPrice:"+itemPrice);
             //check if product is package
             Optional<Product> optProduct = productRepository.findById(bodyCartItem.getProductId());
             boolean isPackage=false;

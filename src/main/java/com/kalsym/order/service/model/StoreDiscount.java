@@ -39,7 +39,8 @@ public class StoreDiscount implements Serializable {
     private String discountName;
     private String discountType;
     private Boolean isActive;
-    
+    private double maxDiscountAmount;
+     
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date startDate;
     

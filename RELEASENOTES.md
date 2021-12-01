@@ -1,4 +1,12 @@
 ##################################################
+# order-service-3.2.22-SNAPSHOT | 1-December-2021
+##################################################
+### Code Changes:
+Set max discount amount for store discount calculation (retrieve from store_discount table) 
+Use product inventory price when add item to cart
+
+
+##################################################
 # order-service-3.2.21-SNAPSHOT | 30-November-2021
 ##################################################
 ### Code Changes:

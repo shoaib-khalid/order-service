@@ -66,14 +66,14 @@ public class StoreDiscountCalculation {
                     subDescription = GetDiscountDescription(discountTier.getCalculationType(), discountTier.getDiscountAmount(), deliveryCharge);
                     if (storeDiscount.getDiscountType().equals(DiscountType.TOTALSALES.toString())) {
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Calculate based on total sales");
-                        subTotalDiscount = CalculateDiscount(DiscountType.TOTALSALES.toString(), discountTier.getCalculationType(), discountTier.getDiscountAmount(), salesAmount, deliveryCharge);                        
+                        subTotalDiscount = CalculateDiscount(DiscountType.TOTALSALES.toString(), discountTier.getCalculationType(), discountTier.getDiscountAmount(), salesAmount, deliveryCharge, storeDiscount.getMaxDiscountAmount());                        
                         if (subTotalDiscountDescription==null)
                             subTotalDiscountDescription = subDescription;
                         else                            
                             subTotalDiscountDescription = subTotalDiscountDescription + "," + subDescription;
                     } else if (storeDiscount.getDiscountType().equals(DiscountType.SHIPPING.toString())) {
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Calculate based on shipping amount");
-                        shipmentDiscount = CalculateDiscount(DiscountType.SHIPPING.toString(), discountTier.getCalculationType(), discountTier.getDiscountAmount(), salesAmount, deliveryCharge);                        
+                        shipmentDiscount = CalculateDiscount(DiscountType.SHIPPING.toString(), discountTier.getCalculationType(), discountTier.getDiscountAmount(), salesAmount, deliveryCharge, storeDiscount.getMaxDiscountAmount());                        
                         if (deliveryDiscountDescription==null)
                             deliveryDiscountDescription = subDescription;
                         else
@@ -94,7 +94,7 @@ public class StoreDiscountCalculation {
         return discount;
     }
     
-    private static double CalculateDiscount(String discountType, String calculationType, double discountTierAmount,  double salesAmount, double deliveryCharge) {
+    private static double CalculateDiscount(String discountType, String calculationType, double discountTierAmount,  double salesAmount, double deliveryCharge, double maxDiscountAmt) {
         double subdiscount=0;
         if (calculationType.equals(DiscountCalculationType.FIX.toString())) {
             subdiscount = discountTierAmount;
@@ -112,6 +112,9 @@ public class StoreDiscountCalculation {
             subdiscount = deliveryCharge;
         }
         
+        if (maxDiscountAmt>0 && subdiscount>maxDiscountAmt) {
+            subdiscount = maxDiscountAmt;
+        }
         return subdiscount;
     }
     
