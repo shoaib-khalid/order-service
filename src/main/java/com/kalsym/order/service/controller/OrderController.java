@@ -307,7 +307,7 @@ public class OrderController {
             @RequestParam(required = false) OrderStatus completionStatus,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
-        String logprefix = request.getRequestURI() + " getOrders() ";
+        String logprefix = request.getRequestURI() + " searchOrderDetails() ";
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "before from : " + from + ", to : " + to);
 //        to.setDate(to.getDate() + 1);
