@@ -177,43 +177,50 @@ public class OrderPaymentStatusUpdateController {
         newStatus = newStatus.replace(" ", "_");
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "newStatus:"+newStatus+" CompletionCriteria = [verticalId:"+verticalId+" storePickup:"+storePickup+" storeDeliveryType: " + storeDeliveryType+" orderPaymentType:"+order.getPaymentType()+"]");        
-
-        List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, newStatus, storePickup, storeDeliveryType, order.getPaymentType());
-        OrderCompletionStatusConfig orderCompletionStatusConfig = null;
-        if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
-            Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + newStatus);
-            response.setSuccessStatus(HttpStatus.NOT_FOUND);
-            response.setMessage("Status config not found for status: " + newStatus);
-            response.setError("Status config not found for status: " + newStatus);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);            
-        } else {        
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
-            orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
-        }
         
-        //check current status if in correct sequence
-        OrderCompletionStatusConfig prevOrderCompletionStatusConfig = null;
-        OrderStatus previousStatus = order.getCompletionStatus();
-        List<OrderCompletionStatusConfig> prevOrderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, previousStatus.name(), storePickup, storeDeliveryType, order.getPaymentType());
-        if (prevOrderCompletionStatusConfigs == null || prevOrderCompletionStatusConfigs.isEmpty()) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prevOrderCompletionStatusConfigs not found!");
+        OrderCompletionStatusConfig orderCompletionStatusConfig = null;
+        
+        if (newStatus.contains("FAILED")) {
+            //something failed in order processing
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Something failed! Not read config from db");
         } else {
-            prevOrderCompletionStatusConfig = prevOrderCompletionStatusConfigs.get(0);
-            int prevSequence = prevOrderCompletionStatusConfig.getStatusSequence();
-            int newSequence = prevSequence + 1;
-            int orderSequence = orderCompletionStatusConfig.getStatusSequence();
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prev status: " + prevOrderCompletionStatusConfig.getStatus()+" sequence:"+prevOrderCompletionStatusConfig.getStatusSequence());
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "current status: " + orderCompletionStatusConfig.getStatus()+" sequence:"+orderCompletionStatusConfig.getStatusSequence());
-            if (orderSequence != newSequence) {
-                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "New Sequence not correct! CorrectSequence:"+newSequence+" OrderSequence:"+orderSequence);
+            //normal flow
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Normal flow. Read config from db");
+            List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, newStatus, storePickup, storeDeliveryType, order.getPaymentType());            
+            if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
                 Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + newStatus);
-                response.setSuccessStatus(HttpStatus.NOT_ACCEPTABLE);
-                response.setMessage("Wrong status sent: " + newStatus);
-                response.setError("Wrong status sent: " + newStatus);
-                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(response);
+                response.setSuccessStatus(HttpStatus.NOT_FOUND);
+                response.setMessage("Status config not found for status: " + newStatus);
+                response.setError("Status config not found for status: " + newStatus);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);            
+            } else {        
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
+                orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
+            }
+                
+            //check current status if in correct sequence
+            OrderCompletionStatusConfig prevOrderCompletionStatusConfig = null;
+            OrderStatus previousStatus = order.getCompletionStatus();
+            List<OrderCompletionStatusConfig> prevOrderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, previousStatus.name(), storePickup, storeDeliveryType, order.getPaymentType());
+            if (prevOrderCompletionStatusConfigs == null || prevOrderCompletionStatusConfigs.isEmpty()) {
+                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prevOrderCompletionStatusConfigs not found!");
+            } else {
+                prevOrderCompletionStatusConfig = prevOrderCompletionStatusConfigs.get(0);
+                int prevSequence = prevOrderCompletionStatusConfig.getStatusSequence();
+                int newSequence = prevSequence + 1;
+                int orderSequence = orderCompletionStatusConfig.getStatusSequence();
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prev status: " + prevOrderCompletionStatusConfig.getStatus()+" sequence:"+prevOrderCompletionStatusConfig.getStatusSequence());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "current status: " + orderCompletionStatusConfig.getStatus()+" sequence:"+orderCompletionStatusConfig.getStatusSequence());
+                if (orderSequence != newSequence) {
+                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "New Sequence not correct! CorrectSequence:"+newSequence+" OrderSequence:"+orderSequence);
+                    Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + newStatus);
+                    response.setSuccessStatus(HttpStatus.NOT_ACCEPTABLE);
+                    response.setMessage("Wrong status sent: " + newStatus);
+                    response.setError("Wrong status sent: " + newStatus);
+                    return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(response);
+                }
             }
         }
-        
         //update order to being process
         orderRepository.UpdateOrderBeingProcess(orderId);
         
@@ -275,8 +282,8 @@ public class OrderPaymentStatusUpdateController {
                     Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Exception occur ", ex);
                 }
 
-                break;
-
+                break;                        
+                
             case BEING_PREPARED:
                 insertOrderCompletionStatusUpdate(OrderStatus.BEING_PREPARED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
                 order.setCompletionStatus(OrderStatus.BEING_PREPARED);
@@ -286,6 +293,7 @@ public class OrderPaymentStatusUpdateController {
                 insertOrderCompletionStatusUpdate(OrderStatus.AWAITING_PICKUP, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
                 order.setCompletionStatus(OrderStatus.AWAITING_PICKUP);
                 break;
+                
             case BEING_DELIVERED:
                 insertOrderCompletionStatusUpdate(OrderStatus.BEING_DELIVERED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
                 order.setCompletionStatus(OrderStatus.BEING_DELIVERED);
@@ -305,6 +313,16 @@ public class OrderPaymentStatusUpdateController {
                 insertOrderCompletionStatusUpdate(OrderStatus.REJECTED_BY_STORE, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
                 order.setCompletionStatus(OrderStatus.REJECTED_BY_STORE);
                 break;
+                
+            case PAYMENT_FAILED:
+                insertOrderCompletionStatusUpdate(OrderStatus.PAYMENT_FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
+                order.setCompletionStatus(OrderStatus.PAYMENT_FAILED);
+                break;
+                
+            case FAILED:
+                insertOrderCompletionStatusUpdate(OrderStatus.FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
+                order.setCompletionStatus(OrderStatus.FAILED);
+                break;                        
 
         }
         

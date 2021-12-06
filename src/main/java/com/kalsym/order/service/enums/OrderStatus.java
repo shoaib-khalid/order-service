@@ -17,5 +17,6 @@ public enum OrderStatus {
     REJECTED_BY_STORE,
     REQUESTING_DELIVERY_FAILED,
     AWAITING_PICKUP,
-    FAILED;
+    FAILED,
+    PAYMENT_FAILED;
 }
