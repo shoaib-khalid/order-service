@@ -318,6 +318,7 @@ public class OrderPaymentStatusUpdateController {
                 insertOrderCompletionStatusUpdate(OrderStatus.PAYMENT_FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
                 order.setPaymentStatus(PaymentStatus.FAILED);
                 order.setCompletionStatus(OrderStatus.PAYMENT_FAILED);
+                insertOrderPaymentStatusUpdate(PaymentStatus.FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
                 break;
                 
             case FAILED:
