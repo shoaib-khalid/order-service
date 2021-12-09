@@ -94,7 +94,7 @@ public class StoreDiscountCalculation {
         return discount;
     }
     
-    private static double CalculateDiscount(String discountType, String calculationType, double discountTierAmount,  double salesAmount, double deliveryCharge, double maxDiscountAmt) {
+    private static double CalculateDiscount(String discountType, String calculationType, double discountTierAmount,  double salesAmount, double deliveryCharge, Double maxDiscountAmt) {
         double subdiscount=0;
         if (calculationType.equals(DiscountCalculationType.FIX.toString())) {
             subdiscount = discountTierAmount;
@@ -112,9 +112,12 @@ public class StoreDiscountCalculation {
             subdiscount = deliveryCharge;
         }
         
-        if (maxDiscountAmt>0 && subdiscount>maxDiscountAmt) {
-            subdiscount = maxDiscountAmt;
+        if (maxDiscountAmt!=null) {
+            if (maxDiscountAmt>0 && subdiscount>maxDiscountAmt) {
+                subdiscount = maxDiscountAmt;
+            }
         }
+        
         return subdiscount;
     }
     
