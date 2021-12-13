@@ -5,6 +5,10 @@
 Generate temp token and send to whatsapp service for Order Reminder
 Clear cart item only for COD in placeOrder
 
+###Config Changes:
+Add new config to ask user-service generate temp token: 
+user.service.temp.token.URL=https://api.symplified.it/user-service/v1/clients/generateTempToken
+
 
 ##################################################
 # order-service-3.2.24-SNAPSHOT | 9-December-2021

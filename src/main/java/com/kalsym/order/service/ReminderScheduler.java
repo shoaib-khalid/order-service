@@ -50,7 +50,7 @@ public class ReminderScheduler {
     @Value("${order.reminder.enabled:false}")
     private boolean isEnabled;
     
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 300000)
     public void checkNotProcessOrder() throws Exception {
         if (isEnabled) {
             String logprefix = "Reminder-Scheduler";        
