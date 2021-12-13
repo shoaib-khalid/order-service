@@ -6,6 +6,7 @@
 package com.kalsym.order.service.model.object;
 
 import com.kalsym.order.service.enums.DiscountCalculationType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.Date;
 
 
@@ -22,7 +23,10 @@ public class ItemDiscount {
     public String discountId;
     public DiscountCalculationType calculationType;
     
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     public Date discountStartTime;    
+    
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     public Date discountEndTime;
     
     public Date lastUpdateTime;
