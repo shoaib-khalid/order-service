@@ -34,6 +34,9 @@ public class CustomerService {
 
     @Value("${user.service.customer.address.URL:https://api.symplified.biz/user-service/v1/customer/$%customerId$%/address}")
     String userServiceCustomerAddressURL;
+    
+    @Value("${user.service.temp.token.URL:https://api.symplified.biz/user-service/v1/clients/generateTempToken}")
+    String userServiceTempTokenURL;
 
     public String addCustomer(OrderShipmentDetail orderShipmentDetail, String storeId) {
         String logprefix = "addCustomer";
@@ -426,6 +429,87 @@ public class CustomerService {
         }
 
         return id;
+    }
+    
+    
+    public String GenerateTempToken(String clientId, String username, String password) {
+        String logprefix = "GenerateTempToken";
+
+        class TempTokenBody {
+
+            String clientId;
+            String username;
+            String password;
+            
+            public TempTokenBody() {
+            }
+
+            public String getUsername() {
+                return username;
+            }
+
+            public void setUsername(String username) {
+                this.username = username;
+            }
+            
+            public String getPassword() {
+                return password;
+            }
+
+            public void setPassword(String password) {
+                this.password = password;
+            }
+            
+            public String getClientId() {
+                return clientId;
+            }
+
+            public void setClientId(String clientId) {
+                this.clientId = clientId;
+            }
+
+            @Override
+            public String toString() {
+                return "tempTokenBody{" + "clientId=" + clientId + ", username=" + username + ", password=" + password + "}";
+            }
+
+        }
+
+        TempTokenBody tempTokenBody = new TempTokenBody();
+
+        tempTokenBody.setUsername(username);
+        tempTokenBody.setPassword(password);
+        tempTokenBody.setClientId(clientId);
+        
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer accessToken");
+
+        HttpEntity<TempTokenBody> entity;
+        entity = new HttpEntity<>(tempTokenBody, headers);
+
+        String token = null;
+        try {
+            String url = userServiceTempTokenURL;
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " url: " + url);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " entity: " + entity);
+
+            ResponseEntity<HttpResponse> res = restTemplate.exchange(url, HttpMethod.POST, entity, HttpResponse.class);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " request temp token response: " + res);
+
+            if (res.getBody().getData() != null) {
+                JSONObject sessionDetails = new JSONObject((LinkedHashMap) res.getBody().getData());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " data: " + sessionDetails);
+                token = sessionDetails.getJSONObject("session").getString("accessToken");
+            }
+
+        } catch (RestClientException e) {
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " could not request temp token", e);
+
+        }
+
+        return token;
     }
 
 }

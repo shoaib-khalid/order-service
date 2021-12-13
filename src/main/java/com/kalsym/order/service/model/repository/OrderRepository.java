@@ -22,7 +22,9 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
     @Query("SELECT c.completionStatus, COUNT(c.id) FROM Order AS c GROUP BY c.completionStatus")
     List<Object[]> getCountSummary();
     
-    @Query(value = "SELECT A.id, A.invoiceId, B.phoneNumber, B.name  FROM `order` A INNER JOIN `store` B ON A.storeId=B.id  "
+    @Query(value = "SELECT A.id, A.invoiceId, B.phoneNumber, B.name, B.clientId,  C.username, C.password  "
+            + "FROM `order` A INNER JOIN `store` B ON A.storeId=B.id  "
+            + "INNER JOIN `client` C ON B.clientId=C.id "
             + "WHERE completionStatus='PAYMENT_CONFIRMED' AND verticalCode='FNB' "
             + "AND DATE_ADD(A.created, INTERVAL 5 MINUTE) < NOW()", nativeQuery = true)
     List<Object[]> getFnBNotProcessOrder();

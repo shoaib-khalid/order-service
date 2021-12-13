@@ -44,7 +44,7 @@ public class WhatsappService {
     @Value("${whatsapp.service.order.reminder.refid:60133429331}")
     private String orderReminderRefId;
     
-    public boolean sendOrderReminder(String[] recipients, String storeName, String invoiceNo) throws Exception {
+    public boolean sendOrderReminder(String[] recipients, String storeName, String invoiceNo, String orderId, String merchantToken) throws Exception {
         String logprefix = "sendWhatsappMessage";
         RestTemplate restTemplate = new RestTemplate();        
         HttpHeaders headers = new HttpHeaders();
@@ -53,6 +53,8 @@ public class WhatsappService {
         request.setRecipientIds(recipients);
         request.setRefId(recipients[0]);
         request.setReferenceId(orderReminderRefId);
+        request.setOrderId(orderId);
+        request.setMerchantToken(merchantToken);
         Template template = new Template();
         template.setName(orderReminderTemplateName);
         String[] message = {storeName, invoiceNo};

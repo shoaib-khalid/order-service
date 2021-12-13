@@ -31,4 +31,6 @@ public class WhatsappMessage {
     private String refId;
     private String referenceId;
     private Boolean guest;
+    private String orderId;
+    private String merchantToken;
 }

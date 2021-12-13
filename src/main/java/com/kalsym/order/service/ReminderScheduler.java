@@ -21,6 +21,7 @@ import com.kalsym.order.service.model.repository.OrderRepository;
 import com.kalsym.order.service.utility.Logger;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.service.WhatsappService;
+import com.kalsym.order.service.service.CustomerService;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,10 +44,13 @@ public class ReminderScheduler {
     @Autowired
     WhatsappService whatsappService;
     
+    @Autowired
+    CustomerService customerService;
+    
     @Value("${order.reminder.enabled:false}")
     private boolean isEnabled;
     
-    @Scheduled(fixedRate = 300000)
+    @Scheduled(fixedRate = 60000)
     public void checkNotProcessOrder() throws Exception {
         if (isEnabled) {
             String logprefix = "Reminder-Scheduler";        
@@ -58,9 +62,18 @@ public class ReminderScheduler {
                 String invoiceId = (String)order[1];
                 String phoneNumber = (String)order[2];
                 String storeName = (String)order[3];
+                String clientId = (String)order[4];
+                String username = (String)order[5];
+                String password = (String)order[6];
                 String[] recipients = {phoneNumber};
-                boolean res = whatsappService.sendOrderReminder(recipients, storeName, invoiceId);
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderId:"+orderId+" InvoiceNo:"+invoiceId+" StoreName:"+storeName+" Reminder result:"+res);
+                //create merchant temp token
+                String merchantToken = customerService.GenerateTempToken(clientId, username, password);
+                if (merchantToken!=null) {
+                    boolean res = whatsappService.sendOrderReminder(recipients, storeName, invoiceId, orderId, merchantToken);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderId:"+orderId+" InvoiceNo:"+invoiceId+" StoreName:"+storeName+" Reminder result:"+res);
+                } else {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderId:"+orderId+" InvoiceNo:"+invoiceId+" StoreName:"+storeName+" Fail to get temp token");
+                }
             }
         }
     }

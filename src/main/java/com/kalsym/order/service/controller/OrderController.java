@@ -907,8 +907,11 @@ public class OrderController {
 
                 }
                     
-                //clear cart item
-                cartItemRepository.clearCartItem(cart.getId());
+                //clear cart item for COD. for online payment only clear after payment confirmed
+                if (order.getPaymentType().equals(StorePaymentType.COD)) {
+                    cartItemRepository.clearCartItem(cart.getId());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cart item cleared for cartId:"+cart.getId());
+                }
 
                 if (saveCustomerInformation != null && saveCustomerInformation == true) {
                     if (order.getCustomerId() == null || "undefined".equalsIgnoreCase(order.getCustomerId())) {

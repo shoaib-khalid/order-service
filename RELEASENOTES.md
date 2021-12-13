@@ -1,4 +1,12 @@
 ##################################################
+# order-service-3.2.25-SNAPSHOT | 13-December-2021
+##################################################
+### Code Changes:
+Generate temp token and send to whatsapp service for Order Reminder
+Clear cart item only for COD in placeOrder
+
+
+##################################################
 # order-service-3.2.24-SNAPSHOT | 9-December-2021
 ##################################################
 ### Code Changes:
