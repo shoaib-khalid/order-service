@@ -46,6 +46,7 @@ import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.object.Discount;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.object.OrderDetails;
+import com.kalsym.order.service.model.object.ItemDiscount;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.OrderSubItemRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
@@ -727,28 +728,52 @@ public class OrderController {
                                 variantList = variantList + "," + variant;
                         }
                     }
-
-                    if (cartItems.get(i).getProductPrice() != Float.parseFloat(String.valueOf(productInventory.getPrice()))) {
-                        // should return warning if prices are not same
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
-                        response.setSuccessStatus(HttpStatus.CONFLICT);
-                        response.setMessage("Conflict in prices, please update prices in cartItems, oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
-                        response.setData(cartItems.get(i));
-                        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+                    
+                    double itemPrice=0.00;
+                    
+                    //check for discounted item
+                    if (cartItems.get(i).getDiscountId()!=null) {
+                        //check if discount still valid
+                        ItemDiscount discountDetails = productInventory.getItemDiscount();
+                        if (discountDetails.discountId.equals(cartItems.get(i).getDiscountId()) &&
+                                discountDetails.discountedPrice==cartItems.get(i).getPrice()) {
+                            //dicount still valid
+                            subTotal += discountDetails.discountedPrice;
+                            itemPrice = discountDetails.discountedPrice;
+                        } else {
+                            //discount no more valid
+                            // should return warning if prices are not same
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Discount not valid");
+                            response.setSuccessStatus(HttpStatus.CONFLICT);
+                            response.setMessage("Discount not valid");
+                            response.setData(cartItems.get(i));
+                            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+                        }
+                    } else {                    
+                        if (cartItems.get(i).getProductPrice() != Float.parseFloat(String.valueOf(productInventory.getPrice()))) {
+                            // should return warning if prices are not same
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
+                            response.setSuccessStatus(HttpStatus.CONFLICT);
+                            response.setMessage("Conflict in prices, please update prices in cartItems, oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
+                            response.setData(cartItems.get(i));
+                            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+                        }
+                        subTotal += productInventory.getPrice();
+                        itemPrice = productInventory.getPrice();
                     }
-                    subTotal += productInventory.getPrice();
+                    
 
                     //creating orderItem
                     OrderItem orderItem = new OrderItem();
                     orderItem.setItemCode(cartItems.get(i).getItemCode());
                     orderItem.setProductId(cartItems.get(i).getProductId());
                     orderItem.setProductName((productInventory.getProduct() != null) ? productInventory.getProduct().getName() : "");
-                    orderItem.setProductPrice(Float.parseFloat(String.valueOf(productInventory.getPrice())));
+                    orderItem.setProductPrice((float)itemPrice);
                     orderItem.setQuantity(cartItems.get(i).getQuantity());
                     orderItem.setSKU(productInventory.getSKU());
                     orderItem.setSpecialInstruction(cartItems.get(i).getSpecialInstruction());
                     orderItem.setWeight(cartItems.get(i).getWeight());
-                    orderItem.setPrice(cartItems.get(i).getQuantity() * Float.parseFloat(String.valueOf(productInventory.getPrice())));
+                    orderItem.setPrice(cartItems.get(i).getQuantity() * (float)itemPrice);
                     if (variantList!=null) {
                         orderItem.setProductVariant(variantList);
                     }
