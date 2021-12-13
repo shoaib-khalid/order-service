@@ -10,6 +10,11 @@
 Add new config to ask user-service generate temp token: 
 user.service.temp.token.URL=https://api.symplified.it/user-service/v1/clients/generateTempToken
 
+###DB Changes:
+1. ALTER TABLE `cart_item` ADD discountId varchar(50);
+2. ALTER TABLE `cart_item` ADD normalPrice decimal(10,2);
+3. ALTER TABLE `cart_item` ADD discountLabel varchar(100);
+
 
 ##################################################
 # order-service-3.2.24-SNAPSHOT | 9-December-2021

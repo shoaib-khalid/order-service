@@ -46,6 +46,7 @@ public class CartItem {
     private String specialInstruction;
     private String discountId;
     private Float normalPrice;
+    private String discountLabel;
     
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "cartItemId", insertable = false, updatable = false, nullable = true)

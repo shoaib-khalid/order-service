@@ -140,8 +140,10 @@ public class CartItemController {
         CartItem cartItem;
         try {
             //find product invertory against itemcode to set sku
+            //query product-service
             ProductInventory productInventory = productService.getProductInventoryById(savedCart.get().getStoreId(), bodyCartItem.getProductId(), bodyCartItem.getItemCode());
-                    
+            
+            //query db
             //ProductInventory productInventory = productInventoryRepository.findByItemCode(bodyCartItem.getItemCode());
             
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventory.toString());
@@ -153,6 +155,7 @@ public class CartItemController {
                 itemPrice = discountDetails.discountedPrice;
                 bodyCartItem.setDiscountId(discountDetails.discountId);
                 bodyCartItem.setNormalPrice((float)discountDetails.normalPrice);
+                bodyCartItem.setDiscountLabel(discountDetails.discountLabel);
             } else {
                 //no dicount for this item code
                 itemPrice = productInventory.getPrice();
