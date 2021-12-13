@@ -2,9 +2,10 @@
 # order-service-3.2.25-SNAPSHOT | 13-December-2021
 ##################################################
 ### Code Changes:
-Generate temp token and send to whatsapp service for Order Reminder
-Clear cart item only for COD in placeOrder
-
+1. Generate temp token and send to whatsapp service for Order Reminder
+2. Clear cart item only for COD in placeOrder, removed for ONLINEPAYMENT
+3. Query product-service during addToCart to get discount details
+	
 ###Config Changes:
 Add new config to ask user-service generate temp token: 
 user.service.temp.token.URL=https://api.symplified.it/user-service/v1/clients/generateTempToken

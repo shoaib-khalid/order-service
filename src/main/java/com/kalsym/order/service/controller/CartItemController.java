@@ -11,6 +11,7 @@ import com.kalsym.order.service.model.repository.CartSubItemRepository;
 import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.model.repository.ProductRepository;
 import com.kalsym.order.service.utility.HttpResponse;
+import com.kalsym.order.service.model.object.ItemDiscount;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.kalsym.order.service.model.repository.ProductInventoryRepository;
+import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.utility.Logger;
 
 /**
@@ -55,6 +57,9 @@ public class CartItemController {
     
     @Autowired
     ProductRepository productRepository;
+    
+    @Autowired
+    ProductService productService;
     
     @GetMapping(path = {""}, name = "cart-items-get")
     @PreAuthorize("hasAnyAuthority('cart-items-get', 'all')")
@@ -135,9 +140,23 @@ public class CartItemController {
         CartItem cartItem;
         try {
             //find product invertory against itemcode to set sku
-            ProductInventory productInventory = productInventoryRepository.findByItemCode(bodyCartItem.getItemCode());
+            ProductInventory productInventory = productService.getProductInventoryById(savedCart.get().getStoreId(), bodyCartItem.getProductId(), bodyCartItem.getItemCode());
+                    
+            //ProductInventory productInventory = productInventoryRepository.findByItemCode(bodyCartItem.getItemCode());
+            
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventory.toString());
-            double itemPrice = productInventory.getPrice();
+            //check for discount
+            double itemPrice = 0.00;
+            if (productInventory.getItemDiscount()!=null) {
+                //got discount
+                ItemDiscount discountDetails = productInventory.getItemDiscount();
+                itemPrice = discountDetails.discountedPrice;
+                bodyCartItem.setDiscountId(discountDetails.discountId);
+                bodyCartItem.setNormalPrice((float)discountDetails.normalPrice);
+            } else {
+                //no dicount for this item code
+                itemPrice = productInventory.getPrice();
+            }
             bodyCartItem.setProductPrice((float)itemPrice);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "itemPrice:"+itemPrice);
             //check if product is package

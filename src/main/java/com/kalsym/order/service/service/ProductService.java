@@ -46,7 +46,7 @@ public class ProductService {
 
     @Value("${get.store.commission.URL:https://api.symplified.biz/product-service/v1/stores/%STOREID%//commission}")
     private String getStoreCommissionURL;
-
+    
     /**
      *
      * @param storeId

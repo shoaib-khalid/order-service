@@ -1,5 +1,6 @@
 package com.kalsym.order.service.model;
 
+import com.kalsym.order.service.model.object.ItemDiscount;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.io.Serializable;
 import java.util.List;
@@ -11,6 +12,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -36,7 +38,10 @@ public class ProductInventory implements Serializable {
     private Double compareAtprice;
 
     private String SKU;
-
+    
+    @Transient
+    private ItemDiscount itemDiscount;
+    
     //private String name;
     private Integer quantity;
     @OneToOne(fetch = FetchType.EAGER)
