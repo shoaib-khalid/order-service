@@ -6,12 +6,8 @@
 package com.kalsym.order.service.model.object;
 
 import com.kalsym.order.service.enums.DiscountCalculationType;
-import java.time.LocalDateTime;
 import java.util.Date;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+
 
 /**
  *
@@ -26,13 +22,8 @@ public class ItemDiscount {
     public String discountId;
     public DiscountCalculationType calculationType;
     
-    @JsonDeserialize(using = LocalDateDeserializer.class)
-    @JsonSerialize(using = LocalDateSerializer.class)
-    public LocalDateTime discountStartTime;
-    
-    @JsonDeserialize(using = LocalDateDeserializer.class)
-    @JsonSerialize(using = LocalDateSerializer.class)
-    public LocalDateTime discountEndTime;
+    public Date discountStartTime;    
+    public Date discountEndTime;
     
     public Date lastUpdateTime;
 }
