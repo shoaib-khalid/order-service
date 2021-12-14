@@ -933,7 +933,8 @@ public class OrderController {
                 }
                     
                 //clear cart item for COD. for online payment only clear after payment confirmed
-                if (order.getPaymentType().equals(StorePaymentType.COD)) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Payment Type:"+order.getPaymentType());
+                if (order.getPaymentType().equals(StorePaymentType.COD.name())) {
                     cartItemRepository.clearCartItem(cart.getId());
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cart item cleared for cartId:"+cart.getId());
                 }

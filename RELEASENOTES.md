@@ -1,4 +1,11 @@
 ##################################################
+# order-service-3.2.26-SNAPSHOT | 14-December-2021
+##################################################
+### Code Changes:
+Bug fix for placeOrder with payment type COD : clear item cart
+
+
+##################################################
 # order-service-3.2.25-SNAPSHOT | 13-December-2021
 ##################################################
 ### Code Changes:
