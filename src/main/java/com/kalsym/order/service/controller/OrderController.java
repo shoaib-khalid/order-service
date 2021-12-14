@@ -871,6 +871,8 @@ public class OrderController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order payment details inserted successfully: " + order.getOrderPaymentDetail().toString());
                 // save shipment detials
                 Boolean storePickup = cod.getOrderShipmentDetails().getStorePickup();
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store Pickup:"+storePickup);
+                
                 if (storePickup==null) {
                     storePickup=false;
                     cod.getOrderShipmentDetails().setStorePickup(false);
@@ -886,8 +888,9 @@ public class OrderController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order shipment details inserted successfully: " + order.getOrderShipmentDetail().toString());
                 
                 
-                // saving order object to get order Id
+                // saving order delivery type
                 order = orderRepository.save(order);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order delivery type:"+order.getDeliveryType());
                 
                 OrderItem orderItem = null;
                 Product product;
