@@ -8,5 +8,6 @@ package com.kalsym.order.service.enums;
 public enum DeliveryType {
     SCHEDULED,
     ADHOC,
-    SELF
+    SELF,
+    PICKUP
 }

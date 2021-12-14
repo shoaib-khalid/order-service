@@ -3,7 +3,18 @@
 ##################################################
 ### Code Changes:
 Bug fix for placeOrder with payment type COD : clear item cart
+Add new delivery type in order table : PICKUP
 
+###DB Changes
+ALTER TABLE
+    `order`
+MODIFY COLUMN
+    `deliveryType` enum(
+        'ADHOC',
+        'SCHEDULED',
+        'SELF',
+		'PICKUP'
+    );
 
 ##################################################
 # order-service-3.2.25-SNAPSHOT | 13-December-2021

@@ -406,8 +406,8 @@ public class CustomerService {
         try {
             String url = userServiceCustomerUpdateURL.replace("$%storeId$%", storeId);
             url = url.replace("$%customerId$%", customerId);
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " url: " + url);
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " entity: " + entity);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " url: " + url);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " entity: " + entity);
 
             ResponseEntity<HttpResponse> res = restTemplate.exchange(url, HttpMethod.PUT, entity, HttpResponse.class);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " updated customer " + res);

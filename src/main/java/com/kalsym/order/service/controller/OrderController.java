@@ -5,6 +5,7 @@ import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.enums.ProductStatus;
 import com.kalsym.order.service.enums.StorePaymentType;
+import com.kalsym.order.service.enums.DeliveryType;
 import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.OrderPaymentDetail;
 import com.kalsym.order.service.model.object.CustomPageable;
@@ -835,8 +836,7 @@ public class OrderController {
                 order.setPaymentStatus(PaymentStatus.PENDING);
                 order.setCustomerId(cod.getCustomerId());
                 order.setDeliveryCharges(cod.getOrderPaymentDetails().getDeliveryQuotationAmount());
-                order.setPaymentType(storeWithDetials.getPaymentType());
-                order.setDeliveryType(optStoreDeliveryDetail.get().getType());
+                order.setPaymentType(storeWithDetials.getPaymentType());                
                 order.setCustomerNotes(cod.getCustomerNotes());
 
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceChargesPercentage: " + storeWithDetials.getServiceChargesPercentage());
@@ -858,7 +858,8 @@ public class OrderController {
                 order.setTotal(orderTotalObject.getTotal());
                 order.setKlCommission(orderTotalObject.getKlCommission());
                 order.setStoreShare(orderTotalObject.getStoreShare());
-                order.setDeliveryCharges(order.getDeliveryCharges());                                
+                order.setDeliveryCharges(order.getDeliveryCharges());
+                
                 // saving order object to get order Id
                 order = orderRepository.save(order);
 
@@ -873,10 +874,21 @@ public class OrderController {
                 if (storePickup==null) {
                     storePickup=false;
                     cod.getOrderShipmentDetails().setStorePickup(false);
+                    order.setDeliveryType(optStoreDeliveryDetail.get().getType());
+                } else {
+                     if (storePickup)
+                        order.setDeliveryType(DeliveryType.PICKUP.name());
+                     else
+                        order.setDeliveryType(optStoreDeliveryDetail.get().getType());
                 }
                 cod.getOrderShipmentDetails().setOrderId(order.getId());
                 order.setOrderShipmentDetail(orderShipmentDetailRepository.save(cod.getOrderShipmentDetails()));
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order shipment details inserted successfully: " + order.getOrderShipmentDetail().toString());
+                
+                
+                // saving order object to get order Id
+                order = orderRepository.save(order);
+                
                 OrderItem orderItem = null;
                 Product product;
                 ProductInventory productInventory;
