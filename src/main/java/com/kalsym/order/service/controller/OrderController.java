@@ -778,6 +778,11 @@ public class OrderController {
                     if (variantList!=null) {
                         orderItem.setProductVariant(variantList);
                     }
+                    if (cartItems.get(i).getDiscountId()!=null) {
+                        orderItem.setDiscountId(cartItems.get(i).getDiscountId());
+                        orderItem.setNormalPrice(cartItems.get(i).getNormalPrice());
+                        orderItem.setDiscountLabel(cartItems.get(i).getDiscountLabel());
+                    }
                     orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
 
 

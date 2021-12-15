@@ -43,6 +43,9 @@ public class OrderItem {
     private String productName;
     private String specialInstruction;
     private String productVariant;
+    private String discountId;
+    private Float normalPrice;
+    private String discountLabel;
     
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "orderItemId", insertable = false, updatable = false, nullable = true)

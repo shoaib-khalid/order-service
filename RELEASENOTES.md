@@ -3,6 +3,12 @@
 ##################################################
 ### Code Changes:
 Bug fix for completion-status-updates for failed request for delivery
+Add discount details in order item details
+
+###DB Changes:
+1. ALTER TABLE `order_item` ADD discountId varchar(50);
+2. ALTER TABLE `order_item` ADD normalPrice decimal(10,2);
+3. ALTER TABLE `order_item` ADD discountLabel varchar(100);
 
 
 ##################################################
