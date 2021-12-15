@@ -33,6 +33,10 @@ user.service.temp.token.URL=https://api.symplified.it/user-service/v1/clients/ge
 2. ALTER TABLE `cart_item` ADD normalPrice decimal(10,2);
 3. ALTER TABLE `cart_item` ADD discountLabel varchar(100);
 
+###Depedencies:
+product-service-3.3.2 
+user-service-3.1.1-SNAPSHOT
+
 
 ##################################################
 # order-service-3.2.24-SNAPSHOT | 9-December-2021
