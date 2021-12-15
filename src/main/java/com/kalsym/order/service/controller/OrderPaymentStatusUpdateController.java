@@ -351,12 +351,14 @@ public class OrderPaymentStatusUpdateController {
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added tracking urls to orderId:" + orderId);
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
                     } else {
-                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Exception occur while confirming order Delivery ");
+                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while confirming order Delivery. deliveryOrder is null ");
                         insertOrderCompletionStatusUpdate(OrderStatus.REQUESTING_DELIVERY_FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
                         response.setSuccessStatus(HttpStatus.INTERNAL_SERVER_ERROR);
                         response.setMessage("Requesting delivery failed");
                         response.setError("Requesting delivery failed");
-                        return ResponseEntity.status(response.getStatus()).body(response);
+                        //update order to finish process
+                        orderRepository.UpdateOrderFinishProcess(orderId);
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);                        
                     }
                 } catch (Exception ex) {
                     //there might be some issue so need to updated email for issue and refund
@@ -365,7 +367,9 @@ public class OrderPaymentStatusUpdateController {
                     response.setSuccessStatus(HttpStatus.INTERNAL_SERVER_ERROR);
                     response.setMessage("Requesting delivery failed");
                     response.setError("Requesting delivery failed");
-                    return ResponseEntity.status(response.getStatus()).body(response);
+                    //update order to finish process
+                    orderRepository.UpdateOrderFinishProcess(orderId);
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);                                            
                 }
             }
 

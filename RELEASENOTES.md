@@ -1,4 +1,11 @@
 ##################################################
+# order-service-3.2.27-SNAPSHOT | 15-December-2021
+##################################################
+### Code Changes:
+Bug fix for completion-status-updates for failed request for delivery
+
+
+##################################################
 # order-service-3.2.26-SNAPSHOT | 14-December-2021
 ##################################################
 ### Code Changes:
