@@ -175,8 +175,8 @@ public class OrderPaymentStatusUpdateController {
         Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
         String storeDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
         newStatus = newStatus.replace(" ", "_");
-
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "newStatus:"+newStatus+" CompletionCriteria = [verticalId:"+verticalId+" storePickup:"+storePickup+" storeDeliveryType: " + storeDeliveryType+" orderPaymentType:"+order.getPaymentType()+"]");        
+        OrderStatus previousStatus = order.getCompletionStatus();
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prevStatus:"+previousStatus+" newStatus:"+newStatus+" CompletionCriteria = [verticalId:"+verticalId+" storePickup:"+storePickup+" storeDeliveryType: " + storeDeliveryType+" orderPaymentType:"+order.getPaymentType()+"]");        
         
         OrderCompletionStatusConfig orderCompletionStatusConfig = null;
         
@@ -200,7 +200,7 @@ public class OrderPaymentStatusUpdateController {
                 
             //check current status if in correct sequence
             OrderCompletionStatusConfig prevOrderCompletionStatusConfig = null;
-            OrderStatus previousStatus = order.getCompletionStatus();
+            
             List<OrderCompletionStatusConfig> prevOrderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, previousStatus.name(), storePickup, storeDeliveryType, order.getPaymentType());
             if (prevOrderCompletionStatusConfigs == null || prevOrderCompletionStatusConfigs.isEmpty()) {
                 Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prevOrderCompletionStatusConfigs not found!");
@@ -352,12 +352,14 @@ public class OrderPaymentStatusUpdateController {
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
                     } else {
                         Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while confirming order Delivery. deliveryOrder is null ");
-                        insertOrderCompletionStatusUpdate(OrderStatus.REQUESTING_DELIVERY_FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
+                        insertOrderCompletionStatusUpdate(OrderStatus.REQUESTING_DELIVERY_FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);                        
+                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Revert to previous status:"+previousStatus);
+                        order.setCompletionStatus(previousStatus);
+                        //update order to finish process
+                        orderRepository.UpdateOrderFinishProcess(orderId);
                         response.setSuccessStatus(HttpStatus.INTERNAL_SERVER_ERROR);
                         response.setMessage("Requesting delivery failed");
                         response.setError("Requesting delivery failed");
-                        //update order to finish process
-                        orderRepository.UpdateOrderFinishProcess(orderId);
                         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);                        
                     }
                 } catch (Exception ex) {
@@ -367,6 +369,8 @@ public class OrderPaymentStatusUpdateController {
                     response.setSuccessStatus(HttpStatus.INTERNAL_SERVER_ERROR);
                     response.setMessage("Requesting delivery failed");
                     response.setError("Requesting delivery failed");
+                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Revert to previous status:"+previousStatus);
+                    order.setCompletionStatus(previousStatus);                        
                     //update order to finish process
                     orderRepository.UpdateOrderFinishProcess(orderId);
                     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);                                            
