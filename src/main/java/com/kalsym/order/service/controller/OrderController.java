@@ -1362,7 +1362,7 @@ public class OrderController {
         }
         
         List<Object> dataSummaryList = new ArrayList<Object>();
-        List<Object[]> countSummaryList = orderRepository.getCountSummary();
+        List<Object[]> countSummaryList = orderRepository.getCountSummary(storeId);
         for (int i=0;i<countSummaryList.size();i++) {
             Object[] summary = countSummaryList.get(i);
             DataSummary dataSummary = new DataSummary();
