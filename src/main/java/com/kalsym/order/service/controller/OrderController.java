@@ -306,7 +306,7 @@ public class OrderController {
             @RequestParam(required = false) String phoneNumber,
             @RequestParam(required = false) String zipcode,
             @RequestParam(required = false) String city,
-            @RequestParam(required = false) OrderStatus completionStatus,
+            @RequestParam(required = false) OrderStatus[] completionStatus,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
         String logprefix = request.getRequestURI() + " searchOrderDetails() ";
@@ -387,7 +387,7 @@ public class OrderController {
 
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
 
-        Page<Order> orderWithPage = orderRepository.findAll(getSpecWithDatesBetween(from, to, completionStatus, orderExample), pageable);
+        Page<Order> orderWithPage = orderRepository.findAll(getSpecWithDatesBetweenMultipleStatus(from, to, completionStatus, orderExample), pageable);
         List<Order> orderList = orderWithPage.getContent();
         
         OrderDetails[] orderDetailsList = new OrderDetails[orderList.size()];
@@ -1313,6 +1313,7 @@ public class OrderController {
                 predicates.add(builder.greaterThanOrEqualTo(root.get("created"), from));
                 predicates.add(builder.lessThanOrEqualTo(root.get("created"), to));
             }
+           
             if (completionStatus==OrderStatus.PAYMENT_CONFIRMED) {
                 Predicate predicateForOnlinePayment = builder.equal(root.get("completionStatus"), completionStatus);
                 Predicate predicateForCompletionStatus = builder.equal(root.get("completionStatus"), OrderStatus.RECEIVED_AT_STORE);
@@ -1323,6 +1324,55 @@ public class OrderController {
             } else if (completionStatus!=null) {
                 predicates.add(builder.equal(root.get("completionStatus"), completionStatus));
             }
+            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+
+            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
+    
+    /**
+     * Accept two dates and example matcher
+     *
+     * @param from
+     * @param to
+     * @param example
+     * @return
+     */
+    public Specification<Order> getSpecWithDatesBetweenMultipleStatus(
+            Date from, Date to, OrderStatus[] completionStatusList, Example<Order> example) {
+
+        return (Specification<Order>) (root, query, builder) -> {
+            final List<Predicate> predicates = new ArrayList<>();
+
+            if (from != null && to != null) {
+                to.setDate(to.getDate() + 1);
+                predicates.add(builder.greaterThanOrEqualTo(root.get("created"), from));
+                predicates.add(builder.lessThanOrEqualTo(root.get("created"), to));
+            }
+            
+            if (completionStatusList!=null) {
+                int statusCount = completionStatusList.length;
+                List<Predicate> statusPredicatesList = new ArrayList<>();
+                for (int i=0;i<completionStatusList.length;i++) {
+                    Predicate predicateForCompletionStatus = builder.equal(root.get("completionStatus"), completionStatusList[i]);
+                    statusPredicatesList.add(predicateForCompletionStatus);
+                }
+
+                Predicate finalPredicate = builder.or(statusPredicatesList.toArray(new Predicate[statusCount]));
+                predicates.add(finalPredicate);
+            }
+            
+            /*
+            if (completionStatusList==OrderStatus.PAYMENT_CONFIRMED) {
+                Predicate predicateForOnlinePayment = builder.equal(root.get("completionStatus"), completionStatus);
+                Predicate predicateForCompletionStatus = builder.equal(root.get("completionStatus"), OrderStatus.RECEIVED_AT_STORE);
+                Predicate predicateForPaymentType = builder.equal(root.get("paymentType"), "COD");
+                Predicate predicateForCOD = builder.and(predicateForCompletionStatus, predicateForPaymentType);
+                Predicate finalPredicate = builder.or(predicateForOnlinePayment, predicateForCOD);
+                predicates.add(finalPredicate);
+            } else if (completionStatusList!=null) {
+                predicates.add(builder.equal(root.get("completionStatus"), completionStatus));
+            }*/
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));

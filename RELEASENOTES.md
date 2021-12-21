@@ -1,4 +1,11 @@
 ##################################################
+# order-service-3.2.29-SNAPSHOT | 21-December-2021
+##################################################
+### Code Changes:
+Allow search by multiple completion_status in searchOrderDetails (GET /orders/search)
+
+
+##################################################
 # order-service-3.2.28-SNAPSHOT | 15-December-2021
 ##################################################
 ### Code Changes:
