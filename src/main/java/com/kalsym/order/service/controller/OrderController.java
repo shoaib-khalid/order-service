@@ -1025,7 +1025,7 @@ public class OrderController {
                                 if (t.isPresent()) {
                                     regionCountry = t.get();
                                 }
-                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, order.getOrderShipmentDetail(), regionCountry);
+                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, order.getOrderShipmentDetail(), null, regionCountry);
                                 Email email = new Email();
                                 ArrayList<String> tos = new ArrayList<>();
                                 tos.add(order.getOrderShipmentDetail().getEmail());

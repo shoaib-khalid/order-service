@@ -45,5 +45,6 @@ public class PaymentOrder {
     private String clientTransactionId;   
     private String paymentChannel;
     private String status;
-   
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdDate;
 }

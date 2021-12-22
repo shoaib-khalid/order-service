@@ -38,7 +38,7 @@ Need to insert into order_completion_status_config with values :
 3. paymentType=ONLINEPAYMENT or COD, 
 4. emailToFinance=1 for ONLINEPAYMENT, 0 for COD
 5. financeEmailContent=email content sent to finance for refund process
-others field no need to populate
+others field no need to actual value, just put default value
 
 ##New config:
 finance.email.address=taufik@kalsym.com

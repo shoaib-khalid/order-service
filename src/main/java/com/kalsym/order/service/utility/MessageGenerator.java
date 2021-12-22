@@ -7,6 +7,7 @@ import com.kalsym.order.service.model.OrderSubItem;
 import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.StoreWithDetails;
+import com.kalsym.order.service.model.PaymentOrder;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.ZoneId;
@@ -21,6 +22,7 @@ public class MessageGenerator {
             StoreWithDetails storeWithDetails,
             List<OrderItem> orderItems,
             OrderShipmentDetail orderShipmentDetail,
+            PaymentOrder paymentDetails,
             RegionCountry regionCountry) {
         if (emailContent != null) {
             if ( storeWithDetails.getStoreAsset()!=null) {
@@ -79,6 +81,15 @@ public class MessageGenerator {
             if (orderShipmentDetail != null) {
                 if (orderShipmentDetail.getCustomerTrackingUrl() != null) {
                     emailContent = emailContent.replace("{{customer-tracking-url}}", orderShipmentDetail.getCustomerTrackingUrl());
+                }
+            }
+            
+            if (paymentDetails != null) {
+                if (paymentDetails.getPaymentChannel()!= null) {
+                    emailContent = emailContent.replace("{{payment-channel}}", paymentDetails.getPaymentChannel());
+                }
+                if (paymentDetails.getCreatedDate()!= null) {                    
+                    emailContent = emailContent.replace("{{payment-date}}", paymentDetails.getCreatedDate().toString());
                 }
             }
 

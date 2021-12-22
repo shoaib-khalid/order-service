@@ -375,6 +375,11 @@ public class OrderPaymentStatusUpdateController {
         
         if (orderCompletionStatusConfig!=null) {
             OrderShipmentDetail orderShipmentDetail = orderShipmentDetailRepository.findByOrderId(orderId);
+            Optional<PaymentOrder> optPaymentDetails = paymentOrderRepository.findByClientTransactionId(orderId);
+            PaymentOrder paymentDetails = null;
+            if (optPaymentDetails.isPresent()) {
+                paymentDetails = optPaymentDetails.get();
+            }
             //request delivery
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "request delivery: " + orderCompletionStatusConfig.getRequestDelivery());
             if (orderCompletionStatusConfig.getRequestDelivery()) {
@@ -435,7 +440,7 @@ public class OrderPaymentStatusUpdateController {
                         if (t.isPresent()) {
                             regionCountry = t.get();
                         }
-                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, regionCountry);
+                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry);
                         email.setRawBody(emailContent);
                         emailService.sendEmail(email);
                     } catch (Exception ex) {
@@ -462,7 +467,7 @@ public class OrderPaymentStatusUpdateController {
                         }
                         String[] emailAddress = {financeEmailAddress};
                         email.setTo(emailAddress);
-                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, regionCountry);
+                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry);
                         email.setRawBody(emailContent);
                         emailService.sendEmail(email);
                     } catch (Exception ex) {
