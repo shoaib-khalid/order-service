@@ -22,13 +22,15 @@ ALTER TABLE cart_item ADD discountCalculationValue DECIMAL(10,2);
 
 ALTER TABLE order_item ADD discountCalculationType VARCHAR(20) ;
 ALTER TABLE order_item ADD discountCalculationValue DECIMAL(10,2);
+ALTER TABLE order_item ADD originalQuantity INT;
+ALTER TABLE order_item ADD status VARCHAR(20);
 
 ALTER TABLE `order` ADD discountId VARCHAR(50) ;
 ALTER TABLE `order` ADD discountCalculationType VARCHAR(20) ;
 ALTER TABLE `order` ADD discountCalculationValue DECIMAL(10,2);
 
 ALTER TABLE `order_completion_status_config` ADD emailToFinance TINYINT(1) DEFAULT 0;
-ALTER TABLE `order_completion_status_config` ADD financeEmailContent VARCHAR(1000);
+ALTER TABLE `order_completion_status_config` ADD financeEmailContent TEXT;
 
 Need to insert into order_completion_status_config with values :
 1. verticalId=store vertical, 
@@ -37,6 +39,11 @@ Need to insert into order_completion_status_config with values :
 4. emailToFinance=1 for ONLINEPAYMENT, 0 for COD
 5. financeEmailContent=email content sent to finance for refund process
 others field no need to populate
+
+##New config:
+finance.email.address=taufik@kalsym.com
+//email to sent for refund notification
+
 
 ##################################################
 # order-service-3.2.29-SNAPSHOT | 21-December-2021

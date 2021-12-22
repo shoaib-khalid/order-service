@@ -106,6 +106,9 @@ public class OrderPaymentStatusUpdateController {
     
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
+    
+    @Value("${finance.email.address:finance@symplified.com}")
+    private String financeEmailAddress;
 
     @PutMapping(path = {""}, name = "order-completion-status-updates-put-by-order-id")
     @PreAuthorize("hasAnyAuthority('order-completion-status-updates-put-by-order-id', 'all')")
@@ -457,6 +460,8 @@ public class OrderPaymentStatusUpdateController {
                         if (t.isPresent()) {
                             regionCountry = t.get();
                         }
+                        String[] emailAddress = {financeEmailAddress};
+                        email.setTo(emailAddress);
                         emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, regionCountry);
                         email.setRawBody(emailContent);
                         emailService.sendEmail(email);
