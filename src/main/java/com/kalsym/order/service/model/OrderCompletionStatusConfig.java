@@ -40,6 +40,7 @@ public class OrderCompletionStatusConfig implements Serializable {
     public int statusSequence;
     public Boolean emailToCustomer;
     public Boolean emailToStore;
+    public Boolean emailToFinance;
     public Boolean rcMessage;
     public Boolean requestDelivery;
     public Boolean pushNotificationToMerchat;
@@ -47,6 +48,7 @@ public class OrderCompletionStatusConfig implements Serializable {
     
     public String customerEmailContent;
     public String storeEmailContent;
+    public String financeEmailContent;
     public String rcMessageContent;
     public String storePushNotificationContent;
     public String storePushNotificationTitle;

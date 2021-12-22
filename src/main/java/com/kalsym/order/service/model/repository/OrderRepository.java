@@ -1,5 +1,6 @@
 package com.kalsym.order.service.model.repository;
 
+import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.model.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -8,6 +9,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 //import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import java.util.List;
+import java.util.Date;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.repository.query.Param;
@@ -41,5 +43,18 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
     @Query("UPDATE Order m SET m.beingProcess=0 WHERE m.id = :orderId") 
     void UpdateOrderFinishProcess(
             @Param("orderId") String orderId
+            );
+    
+    
+    @Transactional 
+    @Modifying
+    @Query("UPDATE Order m SET "
+            + "m.completionStatus = :newStatus, "
+            + "m.updated = :updatedTime "
+            + "WHERE m.id = :orderId") 
+    void CancelOrder(
+            @Param("orderId") String orderId,
+            @Param("newStatus") OrderStatus newStatus,
+            @Param("updatedTime") Date updatedTime            
             );
 }

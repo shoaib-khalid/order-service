@@ -1,4 +1,44 @@
 ##################################################
+# order-service-3.3.0-SNAPSHOT | 22-December-2021
+##################################################
+### Code Changes:
+New function cancelOrder()
+
+
+###DB Changes
+INSERT INTO order_completion_status VALUES ('CANCELED_BY_MERCHANT','Merchant cancel the order');
+
+ALTER TABLE order_refund
+ ADD refundType ENUM('ORDER_CANCELLED','ITEM_CANCELLED','ITEM_REVISED'),
+ ADD paymentChannel VARCHAR(20),
+ ADD refundAmount DECIMAL(10,2),
+ ADD remarks VARCHAR(255),
+ ADD created TIMESTAMP,
+ ADD updated TIMESTAMP
+;
+
+ALTER TABLE cart_item ADD discountCalculationType VARCHAR(20) ;
+ALTER TABLE cart_item ADD discountCalculationValue DECIMAL(10,2);
+
+ALTER TABLE order_item ADD discountCalculationType VARCHAR(20) ;
+ALTER TABLE order_item ADD discountCalculationValue DECIMAL(10,2);
+
+ALTER TABLE `order` ADD discountId VARCHAR(50) ;
+ALTER TABLE `order` ADD discountCalculationType VARCHAR(20) ;
+ALTER TABLE `order` ADD discountCalculationValue DECIMAL(10,2);
+
+ALTER TABLE `order_completion_status_config` ADD emailToFinance TINYINT(1) DEFAULT 0;
+ALTER TABLE `order_completion_status_config` ADD financeEmailContent VARCHAR(1000);
+
+Need to insert into order_completion_status_config with values :
+1. verticalId=store vertical, 
+2. status=CANCELED_BY_MERCHANT
+3. paymentType=ONLINEPAYMENT or COD, 
+4. emailToFinance=1 for ONLINEPAYMENT, 0 for COD
+5. financeEmailContent=email content sent to finance for refund process
+others field no need to populate
+
+##################################################
 # order-service-3.2.29-SNAPSHOT | 21-December-2021
 ##################################################
 ### Code Changes:

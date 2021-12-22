@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
+import com.kalsym.order.service.enums.DiscountCalculationType;
 
 /**
  *
@@ -47,6 +48,8 @@ public class CartItem {
     private String discountId;
     private Float normalPrice;
     private String discountLabel;
+    private DiscountCalculationType discountCalculationType;
+    private Float discountCalculationValue;
     
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "cartItemId", insertable = false, updatable = false, nullable = true)

@@ -79,6 +79,10 @@ public class StoreDiscountCalculation {
                         else
                             deliveryDiscountDescription = deliveryDiscountDescription + "," + subDescription;                        
                     }
+                    discount.setDiscountType(storeDiscount.getDiscountType());
+                    discount.setDiscountCalculationType(discountTier.getCalculationType());
+                    discount.setDiscountCalculationValue(discountTier.getDiscountAmount());
+                    discount.setDiscountId(storeDiscount.getId());
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "subTotalDiscount:"+subTotalDiscount+" shipmentDiscount:"+shipmentDiscount+" description:"+subDescription);
                 } else {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "tier not found");    

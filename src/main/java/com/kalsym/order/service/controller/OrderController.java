@@ -6,6 +6,8 @@ import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.enums.ProductStatus;
 import com.kalsym.order.service.enums.StorePaymentType;
 import com.kalsym.order.service.enums.DeliveryType;
+import com.kalsym.order.service.enums.RefundType;
+import com.kalsym.order.service.enums.RefundStatus;
 import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.OrderPaymentDetail;
 import com.kalsym.order.service.model.object.CustomPageable;
@@ -31,6 +33,7 @@ import com.kalsym.order.service.model.ProductInventory;
 import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.StoreDeliveryDetail;
 import com.kalsym.order.service.model.Cart;
+import com.kalsym.order.service.model.DeliveryOrder;
 import com.kalsym.order.service.model.Email;
 import com.kalsym.order.service.model.OrderCompletionStatusConfig;
 import com.kalsym.order.service.model.Product;
@@ -41,9 +44,12 @@ import com.kalsym.order.service.model.StoreCommission;
 import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.OrderSubItem;
 import com.kalsym.order.service.model.OrderShipmentDetail;
+import com.kalsym.order.service.model.OrderRefund;
+import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.ProductInventoryItem;
 import com.kalsym.order.service.model.ProductVariantAvailable;
 import com.kalsym.order.service.model.RegionCountry;
+import com.kalsym.order.service.model.PaymentOrder;
 import com.kalsym.order.service.model.object.Discount;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.object.OrderDetails;
@@ -57,6 +63,7 @@ import com.kalsym.order.service.model.repository.OrderCompletionStatusUpdateRepo
 import com.kalsym.order.service.model.repository.OrderPaymentDetailRepository;
 import com.kalsym.order.service.model.repository.OrderPaymentStatusUpdateRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
+import com.kalsym.order.service.model.repository.OrderRefundRepository;
 import com.kalsym.order.service.model.repository.ProductRepository;
 import com.kalsym.order.service.model.repository.StoreRepository;
 import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
@@ -66,6 +73,7 @@ import com.kalsym.order.service.model.repository.StoreDetailsRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountTierRepository;
 import com.kalsym.order.service.model.repository.StoreDeliveryDetailRepository;
+import com.kalsym.order.service.model.repository.PaymentOrderRepository;
 import com.kalsym.order.service.service.CustomerService;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.FCMService;
@@ -178,6 +186,12 @@ public class OrderController {
     
     @Autowired
     StoreDeliveryDetailRepository storeDeliveryDetailRepository;
+    
+    @Autowired
+    OrderRefundRepository orderRefundRepository;
+    
+    @Autowired
+    PaymentOrderRepository paymentOrderRepository;
     
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
@@ -782,6 +796,8 @@ public class OrderController {
                         orderItem.setDiscountId(cartItems.get(i).getDiscountId());
                         orderItem.setNormalPrice(cartItems.get(i).getNormalPrice());
                         orderItem.setDiscountLabel(cartItems.get(i).getDiscountLabel());
+                        orderItem.setDiscountCalculationType(cartItems.get(i).getDiscountCalculationType());
+                        orderItem.setDiscountCalculationValue(cartItems.get(i).getDiscountCalculationValue());
                     }
                     orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
 
@@ -864,10 +880,12 @@ public class OrderController {
                 order.setKlCommission(orderTotalObject.getKlCommission());
                 order.setStoreShare(orderTotalObject.getStoreShare());
                 order.setDeliveryCharges(order.getDeliveryCharges());
+                order.setDiscountId(orderTotalObject.getDiscountId());
+                order.setDiscountCalculationType(orderTotalObject.getDiscountCalculationType());
+                order.setDiscountCalculationValue(orderTotalObject.getDiscountCalculationValue());
                 
                 // saving order object to get order Id
                 order = orderRepository.save(order);
-
                     
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order posted successfully orderId: " + order.getId());
                 // save payment details
@@ -1439,9 +1457,7 @@ public class OrderController {
             response.setMessage("order with id " + id + " not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
-        
-        
-        
+
         String logprefix = request.getRequestURI() + " ";
         
         Order order = optOrder.get();
@@ -1485,6 +1501,99 @@ public class OrderController {
         response.setData(orderDetails);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+        
+   
+    /**
+     *
+     * @param request
+     * @param id
+     * @param bodyOrder
+     * @return
+     */
+    
+    /**
+     * 
+     * NOT DOING FOR NOW, KEEP FOR FUTUTRE
+     * 
+    @PutMapping(path = {"/previewreviseitem/{orderId}"}, name = "orders-put-by-id")
+    //@PreAuthorize("hasAnyAuthority('orders-put-by-id', 'all') and @customOwnerVerifier.VerifyOrder(#id)")
+    public ResponseEntity<HttpResponse> previewReviseOrderItems(HttpServletRequest request,
+            @PathVariable String orderId,
+            @Valid @RequestBody OrderItem[] bodyOrderItemList) {
+        String logprefix = request.getRequestURI() + " ";
+        String location = Thread.currentThread().getStackTrace()[1].getMethodName();
+        HttpResponse response = new HttpResponse(request.getRequestURI());
 
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "previewReviseOrderItems()", "");
+        
+        Optional<Order> optOrder = orderRepository.findById(orderId);
+
+        if (!optOrder.isPresent()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order not found with orderId: " + orderId);
+            response.setErrorStatus(HttpStatus.NOT_FOUND);
+            response.setMessage("Order not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
+        Optional<PaymentOrder> optPayment = paymentOrderRepository.findByClientTransactionId(orderId);
+
+        if (!optPayment.isPresent()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Payment Order not found with orderId: " + orderId);
+            response.setErrorStatus(HttpStatus.NOT_FOUND);
+            response.setMessage("Payment Order not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order found with orderId: " + orderId);
+        Order order = optOrder.get();
+        
+        if (order.getCompletionStatus()==OrderStatus.PAYMENT_CONFIRMED || order.getCompletionStatus()==OrderStatus.RECEIVED_AT_STORE) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order item preview revise for orderId: " + orderId);
+            for (int i=0;i<bodyOrderItemList.length;i++) {
+                OrderItem orderItem = bodyOrderItemList[i];
+                if (orderItem.getStatus().equals("CANCELED")) {
+                    //cancel item
+                    TODO : preview cancel item
+                } else if (orderItem.getStatus().equals("REVISED")) {
+                    //revise item
+                    TODO : preview revise item
+                }
+            }
+            
+            TODO : calculate new order total
+            Order orderPreview = new Order();
+            orderPreview.setAppliedDiscount(Double.MIN_VALUE);
+            
+            response.setSuccessStatus(HttpStatus.ACCEPTED);            
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        } else {
+            //not allow to cancel
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "current status not allow to revise : " + order.getCompletionStatus());
+            response.setSuccessStatus(HttpStatus.CONFLICT);
+            response.setMessage("Order not allow to revise");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }               
+    }
+    **/
+    
+     /**
+     *
+     * @param request
+     * @param id
+     * @param bodyOrder
+     * @return
+     */
+    /**
+    @PutMapping(path = {"/confirmreviseitem/{id}"}, name = "orders-put-by-id")
+    //@PreAuthorize("hasAnyAuthority('orders-put-by-id', 'all') and @customOwnerVerifier.VerifyOrder(#id)")
+    public ResponseEntity<HttpResponse> confirmReviseOrderItems(HttpServletRequest request,
+            @PathVariable String id,
+            @Valid @RequestBody OrderItem[] bodyOrderItem) {
+        String logprefix = request.getRequestURI() + " ";
+        String location = Thread.currentThread().getStackTrace()[1].getMethodName();
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+           
+    }
+    * */
 }
 

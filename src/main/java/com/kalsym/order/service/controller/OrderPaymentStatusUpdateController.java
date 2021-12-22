@@ -5,6 +5,8 @@ import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.enums.ProductStatus;
+import com.kalsym.order.service.enums.RefundStatus;
+import com.kalsym.order.service.enums.RefundType;
 import com.kalsym.order.service.enums.StorePaymentType;
 import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.Email;
@@ -42,6 +44,7 @@ import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.model.*;
 import com.kalsym.order.service.service.FCMService;
 import com.kalsym.order.service.utility.Logger;
+import java.util.Date;
 
 /**
  * @author 7cu
@@ -94,6 +97,12 @@ public class OrderPaymentStatusUpdateController {
     
     @Autowired
     RegionCountriesRepository regionCountriesRepository;
+    
+    @Autowired
+    OrderRefundRepository orderRefundRepository;
+    
+    @Autowired
+    PaymentOrderRepository paymentOrderRepository;
     
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
@@ -183,6 +192,16 @@ public class OrderPaymentStatusUpdateController {
         if (newStatus.contains("FAILED")) {
             //something failed in order processing
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Something failed! Not read config from db");
+        } else if (newStatus.contains("CANCELED_BY_MERCHANT")) {
+            //cancel order
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Merchant Cancel Order. Read config from db");
+            List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndPaymentType(verticalId, newStatus, order.getPaymentType());            
+            if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
+                Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + newStatus);                
+            } else {        
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
+                orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
+            }
         } else {
             //normal flow
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Normal flow. Read config from db");
@@ -324,7 +343,30 @@ public class OrderPaymentStatusUpdateController {
             case FAILED:
                 insertOrderCompletionStatusUpdate(OrderStatus.FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
                 order.setCompletionStatus(OrderStatus.FAILED);
-                break;                        
+                break; 
+                
+            case CANCELED_BY_MERCHANT:
+                insertOrderCompletionStatusUpdate(OrderStatus.FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
+                order.setCompletionStatus(OrderStatus.FAILED);
+                
+                //update statut to cancel
+                orderRepository.CancelOrder(order.getId(), OrderStatus.CANCELED_BY_MERCHANT, new Date());
+                
+                Optional<PaymentOrder> optPayment = paymentOrderRepository.findByClientTransactionId(order.getId());
+                if (optPayment.isPresent()) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Payment Order found with orderId: " + order.getId());
+                    //create refund record
+                    OrderRefund orderRefund = new OrderRefund();
+                    orderRefund.setOrderId(order.getId());
+                    orderRefund.setRefundType(RefundType.ORDER_CANCELLED);
+                    orderRefund.setPaymentChannel(optPayment.get().getPaymentChannel());
+                    orderRefund.setRefundAmount(order.getTotal());
+                    orderRefund.setRefundStatus(RefundStatus.PENDING);
+                    orderRefundRepository.save(orderRefund);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "refund record created for orderId: " + order.getId());
+                } else {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Payment Order NOT found with orderId: " + order.getId());
+                }
 
         }
         
@@ -398,6 +440,31 @@ public class OrderPaymentStatusUpdateController {
                     }
                 } else {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is null");
+                }
+            }
+            
+            
+            //send email to finance if config allows
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email to finance: " + orderCompletionStatusConfig.getEmailToFinance());
+            if (orderCompletionStatusConfig.getEmailToFinance()) {
+                String emailContent = orderCompletionStatusConfig.getFinanceEmailContent();
+                if (emailContent != null) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "finance email is not null");
+                    //sending email
+                    try {
+                        RegionCountry regionCountry = null;
+                        Optional<RegionCountry> t = regionCountriesRepository.findById(storeWithDetails.getRegionCountryId());
+                        if (t.isPresent()) {
+                            regionCountry = t.get();
+                        }
+                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, regionCountry);
+                        email.setRawBody(emailContent);
+                        emailService.sendEmail(email);
+                    } catch (Exception ex) {
+                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending email :", ex);
+                    }
+                } else {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "finance email content is null");
                 }
             }
 

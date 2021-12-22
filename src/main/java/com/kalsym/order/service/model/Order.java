@@ -89,6 +89,12 @@ public class Order implements Serializable {
     
     private Boolean beingProcess;
     
+    private String discountId;
+    
+    private String discountCalculationType;
+    
+    private Double discountCalculationValue;
+    
     /*
     @OneToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="orderId", insertable = false, updatable = false)

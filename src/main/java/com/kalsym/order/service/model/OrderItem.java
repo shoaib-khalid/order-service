@@ -14,6 +14,7 @@ import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 import java.util.List;
 import javax.persistence.CascadeType;
+import com.kalsym.order.service.enums.DiscountCalculationType;
 
 /**
  *
@@ -46,6 +47,10 @@ public class OrderItem {
     private String discountId;
     private Float normalPrice;
     private String discountLabel;
+    private String status;
+    private Integer originalQuantity;
+    private DiscountCalculationType discountCalculationType;
+    private Float discountCalculationValue;
     
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "orderItemId", insertable = false, updatable = false, nullable = true)

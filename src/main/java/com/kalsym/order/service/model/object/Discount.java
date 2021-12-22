@@ -23,5 +23,9 @@ public class Discount {
     Double deliveryDiscount;
     String subTotalDiscountDescription;
     String deliveryDiscountDescription;
-    Double cartSubTotal;        
+    Double cartSubTotal; 
+    String discountType;
+    String discountCalculationType;
+    Double discountCalculationValue;
+    String discountId;
 }

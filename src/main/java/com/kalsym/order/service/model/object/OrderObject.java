@@ -54,4 +54,9 @@ public class OrderObject {
     private Double klCommission;
     private Double grandTotal;
     private Double storeShare;
+    
+    private String discountCalculationType;
+    private Double discountCalculationValue;
+    private String discountType;
+    private String discountId;
 }

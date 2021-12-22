@@ -41,7 +41,11 @@ public class OrderCalculation {
         orderTotal.setDeliveryDiscount(discount.getDeliveryDiscount());
         orderTotal.setDeliveryDiscountDescription(discount.getDeliveryDiscountDescription());                
         orderTotal.setSubTotal(discount.getCartSubTotal());
-        
+        orderTotal.setDiscountId(discount.getDiscountId());
+        orderTotal.setDiscountType(discount.getDiscountType());
+        orderTotal.setDiscountCalculationType(discount.getDiscountCalculationType());
+        orderTotal.setDiscountCalculationValue(discount.getDiscountCalculationValue());
+                    
         //calculate Store service charge
         double serviceCharges = 0;
         if (null != storeSvcChargePercentage) {
