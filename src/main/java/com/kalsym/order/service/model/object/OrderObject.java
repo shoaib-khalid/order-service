@@ -59,4 +59,5 @@ public class OrderObject {
     private Double discountCalculationValue;
     private String discountType;
     private String discountId;
+    private Double discountMaxAmount;
 }

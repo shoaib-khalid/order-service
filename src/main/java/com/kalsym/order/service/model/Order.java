@@ -95,6 +95,8 @@ public class Order implements Serializable {
     
     private Double discountCalculationValue;
     
+    private Double discountMaxAmount;
+    
     /*
     @OneToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="orderId", insertable = false, updatable = false)

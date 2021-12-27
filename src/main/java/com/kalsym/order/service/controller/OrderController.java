@@ -797,7 +797,7 @@ public class OrderController {
                         orderItem.setNormalPrice(cartItems.get(i).getNormalPrice());
                         orderItem.setDiscountLabel(cartItems.get(i).getDiscountLabel());
                         orderItem.setDiscountCalculationType(cartItems.get(i).getDiscountCalculationType());
-                        orderItem.setDiscountCalculationValue(cartItems.get(i).getDiscountCalculationValue());
+                        orderItem.setDiscountCalculationValue(cartItems.get(i).getDiscountCalculationValue());                        
                     }
                     orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
 
@@ -883,6 +883,7 @@ public class OrderController {
                 order.setDiscountId(orderTotalObject.getDiscountId());
                 order.setDiscountCalculationType(orderTotalObject.getDiscountCalculationType());
                 order.setDiscountCalculationValue(orderTotalObject.getDiscountCalculationValue());
+                order.setDiscountMaxAmount(orderTotalObject.getDiscountMaxAmount());
                 
                 // saving order object to get order Id
                 order = orderRepository.save(order);

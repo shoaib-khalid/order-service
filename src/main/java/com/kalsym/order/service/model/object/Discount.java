@@ -28,4 +28,5 @@ public class Discount {
     String discountCalculationType;
     Double discountCalculationValue;
     String discountId;
+    Double discountMaxAmount;
 }

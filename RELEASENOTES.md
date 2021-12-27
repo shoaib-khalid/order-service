@@ -1,4 +1,14 @@
 ##################################################
+# order-service-3.3.1-SNAPSHOT | 27-December-2021
+##################################################
+### Code Changes:
+New field for discount capped amount in order details : discountMaxAmount
+
+###DB Changes
+ALTER TABLE `order` ADD discountMaxAmount decimal(10,2);
+
+
+##################################################
 # order-service-3.3.0-SNAPSHOT | 22-December-2021
 ##################################################
 ### Code Changes:
