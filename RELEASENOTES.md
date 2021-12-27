@@ -3,6 +3,7 @@
 ##################################################
 ### Code Changes:
 New field for discount capped amount in order details : discountMaxAmount
+Block placeOrder if cart is empty
 
 ###DB Changes
 ALTER TABLE `order` ADD discountMaxAmount decimal(10,2);

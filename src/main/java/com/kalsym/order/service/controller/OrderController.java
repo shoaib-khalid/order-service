@@ -494,7 +494,10 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    
     //TODO: add save customer info request parameter
+    /** NOT USE ANYMORE, ALL ORDER will posted in placeOrder
+     * 
     @PostMapping(path = {""}, name = "orders-post")
     @PreAuthorize("hasAnyAuthority('orders-post', 'all')")
     public ResponseEntity<HttpResponse> postOrders(HttpServletRequest request,
@@ -647,6 +650,8 @@ public class OrderController {
         response.setData(order);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+    * 
+    * /
 
     /**
      *
@@ -660,7 +665,7 @@ public class OrderController {
      */
     @PostMapping(path = {"/placeOrder"}, name = "orders-push-cod")
     @PreAuthorize("hasAnyAuthority('orders-push-cod', 'all')")
-    public ResponseEntity<HttpResponse> pushCODOrder(HttpServletRequest request,
+    public ResponseEntity<HttpResponse> placeOrder(HttpServletRequest request,
             @RequestParam(required = true) String cartId,  
             @RequestParam(required = false) Boolean saveCustomerInformation,
             @RequestBody COD cod) throws Exception {
@@ -670,7 +675,7 @@ public class OrderController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orders-push-cod request on url: " + request.getRequestURI());
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orders-push-cod request body: " + cod.toString());
-
+               
         // create order object
         Order order = new Order();
         try {
@@ -722,7 +727,14 @@ public class OrderController {
                 // get cart items 
                 List<CartItem> cartItems = cartItemRepository.findByCartId(cartId);
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got cartItems of cartId: " + cartId + ", items: " + cartItems.toString());
-
+                
+                //if cart empty
+                if (cartItems.isEmpty()) {
+                    response.setStatus(HttpStatus.CONFLICT.value());
+                    response.setMessage("Cart is empty");
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+                }
+                
                 for (int i = 0; i < cartItems.size(); i++) {
                     // check every items price in product service
                     ProductInventory productInventory = productService.getProductInventoryById(cart.getStoreId(), cartItems.get(i).getProductId(), cartItems.get(i).getItemCode());
