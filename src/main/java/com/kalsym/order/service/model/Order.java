@@ -24,6 +24,8 @@ import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 /**
  *
@@ -114,7 +116,8 @@ public class Order implements Serializable {
     @JoinColumn(name = "storeId", insertable = false, updatable = false)
     private Store store;
     
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "customerId", insertable = false, updatable = false)
     private Customer customer;
 
