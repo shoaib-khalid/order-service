@@ -321,6 +321,8 @@ public class OrderController {
             @RequestParam(required = false) String zipcode,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) OrderStatus[] completionStatus,
+            @RequestParam(required = false, defaultValue = "created") String sortByCol,
+            @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortingOrder,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
         String logprefix = request.getRequestURI() + " searchOrderDetails() ";
@@ -398,9 +400,13 @@ public class OrderController {
                 .withIgnoreNullValues()
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         Example<Order> orderExample = Example.of(orderMatch, matcher);
-
+        
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
-
+        if (sortingOrder==Sort.Direction.ASC)
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortByCol).ascending());
+        else if (sortingOrder==Sort.Direction.DESC)
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortByCol).descending());
+        
         Page<Order> orderWithPage = orderRepository.findAll(getSpecWithDatesBetweenMultipleStatus(from, to, completionStatus, orderExample), pageable);
         List<Order> orderList = orderWithPage.getContent();
         
