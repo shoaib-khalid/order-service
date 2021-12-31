@@ -46,5 +46,5 @@ public class DeliveryOrder {
     Double totalWeightKg;
     String merchantTrackingUrl;
     String customerTrackingUrl;
-
+    String pickupType;
 }

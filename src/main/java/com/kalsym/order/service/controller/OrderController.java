@@ -1392,7 +1392,15 @@ public class OrderController {
                 List<Predicate> statusPredicatesList = new ArrayList<>();
                 for (int i=0;i<completionStatusList.length;i++) {
                     Predicate predicateForCompletionStatus = builder.equal(root.get("completionStatus"), completionStatusList[i]);
-                    statusPredicatesList.add(predicateForCompletionStatus);
+                                        
+                    if (completionStatusList[i]==OrderStatus.RECEIVED_AT_STORE) {
+                        Predicate predicateForStatus = builder.equal(root.get("completionStatus"), OrderStatus.RECEIVED_AT_STORE);
+                        Predicate predicateForPaymentType = builder.equal(root.get("paymentType"), "COD");
+                        Predicate predicateForCOD = builder.and(predicateForStatus, predicateForPaymentType);
+                        statusPredicatesList.add(predicateForCOD);            
+                    } else if (completionStatusList[i]!=null) {
+                        statusPredicatesList.add(predicateForCompletionStatus);
+                    }
                 }
 
                 Predicate finalPredicate = builder.or(statusPredicatesList.toArray(new Predicate[statusCount]));
@@ -1448,8 +1456,14 @@ public class OrderController {
             }
         }
         
+        Store store = optStore.get();
         List<Object> dataSummaryList = new ArrayList<Object>();
-        List<Object[]> countSummaryList = orderRepository.getCountSummary(storeId);
+        List<Object[]> countSummaryList = null;
+        if (store.getPaymentType().equals("COD")) {
+            countSummaryList = orderRepository.getCountSummaryCOD(storeId);
+        } else {
+            countSummaryList = orderRepository.getCountSummaryOnlinePayment(storeId);
+        }
         for (int i=0;i<countSummaryList.size();i++) {
             Object[] summary = countSummaryList.get(i);
             DataSummary dataSummary = new DataSummary();

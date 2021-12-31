@@ -21,8 +21,13 @@ import org.springframework.data.repository.query.Param;
 @Repository
 public interface OrderRepository extends PagingAndSortingRepository<Order, String>, JpaRepository<Order, String>, JpaSpecificationExecutor<Order> {
 
-    @Query("SELECT c.completionStatus, COUNT(c.id) FROM Order AS c WHERE c.storeId = :storeId GROUP BY c.completionStatus")
-    List<Object[]> getCountSummary(@Param("storeId") String storeId);
+    @Query("SELECT c.completionStatus, COUNT(c.id) FROM Order AS c "
+            + "WHERE c.storeId = :storeId AND GROUP BY c.completionStatus")
+    List<Object[]> getCountSummaryCOD(@Param("storeId") String storeId);
+    
+    @Query("SELECT c.completionStatus, COUNT(c.id) FROM Order AS c "
+            + "WHERE c.storeId = :storeId completionStatus<>'RECEIVED_AT_STORE' GROUP BY c.completionStatus")
+    List<Object[]> getCountSummaryOnlinePayment(@Param("storeId") String storeId);
     
     @Query(value = "SELECT A.id, A.invoiceId, B.phoneNumber, B.name, B.clientId,  C.username, C.password  "
             + "FROM `order` A INNER JOIN `store` B ON A.storeId=B.id  "
