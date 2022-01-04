@@ -137,6 +137,16 @@ public class CartItemController {
             response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
+        
+        //get product info
+        Optional<Product> optProduct = productRepository.findById(bodyCartItem.getProductId());
+        if (!optProduct.isPresent()) {
+            response.setMessage("Product not found");
+            response.setErrorStatus(HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
+        
         CartItem cartItem;
         try {
             //find product invertory against itemcode to set sku
@@ -147,6 +157,15 @@ public class CartItemController {
             //ProductInventory productInventory = productInventoryRepository.findByItemCode(bodyCartItem.getItemCode());
             
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventory.toString());
+            
+            //check if enable product inventory
+            if (productInventory.getQuantity()<bodyCartItem.getQuantity() && optProduct.get().isAllowOutOfStockPurchases()==false) {
+                //out of stock
+                response.setMessage("Out of stock");
+                response.setErrorStatus(HttpStatus.CONFLICT);
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+            }
+                    
             //check for discount
             double itemPrice = 0.00;
             if (productInventory.getItemDiscount()!=null) {
@@ -162,12 +181,8 @@ public class CartItemController {
             }
             bodyCartItem.setProductPrice((float)itemPrice);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "itemPrice:"+itemPrice);
-            //check if product is package
-            Optional<Product> optProduct = productRepository.findById(bodyCartItem.getProductId());
-            boolean isPackage=false;
-            if (optProduct.isPresent()) {
-                isPackage = optProduct.get().getIsPackage();
-            }
+            //check if product is package            
+            boolean isPackage = optProduct.get().getIsPackage();            
             if (isPackage) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Product is package");
                 bodyCartItem.setPrice(bodyCartItem.getQuantity() * bodyCartItem.getProductPrice());

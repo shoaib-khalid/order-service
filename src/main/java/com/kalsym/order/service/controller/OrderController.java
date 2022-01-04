@@ -762,6 +762,14 @@ public class OrderController {
                         }
                     }
                     
+                    //check for stock
+                    if (productInventory.getQuantity()<cartItems.get(i).getQuantity() && productInventory.getProduct().isAllowOutOfStockPurchases()==false) {
+                        //out of stock
+                        response.setMessage("Out of stock");
+                        response.setErrorStatus(HttpStatus.CONFLICT);
+                        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+                    }
+                    
                     double itemPrice=0.00;
                     
                     //check for discounted item

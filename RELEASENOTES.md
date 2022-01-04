@@ -1,4 +1,18 @@
 ##################################################
+# order-service-3.3.5-SNAPSHOT | 04-Jan-2022
+##################################################
+### Code Changes:
+Bug fix for discount description in getOrderDetails
+
+
+##################################################
+# order-service-3.3.4-SNAPSHOT | 03-Jan-2022
+##################################################
+### Code Changes:
+Bug fix order addToCart & placeOrder : check if merchant set outOfStockPurchases=false, then block add to cart & place order
+
+
+##################################################
 # order-service-3.3.3-SNAPSHOT | 31-December-2021
 ##################################################
 ### Code Changes:
