@@ -21,4 +21,5 @@ public class Email {
     private String subject;
     private String rawBody;
     private Body body;
+    private String from;
 }

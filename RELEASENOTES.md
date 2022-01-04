@@ -3,7 +3,10 @@
 ##################################################
 ### Code Changes:
 Bug fix for discount description in getOrderDetails
+Set email from finance@symplified.biz for email to customer for order cancelled
 
+### Dependecies:
+email-3.0.7-SNAPSHOT and above
 
 ##################################################
 # order-service-3.3.4-SNAPSHOT | 03-Jan-2022

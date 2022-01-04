@@ -354,6 +354,7 @@ public class OrderPaymentStatusUpdateController {
                 
                 //update statut to cancel
                 orderRepository.CancelOrder(order.getId(), OrderStatus.CANCELED_BY_MERCHANT, new Date());
+                email.setFrom(financeEmailAddress);
                 
                 Optional<PaymentOrder> optPayment = paymentOrderRepository.findByClientTransactionId(order.getId());
                 if (optPayment.isPresent()) {
@@ -466,6 +467,7 @@ public class OrderPaymentStatusUpdateController {
                             regionCountry = t.get();
                         }
                         String[] emailAddress = {financeEmailAddress};
+                        email.setFrom(null);
                         email.setTo(emailAddress);
                         emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry);
                         email.setRawBody(emailContent);
