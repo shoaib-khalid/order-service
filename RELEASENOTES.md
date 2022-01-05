@@ -1,4 +1,15 @@
 ##################################################
+# order-service-3.3.6-SNAPSHOT | 05-Jan-2022
+##################################################
+### Code Changes:
+1) In order details:
+Add new field deliveryDiscountMaxAmount
+
+###DB Changes
+ALTER TABLE `order` ADD deliveryDiscountMaxAmount decimal(10,2);
+
+
+##################################################
 # order-service-3.3.5-SNAPSHOT | 04-Jan-2022
 ##################################################
 ### Code Changes:

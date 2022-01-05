@@ -68,16 +68,17 @@ public class StoreDiscountCalculation {
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Calculate based on total sales");
                         subTotalDiscount = CalculateDiscount(DiscountType.TOTALSALES.toString(), discountTier.getCalculationType(), discountTier.getDiscountAmount(), salesAmount, deliveryCharge, storeDiscount.getMaxDiscountAmount());                        
                         subDescription = GetSubTotalDiscountDescription(discountTier.getCalculationType(), discountTier.getDiscountAmount(), subTotalDiscount);
-                        
+                        discount.setDiscountMaxAmount(storeDiscount.getMaxDiscountAmount());
                         if (subTotalDiscountDescription==null)
                             subTotalDiscountDescription = subDescription;
                         else                            
                             subTotalDiscountDescription = subTotalDiscountDescription + "," + subDescription;
+                    
                     } else if (storeDiscount.getDiscountType().equals(DiscountType.SHIPPING.toString())) {
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Calculate based on shipping amount");
                         shipmentDiscount = CalculateDiscount(DiscountType.SHIPPING.toString(), discountTier.getCalculationType(), discountTier.getDiscountAmount(), salesAmount, deliveryCharge, storeDiscount.getMaxDiscountAmount());                        
                         subDescription = GetShipmentDiscountDescription(discountTier.getCalculationType(), discountTier.getDiscountAmount(), shipmentDiscount);
-                        
+                        discount.setDeliveryDiscountMaxAmount(storeDiscount.getMaxDiscountAmount());
                         if (deliveryDiscountDescription==null)
                             deliveryDiscountDescription = subDescription;
                         else
@@ -87,7 +88,7 @@ public class StoreDiscountCalculation {
                     discount.setDiscountCalculationType(discountTier.getCalculationType());
                     discount.setDiscountCalculationValue(discountTier.getDiscountAmount());
                     discount.setDiscountId(storeDiscount.getId());
-                    discount.setDiscountMaxAmount(storeDiscount.getMaxDiscountAmount());
+                    
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "subTotalDiscount:"+subTotalDiscount+" shipmentDiscount:"+shipmentDiscount+" description:"+subDescription);
                 } else {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "tier not found");    

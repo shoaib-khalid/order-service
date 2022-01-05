@@ -46,6 +46,7 @@ public class OrderCalculation {
         orderTotal.setDiscountCalculationType(discount.getDiscountCalculationType());
         orderTotal.setDiscountCalculationValue(discount.getDiscountCalculationValue());
         orderTotal.setDiscountMaxAmount(discount.getDiscountMaxAmount());
+        orderTotal.setDeliveryDiscountMaxAmount(discount.getDeliveryDiscountMaxAmount());
         
         //calculate Store service charge
         double serviceCharges = 0;

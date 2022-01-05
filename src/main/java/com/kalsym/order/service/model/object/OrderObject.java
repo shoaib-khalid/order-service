@@ -60,4 +60,5 @@ public class OrderObject {
     private String discountType;
     private String discountId;
     private Double discountMaxAmount;
+    private Double deliveryDiscountMaxAmount;
 }

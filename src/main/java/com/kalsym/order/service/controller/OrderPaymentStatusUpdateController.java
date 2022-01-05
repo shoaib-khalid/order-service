@@ -205,6 +205,8 @@ public class OrderPaymentStatusUpdateController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
                 orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
             }
+        } else if (newStatus.contains("REQUEST_DELIVERY_FAILED")) {
+            //delivery-order inform cannot find rider
         } else {
             //normal flow
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Normal flow. Read config from db");

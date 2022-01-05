@@ -910,6 +910,7 @@ public class OrderController {
                 order.setDiscountCalculationType(orderTotalObject.getDiscountCalculationType());
                 order.setDiscountCalculationValue(orderTotalObject.getDiscountCalculationValue());
                 order.setDiscountMaxAmount(orderTotalObject.getDiscountMaxAmount());
+                order.setDeliveryDiscountMaxAmount(orderTotalObject.getDeliveryDiscountMaxAmount());
                 
                 // saving order object to get order Id
                 order = orderRepository.save(order);
