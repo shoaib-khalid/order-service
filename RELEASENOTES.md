@@ -1,4 +1,12 @@
 ##################################################
+# order-service-3.3.7-SNAPSHOT | 07-Jan-2022
+##################################################
+### Code Changes:
+Add new request parameter in placeOrder() : orderShipmentDetails -> deliveryType
+Add delivery charge into storeShare if deliveryType=SELF
+
+
+##################################################
 # order-service-3.3.6-SNAPSHOT | 05-Jan-2022
 ##################################################
 ### Code Changes:

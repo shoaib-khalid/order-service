@@ -895,7 +895,9 @@ public class OrderController {
                 // setting this empty
                 order.setPrivateAdminNotes("");
 
-                OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, order, storeWithDetials.getServiceChargesPercentage(), storeCommission, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
+                OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, order, storeWithDetials.getServiceChargesPercentage(), storeCommission, 
+                        cod.getOrderPaymentDetails().getDeliveryQuotationAmount(), cod.getOrderShipmentDetails().getDeliveryType(), 
+                        cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
                 order.setSubTotal(orderTotalObject.getSubTotal());
                 order.setAppliedDiscount(orderTotalObject.getAppliedDiscount());
                 order.setAppliedDiscountDescription(orderTotalObject.getAppliedDiscountDescription());
@@ -925,14 +927,24 @@ public class OrderController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store Pickup:"+storePickup);
                 
                 if (storePickup==null) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Delivery Type:"+cod.getOrderShipmentDetails().getDeliveryType());
                     storePickup=false;
                     cod.getOrderShipmentDetails().setStorePickup(false);
-                    order.setDeliveryType(optStoreDeliveryDetail.get().getType());
-                } else {
-                     if (storePickup)
-                        order.setDeliveryType(DeliveryType.PICKUP.name());
-                     else
+                    if (cod.getOrderShipmentDetails().getDeliveryType()!=null) {
+                        order.setDeliveryType(cod.getOrderShipmentDetails().getDeliveryType().name());
+                    } else {
                         order.setDeliveryType(optStoreDeliveryDetail.get().getType());
+                    }
+                } else {
+                     if (storePickup) {
+                        order.setDeliveryType(DeliveryType.PICKUP.name());
+                     } else {
+                        if (cod.getOrderShipmentDetails().getDeliveryType()!=null) {
+                           order.setDeliveryType(cod.getOrderShipmentDetails().getDeliveryType().name());
+                       } else {
+                           order.setDeliveryType(optStoreDeliveryDetail.get().getType());
+                       }
+                     }
                 }
                 cod.getOrderShipmentDetails().setOrderId(order.getId());
                 order.setOrderShipmentDetail(orderShipmentDetailRepository.save(cod.getOrderShipmentDetails()));

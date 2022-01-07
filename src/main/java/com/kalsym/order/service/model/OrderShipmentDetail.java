@@ -1,5 +1,7 @@
 package com.kalsym.order.service.model;
 
+import com.kalsym.order.service.enums.DeliveryType;
+
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -43,7 +45,8 @@ public class OrderShipmentDetail implements Serializable {
     private String customerTrackingUrl;
 
     private String trackingNumber;
-
+    private DeliveryType deliveryType;
+    
     public void update(OrderShipmentDetail orderShipmentDetail) {
         if (orderShipmentDetail.getTrackingNumber() != null) {
             trackingNumber = orderShipmentDetail.getTrackingNumber();

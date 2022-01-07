@@ -6,6 +6,7 @@
 package com.kalsym.order.service.utility;
 
 import com.kalsym.order.service.OrderServiceApplication;
+import com.kalsym.order.service.enums.DeliveryType;
 import com.kalsym.order.service.model.Cart;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.Store;
@@ -25,7 +26,8 @@ import org.springframework.http.ResponseEntity;
  */
 public class OrderCalculation {
     
-    public static OrderObject CalculateOrderTotal(Cart cart, Order order, Double storeSvcChargePercentage, StoreCommission storeCommission,
+    public static OrderObject CalculateOrderTotal(Cart cart, Order order, Double storeSvcChargePercentage, StoreCommission storeCommission, 
+            Double deliveryCharge, DeliveryType deliveryType,
             CartItemRepository cartItemRepository, 
             StoreDiscountRepository storeDiscountRepository, 
             StoreDiscountTierRepository storeDiscountTierRepository, String logprefix) {
@@ -70,6 +72,13 @@ public class OrderCalculation {
                                
         orderTotal.setKlCommission(commission);
         orderTotal.setStoreShare(orderTotal.getSubTotal() - orderTotal.getAppliedDiscount() + orderTotal.getStoreServiceCharge() - commission);
+        
+        if (deliveryType!=null) {
+            if (deliveryType==DeliveryType.SELF) {
+                double storeShare = orderTotal.getStoreShare() + deliveryCharge;
+                orderTotal.setStoreShare(storeShare);
+            } 
+        }
         
         return orderTotal;
     }
