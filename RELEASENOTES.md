@@ -1,9 +1,22 @@
 ##################################################
+# order-service-3.3.8-SNAPSHOT | 10-Jan-2022
+##################################################
+Get delivery charges from delivery-service (getQuotation) during calculate cart discount (getDiscountOfCart)
+Get delivery charges from delivery-service (getQuotation) during place order
+
+###Depedencies:
+delivery-service-2.3.4
+
+
+##################################################
 # order-service-3.3.7-SNAPSHOT | 07-Jan-2022
 ##################################################
 ### Code Changes:
 Add new request parameter in placeOrder() : orderShipmentDetails -> deliveryType
 Add delivery charge into storeShare if deliveryType=SELF
+
+###DB Changes
+ALTER TABLE order_shipment_detail ADD deliveryType ENUM('SCHEDULED','ADHOC','SELF','PICKUP');
 
 
 ##################################################

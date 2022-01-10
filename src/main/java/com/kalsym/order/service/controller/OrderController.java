@@ -34,6 +34,7 @@ import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.StoreDeliveryDetail;
 import com.kalsym.order.service.model.Cart;
 import com.kalsym.order.service.model.DeliveryOrder;
+import com.kalsym.order.service.model.DeliveryQuotation;
 import com.kalsym.order.service.model.Email;
 import com.kalsym.order.service.model.OrderCompletionStatusConfig;
 import com.kalsym.order.service.model.Product;
@@ -664,7 +665,8 @@ public class OrderController {
      *
      * @param request
      * @param cartId
-     * @param orderId
+     * @param deliveryQuotationId
+     * @param saveCustomerInformation
      * @param cod
      * @return
      * @throws Exception
@@ -672,7 +674,8 @@ public class OrderController {
     @PostMapping(path = {"/placeOrder"}, name = "orders-push-cod")
     @PreAuthorize("hasAnyAuthority('orders-push-cod', 'all')")
     public ResponseEntity<HttpResponse> placeOrder(HttpServletRequest request,
-            @RequestParam(required = true) String cartId,  
+            @RequestParam(required = true) String cartId, 
+            @RequestParam(required = false) String deliveryQuotationId, 
             @RequestParam(required = false) Boolean saveCustomerInformation,
             @RequestBody COD cod) throws Exception {
         String logprefix = request.getRequestURI() + " ";
@@ -877,7 +880,15 @@ public class OrderController {
 
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added orderItem to order list: " + orderItem.toString());
                 }
-
+                
+                //get delivery charges from delivery-service
+                if (deliveryQuotationId!=null) {
+                    DeliveryQuotation deliveryQuotation = deliveryService.getDeliveryQuotation(deliveryQuotationId);
+                    double deliveryCharge = deliveryQuotation.getAmount();
+                    cod.getOrderPaymentDetails().setDeliveryQuotationAmount(deliveryCharge);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliveryCharge from delivery-service:"+deliveryCharge);
+                }                
+                
                 order.setCartId(cartId);                    
                 order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE);
                 order.setPaymentStatus(PaymentStatus.PENDING);

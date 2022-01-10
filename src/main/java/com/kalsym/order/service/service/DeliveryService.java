@@ -19,6 +19,7 @@ import com.kalsym.order.service.model.object.DeliveryServiceResponse;
 import com.kalsym.order.service.model.object.DeliveryPickup;
 import org.springframework.http.HttpStatus;
 import com.kalsym.order.service.model.DeliveryOrder;
+import com.kalsym.order.service.model.DeliveryQuotation;
 import com.kalsym.order.service.utility.Logger;
 import org.json.JSONObject;
 import java.util.Date;
@@ -40,6 +41,9 @@ public class DeliveryService {
 
     @Value("${deliveryService.confirmation.URL:not-set}")
     String orderDeliveryConfirmationURL;
+    
+    @Value("${deliveryService.get.quotation.URL:not-set}")
+    String getQuotationURL;
 
     @Autowired
     StoreNameService storeNameService;
@@ -115,6 +119,48 @@ public class DeliveryService {
             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery order domain: " + orderDeliveryConfirmationURL, ex);
         } catch (Exception ex) {
             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery order domain: " + orderDeliveryConfirmationURL, ex);
+        }
+        return null;
+    }
+    
+    
+    public DeliveryQuotation getDeliveryQuotation(String deliveryQuotationId)  {
+        String logprefix = "getDeliveryQuotation";
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer accessToken");
+        
+        HttpEntity<DeliveryPickup> httpEntity;
+        httpEntity = new HttpEntity<>(null, headers);
+        
+        try {
+            String url = getQuotationURL + "/" + deliveryQuotationId;
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getDeliveryQuotation URL : " + url);
+            ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
+
+            if (res.getStatusCode() == HttpStatus.OK) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
+                JSONObject jsonObject = new JSONObject(res.getBody());
+//        
+                //create ObjectMapper instance
+                JSONObject deliveryObject = jsonObject.getJSONObject("data");
+                //create ObjectMapper instance
+                ObjectMapper objectMapper = new ObjectMapper();
+                //convert json string to object
+                DeliveryQuotation deliveryQuotation = objectMapper.readValue(deliveryObject.toString(), DeliveryQuotation.class);
+
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got delivery quotation object : " + deliveryQuotation.toString());
+                return deliveryQuotation;
+            }
+        } catch (RestClientException e) {
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery quotation domain: " + getQuotationURL, e);
+        } catch (JsonProcessingException ex) {
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery quotation domain: " + getQuotationURL, ex);
+        } catch (Exception ex) {
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery quotation domain: " + getQuotationURL, ex);
         }
         return null;
     }

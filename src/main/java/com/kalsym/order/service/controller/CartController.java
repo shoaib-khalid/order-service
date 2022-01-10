@@ -39,7 +39,9 @@ import com.kalsym.order.service.model.StoreDiscount;
 import com.kalsym.order.service.model.StoreDiscountTier;
 import com.kalsym.order.service.enums.DiscountType;
 import com.kalsym.order.service.enums.DiscountCalculationType;
+import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.utility.StoreDiscountCalculation;
+import com.kalsym.order.service.model.DeliveryQuotation;
 
 /**
  *
@@ -65,6 +67,9 @@ public class CartController {
     
     @Autowired
     StoreDiscountTierRepository storeDiscountTierRepository;
+    
+    @Autowired
+    DeliveryService deliveryService;
     
     @GetMapping(path = {""}, name = "carts-get", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('carts-get', 'all')")
@@ -300,7 +305,9 @@ public class CartController {
     @PreAuthorize("hasAnyAuthority('carts-discount-by-id', 'all')")
     public ResponseEntity<HttpResponse> getDiscountOfCart(HttpServletRequest request,
             @PathVariable String id,
-            @RequestParam(defaultValue = "0") Double deliveryCharge) {
+            @RequestParam(defaultValue = "0") Double deliveryCharge,
+            @RequestParam(required = false) String deliveryQuotationId
+            ) {
         String logprefix = request.getRequestURI() + " ";
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "carts-order-by-id request...");
@@ -311,6 +318,13 @@ public class CartController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cart not found with cartId: " + id);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
+        //get delivery charges from delivery-service
+        if (deliveryQuotationId!=null) {
+            DeliveryQuotation deliveryQuotation = deliveryService.getDeliveryQuotation(deliveryQuotationId);
+            deliveryCharge = deliveryQuotation.getAmount();
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliveryCharge from delivery-service:"+deliveryCharge);
         }
         
         Cart cart = cartOptional.get();        
