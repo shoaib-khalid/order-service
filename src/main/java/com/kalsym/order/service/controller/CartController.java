@@ -1,6 +1,7 @@
 package com.kalsym.order.service.controller;
 
 import com.kalsym.order.service.OrderServiceApplication;
+import com.kalsym.order.service.enums.DeliveryType;
 import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
@@ -42,6 +43,12 @@ import com.kalsym.order.service.enums.DiscountCalculationType;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.utility.StoreDiscountCalculation;
 import com.kalsym.order.service.model.DeliveryQuotation;
+import com.kalsym.order.service.model.StoreCommission;
+import com.kalsym.order.service.model.StoreDeliveryDetail;
+import com.kalsym.order.service.model.StoreWithDetails;
+import com.kalsym.order.service.model.object.OrderObject;
+import com.kalsym.order.service.service.ProductService;
+import com.kalsym.order.service.utility.OrderCalculation;
 
 /**
  *
@@ -70,6 +77,9 @@ public class CartController {
     
     @Autowired
     DeliveryService deliveryService;
+    
+    @Autowired
+    ProductService productService;
     
     @GetMapping(path = {""}, name = "carts-get", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('carts-get', 'all')")
@@ -306,7 +316,8 @@ public class CartController {
     public ResponseEntity<HttpResponse> getDiscountOfCart(HttpServletRequest request,
             @PathVariable String id,
             @RequestParam(defaultValue = "0") Double deliveryCharge,
-            @RequestParam(required = false) String deliveryQuotationId
+            @RequestParam(required = false) String deliveryQuotationId,
+            @RequestParam(required = false) DeliveryType deliveryType
             ) {
         String logprefix = request.getRequestURI() + " ";
 
@@ -327,12 +338,37 @@ public class CartController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliveryCharge from delivery-service:"+deliveryCharge);
         }
         
-        Cart cart = cartOptional.get();        
-        Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);        
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:"+id+" deliveryCharge:"+deliveryCharge+" totalSubTotalDiscount:"+discount.getSubTotalDiscount()+" totalShipmentDiscount:"+discount.getDeliveryDiscount());
-        response.setSuccessStatus(HttpStatus.OK);
-        response.setData(discount);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        try {
+            Cart cart = cartOptional.get(); 
+
+            //getting store details for cart if from product service
+            StoreWithDetails storeWithDetials = productService.getStoreById(cart.getStoreId());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store details of cartId: " + cart.getId() + ", and storeId: " + cart.getStoreId());
+
+            StoreCommission storeCommission = productService.getStoreCommissionByStoreId(cart.getStoreId());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store commission: " + storeCommission);
+
+            
+            Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);        
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:"+id+" deliveryCharge:"+deliveryCharge+" totalSubTotalDiscount:"+discount.getSubTotalDiscount()+" totalShipmentDiscount:"+discount.getDeliveryDiscount());
+            
+            OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission, 
+                            deliveryCharge, deliveryType, 
+                            cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
+            discount.setCartGrandTotal(orderTotalObject.getGrandTotal());
+            discount.setCartDeliveryCharge(deliveryCharge);
+            discount.setStoreServiceCharge(orderTotalObject.getStoreServiceCharge());
+            discount.setStoreServiceChargePercentage(storeWithDetials.getServiceChargesPercentage());
+            
+            response.setSuccessStatus(HttpStatus.OK);
+            response.setData(discount);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        
+        } catch (Exception exp) {
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error calculate discount", exp);
+            response.setMessage(exp.getMessage());
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
+        }
 
     }
    

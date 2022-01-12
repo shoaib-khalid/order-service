@@ -675,7 +675,6 @@ public class OrderController {
     @PreAuthorize("hasAnyAuthority('orders-push-cod', 'all')")
     public ResponseEntity<HttpResponse> placeOrder(HttpServletRequest request,
             @RequestParam(required = true) String cartId, 
-            @RequestParam(required = false) String deliveryQuotationId, 
             @RequestParam(required = false) Boolean saveCustomerInformation,
             @RequestBody COD cod) throws Exception {
         String logprefix = request.getRequestURI() + " ";
@@ -882,6 +881,7 @@ public class OrderController {
                 }
                 
                 //get delivery charges from delivery-service
+                String deliveryQuotationId = cod.getOrderPaymentDetails().getDeliveryQuotationReferenceId();
                 if (deliveryQuotationId!=null) {
                     DeliveryQuotation deliveryQuotation = deliveryService.getDeliveryQuotation(deliveryQuotationId);
                     double deliveryCharge = deliveryQuotation.getAmount();
@@ -906,7 +906,7 @@ public class OrderController {
                 // setting this empty
                 order.setPrivateAdminNotes("");
 
-                OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, order, storeWithDetials.getServiceChargesPercentage(), storeCommission, 
+                OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission, 
                         cod.getOrderPaymentDetails().getDeliveryQuotationAmount(), cod.getOrderShipmentDetails().getDeliveryType(), 
                         cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
                 order.setSubTotal(orderTotalObject.getSubTotal());

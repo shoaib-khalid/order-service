@@ -26,7 +26,7 @@ import org.springframework.http.ResponseEntity;
  */
 public class OrderCalculation {
     
-    public static OrderObject CalculateOrderTotal(Cart cart, Order order, Double storeSvcChargePercentage, StoreCommission storeCommission, 
+    public static OrderObject CalculateOrderTotal(Cart cart, Double storeSvcChargePercentage, StoreCommission storeCommission, 
             Double deliveryCharge, DeliveryType deliveryType,
             CartItemRepository cartItemRepository, 
             StoreDiscountRepository storeDiscountRepository, 
@@ -35,7 +35,7 @@ public class OrderCalculation {
         OrderObject orderTotal = new OrderObject();
         
         //calculate Store discount
-        Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, order.getDeliveryCharges(), cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
+        Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "subTotalDiscount: " +discount.getSubTotalDiscount());
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "deliveryDiscount: " +discount.getDeliveryDiscount());
         orderTotal.setAppliedDiscount(discount.getSubTotalDiscount());
@@ -59,7 +59,7 @@ public class OrderCalculation {
         orderTotal.setStoreServiceCharge(serviceCharges); 
         
         //calculate grand total
-        orderTotal.setTotal(orderTotal.getSubTotal() - orderTotal.getAppliedDiscount() + serviceCharges + order.getDeliveryCharges() - orderTotal.getDeliveryDiscount());
+        orderTotal.setTotal(orderTotal.getSubTotal() - orderTotal.getAppliedDiscount() + serviceCharges + deliveryCharge - orderTotal.getDeliveryDiscount());
 
         //calculating Kalsym commission 
         double commission = 0;

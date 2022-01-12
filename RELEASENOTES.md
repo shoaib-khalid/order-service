@@ -2,8 +2,18 @@
 # order-service-3.3.8-SNAPSHOT | 12-Jan-2022
 ##################################################
 Get delivery charges from delivery-service (getQuotation) during calculate cart discount (getDiscountOfCart)
+
 Get delivery charges from delivery-service (getQuotation) during place order
 
+Add new request param in getDiscountOfCart() :
+	deliveryType
+Add new response in getDiscountOfCart:
+	store service charges
+	store service charge percentage
+	delivery charges
+	grand total
+	
+	
 ###New config:
 deliveryService.get.quotation.URL=https://api.symplified.it/delivery-service/v1/orders/getQuotation
 

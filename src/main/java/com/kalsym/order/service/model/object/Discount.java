@@ -30,4 +30,9 @@ public class Discount {
     String discountId;
     Double discountMaxAmount;
     Double deliveryDiscountMaxAmount;
+    
+    Double storeServiceCharge;
+    Double storeServiceChargePercentage;
+    Double cartDeliveryCharge;
+    Double cartGrandTotal;
 }
