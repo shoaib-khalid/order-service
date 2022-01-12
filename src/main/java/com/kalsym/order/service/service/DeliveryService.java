@@ -1,6 +1,7 @@
 package com.kalsym.order.service.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.kalsym.order.service.OrderServiceApplication;
@@ -20,6 +21,7 @@ import com.kalsym.order.service.model.object.DeliveryPickup;
 import org.springframework.http.HttpStatus;
 import com.kalsym.order.service.model.DeliveryOrder;
 import com.kalsym.order.service.model.DeliveryQuotation;
+import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.utility.Logger;
 import org.json.JSONObject;
 import java.util.Date;
@@ -149,9 +151,12 @@ public class DeliveryService {
                 JSONObject deliveryObject = jsonObject.getJSONObject("data");
                 //create ObjectMapper instance
                 ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+                objectMapper.disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
+                objectMapper.disable(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES);
                 //convert json string to object
                 DeliveryQuotation deliveryQuotation = objectMapper.readValue(deliveryObject.toString(), DeliveryQuotation.class);
-
+                
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got delivery quotation object : " + deliveryQuotation.toString());
                 return deliveryQuotation;
             }
