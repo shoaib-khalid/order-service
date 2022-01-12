@@ -355,7 +355,7 @@ public class CartController {
             OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission, 
                             deliveryCharge, deliveryType, 
                             cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
-            discount.setCartGrandTotal(orderTotalObject.getGrandTotal());
+            discount.setCartGrandTotal(orderTotalObject.getTotal());
             discount.setCartDeliveryCharge(deliveryCharge);
             discount.setStoreServiceCharge(orderTotalObject.getStoreServiceCharge());
             discount.setStoreServiceChargePercentage(storeWithDetials.getServiceChargesPercentage());
