@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.3.9-SNAPSHOT | 13-Jan-2022
+##################################################
+Add CustomRepository class to access entity manager refresh function to allow non-cache query
+
+
+##################################################
 # order-service-3.3.8-SNAPSHOT | 12-Jan-2022
 ##################################################
 Get delivery charges from delivery-service (getQuotation) during calculate cart discount (getDiscountOfCart)

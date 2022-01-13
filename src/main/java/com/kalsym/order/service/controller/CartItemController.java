@@ -224,7 +224,11 @@ public class CartItemController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem added in cartId: " + cartId);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem added in cart with cartItemId: " + cartItem.getId());
         
-        response.setData(cartItem);
+        //refresh and retrieve back the data
+        cartItemRepository.refresh(cartItem);
+        Optional<CartItem> cartItemData = cartItemRepository.findById(cartItem.getId());
+        
+        response.setData(cartItemData.get());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     

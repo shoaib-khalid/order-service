@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author 7cu
  */
 @Repository
-public interface CartItemRepository extends PagingAndSortingRepository<CartItem, String>, JpaRepository<CartItem, String> {
+public interface CartItemRepository extends PagingAndSortingRepository<CartItem, String>, JpaRepository<CartItem, String>, CustomRepository<CartItem, String> {
 
     Page<CartItem> findByCartId(@Param("cartId") String cartId,  Pageable pgbl);
     
