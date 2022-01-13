@@ -161,7 +161,7 @@ public class CartItemController {
             //check if enable product inventory
             if (productInventory.getQuantity()<bodyCartItem.getQuantity() && optProduct.get().isAllowOutOfStockPurchases()==false) {
                 //out of stock
-                response.setMessage("Out of stock");
+                response.setMessage(optProduct.get().getName()+" is out of stock");
                 response.setErrorStatus(HttpStatus.CONFLICT);
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
             }
