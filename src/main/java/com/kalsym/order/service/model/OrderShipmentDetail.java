@@ -48,8 +48,7 @@ public class OrderShipmentDetail implements Serializable {
 
     private String trackingNumber;
     
-    @Enumerated(EnumType.STRING)
-    private DeliveryType deliveryType;
+    private String deliveryType;
     
     public void update(OrderShipmentDetail orderShipmentDetail) {
         if (orderShipmentDetail.getTrackingNumber() != null) {

@@ -27,7 +27,7 @@ import org.springframework.http.ResponseEntity;
 public class OrderCalculation {
     
     public static OrderObject CalculateOrderTotal(Cart cart, Double storeSvcChargePercentage, StoreCommission storeCommission, 
-            Double deliveryCharge, DeliveryType deliveryType,
+            Double deliveryCharge, String deliveryType,
             CartItemRepository cartItemRepository, 
             StoreDiscountRepository storeDiscountRepository, 
             StoreDiscountTierRepository storeDiscountTierRepository, String logprefix) {
@@ -74,7 +74,7 @@ public class OrderCalculation {
         orderTotal.setStoreShare(orderTotal.getSubTotal() - orderTotal.getAppliedDiscount() + orderTotal.getStoreServiceCharge() - commission);
         
         if (deliveryType!=null) {
-            if (deliveryType==DeliveryType.SELF) {
+            if (deliveryType.equals(DeliveryType.SELF.name())) {
                 double storeShare = orderTotal.getStoreShare() + deliveryCharge;
                 orderTotal.setStoreShare(storeShare);
             } 

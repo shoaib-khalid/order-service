@@ -942,7 +942,7 @@ public class OrderController {
                     storePickup=false;
                     cod.getOrderShipmentDetails().setStorePickup(false);
                     if (cod.getOrderShipmentDetails().getDeliveryType()!=null) {
-                        order.setDeliveryType(cod.getOrderShipmentDetails().getDeliveryType().name());
+                        order.setDeliveryType(cod.getOrderShipmentDetails().getDeliveryType());
                     } else {
                         order.setDeliveryType(optStoreDeliveryDetail.get().getType());
                     }
@@ -952,7 +952,7 @@ public class OrderController {
                         order.setDeliveryType(DeliveryType.PICKUP.name());
                      } else {
                         if (cod.getOrderShipmentDetails().getDeliveryType()!=null) {
-                           order.setDeliveryType(cod.getOrderShipmentDetails().getDeliveryType().name());
+                           order.setDeliveryType(cod.getOrderShipmentDetails().getDeliveryType());
                        } else {
                            order.setDeliveryType(optStoreDeliveryDetail.get().getType());
                        }
