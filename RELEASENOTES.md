@@ -1,4 +1,11 @@
 ##################################################
+# order-service-3.3.10-SNAPSHOT | 13-Jan-2022
+##################################################
+Add CustomRepository class to access entity manager refresh function to allow non-cache query
+Buf fix for order payment details model
+
+
+##################################################
 # order-service-3.3.9-SNAPSHOT | 13-Jan-2022
 ##################################################
 Add CustomRepository class to access entity manager refresh function to allow non-cache query
