@@ -317,7 +317,7 @@ public class CartController {
             @PathVariable String id,
             @RequestParam(defaultValue = "0") Double deliveryCharge,
             @RequestParam(required = false) String deliveryQuotationId,
-            @RequestParam(required = false) DeliveryType deliveryType
+            @RequestParam(required = false) String deliveryType
             ) {
         String logprefix = request.getRequestURI() + " ";
 
