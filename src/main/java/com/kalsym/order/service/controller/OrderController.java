@@ -938,7 +938,7 @@ public class OrderController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store Pickup:"+storePickup);
                 
                 if (storePickup==null) {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Delivery Type:"+cod.getOrderShipmentDetails().getDeliveryType());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Delivery Type:["+cod.getOrderShipmentDetails().getDeliveryType()+"]");
                     storePickup=false;
                     cod.getOrderShipmentDetails().setStorePickup(false);
                     if (cod.getOrderShipmentDetails().getDeliveryType()!=null) {
@@ -947,7 +947,7 @@ public class OrderController {
                         order.setDeliveryType(optStoreDeliveryDetail.get().getType());
                     }
                 } else {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Delivery Type:"+cod.getOrderShipmentDetails().getDeliveryType());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Delivery Type:["+cod.getOrderShipmentDetails().getDeliveryType()+"]");
                      if (storePickup) {
                         order.setDeliveryType(DeliveryType.PICKUP.name());
                      } else {
