@@ -947,6 +947,7 @@ public class OrderController {
                         order.setDeliveryType(optStoreDeliveryDetail.get().getType());
                     }
                 } else {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Delivery Type:"+cod.getOrderShipmentDetails().getDeliveryType());
                      if (storePickup) {
                         order.setDeliveryType(DeliveryType.PICKUP.name());
                      } else {
