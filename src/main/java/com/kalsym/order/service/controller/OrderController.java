@@ -797,7 +797,7 @@ public class OrderController {
                             // should return warning if prices are not same
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
                             response.setSuccessStatus(HttpStatus.CONFLICT);
-                            response.setMessage("Conflict in prices, please update prices in cartItems, oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
+                            response.setMessage("Conflict in prices, oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
                             response.setData(cartItems.get(i));
                             return ResponseEntity.status(HttpStatus.CREATED).body(response);
                         }
