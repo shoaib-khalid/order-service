@@ -4,6 +4,8 @@ import com.kalsym.order.service.enums.DeliveryType;
 
 import java.io.Serializable;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -45,6 +47,8 @@ public class OrderShipmentDetail implements Serializable {
     private String customerTrackingUrl;
 
     private String trackingNumber;
+    
+    @Enumerated(EnumType.STRING)
     private DeliveryType deliveryType;
     
     public void update(OrderShipmentDetail orderShipmentDetail) {
