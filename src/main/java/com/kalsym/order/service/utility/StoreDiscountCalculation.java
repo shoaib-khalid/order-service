@@ -16,6 +16,7 @@ import com.kalsym.order.service.model.object.Discount;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountTierRepository;
+import com.kalsym.order.service.utility.Utilities;
 
 import java.util.Date;
 import java.util.List;
@@ -32,15 +33,15 @@ public class StoreDiscountCalculation {
         List<StoreDiscount> discountAvailable = storeDiscountRepository.findAvailableDiscount(cart.getStoreId(), new Date());
         Discount discount = new Discount();
         if (discountAvailable.isEmpty()) {
-            discount.setDeliveryDiscount(0.00);
-            discount.setSubTotalDiscount(0.00);
+            discount.setDeliveryDiscount(Utilities.roundDouble(0.00,2));
+            discount.setSubTotalDiscount(Utilities.roundDouble(0.00,2));
             double salesAmount=0;
             List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
             for (int i=0;i<cartItems.size();i++) {
                 CartItem item = cartItems.get(i);
                 salesAmount = salesAmount + item.getPrice();
             }
-            discount.setCartSubTotal(salesAmount);
+            discount.setCartSubTotal(Utilities.roundDouble(salesAmount,2));
         } else {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "discountAvailable found:"+discountAvailable.size());
             double salesAmount=0;
@@ -49,7 +50,7 @@ public class StoreDiscountCalculation {
                 CartItem item = cartItems.get(i);
                 salesAmount = salesAmount + item.getPrice();
             }
-            discount.setCartSubTotal(salesAmount);
+            discount.setCartSubTotal(Utilities.roundDouble(salesAmount,2));
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "total sales amount:"+salesAmount);    
             double totalSubTotalDiscount=0;
             double totalShipmentDiscount=0;
@@ -68,7 +69,7 @@ public class StoreDiscountCalculation {
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Calculate based on total sales");
                         subTotalDiscount = CalculateDiscount(DiscountType.TOTALSALES.toString(), discountTier.getCalculationType(), discountTier.getDiscountAmount(), salesAmount, deliveryCharge, storeDiscount.getMaxDiscountAmount());                        
                         subDescription = GetSubTotalDiscountDescription(discountTier.getCalculationType(), discountTier.getDiscountAmount(), subTotalDiscount);
-                        discount.setDiscountMaxAmount(storeDiscount.getMaxDiscountAmount());
+                        discount.setDiscountMaxAmount(Utilities.roundDouble(storeDiscount.getMaxDiscountAmount(),2));
                         if (subTotalDiscountDescription==null)
                             subTotalDiscountDescription = subDescription;
                         else                            
@@ -78,7 +79,7 @@ public class StoreDiscountCalculation {
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Calculate based on shipping amount");
                         shipmentDiscount = CalculateDiscount(DiscountType.SHIPPING.toString(), discountTier.getCalculationType(), discountTier.getDiscountAmount(), salesAmount, deliveryCharge, storeDiscount.getMaxDiscountAmount());                        
                         subDescription = GetShipmentDiscountDescription(discountTier.getCalculationType(), discountTier.getDiscountAmount(), shipmentDiscount);
-                        discount.setDeliveryDiscountMaxAmount(storeDiscount.getMaxDiscountAmount());
+                        discount.setDeliveryDiscountMaxAmount(Utilities.roundDouble(storeDiscount.getMaxDiscountAmount(),2));
                         if (deliveryDiscountDescription==null)
                             deliveryDiscountDescription = subDescription;
                         else
@@ -86,7 +87,7 @@ public class StoreDiscountCalculation {
                     }
                     discount.setDiscountType(storeDiscount.getDiscountType());
                     discount.setDiscountCalculationType(discountTier.getCalculationType());
-                    discount.setDiscountCalculationValue(discountTier.getDiscountAmount());
+                    discount.setDiscountCalculationValue(Utilities.roundDouble(discountTier.getDiscountAmount(),2));
                     discount.setDiscountId(storeDiscount.getId());
                     
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "subTotalDiscount:"+subTotalDiscount+" shipmentDiscount:"+shipmentDiscount+" description:"+subDescription);
@@ -96,8 +97,8 @@ public class StoreDiscountCalculation {
                 totalSubTotalDiscount = totalSubTotalDiscount + subTotalDiscount;
                 totalShipmentDiscount = totalShipmentDiscount + shipmentDiscount;
             }
-            discount.setDeliveryDiscount(totalShipmentDiscount);
-            discount.setSubTotalDiscount(totalSubTotalDiscount);
+            discount.setDeliveryDiscount(Utilities.roundDouble(totalShipmentDiscount,2));
+            discount.setSubTotalDiscount(Utilities.roundDouble(totalSubTotalDiscount,2));
             discount.setDeliveryDiscountDescription(deliveryDiscountDescription);
             discount.setSubTotalDiscountDescription(subTotalDiscountDescription);
         }

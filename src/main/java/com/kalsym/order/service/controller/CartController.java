@@ -358,10 +358,10 @@ public class CartController {
             OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission, 
                             deliveryCharge, deliveryType, 
                             cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
-            discount.setCartGrandTotal(orderTotalObject.getTotal());
-            discount.setCartDeliveryCharge(deliveryCharge);
-            discount.setStoreServiceCharge(orderTotalObject.getStoreServiceCharge());
-            discount.setStoreServiceChargePercentage(storeWithDetials.getServiceChargesPercentage());
+            discount.setCartGrandTotal(Utilities.roundDouble(orderTotalObject.getTotal(),2));
+            discount.setCartDeliveryCharge(Utilities.roundDouble(deliveryCharge,2));
+            discount.setStoreServiceCharge(Utilities.roundDouble(orderTotalObject.getStoreServiceCharge(),2));
+            discount.setStoreServiceChargePercentage(Utilities.roundDouble(storeWithDetials.getServiceChargesPercentage(),2));
             
             response.setSuccessStatus(HttpStatus.OK);
             response.setData(discount);
@@ -403,14 +403,12 @@ public class CartController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:"+id+" totalSubTotalDiscount:"+discount.getSubTotalDiscount()+" totalShipmentDiscount:"+discount.getDeliveryDiscount());
             
             SubTotalDiscount subTotalDiscount = new SubTotalDiscount();
-            BigDecimal cartSubTotal = Utilities.roundDouble(discount.getCartSubTotal(),2);
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "CartSubTotal:"+cartSubTotal);
-            subTotalDiscount.setCartSubTotal(cartSubTotal);            
+            subTotalDiscount.setCartSubTotal(discount.getCartSubTotal());            
             subTotalDiscount.setDiscountType(discount.getDiscountType());
             subTotalDiscount.setDiscountCalculationType(discount.getDiscountCalculationType());
-            subTotalDiscount.setDiscountCalculationValue(Utilities.roundDouble(discount.getDiscountCalculationValue(),2));
+            subTotalDiscount.setDiscountCalculationValue(discount.getDiscountCalculationValue());
             subTotalDiscount.setDiscountId(discount.getDiscountId());
-            subTotalDiscount.setSubTotalDiscount(Utilities.roundDouble(discount.getSubTotalDiscount(),2));
+            subTotalDiscount.setSubTotalDiscount(discount.getSubTotalDiscount());
             subTotalDiscount.setSubTotalDiscountDescription(discount.getSubTotalDiscountDescription());
             
             response.setSuccessStatus(HttpStatus.OK);

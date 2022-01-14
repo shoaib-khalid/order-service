@@ -39,17 +39,17 @@ public class OrderCalculation {
         Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "subTotalDiscount: " +discount.getSubTotalDiscount());
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "deliveryDiscount: " +discount.getDeliveryDiscount());
-        orderTotal.setAppliedDiscount(Round2DecimalPoint(discount.getSubTotalDiscount()));
+        orderTotal.setAppliedDiscount(discount.getSubTotalDiscount().doubleValue());
         orderTotal.setAppliedDiscountDescription(discount.getSubTotalDiscountDescription());
-        orderTotal.setDeliveryDiscount(Round2DecimalPoint(discount.getDeliveryDiscount()));
+        orderTotal.setDeliveryDiscount(discount.getDeliveryDiscount().doubleValue());
         orderTotal.setDeliveryDiscountDescription(discount.getDeliveryDiscountDescription());                
-        orderTotal.setSubTotal(Round2DecimalPoint(discount.getCartSubTotal()));
+        orderTotal.setSubTotal(discount.getCartSubTotal().doubleValue());
         orderTotal.setDiscountId(discount.getDiscountId());
         orderTotal.setDiscountType(discount.getDiscountType());
         orderTotal.setDiscountCalculationType(discount.getDiscountCalculationType());
-        orderTotal.setDiscountCalculationValue(Round2DecimalPoint(discount.getDiscountCalculationValue()));
-        orderTotal.setDiscountMaxAmount(Round2DecimalPoint(discount.getDiscountMaxAmount()));
-        orderTotal.setDeliveryDiscountMaxAmount(Round2DecimalPoint(discount.getDeliveryDiscountMaxAmount()));
+        orderTotal.setDiscountCalculationValue(discount.getDiscountCalculationValue().doubleValue());
+        orderTotal.setDiscountMaxAmount(discount.getDiscountMaxAmount().doubleValue());
+        orderTotal.setDeliveryDiscountMaxAmount(discount.getDeliveryDiscountMaxAmount().doubleValue());
         
         //calculate Store service charge
         double serviceCharges = 0;
