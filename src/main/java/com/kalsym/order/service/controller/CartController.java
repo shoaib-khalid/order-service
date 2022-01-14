@@ -50,6 +50,7 @@ import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.utility.OrderCalculation;
+import com.kalsym.order.service.utility.Utilities;
 
 /**
  *
@@ -401,24 +402,27 @@ public class CartController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:"+id+" totalSubTotalDiscount:"+discount.getSubTotalDiscount()+" totalShipmentDiscount:"+discount.getDeliveryDiscount());
             
             SubTotalDiscount subTotalDiscount = new SubTotalDiscount();
-            subTotalDiscount.setCartSubTotal(discount.getCartSubTotal());            
+            subTotalDiscount.setCartSubTotal(Utilities.roundDouble(discount.getCartSubTotal(),2));            
             subTotalDiscount.setDiscountType(discount.getDiscountType());
             subTotalDiscount.setDiscountCalculationType(discount.getDiscountCalculationType());
-            subTotalDiscount.setDiscountCalculationValue(discount.getDiscountCalculationValue());
+            subTotalDiscount.setDiscountCalculationValue(Utilities.roundDouble(discount.getDiscountCalculationValue(),2));
             subTotalDiscount.setDiscountId(discount.getDiscountId());
-            subTotalDiscount.setSubTotalDiscount(discount.getSubTotalDiscount());
-            discount.setSubTotalDiscountDescription(discount.getSubTotalDiscountDescription());
+            subTotalDiscount.setSubTotalDiscount(Utilities.roundDouble(discount.getSubTotalDiscount(),2));
+            subTotalDiscount.setSubTotalDiscountDescription(discount.getSubTotalDiscountDescription());
             
             response.setSuccessStatus(HttpStatus.OK);
-            response.setData(discount);
+            response.setData(subTotalDiscount);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         
         } catch (Exception exp) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error calculate discount", exp);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error calculate sub-total discount", exp);
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
 
     }
+    
+    
+    
    
 }

@@ -5,6 +5,7 @@
  */
 package com.kalsym.order.service.model.object;
 
+import java.math.BigDecimal;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -19,12 +20,12 @@ import lombok.ToString;
 @ToString
 public class SubTotalDiscount {
     
-    Double subTotalDiscount;
+    BigDecimal subTotalDiscount;
     String subTotalDiscountDescription;
-    Double cartSubTotal; 
+    BigDecimal cartSubTotal; 
     String discountType;
     String discountCalculationType;
-    Double discountCalculationValue;
+    BigDecimal discountCalculationValue;
     String discountId;
-    Double discountMaxAmount;        
+    BigDecimal discountMaxAmount;        
 }

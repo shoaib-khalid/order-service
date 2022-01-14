@@ -1,5 +1,7 @@
 package com.kalsym.order.service.utility;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 
 /**
@@ -15,5 +17,15 @@ public class Utilities {
         }
         
         return stringArray;
+    }
+    
+    public static BigDecimal roundDouble(Double value, int places) {
+        if (value==null) return null;
+        
+        if (places < 0) throw new IllegalArgumentException();
+
+        BigDecimal bd = BigDecimal.valueOf(value);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd;
     }
 }

@@ -33,7 +33,6 @@ public class OrderCalculation {
             StoreDiscountRepository storeDiscountRepository, 
             StoreDiscountTierRepository storeDiscountTierRepository, String logprefix) {
         
-        DecimalFormat df = new DecimalFormat("#.00");
         OrderObject orderTotal = new OrderObject();
         
         //calculate Store discount
