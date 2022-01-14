@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kalsym.order.service.model.repository.OrderRepository;
 import com.kalsym.order.service.utility.Logger;
 import com.kalsym.order.service.model.object.Discount;
+import com.kalsym.order.service.model.object.SubTotalDiscount;
 import com.kalsym.order.service.model.StoreDiscount;
 import com.kalsym.order.service.model.StoreDiscountTier;
 import com.kalsym.order.service.enums.DiscountType;
@@ -321,7 +322,7 @@ public class CartController {
             ) {
         String logprefix = request.getRequestURI() + " ";
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "carts-order-by-id request...");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getDiscountOfCart request...");
         HttpResponse response = new HttpResponse(request.getRequestURI());
         
         Optional<Cart> cartOptional = cartRepository.findById(id);
@@ -359,6 +360,54 @@ public class CartController {
             discount.setCartDeliveryCharge(deliveryCharge);
             discount.setStoreServiceCharge(orderTotalObject.getStoreServiceCharge());
             discount.setStoreServiceChargePercentage(storeWithDetials.getServiceChargesPercentage());
+            
+            response.setSuccessStatus(HttpStatus.OK);
+            response.setData(discount);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        
+        } catch (Exception exp) {
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error calculate discount", exp);
+            response.setMessage(exp.getMessage());
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
+        }
+
+    }
+    
+    
+    @GetMapping(path = {"/{id}/subtotaldiscount"}, name = "carts-discount-by-id", produces = "application/json")
+    @PreAuthorize("hasAnyAuthority('carts-discount-by-id', 'all')")
+    public ResponseEntity<HttpResponse> getSubTotalDiscountOfCart(HttpServletRequest request,
+            @PathVariable String id
+           ) {
+        String logprefix = request.getRequestURI() + " ";
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getSubTotalDiscountOfCart request...");
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        
+        Optional<Cart> cartOptional = cartRepository.findById(id);
+        if (!cartOptional.isPresent()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cart not found with cartId: " + id);
+            response.setErrorStatus(HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }        
+        
+        try {
+            Cart cart = cartOptional.get(); 
+            
+            StoreCommission storeCommission = productService.getStoreCommissionByStoreId(cart.getStoreId());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store commission: " + storeCommission);
+            
+            Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, 0.00, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);        
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:"+id+" totalSubTotalDiscount:"+discount.getSubTotalDiscount()+" totalShipmentDiscount:"+discount.getDeliveryDiscount());
+            
+            SubTotalDiscount subTotalDiscount = new SubTotalDiscount();
+            subTotalDiscount.setCartSubTotal(discount.getCartSubTotal());            
+            subTotalDiscount.setDiscountType(discount.getDiscountType());
+            subTotalDiscount.setDiscountCalculationType(discount.getDiscountCalculationType());
+            subTotalDiscount.setDiscountCalculationValue(discount.getDiscountCalculationValue());
+            subTotalDiscount.setDiscountId(discount.getDiscountId());
+            subTotalDiscount.setSubTotalDiscount(discount.getSubTotalDiscount());
+            discount.setSubTotalDiscountDescription(discount.getSubTotalDiscountDescription());
             
             response.setSuccessStatus(HttpStatus.OK);
             response.setData(discount);

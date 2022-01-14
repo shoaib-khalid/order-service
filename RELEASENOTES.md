@@ -1,4 +1,11 @@
 ##################################################
+# order-service-3.3.11-SNAPSHOT | 14-Jan-2022
+##################################################
+Format 2 decimal point for getDiscountOfCart & getSubTotalDiscountOfCart
+New function getSubTotalDiscountOfCart
+
+
+##################################################
 # order-service-3.3.10-SNAPSHOT | 13-Jan-2022
 ##################################################
 Add CustomRepository class to access entity manager refresh function to allow non-cache query

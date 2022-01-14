@@ -17,6 +17,7 @@ import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountTierRepository;
 import java.util.Optional;
+import java.text.DecimalFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -32,23 +33,24 @@ public class OrderCalculation {
             StoreDiscountRepository storeDiscountRepository, 
             StoreDiscountTierRepository storeDiscountTierRepository, String logprefix) {
         
+        DecimalFormat df = new DecimalFormat("#.00");
         OrderObject orderTotal = new OrderObject();
         
         //calculate Store discount
         Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "subTotalDiscount: " +discount.getSubTotalDiscount());
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "deliveryDiscount: " +discount.getDeliveryDiscount());
-        orderTotal.setAppliedDiscount(discount.getSubTotalDiscount());
+        orderTotal.setAppliedDiscount(Round2DecimalPoint(discount.getSubTotalDiscount()));
         orderTotal.setAppliedDiscountDescription(discount.getSubTotalDiscountDescription());
-        orderTotal.setDeliveryDiscount(discount.getDeliveryDiscount());
+        orderTotal.setDeliveryDiscount(Round2DecimalPoint(discount.getDeliveryDiscount()));
         orderTotal.setDeliveryDiscountDescription(discount.getDeliveryDiscountDescription());                
-        orderTotal.setSubTotal(discount.getCartSubTotal());
+        orderTotal.setSubTotal(Round2DecimalPoint(discount.getCartSubTotal()));
         orderTotal.setDiscountId(discount.getDiscountId());
         orderTotal.setDiscountType(discount.getDiscountType());
         orderTotal.setDiscountCalculationType(discount.getDiscountCalculationType());
-        orderTotal.setDiscountCalculationValue(discount.getDiscountCalculationValue());
-        orderTotal.setDiscountMaxAmount(discount.getDiscountMaxAmount());
-        orderTotal.setDeliveryDiscountMaxAmount(discount.getDeliveryDiscountMaxAmount());
+        orderTotal.setDiscountCalculationValue(Round2DecimalPoint(discount.getDiscountCalculationValue()));
+        orderTotal.setDiscountMaxAmount(Round2DecimalPoint(discount.getDiscountMaxAmount()));
+        orderTotal.setDeliveryDiscountMaxAmount(Round2DecimalPoint(discount.getDeliveryDiscountMaxAmount()));
         
         //calculate Store service charge
         double serviceCharges = 0;
@@ -70,16 +72,22 @@ public class OrderCalculation {
             }
         }
                                
-        orderTotal.setKlCommission(commission);
-        orderTotal.setStoreShare(orderTotal.getSubTotal() - orderTotal.getAppliedDiscount() + orderTotal.getStoreServiceCharge() - commission);
+        orderTotal.setKlCommission(Round2DecimalPoint(commission));
+        orderTotal.setStoreShare(Round2DecimalPoint(orderTotal.getSubTotal() - orderTotal.getAppliedDiscount() + orderTotal.getStoreServiceCharge() - commission));
         
         if (deliveryType!=null) {
             if (deliveryType.equals(DeliveryType.SELF.name())) {
                 double storeShare = orderTotal.getStoreShare() + deliveryCharge;
-                orderTotal.setStoreShare(storeShare);
+                orderTotal.setStoreShare(Round2DecimalPoint(storeShare));
             } 
         }
         
         return orderTotal;
+    }
+    
+    
+    private static Double Round2DecimalPoint(Double input) {
+        if (input == null) { return null; }
+        return Math.round(input * 100.0) / 100.0;
     }
 }
