@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Date;
+import java.math.BigDecimal;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -402,7 +403,9 @@ public class CartController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:"+id+" totalSubTotalDiscount:"+discount.getSubTotalDiscount()+" totalShipmentDiscount:"+discount.getDeliveryDiscount());
             
             SubTotalDiscount subTotalDiscount = new SubTotalDiscount();
-            subTotalDiscount.setCartSubTotal(Utilities.roundDouble(discount.getCartSubTotal(),2));            
+            BigDecimal cartSubTotal = Utilities.roundDouble(discount.getCartSubTotal(),2);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "CartSubTotal:"+cartSubTotal);
+            subTotalDiscount.setCartSubTotal(cartSubTotal);            
             subTotalDiscount.setDiscountType(discount.getDiscountType());
             subTotalDiscount.setDiscountCalculationType(discount.getDiscountCalculationType());
             subTotalDiscount.setDiscountCalculationValue(Utilities.roundDouble(discount.getDiscountCalculationValue(),2));
