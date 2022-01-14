@@ -39,17 +39,17 @@ public class OrderCalculation {
         Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "subTotalDiscount: " +discount.getSubTotalDiscount());
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "deliveryDiscount: " +discount.getDeliveryDiscount());
-        orderTotal.setAppliedDiscount(discount.getSubTotalDiscount().doubleValue());
+        orderTotal.setAppliedDiscount(Utilities.convertToDouble(discount.getSubTotalDiscount()));
         orderTotal.setAppliedDiscountDescription(discount.getSubTotalDiscountDescription());
-        orderTotal.setDeliveryDiscount(discount.getDeliveryDiscount().doubleValue());
+        orderTotal.setDeliveryDiscount(Utilities.convertToDouble(discount.getDeliveryDiscount()));
         orderTotal.setDeliveryDiscountDescription(discount.getDeliveryDiscountDescription());                
-        orderTotal.setSubTotal(discount.getCartSubTotal().doubleValue());
+        orderTotal.setSubTotal(Utilities.convertToDouble(discount.getCartSubTotal()));
         orderTotal.setDiscountId(discount.getDiscountId());
         orderTotal.setDiscountType(discount.getDiscountType());
         orderTotal.setDiscountCalculationType(discount.getDiscountCalculationType());
-        orderTotal.setDiscountCalculationValue(discount.getDiscountCalculationValue().doubleValue());
-        orderTotal.setDiscountMaxAmount(discount.getDiscountMaxAmount().doubleValue());
-        orderTotal.setDeliveryDiscountMaxAmount(discount.getDeliveryDiscountMaxAmount().doubleValue());
+        orderTotal.setDiscountCalculationValue(Utilities.convertToDouble(discount.getDiscountCalculationValue()));
+        orderTotal.setDiscountMaxAmount(Utilities.convertToDouble(discount.getDiscountMaxAmount()));
+        orderTotal.setDeliveryDiscountMaxAmount(Utilities.convertToDouble(discount.getDeliveryDiscountMaxAmount()));
         
         //calculate Store service charge
         double serviceCharges = 0;

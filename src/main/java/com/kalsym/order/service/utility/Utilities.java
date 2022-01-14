@@ -28,4 +28,10 @@ public class Utilities {
         bd = bd.setScale(places, RoundingMode.HALF_UP);
         return bd;
     }
+    
+    
+    public static Double convertToDouble(BigDecimal value) {
+        if (value==null) return null;               
+        return value.doubleValue();
+    }
 }
