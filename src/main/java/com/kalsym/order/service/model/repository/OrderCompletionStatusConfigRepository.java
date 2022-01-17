@@ -35,10 +35,16 @@ public interface OrderCompletionStatusConfigRepository extends PagingAndSortingR
     );
     
     
-     public List<OrderCompletionStatusConfig> findByVerticalIdAndStatusAndPaymentType(
+    public List<OrderCompletionStatusConfig> findByVerticalIdAndStatusAndPaymentType(
             String verticalId,
             String status,
             String orderPaymentType
+    );
+
+    public List<OrderCompletionStatusConfig> findByVerticalIdAndStatusAndStoreDeliveryType(
+            String verticalId,
+            String status,
+            String deliveryType
     );
 
 }

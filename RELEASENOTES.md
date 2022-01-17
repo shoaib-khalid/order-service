@@ -1,4 +1,30 @@
 ##################################################
+# order-service-3.4.0-SNAPSHOT | 17-Jan-2022
+##################################################
+Handle CANCELED_BY_MERCHANT by delivery-service in putOrderCompletionStatusUpdatesConfirm():
+-revert back to previous status
+-send alert to symplified support
+
+##Database changes:
+ALTER TABLE `order_completion_status_config` ADD pushWAToAdmin TINYINT(1);
+
+New order status : FAILED_FIND_DRIVER
+INSERT INTO order_completion_status VALUES ('FAILED_FIND_DRIVER','Fail to find driver. Need to arrange manually');
+
+New config in order_completion_status_config for FAILED_FIND_DRIVER
+Need to insert into order_completion_status_config with values :
+1. verticalId=store vertical, 
+2. status=FAILED_FIND_DRIVER
+3. pushWAToAdmin=1;
+others field no need to actual value, just put default value
+
+##Configuration changes:
+whatsapp.service.admin.alert.templatename=welcome_to_symplified_7
+whatsapp.service.admin.alert.refid=60133429331
+whatsapp.service.admin.msisdn=60133429331
+
+
+##################################################
 # order-service-3.3.11-SNAPSHOT | 14-Jan-2022
 ##################################################
 Format 2 decimal point for getDiscountOfCart & getSubTotalDiscountOfCart

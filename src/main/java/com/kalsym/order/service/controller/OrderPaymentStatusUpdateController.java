@@ -19,6 +19,7 @@ import com.kalsym.order.service.model.OrderPaymentStatusUpdate;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.EmailService;
 import com.kalsym.order.service.service.OrderPostService;
+import com.kalsym.order.service.service.WhatsappService;
 import com.kalsym.order.service.utility.HttpResponse;
 import com.kalsym.order.service.utility.MessageGenerator;
 import com.kalsym.order.service.utility.Utilities;
@@ -64,6 +65,9 @@ public class OrderPaymentStatusUpdateController {
 
     @Autowired
     EmailService emailService;
+    
+    @Autowired
+    WhatsappService whatsappService;
 
     @Autowired
     ProductService productService;
@@ -205,8 +209,16 @@ public class OrderPaymentStatusUpdateController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
                 orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
             }
-        } else if (newStatus.contains("REQUEST_DELIVERY_FAILED")) {
-            //delivery-order inform cannot find rider
+        } else if (newStatus.contains("FAILED_FIND_DRIVER")) {
+            //delivery-order inform cannot find rider            
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "FAILED_FIND_DRIVER");
+            List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStoreDeliveryType(verticalId, newStatus, storeDeliveryType);            
+            if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
+                Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + newStatus);                
+            } else {        
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
+                orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
+            }
         } else {
             //normal flow
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Normal flow. Read config from db");
@@ -349,6 +361,11 @@ public class OrderPaymentStatusUpdateController {
                 insertOrderCompletionStatusUpdate(OrderStatus.FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
                 order.setCompletionStatus(OrderStatus.FAILED);
                 break; 
+            
+            case FAILED_FIND_DRIVER:
+                insertOrderCompletionStatusUpdate(OrderStatus.FAILED_FIND_DRIVER, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
+                order.setCompletionStatus(previousStatus);
+                break;
                 
             case CANCELED_BY_MERCHANT:
                 insertOrderCompletionStatusUpdate(OrderStatus.FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
@@ -373,7 +390,10 @@ public class OrderPaymentStatusUpdateController {
                 } else {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Payment Order NOT found with orderId: " + order.getId());
                 }
-
+            
+            default:
+               order.setCompletionStatus(status);
+               insertOrderCompletionStatusUpdate(status, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
         }
         
         if (orderCompletionStatusConfig!=null) {
@@ -515,9 +535,20 @@ public class OrderPaymentStatusUpdateController {
                 }
 
             }
+            
+            //send push notification to WA alert to admin
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getPushWAToAdmin to store: " + orderCompletionStatusConfig.getPushWAToAdmin());
+            if (orderCompletionStatusConfig.getPushWAToAdmin()) {
+                try {
+                    //String storeName, String invoiceNo, String orderId, String merchantToken
+                    whatsappService.sendAdminAlert(storeWithDetails.getName(), order.getInvoiceId(), order.getId());
+                } catch (Exception e) {
+                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
+                }
+
+            }
         }
                 
-        order.setCompletionStatus(status);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatusUpdate updated for orderId: " + orderId + ", with orderStatus: " + status.toString());
         orderRepository.save(order);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
