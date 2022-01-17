@@ -7,9 +7,11 @@ Handle CANCELED_BY_MERCHANT by delivery-service in putOrderCompletionStatusUpdat
 
 ##Database changes:
 ALTER TABLE `order_completion_status_config` ADD pushWAToAdmin TINYINT(1);
+UPDATE `order_completion_status_config` SET pushWAToAdmin=0 WHERE pushWAToAdmin IS NULL;
 
 New order status : FAILED_FIND_DRIVER
 INSERT INTO order_completion_status VALUES ('FAILED_FIND_DRIVER','Fail to find driver. Need to arrange manually');
+
 
 New config in order_completion_status_config for FAILED_FIND_DRIVER
 Need to insert into order_completion_status_config with values :
