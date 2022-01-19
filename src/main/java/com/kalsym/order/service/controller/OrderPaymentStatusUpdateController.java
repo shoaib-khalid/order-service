@@ -195,11 +195,8 @@ public class OrderPaymentStatusUpdateController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prevStatus:"+previousStatus+" newStatus:"+newStatus+" CompletionCriteria = [verticalId:"+verticalId+" storePickup:"+storePickup+" storeDeliveryType: " + storeDeliveryType+" orderPaymentType:"+order.getPaymentType()+"]");        
         
         OrderCompletionStatusConfig orderCompletionStatusConfig = null;
-        
-        if (newStatus.contains("FAILED")) {
-            //something failed in order processing
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Something failed! Not read config from db");
-        } else if (newStatus.contains("CANCELED_BY_MERCHANT")) {
+                
+        if (newStatus.contains("CANCELED_BY_MERCHANT")) {
             //cancel order
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Merchant Cancel Order. Read config from db");
             List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndPaymentType(verticalId, newStatus, order.getPaymentType());            
@@ -219,6 +216,9 @@ public class OrderPaymentStatusUpdateController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
                 orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
             }
+        } else if (newStatus.contains("FAILED")) {
+            //something failed in order processing
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Something failed! Not read config from db");
         } else {
             //normal flow
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Normal flow. Read config from db");
