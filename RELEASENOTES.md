@@ -1,4 +1,12 @@
 ##################################################
+# order-service-3.4.1-SNAPSHOT | 19-Jan-2022
+##################################################
+Add new field in DeliveryOrder :
+-totalRequest
+-deliveryQuotationId
+
+
+##################################################
 # order-service-3.4.0-SNAPSHOT | 17-Jan-2022
 ##################################################
 Handle CANCELED_BY_MERCHANT by delivery-service in putOrderCompletionStatusUpdatesConfirm():

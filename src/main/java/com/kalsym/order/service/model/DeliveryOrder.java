@@ -47,4 +47,6 @@ public class DeliveryOrder {
     String merchantTrackingUrl;
     String customerTrackingUrl;
     String pickupType;
+    Integer totalRequest;
+    Long deliveryQuotationId;
 }
