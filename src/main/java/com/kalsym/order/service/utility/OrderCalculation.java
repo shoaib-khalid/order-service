@@ -34,7 +34,7 @@ public class OrderCalculation {
             StoreDiscountTierRepository storeDiscountTierRepository, String logprefix) {
         
         OrderObject orderTotal = new OrderObject();
-        
+        if (deliveryCharge==null) { deliveryCharge=0.00; }
         //calculate Store discount
         Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "subTotalDiscount: " +discount.getSubTotalDiscount());

@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.4.2-SNAPSHOT | 20-Jan-2022
+##################################################
+Bug fix for placeOrder for store pickup with onlinepayment 
+
+
+##################################################
 # order-service-3.4.1-SNAPSHOT | 19-Jan-2022
 ##################################################
 Add new field in DeliveryOrder :
