@@ -1,4 +1,12 @@
 ##################################################
+# order-service-3.4.3-SNAPSHOT | 24-Jan-2022
+##################################################
+Add field in response of getSubTotalDiscountOfCart() :
+-storeServiceCharge
+-storeServiceChargePercentage
+
+
+##################################################
 # order-service-3.4.2-SNAPSHOT | 20-Jan-2022
 ##################################################
 Bug fix for placeOrder for store pickup with onlinepayment 

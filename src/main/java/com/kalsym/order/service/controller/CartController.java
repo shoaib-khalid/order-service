@@ -51,6 +51,7 @@ import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.utility.OrderCalculation;
+import static com.kalsym.order.service.utility.OrderCalculation.calculateStoreServiceCharges;
 import com.kalsym.order.service.utility.Utilities;
 
 /**
@@ -396,12 +397,18 @@ public class CartController {
         try {
             Cart cart = cartOptional.get(); 
             
+            StoreWithDetails storeWithDetials = productService.getStoreById(cart.getStoreId());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store details of cartId: " + cart.getId() + ", and storeId: " + cart.getStoreId());
+            
             StoreCommission storeCommission = productService.getStoreCommissionByStoreId(cart.getStoreId());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store commission: " + storeCommission);
             
             Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, 0.00, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);        
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:"+id+" totalSubTotalDiscount:"+discount.getSubTotalDiscount()+" totalShipmentDiscount:"+discount.getDeliveryDiscount());
             
+            Double storeSvcChargePercentage = storeWithDetials.getServiceChargesPercentage();
+            double serviceCharges = calculateStoreServiceCharges(storeSvcChargePercentage, discount.getCartSubTotal().doubleValue(), discount.getSubTotalDiscount().doubleValue());
+        
             SubTotalDiscount subTotalDiscount = new SubTotalDiscount();
             subTotalDiscount.setCartSubTotal(discount.getCartSubTotal());            
             subTotalDiscount.setDiscountType(discount.getDiscountType());
@@ -410,6 +417,8 @@ public class CartController {
             subTotalDiscount.setDiscountId(discount.getDiscountId());
             subTotalDiscount.setSubTotalDiscount(discount.getSubTotalDiscount());
             subTotalDiscount.setSubTotalDiscountDescription(discount.getSubTotalDiscountDescription());
+            subTotalDiscount.setStoreServiceCharge(Utilities.roundDouble(serviceCharges,2));
+            subTotalDiscount.setStoreServiceChargePercentage(Utilities.roundDouble(storeSvcChargePercentage,2));
             
             response.setSuccessStatus(HttpStatus.OK);
             response.setData(subTotalDiscount);

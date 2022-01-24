@@ -27,5 +27,7 @@ public class SubTotalDiscount {
     String discountCalculationType;
     BigDecimal discountCalculationValue;
     String discountId;
-    BigDecimal discountMaxAmount;        
+    BigDecimal discountMaxAmount;  
+    BigDecimal storeServiceCharge;
+    BigDecimal storeServiceChargePercentage;
 }

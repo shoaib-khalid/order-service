@@ -51,12 +51,9 @@ public class OrderCalculation {
         orderTotal.setDiscountMaxAmount(Utilities.convertToDouble(discount.getDiscountMaxAmount()));
         orderTotal.setDeliveryDiscountMaxAmount(Utilities.convertToDouble(discount.getDeliveryDiscountMaxAmount()));
         
-        //calculate Store service charge
-        double serviceCharges = 0;
-        if (null != storeSvcChargePercentage) {
-            serviceCharges = (storeSvcChargePercentage / 100) * (orderTotal.getSubTotal() - orderTotal.getAppliedDiscount()) ;
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceCharges: " + serviceCharges);
-        }
+        //calculate Store service charge        
+        double serviceCharges = calculateStoreServiceCharges(storeSvcChargePercentage, orderTotal.getSubTotal(), orderTotal.getAppliedDiscount());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceCharges: " + serviceCharges);
         orderTotal.setStoreServiceCharge(serviceCharges); 
         
         //calculate grand total
@@ -88,5 +85,13 @@ public class OrderCalculation {
     private static Double Round2DecimalPoint(Double input) {
         if (input == null) { return null; }
         return Math.round(input * 100.0) / 100.0;
+    }
+    
+    public static Double calculateStoreServiceCharges(Double storeSvcChargePercentage, double orderSubTotal, double orderAppliedDiscount) {
+        double serviceCharges = 0;
+        if (null != storeSvcChargePercentage) {
+            serviceCharges = (storeSvcChargePercentage / 100) * (orderSubTotal - orderAppliedDiscount) ;            
+        } 
+        return serviceCharges;
     }
 }
