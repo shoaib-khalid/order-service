@@ -88,7 +88,7 @@ public class ReminderScheduler {
                 String[] recipients = {phoneNumber};
                 String updated = null;   
                 
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderId:"+orderId+" storeId:"+storeId+" storeName:"+storeName+" timestamp:"+ts.toString());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderId:"+orderId+" storeId:"+storeId+" storeName:"+storeName+" timestamp:"+ts.toString()+" phoneNumber:"+phoneNumber);
                 
                 //convert time to merchant timezone
                 StoreWithDetails storeWithDetails = null;
