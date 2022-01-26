@@ -1,4 +1,11 @@
 ##################################################
+# order-service-3.4.4-SNAPSHOT | 26-Jan-2022
+##################################################
+Change template for whatsapp-service
+Bug fix for placeOrder : when error on discount/item return HTTP CONFLICT
+
+
+##################################################
 # order-service-3.4.3-SNAPSHOT | 24-Jan-2022
 ##################################################
 Add field in response of getSubTotalDiscountOfCart() :

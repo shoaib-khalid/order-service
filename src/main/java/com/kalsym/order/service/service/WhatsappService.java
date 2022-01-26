@@ -38,13 +38,13 @@ public class WhatsappService {
     @Value("${whatsapp.service.push.url:https://waw.symplified.it/360dialog/callback/templatemessage/push}")
     private String whatsappServiceUrl;
     
-    @Value("${whatsapp.service.order.reminder.templatename:welcome_to_symplified_7}")
+    @Value("${whatsapp.service.order.reminder.templatename:symplified_order_alert}")
     private String orderReminderTemplateName;
     
     @Value("${whatsapp.service.order.reminder.refid:60133429331}")
     private String orderReminderRefId;
     
-    @Value("${whatsapp.service.admin.alert.templatename:welcome_to_symplified_7}")
+    @Value("${whatsapp.service.admin.alert.templatename:symplified_admin_notification}")
     private String adminAlertTemplateName;
     
     @Value("${whatsapp.service.admin.alert.refid:60133429331}")
@@ -53,7 +53,8 @@ public class WhatsappService {
     @Value("${whatsapp.service.admin.msisdn:60133429331}")
     private String adminMsisdn;
     
-    public boolean sendOrderReminder(String[] recipients, String storeName, String invoiceNo, String orderId, String merchantToken) throws Exception {
+    public boolean sendOrderReminder(String[] recipients, String storeName, String invoiceNo, String orderId, String merchantToken, String updatedTime) throws Exception {
+        //alert format : You have new order for store:{{1}} with invoiceNo:{{2}} updated at {{3}}
         String logprefix = "sendWhatsappMessage";
         RestTemplate restTemplate = new RestTemplate();        
         HttpHeaders headers = new HttpHeaders();
@@ -66,7 +67,7 @@ public class WhatsappService {
         request.setMerchantToken(merchantToken);
         Template template = new Template();
         template.setName(orderReminderTemplateName);
-        String[] message = {storeName, invoiceNo};
+        String[] message = {storeName, invoiceNo, updatedTime};
         template.setParameters(message);
         request.setTemplate(template);
         HttpEntity<WhatsappMessage> httpEntity = new HttpEntity<>(request, headers);
@@ -86,7 +87,8 @@ public class WhatsappService {
     }
     
     
-    public boolean sendAdminAlert(String storeName, String invoiceNo, String orderId) throws Exception {
+    public boolean sendAdminAlert(String status, String storeName, String invoiceNo, String orderId, String updatedTime) throws Exception {
+        //alert format : Issue category:{{1}} with invoiceNo:{{2}} updated at:{{3}} for store {{4}}
         String logprefix = "sendAdminAlert";
         String[] recipients = {adminMsisdn};
         RestTemplate restTemplate = new RestTemplate();        
@@ -99,7 +101,7 @@ public class WhatsappService {
         request.setOrderId(orderId);
         Template template = new Template();
         template.setName(adminAlertTemplateName);
-        String[] message = {storeName, invoiceNo};
+        String[] message = {status, invoiceNo, updatedTime, storeName};
         template.setParameters(message);
         request.setTemplate(template);
         HttpEntity<WhatsappMessage> httpEntity = new HttpEntity<>(request, headers);

@@ -23,6 +23,7 @@ import com.kalsym.order.service.service.WhatsappService;
 import com.kalsym.order.service.utility.HttpResponse;
 import com.kalsym.order.service.utility.MessageGenerator;
 import com.kalsym.order.service.utility.Utilities;
+import com.kalsym.order.service.utility.DateTimeUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -542,7 +543,7 @@ public class OrderPaymentStatusUpdateController {
             if (orderCompletionStatusConfig.getPushWAToAdmin()) {
                 try {
                     //String storeName, String invoiceNo, String orderId, String merchantToken
-                    whatsappService.sendAdminAlert(storeWithDetails.getName(), order.getInvoiceId(), order.getId());
+                    whatsappService.sendAdminAlert(status.name(), storeWithDetails.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp());
                 } catch (Exception e) {
                     Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
                 }

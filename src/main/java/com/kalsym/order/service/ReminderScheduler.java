@@ -65,11 +65,12 @@ public class ReminderScheduler {
                 String clientId = (String)order[4];
                 String username = (String)order[5];
                 String password = (String)order[6];
+                String updated = (String)order[7];
                 String[] recipients = {phoneNumber};
                 //create merchant temp token
                 String merchantToken = customerService.GenerateTempToken(clientId, username, password);
                 if (merchantToken!=null) {
-                    boolean res = whatsappService.sendOrderReminder(recipients, storeName, invoiceId, orderId, merchantToken);
+                    boolean res = whatsappService.sendOrderReminder(recipients, storeName, invoiceId, orderId, merchantToken, updated);
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderId:"+orderId+" InvoiceNo:"+invoiceId+" StoreName:"+storeName+" Reminder result:"+res);
                 } else {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderId:"+orderId+" InvoiceNo:"+invoiceId+" StoreName:"+storeName+" Fail to get temp token");

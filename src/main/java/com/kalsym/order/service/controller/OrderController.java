@@ -790,7 +790,7 @@ public class OrderController {
                             response.setSuccessStatus(HttpStatus.CONFLICT);
                             response.setMessage("Discount not valid");
                             response.setData(cartItems.get(i));
-                            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+                            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
                         }
                     } else {                    
                         if (cartItems.get(i).getProductPrice() != Float.parseFloat(String.valueOf(productInventory.getPrice()))) {
@@ -799,7 +799,7 @@ public class OrderController {
                             response.setSuccessStatus(HttpStatus.CONFLICT);
                             response.setMessage("Conflict in prices, oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
                             response.setData(cartItems.get(i));
-                            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+                            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
                         }
                         subTotal += productInventory.getPrice();
                         itemPrice = productInventory.getPrice();
