@@ -90,26 +90,31 @@ public class WhatsappService {
     public boolean sendAdminAlert(String status, String storeName, String invoiceNo, String orderId, String updatedTime) throws Exception {
         //alert format : Issue category:{{1}} with invoiceNo:{{2}} updated at:{{3}} for store {{4}}
         String logprefix = "sendAdminAlert";
-        String[] recipients = adminMsisdn.split(",");        
-        RestTemplate restTemplate = new RestTemplate();        
-        HttpHeaders headers = new HttpHeaders();
-        WhatsappMessage request = new WhatsappMessage();
-        request.setGuest(false);
-        request.setRecipientIds(recipients);
-        request.setRefId(recipients[0]);
-        request.setReferenceId(adminAlertRefId);
-        request.setOrderId(orderId);
-        Template template = new Template();
-        template.setName(adminAlertTemplateName);
-        String[] message = {status, invoiceNo, updatedTime, storeName};
-        template.setParameters(message);
-        request.setTemplate(template);
-        HttpEntity<WhatsappMessage> httpEntity = new HttpEntity<>(request, headers);
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
+        String[] recipientList = adminMsisdn.split(",");    
+        
+        ResponseEntity<String> res = null;
+        for (int i=0;i<recipientList.length;i++) {
+            RestTemplate restTemplate = new RestTemplate();        
+            HttpHeaders headers = new HttpHeaders();
+            WhatsappMessage request = new WhatsappMessage();
+            request.setGuest(false);
+            String[] recipients = {recipientList[i]};
+            request.setRecipientIds(recipients);
+            request.setRefId(recipients[0]);
+            request.setReferenceId(adminAlertRefId);
+            request.setOrderId(orderId);
+            Template template = new Template();
+            template.setName(adminAlertTemplateName);
+            String[] message = {status, invoiceNo, updatedTime, storeName};
+            template.setParameters(message);
+            request.setTemplate(template);
+            HttpEntity<WhatsappMessage> httpEntity = new HttpEntity<>(request, headers);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
 
-        ResponseEntity<String> res = restTemplate.postForEntity(whatsappServiceUrl, httpEntity, String.class);
-
+            res = restTemplate.postForEntity(whatsappServiceUrl, httpEntity, String.class);
+        }
+        
         if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
             return true;
