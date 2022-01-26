@@ -50,7 +50,7 @@ public class WhatsappService {
     @Value("${whatsapp.service.admin.alert.refid:60133429331}")
     private String adminAlertRefId;
     
-    @Value("${whatsapp.service.admin.msisdn:60133429331}")
+    @Value("${whatsapp.service.admin.msisdn:60133429331,60133731869}")
     private String adminMsisdn;
     
     public boolean sendOrderReminder(String[] recipients, String storeName, String invoiceNo, String orderId, String merchantToken, String updatedTime) throws Exception {
@@ -90,7 +90,7 @@ public class WhatsappService {
     public boolean sendAdminAlert(String status, String storeName, String invoiceNo, String orderId, String updatedTime) throws Exception {
         //alert format : Issue category:{{1}} with invoiceNo:{{2}} updated at:{{3}} for store {{4}}
         String logprefix = "sendAdminAlert";
-        String[] recipients = {adminMsisdn};
+        String[] recipients = adminMsisdn.split(",");        
         RestTemplate restTemplate = new RestTemplate();        
         HttpHeaders headers = new HttpHeaders();
         WhatsappMessage request = new WhatsappMessage();
