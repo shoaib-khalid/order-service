@@ -86,25 +86,28 @@ public class ReminderScheduler {
                 Timestamp ts = (java.sql.Timestamp)order[7];
                 String storeId = (String)order[8];
                 String[] recipients = {phoneNumber};
+                String updated = null;   
+                
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderId:"+orderId+" storeId:"+storeId+" storeName:"+storeName+" timestamp:"+ts.toString());
                 
                 //convert time to merchant timezone
                 StoreWithDetails storeWithDetails = null;
                 Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(storeId);
                 if (!optStore.isPresent()) {
-                    storeWithDetails = optStore.get();
+                    storeWithDetails = optStore.get();                
+                    RegionCountry regionCountry = null;
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "RegionCountryId:"+storeWithDetails.getRegionCountryId());
+                    
+                    Optional<RegionCountry> t = regionCountriesRepository.findById(storeWithDetails.getRegionCountryId());
+                    if (t.isPresent()) {
+                        regionCountry = t.get();                                             
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "RegionCountry:"+regionCountry);
+                        LocalDateTime startLocalTime = DateTimeUtil.convertToLocalDateTimeViaInstant(new Date(ts.getTime()), ZoneId.of(regionCountry.getTimezone()) );                
+                        DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("dd-MM-yyyy h:mm a");
+                        updated = formatter1.format(startLocalTime);                                    
+                    }
                 }
-                RegionCountry regionCountry = null;
-                Optional<RegionCountry> t = regionCountriesRepository.findById(storeWithDetails.getRegionCountryId());
-                if (t.isPresent()) {
-                    regionCountry = t.get();
-                }
-                String updated = null;        
-                if (regionCountry!=null) {
-                    LocalDateTime startLocalTime = DateTimeUtil.convertToLocalDateTimeViaInstant(new Date(ts.getTime()), ZoneId.of(regionCountry.getTimezone()) );                
-                    DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("dd-MM-yyyy h:mm a");
-                    updated = formatter1.format(startLocalTime);                
-                }  
-            
+                
                 //create merchant temp token
                 String merchantToken = customerService.GenerateTempToken(clientId, username, password);
                 if (merchantToken!=null) {
