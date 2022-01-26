@@ -29,7 +29,7 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
             + "WHERE c.storeId = :storeId AND completionStatus<>'RECEIVED_AT_STORE' GROUP BY c.completionStatus")
     List<Object[]> getCountSummaryOnlinePayment(@Param("storeId") String storeId);
     
-    @Query(value = "SELECT A.id, A.invoiceId, B.phoneNumber, B.name, B.clientId,  C.username, C.password, A.updated  "
+    @Query(value = "SELECT A.id, A.invoiceId, B.phoneNumber, B.name, B.clientId,  C.username, C.password, A.updated, A.storeId  "
             + "FROM `order` A INNER JOIN `store` B ON A.storeId=B.id  "
             + "INNER JOIN `client` C ON B.clientId=C.id "
             + "WHERE completionStatus='PAYMENT_CONFIRMED' AND verticalCode='FNB' "

@@ -18,15 +18,24 @@ package com.kalsym.order.service;
 
 import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.model.repository.OrderRepository;
+import com.kalsym.order.service.model.repository.StoreDetailsRepository;
+import com.kalsym.order.service.model.repository.RegionCountriesRepository;
 import com.kalsym.order.service.utility.Logger;
 import com.kalsym.order.service.model.Order;
+import com.kalsym.order.service.model.RegionCountry;
+import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.service.WhatsappService;
 import com.kalsym.order.service.service.CustomerService;
+import com.kalsym.order.service.utility.DateTimeUtil;
 
 import java.util.List;
 import java.util.Date;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,6 +52,12 @@ public class ReminderScheduler {
     
     @Autowired
     OrderRepository orderRepository;
+    
+    @Autowired
+    RegionCountriesRepository regionCountriesRepository;
+    
+    @Autowired
+    StoreDetailsRepository storeDetailsRepository;
     
     @Autowired
     WhatsappService whatsappService;
@@ -69,10 +84,27 @@ public class ReminderScheduler {
                 String username = (String)order[5];
                 String password = (String)order[6];
                 Timestamp ts = (java.sql.Timestamp)order[7];
-                Date date = new Date();
-                date.setTime(ts.getTime());
-                String updated = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date);
+                String storeId = (String)order[8];
                 String[] recipients = {phoneNumber};
+                
+                //convert time to merchant timezone
+                StoreWithDetails storeWithDetails = null;
+                Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(storeId);
+                if (!optStore.isPresent()) {
+                    storeWithDetails = optStore.get();
+                }
+                RegionCountry regionCountry = null;
+                Optional<RegionCountry> t = regionCountriesRepository.findById(storeWithDetails.getRegionCountryId());
+                if (t.isPresent()) {
+                    regionCountry = t.get();
+                }
+                String updated = null;        
+                if (regionCountry!=null) {
+                    LocalDateTime startLocalTime = DateTimeUtil.convertToLocalDateTimeViaInstant(new Date(ts.getTime()), ZoneId.of(regionCountry.getTimezone()) );                
+                    DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("dd-MM-yyyy h:mm a");
+                    updated = formatter1.format(startLocalTime);                
+                }  
+            
                 //create merchant temp token
                 String merchantToken = customerService.GenerateTempToken(clientId, username, password);
                 if (merchantToken!=null) {
