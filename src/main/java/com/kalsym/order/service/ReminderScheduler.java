@@ -93,7 +93,7 @@ public class ReminderScheduler {
                 //convert time to merchant timezone
                 StoreWithDetails storeWithDetails = null;
                 Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(storeId);
-                if (!optStore.isPresent()) {
+                if (optStore.isPresent()) {
                     storeWithDetails = optStore.get();                
                     RegionCountry regionCountry = null;
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "RegionCountryId:"+storeWithDetails.getRegionCountryId());
@@ -106,6 +106,8 @@ public class ReminderScheduler {
                         DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("dd-MM-yyyy h:mm a");
                         updated = formatter1.format(startLocalTime);                                    
                     }
+                } else {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "StoreWithDetails not found");
                 }
                 
                 //create merchant temp token
