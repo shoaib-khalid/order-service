@@ -24,6 +24,9 @@ import com.kalsym.order.service.service.WhatsappService;
 import com.kalsym.order.service.service.CustomerService;
 
 import java.util.List;
+import java.util.Date;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -65,7 +68,10 @@ public class ReminderScheduler {
                 String clientId = (String)order[4];
                 String username = (String)order[5];
                 String password = (String)order[6];
-                String updated = (String)order[7];
+                Timestamp ts = (java.sql.Timestamp)order[7];
+                Date date = new Date();
+                date.setTime(ts.getTime());
+                String updated = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date);
                 String[] recipients = {phoneNumber};
                 //create merchant temp token
                 String merchantToken = customerService.GenerateTempToken(clientId, username, password);
