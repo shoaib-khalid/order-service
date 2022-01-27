@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.5.0-SNAPSHOT | 27-Jan-2022
+##################################################
+Move logic of putOrderCompletionStatusUpdatesConfirm to separate class
+
+
+##################################################
 # order-service-3.4.5-SNAPSHOT | 27-Jan-2022
 ##################################################
 Bug fix for template for whatsapp-service

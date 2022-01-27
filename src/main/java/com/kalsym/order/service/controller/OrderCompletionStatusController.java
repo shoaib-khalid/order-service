@@ -1,12 +1,36 @@
 package com.kalsym.order.service.controller;
 
 import com.kalsym.order.service.OrderServiceApplication;
+import com.kalsym.order.service.enums.OrderStatus;
+import com.kalsym.order.service.enums.PaymentStatus;
+import com.kalsym.order.service.enums.RefundStatus;
+import com.kalsym.order.service.enums.RefundType;
+import com.kalsym.order.service.model.Body;
+import com.kalsym.order.service.model.DeliveryOrder;
+import com.kalsym.order.service.model.Email;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderCompletionStatus;
+import com.kalsym.order.service.model.OrderCompletionStatusConfig;
+import com.kalsym.order.service.model.OrderCompletionStatusUpdate;
+import com.kalsym.order.service.model.OrderItem;
+import com.kalsym.order.service.model.OrderPaymentStatusUpdate;
+import com.kalsym.order.service.model.OrderRefund;
+import com.kalsym.order.service.model.OrderShipmentDetail;
+import com.kalsym.order.service.model.PaymentOrder;
+import com.kalsym.order.service.model.Product;
+import com.kalsym.order.service.model.ProductInventory;
+import com.kalsym.order.service.model.RegionCountry;
+import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.repository.OrderCompletionStatusRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
+import com.kalsym.order.service.utility.DateTimeUtil;
 import com.kalsym.order.service.utility.HttpResponse;
 import com.kalsym.order.service.utility.Logger;
+import com.kalsym.order.service.utility.MessageGenerator;
+import com.kalsym.order.service.utility.Utilities;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -134,4 +158,22 @@ public class OrderCompletionStatusController {
         response.setData(orderCompletionStatusRepository.save(orderCompletionStatus));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
+    
+    
+    @PutMapping(path = {"/bulk"}, name = "order-completion-status-updates-put-by-bulk")
+    @PreAuthorize("hasAnyAuthority('order-completion-status-updates-put-by-bulk', 'all')")
+    public ResponseEntity<HttpResponse> putOrderCompletionStatusUpdatesBulk(HttpServletRequest request,
+          @Valid @RequestBody OrderCompletionStatusUpdate[] bodyOrderCompletionStatusUpdateList) throws Exception {
+        String logprefix = request.getRequestURI() + " ";
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-status-updates-confirm-put-by-bulk");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyOrderCompletionStatusUpdateList.toString(), "");
+        
+        //return ack
+       
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+
+    }
+
 }
