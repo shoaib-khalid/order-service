@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.4.5-SNAPSHOT | 27-Jan-2022
+##################################################
+Bug fix for template for whatsapp-service
+
+
+##################################################
 # order-service-3.4.4-SNAPSHOT | 26-Jan-2022
 ##################################################
 Change template for whatsapp-service

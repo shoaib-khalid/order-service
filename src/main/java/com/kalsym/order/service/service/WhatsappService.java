@@ -38,13 +38,13 @@ public class WhatsappService {
     @Value("${whatsapp.service.push.url:https://waw.symplified.it/360dialog/callback/templatemessage/push}")
     private String whatsappServiceUrl;
     
-    @Value("${whatsapp.service.order.reminder.templatename:symplified_order_alert}")
+    @Value("${whatsapp.service.order.reminder.templatename:symplified_order_notification}")
     private String orderReminderTemplateName;
     
     @Value("${whatsapp.service.order.reminder.refid:60133429331}")
     private String orderReminderRefId;
     
-    @Value("${whatsapp.service.admin.alert.templatename:symplified_admin_notification}")
+    @Value("${whatsapp.service.admin.alert.templatename:symplified_admin_alert}")
     private String adminAlertTemplateName;
     
     @Value("${whatsapp.service.admin.alert.refid:60133429331}")
