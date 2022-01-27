@@ -105,7 +105,7 @@ public class WhatsappService {
             request.setOrderId(orderId);
             Template template = new Template();
             template.setName(adminAlertTemplateName);
-            String[] message = {status, invoiceNo, updatedTime, storeName};
+            String[] message = {status, storeName, invoiceNo, updatedTime };
             template.setParameters(message);
             request.setTemplate(template);
             HttpEntity<WhatsappMessage> httpEntity = new HttpEntity<>(request, headers);
