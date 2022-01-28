@@ -79,6 +79,8 @@ public class OrderProcessWorker {
     private DeliveryService deliveryService;
     private OrderPostService orderPostService;    
     
+    private boolean proceedRequestDelivery;
+    
     public OrderProcessWorker(
             String logprefix, 
             String orderId, 
@@ -104,7 +106,8 @@ public class OrderProcessWorker {
             WhatsappService whatsappService,
             FCMService fcmService,
             DeliveryService deliveryService,
-            OrderPostService orderPostService
+            OrderPostService orderPostService,
+            boolean proceedRequestDelivery
             ) {
         
         this.logprefix = logprefix;
@@ -132,6 +135,7 @@ public class OrderProcessWorker {
         this.fcmService = fcmService;
         this.deliveryService = deliveryService;
         this.orderPostService = orderPostService;
+        this.proceedRequestDelivery = proceedRequestDelivery;
     }
     
     public OrderProcessResult startProcessOrder() {
@@ -422,7 +426,7 @@ public class OrderProcessWorker {
             }
             //request delivery
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "request delivery: " + orderCompletionStatusConfig.getRequestDelivery());
-            if (orderCompletionStatusConfig.getRequestDelivery()) {
+            if (orderCompletionStatusConfig.getRequestDelivery() && proceedRequestDelivery) {
                 try {
                     DeliveryOrder deliveryOrder = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), 
                             order.getId(), 
@@ -465,6 +469,8 @@ public class OrderProcessWorker {
                     orderProcessResult.errorMsg = "Requesting delivery failed";
                     return orderProcessResult;
                 }
+            } else if (orderCompletionStatusConfig.getRequestDelivery()) {
+                orderProcessResult.pendingRequestDelivery=true;
             }
 
             //send email to customer if config allows

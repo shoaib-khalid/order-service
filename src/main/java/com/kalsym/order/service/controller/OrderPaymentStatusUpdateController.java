@@ -148,7 +148,8 @@ public class OrderPaymentStatusUpdateController {
             whatsappService,
             fcmService,
             deliveryService,
-            orderPostService) ;
+            orderPostService,
+            true) ;
         OrderProcessResult result = worker.startProcessOrder();
         response.setData(result.data);
         response.setSuccessStatus(result.httpStatus);

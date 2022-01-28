@@ -18,14 +18,19 @@ import org.springframework.web.client.RestTemplate;
 import com.kalsym.order.service.model.object.DeliveryServiceSubmitOrder;
 import com.kalsym.order.service.model.object.DeliveryServiceResponse;
 import com.kalsym.order.service.model.object.DeliveryPickup;
+import com.kalsym.order.service.model.object.DeliveryServiceBulkConfirmResponse;
 import org.springframework.http.HttpStatus;
 import com.kalsym.order.service.model.DeliveryOrder;
 import com.kalsym.order.service.model.DeliveryQuotation;
 import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.utility.Logger;
+import com.kalsym.order.service.model.object.DeliveryServiceBulkConfirmRequest;
 import org.json.JSONObject;
+import org.json.JSONArray;
 import java.util.Date;
 import java.sql.Time;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  *
@@ -46,6 +51,9 @@ public class DeliveryService {
     
     @Value("${deliveryService.get.quotation.URL:not-set}")
     String getQuotationURL;
+    
+    @Value("${deliveryService.bulk.confirm.URL:not-set}")
+    String orderBulkConfirmURL;
 
     @Autowired
     StoreNameService storeNameService;
@@ -166,6 +174,54 @@ public class DeliveryService {
             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery quotation domain: " + getQuotationURL, ex);
         } catch (Exception ex) {
             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery quotation domain: " + getQuotationURL, ex);
+        }
+        return null;
+    }
+    
+    
+    public List<DeliveryServiceBulkConfirmResponse> bulkConfirmOrderDelivery(List bulkConfirmOrderList)  {
+        String logprefix = "bulkConfirmOrderDelivery";
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer accessToken");
+        
+        HttpEntity<List<DeliveryServiceBulkConfirmRequest>> httpEntity;
+        httpEntity = new HttpEntity<>(bulkConfirmOrderList, headers);
+        
+        try {
+            String url = orderBulkConfirmURL;
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderBulkConfirmURL : " + url);
+            ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
+
+            if (res.getStatusCode() == HttpStatus.OK) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
+                JSONObject jsonObject = new JSONObject(res.getBody());
+
+                List<DeliveryServiceBulkConfirmResponse> deliveryResponseList = new ArrayList();
+                //create ObjectMapper instance
+                JSONArray deliveryList= jsonObject.getJSONArray("data");
+                for (int i=0;i<deliveryList.length();i++) {
+                    
+                    JSONObject deliveryObject = deliveryList.getJSONObject(i);
+                    //create ObjectMapper instance
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    //convert json string to object
+                    DeliveryServiceBulkConfirmResponse deliveryResponse = objectMapper.readValue(deliveryObject.toString(), DeliveryServiceBulkConfirmResponse.class);
+                    deliveryResponseList.add(deliveryResponse);
+                }
+                
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got delivery response list object : " + deliveryResponseList.toString());
+                return deliveryResponseList;
+            }
+        } catch (RestClientException e) {
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery order domain: " + orderBulkConfirmURL, e);
+        } catch (JsonProcessingException ex) {
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery order domain: " + orderBulkConfirmURL, ex);
+        } catch (Exception ex) {
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery order domain: " + orderBulkConfirmURL, ex);
         }
         return null;
     }

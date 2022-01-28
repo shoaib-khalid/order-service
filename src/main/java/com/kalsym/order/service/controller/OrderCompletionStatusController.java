@@ -21,8 +21,26 @@ import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.model.ProductInventory;
 import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.StoreWithDetails;
+import com.kalsym.order.service.model.object.OrderProcessResult;
+import com.kalsym.order.service.model.repository.CartItemRepository;
+import com.kalsym.order.service.model.repository.OrderCompletionStatusConfigRepository;
 import com.kalsym.order.service.model.repository.OrderCompletionStatusRepository;
+import com.kalsym.order.service.model.repository.OrderCompletionStatusUpdateRepository;
+import com.kalsym.order.service.model.repository.OrderItemRepository;
+import com.kalsym.order.service.model.repository.OrderPaymentStatusUpdateRepository;
+import com.kalsym.order.service.model.repository.OrderRefundRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
+import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
+import com.kalsym.order.service.model.repository.PaymentOrderRepository;
+import com.kalsym.order.service.model.repository.ProductInventoryRepository;
+import com.kalsym.order.service.model.repository.RegionCountriesRepository;
+import com.kalsym.order.service.model.repository.StoreDetailsRepository;
+import com.kalsym.order.service.service.DeliveryService;
+import com.kalsym.order.service.service.EmailService;
+import com.kalsym.order.service.service.FCMService;
+import com.kalsym.order.service.service.OrderPostService;
+import com.kalsym.order.service.service.ProductService;
+import com.kalsym.order.service.service.WhatsappService;
 import com.kalsym.order.service.utility.DateTimeUtil;
 import com.kalsym.order.service.utility.HttpResponse;
 import com.kalsym.order.service.utility.Logger;
@@ -36,6 +54,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -64,7 +83,64 @@ public class OrderCompletionStatusController {
 
     @Autowired
     OrderCompletionStatusRepository orderCompletionStatusRepository;
+   
+    @Autowired
+    DeliveryService deliveryService;
 
+    @Autowired
+    FCMService fcmService;
+
+    @Autowired
+    EmailService emailService;
+    
+    @Autowired
+    WhatsappService whatsappService;
+
+    @Autowired
+    ProductService productService;
+
+    @Autowired
+    OrderPostService orderPostService;
+
+    @Autowired
+    OrderItemRepository orderItemRepository;
+
+    @Autowired
+    OrderShipmentDetailRepository orderShipmentDetailRepository;
+
+    @Autowired
+    OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository;
+
+    @Autowired
+    OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository;
+
+    @Autowired
+    StoreDetailsRepository storeDetailsRepository;
+
+    @Autowired
+    CartItemRepository cartItemRepository;
+
+    @Autowired
+    OrderCompletionStatusConfigRepository orderCompletionStatusConfigRepository;
+
+    @Autowired
+    ProductInventoryRepository productInventoryRepository;
+    
+    @Autowired
+    RegionCountriesRepository regionCountriesRepository;
+    
+    @Autowired
+    OrderRefundRepository orderRefundRepository;
+    
+    @Autowired
+    PaymentOrderRepository paymentOrderRepository;
+    
+    @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
+    private String onboardingOrderLink;
+    
+    @Value("${finance.email.address:finance@symplified.com}")
+    private String financeEmailAddress;
+    
     @GetMapping(path = {""}, name = "order-completion-statuses-get")
     @PreAuthorize("hasAnyAuthority('order-completion-statuses-get', 'all')")
     public ResponseEntity<HttpResponse> getOrderCompletionStatuses(HttpServletRequest request,
@@ -170,8 +246,35 @@ public class OrderCompletionStatusController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-status-updates-confirm-put-by-bulk");
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyOrderCompletionStatusUpdateList.toString(), "");
         
-        //return ack
-       
+        OrderProcessBulkThread processThread = new OrderProcessBulkThread(logprefix,                  
+              financeEmailAddress,
+              bodyOrderCompletionStatusUpdateList,
+
+              onboardingOrderLink,
+              orderRepository,
+              storeDetailsRepository,
+              orderItemRepository,
+              orderCompletionStatusConfigRepository,
+              cartItemRepository,
+              productInventoryRepository,
+              paymentOrderRepository,
+              orderRefundRepository,
+              orderShipmentDetailRepository,
+              regionCountriesRepository,
+              orderPaymentStatusUpdateRepository,
+              orderCompletionStatusUpdateRepository,
+
+              productService,
+              emailService,
+              whatsappService,
+              fcmService,
+              deliveryService,
+              orderPostService) ;
+        processThread.start();
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderProcessThread started");
+
+        //return ack, not real response
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
 
     }

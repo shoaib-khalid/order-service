@@ -15,4 +15,5 @@ public class OrderProcessResult {
     public HttpStatus httpStatus;
     public String errorMsg;
     public Object data;
+    public boolean pendingRequestDelivery;
 }

@@ -1,7 +1,17 @@
 ##################################################
-# order-service-3.5.0-SNAPSHOT | 27-Jan-2022
+# order-service-3.5.0-SNAPSHOT | 28-Jan-2022
 ##################################################
 Move logic of putOrderCompletionStatusUpdatesConfirm to separate class
+New function to process order by bulk : 
+	putOrderCompletionStatusUpdatesBulk()
+	PUT /orders/completion-statuses/bulk
+
+##Config change 
+Add new config:
+deliveryService.bulk.confirm.URL=https://api.symplified.it/delivery-service/v1/orders/bulkConfirm
+
+##New role authority for STORE_OWNER
+order-completion-status-updates-put-by-bulk
 
 
 ##################################################

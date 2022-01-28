@@ -3,16 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.kalsym.order.service.controller;
-
+package com.kalsym.order.service.model.object;
+        
 /**
  *
  * @author taufik
  */
-public class OrderProcessThread extends Thread {
-    
-    public void run(){
-       System.out.println("OrderProcessThread running");
-    }
-    
+public class DeliveryServiceBulkConfirmRequest {
+    public String deliveryQuotationId;
+    public String orderId;        
 }
