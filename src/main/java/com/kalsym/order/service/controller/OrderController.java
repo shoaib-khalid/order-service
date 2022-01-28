@@ -1568,7 +1568,76 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
         
-   
+    /**
+     *
+     * @param request
+     * @param orderId
+     * @param bodyOrderItemList
+     * @return
+     */
+        
+    @PutMapping(path = {"/reviseitem/{orderId}"}, name = "orders-put-by-id")
+    //@PreAuthorize("hasAnyAuthority('orders-put-by-id', 'all') and @customOwnerVerifier.VerifyOrder(#id)")
+    public ResponseEntity<HttpResponse> reviseOrderItems(HttpServletRequest request,
+            @PathVariable String orderId,
+            @Valid @RequestBody OrderItem[] bodyOrderItemList) {
+        String logprefix = request.getRequestURI() + " ";
+        String location = Thread.currentThread().getStackTrace()[1].getMethodName();
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "reviseOrderItems()", "");
+        
+        Optional<Order> optOrder = orderRepository.findById(orderId);
+
+        if (!optOrder.isPresent()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order not found with orderId: " + orderId);
+            response.setErrorStatus(HttpStatus.NOT_FOUND);
+            response.setMessage("Order not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
+        Optional<PaymentOrder> optPayment = paymentOrderRepository.findByClientTransactionId(orderId);
+
+        if (!optPayment.isPresent()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Payment Order not found with orderId: " + orderId);
+            response.setErrorStatus(HttpStatus.NOT_FOUND);
+            response.setMessage("Payment Order not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order found with orderId: " + orderId);
+        Order order = optOrder.get();
+        
+        if (order.getCompletionStatus()==OrderStatus.PAYMENT_CONFIRMED || order.getCompletionStatus()==OrderStatus.RECEIVED_AT_STORE) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order item preview revise for orderId: " + orderId);
+            
+            //get original order item
+            List<OrderItem> orderItemList = orderItemRepository.findByOrderId(orderId);
+            
+            for (int i=0;i<bodyOrderItemList.length;i++) {
+                OrderItem orderItem = bodyOrderItemList[i];
+                Optional<OrderItem> originalOrderItem = orderItemRepository.findById(orderItem.getId());
+                /*if (orderItem.getQuantity()>originalOrderItem.getQuantity()) {
+                    
+                }*/
+            }
+            
+            //TODO : calculate new order total
+            //Order orderPreview = new Order();
+            //orderPreview.setAppliedDiscount(Double.MIN_VALUE);
+            
+            response.setSuccessStatus(HttpStatus.ACCEPTED);            
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        } else {
+            //not allow to cancel
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "current status not allow to revise : " + order.getCompletionStatus());
+            response.setSuccessStatus(HttpStatus.CONFLICT);
+            response.setMessage("Order not allow to revise");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }               
+    }
+    
+    
     /**
      *
      * @param request

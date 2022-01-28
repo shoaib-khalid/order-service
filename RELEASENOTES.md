@@ -5,7 +5,10 @@ Move logic of putOrderCompletionStatusUpdatesConfirm to separate class
 New function to process order by bulk : 
 	putOrderCompletionStatusUpdatesBulk()
 	PUT /orders/completion-statuses/bulk
-
+New function to revise order quantity :
+	reviseOrderItems()
+	PUT /reviseitem/{orderId}
+	
 ##Config change 
 Add new config:
 deliveryService.bulk.confirm.URL=https://api.symplified.it/delivery-service/v1/orders/bulkConfirm

@@ -172,6 +172,7 @@ public class OrderProcessBulkThread extends Thread {
         if (bulkConfirmOrderList.size()>0) {
             //send bulk confirm to delivery-service
             deliveryService.bulkConfirmOrderDelivery(bulkConfirmOrderList);
+            //TODO: get the response and update order table
         }
             
     }
