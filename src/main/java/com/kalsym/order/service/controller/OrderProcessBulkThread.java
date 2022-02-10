@@ -41,7 +41,7 @@ import java.util.Optional;
  */
 public class OrderProcessBulkThread extends Thread {
     
-    private final String logprefix;
+    private String logprefix;
     private final String financeEmailAddress;
     private OrderCompletionStatusUpdate[] bodyOrderCompletionStatusUpdateList;
     private String onboardingOrderLink;
@@ -126,45 +126,56 @@ public class OrderProcessBulkThread extends Thread {
         List<DeliveryServiceBulkConfirmRequest> bulkConfirmOrderList = new ArrayList();
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order count to process:"+this.bodyOrderCompletionStatusUpdateList.length);
         for (int i=0;i<this.bodyOrderCompletionStatusUpdateList.length;i++) {
+            
             OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate = bodyOrderCompletionStatusUpdateList[i];
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Start process for orderId:"+bodyOrderCompletionStatusUpdate.getOrderId());
-            OrderProcessWorker worker = new OrderProcessWorker(logprefix, 
-                    bodyOrderCompletionStatusUpdate.getOrderId(), 
-                    financeEmailAddress,
-                    bodyOrderCompletionStatusUpdate,
-                    onboardingOrderLink,
-                    orderRepository,
-                    storeDetailsRepository,
-                    orderItemRepository,
-                    orderCompletionStatusConfigRepository,
-                    cartItemRepository,
-                    productInventoryRepository,
-                    paymentOrderRepository,
-                    orderRefundRepository,
-                    orderShipmentDetailRepository,
-                    regionCountriesRepository,
-                    orderPaymentStatusUpdateRepository,
-                    orderCompletionStatusUpdateRepository,
-                    productService,
-                    emailService,
-                    whatsappService,
-                    fcmService,
-                    deliveryService,
-                    orderPostService,
-                    false) ;
-            OrderProcessResult result = worker.startProcessOrder();
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "result processOrder orderId:"+bodyOrderCompletionStatusUpdate.getOrderId()+" httpStatus:"+result.httpStatus+" message:"+result.errorMsg+" pendingRequestDelivery:"+result.pendingRequestDelivery);
-                        
-            if (result.pendingRequestDelivery) {
-                //query into from delivery quotation
-                Optional<OrderPaymentDetail> optPaymentDetail = orderPaymentDetailRepository.findById(bodyOrderCompletionStatusUpdate.getOrderId());
-                if (optPaymentDetail.isPresent()) {
-                    DeliveryServiceBulkConfirmRequest bulkConfirmOrder = new DeliveryServiceBulkConfirmRequest();
-                    bulkConfirmOrder.deliveryQuotationId=optPaymentDetail.get().getDeliveryQuotationReferenceId();
-                    bulkConfirmOrder.orderId=bodyOrderCompletionStatusUpdate.getOrderId();
-                    bulkConfirmOrderList.add(bulkConfirmOrder);
-                }
-            }                        
+            logprefix = bodyOrderCompletionStatusUpdate.getOrderId();
+            
+            try {                
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Start process array["+i+"] for orderId:"+bodyOrderCompletionStatusUpdate.getOrderId());
+                OrderProcessWorker worker = new OrderProcessWorker(logprefix, 
+                        bodyOrderCompletionStatusUpdate.getOrderId(), 
+                        financeEmailAddress,
+                        bodyOrderCompletionStatusUpdate,
+                        onboardingOrderLink,
+                        orderRepository,
+                        storeDetailsRepository,
+                        orderItemRepository,
+                        orderCompletionStatusConfigRepository,
+                        cartItemRepository,
+                        productInventoryRepository,
+                        paymentOrderRepository,
+                        orderRefundRepository,
+                        orderShipmentDetailRepository,
+                        regionCountriesRepository,
+                        orderPaymentStatusUpdateRepository,
+                        orderCompletionStatusUpdateRepository,
+                        productService,
+                        emailService,
+                        whatsappService,
+                        fcmService,
+                        deliveryService,
+                        orderPostService,
+                        false) ;
+                OrderProcessResult result = worker.startProcessOrder();
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "result processOrder orderId:"+bodyOrderCompletionStatusUpdate.getOrderId()+" httpStatus:"+result.httpStatus+" message:"+result.errorMsg+" pendingRequestDelivery:"+result.pendingRequestDelivery);
+
+                if (result.pendingRequestDelivery) {
+                    //query into from delivery quotation
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "result processOrder orderId:"+bodyOrderCompletionStatusUpdate.getOrderId()+" httpStatus:"+result.httpStatus+" message:"+result.errorMsg+" pendingRequestDelivery:"+result.pendingRequestDelivery);
+                    Optional<OrderPaymentDetail> optPaymentDetail = orderPaymentDetailRepository.findById(bodyOrderCompletionStatusUpdate.getOrderId());
+                    if (optPaymentDetail.isPresent()) {
+                        DeliveryServiceBulkConfirmRequest bulkConfirmOrder = new DeliveryServiceBulkConfirmRequest();
+                        bulkConfirmOrder.deliveryQuotationId=optPaymentDetail.get().getDeliveryQuotationReferenceId();
+                        bulkConfirmOrder.orderId=bodyOrderCompletionStatusUpdate.getOrderId();
+                        bulkConfirmOrderList.add(bulkConfirmOrder);
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "BulkConfirmOrder added deliveryQuotationId:"+bulkConfirmOrder.deliveryQuotationId);
+                    } else {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Payment details not found");
+                    }
+                }   
+            } catch (Exception ex) {
+                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Exception occur while processing orderId", ex);
+            }
             
         }
         

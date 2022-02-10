@@ -170,7 +170,7 @@ public class OrderProcessWorker {
         }
   
         StoreWithDetails storeWithDetails = optStore.get();
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store details got : " + storeWithDetails.toString());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderId:"+order.getId()+" invoiceNo:"+order.getInvoiceId()+" Store details got : " + storeWithDetails.toString());
         OrderStatus status = bodyOrderCompletionStatusUpdate.getStatus();
             
         String subject = null;
