@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.5.1-SNAPSHOT | 10-Feb-2022
+##################################################
+Bug fix for putOrderCompletionStatusUpdatesBulk 
+
+
+##################################################
 # order-service-3.5.0-SNAPSHOT | 28-Jan-2022
 ##################################################
 Move logic of putOrderCompletionStatusUpdatesConfirm to separate class
@@ -7,7 +13,7 @@ New function to process order by bulk :
 	PUT /orders/completion-statuses/bulk
 New function to revise order quantity :
 	reviseOrderItems()
-	PUT /reviseitem/{orderId}
+	PUT /orders/reviseitem/{orderId}
 	
 ##Config change 
 Add new config:

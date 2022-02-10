@@ -52,7 +52,7 @@ public class OrderItem {
     private DiscountCalculationType discountCalculationType;
     private Float discountCalculationValue;
     
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "orderItemId", insertable = false, updatable = false, nullable = true)
     private List<OrderSubItem> orderSubItem;
     

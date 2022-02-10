@@ -244,7 +244,11 @@ public class OrderCompletionStatusController {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-status-updates-confirm-put-by-bulk");
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyOrderCompletionStatusUpdateList.toString(), "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Total order sent:"+bodyOrderCompletionStatusUpdateList.length);
+        
+        for (int i=0;i<bodyOrderCompletionStatusUpdateList.length;i++) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Id:"+bodyOrderCompletionStatusUpdateList[i].getId()+" OrderId:"+bodyOrderCompletionStatusUpdateList[i].getOrderId());
+        }
         
         OrderProcessBulkThread processThread = new OrderProcessBulkThread(logprefix,                  
               financeEmailAddress,

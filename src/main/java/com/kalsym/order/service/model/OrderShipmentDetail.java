@@ -6,11 +6,16 @@ import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 /**
  *
@@ -49,6 +54,11 @@ public class OrderShipmentDetail implements Serializable {
     private String trackingNumber;
     
     private String deliveryType;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
+    @JoinColumn(name = "deliveryProviderId", insertable = false, updatable = false)
+    private DeliveryServiceProvider deliveryServiceProvider;
     
     public void update(OrderShipmentDetail orderShipmentDetail) {
         if (orderShipmentDetail.getTrackingNumber() != null) {

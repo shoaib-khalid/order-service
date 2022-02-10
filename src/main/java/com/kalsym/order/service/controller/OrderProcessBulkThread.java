@@ -124,7 +124,7 @@ public class OrderProcessBulkThread extends Thread {
     public void run(){
         
         List<DeliveryServiceBulkConfirmRequest> bulkConfirmOrderList = new ArrayList();
-        
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order count to process:"+this.bodyOrderCompletionStatusUpdateList.length);
         for (int i=0;i<this.bodyOrderCompletionStatusUpdateList.length;i++) {
             OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate = bodyOrderCompletionStatusUpdateList[i];
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Start process for orderId:"+bodyOrderCompletionStatusUpdate.getOrderId());
