@@ -5,6 +5,7 @@ import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -15,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -124,7 +126,11 @@ public class Order implements Serializable {
     @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "customerId", insertable = false, updatable = false)
     private Customer customer;
-
+    
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "orderId", insertable = false, updatable = false, nullable = true)
+    private List<OrderRefund> orderRefund;
+    
     /*    @OneToMany(fetch = FetchType.LAZY, mappedBy = "orderMain")
     private List<OrderItem> orderItem;
      */

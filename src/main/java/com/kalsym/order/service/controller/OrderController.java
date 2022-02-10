@@ -1612,11 +1612,13 @@ public class OrderController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order found with orderId: " + orderId);
         Order order = optOrder.get();
         
-        if (order.getIsRevised()) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order already revised. OrderId: " + orderId);
-            response.setErrorStatus(HttpStatus.CONFLICT);
-            response.setMessage("Order already revised");
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        if (order.getIsRevised()!=null) {
+            if (order.getIsRevised()) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order already revised. OrderId: " + orderId);
+                response.setErrorStatus(HttpStatus.CONFLICT);
+                response.setMessage("Order already revised");
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+            }
         }
         
         if (order.getCompletionStatus()==OrderStatus.PAYMENT_CONFIRMED || order.getCompletionStatus()==OrderStatus.RECEIVED_AT_STORE) {
