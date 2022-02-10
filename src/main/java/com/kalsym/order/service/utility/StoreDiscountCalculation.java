@@ -18,6 +18,7 @@ import com.kalsym.order.service.model.repository.StoreDiscountRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountTierRepository;
 import com.kalsym.order.service.utility.Utilities;
 
+import java.util.Optional;
 import java.util.Date;
 import java.util.List;
 
@@ -103,8 +104,8 @@ public class StoreDiscountCalculation {
             discount.setSubTotalDiscountDescription(subTotalDiscountDescription);
         }
         return discount;
-    }        
-    
+    }                
+     
     private static double CalculateDiscount(String discountType, String calculationType, double discountTierAmount,  double salesAmount, double deliveryCharge, Double maxDiscountAmt) {
         double subdiscount=0;
         if (calculationType.equals(DiscountCalculationType.FIX.toString())) {

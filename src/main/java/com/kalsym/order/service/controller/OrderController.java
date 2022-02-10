@@ -6,6 +6,8 @@ import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.enums.ProductStatus;
 import com.kalsym.order.service.enums.StorePaymentType;
 import com.kalsym.order.service.enums.DeliveryType;
+import com.kalsym.order.service.enums.DiscountCalculationType;
+import com.kalsym.order.service.enums.DiscountType;
 import com.kalsym.order.service.enums.RefundType;
 import com.kalsym.order.service.enums.RefundStatus;
 import com.kalsym.order.service.model.Body;
@@ -51,6 +53,7 @@ import com.kalsym.order.service.model.ProductInventoryItem;
 import com.kalsym.order.service.model.ProductVariantAvailable;
 import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.PaymentOrder;
+import com.kalsym.order.service.model.StoreDiscount;
 import com.kalsym.order.service.model.object.Discount;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.object.OrderDetails;
@@ -83,6 +86,7 @@ import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.utility.Logger;
 import com.kalsym.order.service.utility.MessageGenerator;
 import com.kalsym.order.service.utility.OrderCalculation;
+import static com.kalsym.order.service.utility.OrderCalculation.calculateStoreServiceCharges;
 import com.kalsym.order.service.utility.StoreDiscountCalculation;
 import com.kalsym.order.service.utility.TxIdUtil;
 import com.kalsym.order.service.utility.Utilities;
@@ -1608,28 +1612,128 @@ public class OrderController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order found with orderId: " + orderId);
         Order order = optOrder.get();
         
+        if (order.getIsRevised()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order already revised. OrderId: " + orderId);
+            response.setErrorStatus(HttpStatus.CONFLICT);
+            response.setMessage("Order already revised");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
+        
         if (order.getCompletionStatus()==OrderStatus.PAYMENT_CONFIRMED || order.getCompletionStatus()==OrderStatus.RECEIVED_AT_STORE) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order item preview revise for orderId: " + orderId);
             
             //get original order item
             List<OrderItem> orderItemList = orderItemRepository.findByOrderId(orderId);
+            List<OrderItem> orderNewItemList = new ArrayList<OrderItem>();
             
             for (int i=0;i<bodyOrderItemList.length;i++) {
                 OrderItem orderItem = bodyOrderItemList[i];
                 Optional<OrderItem> originalOrderItem = orderItemRepository.findById(orderItem.getId());
-                /*if (orderItem.getQuantity()>originalOrderItem.getQuantity()) {
-                    
-                }*/
+                if (originalOrderItem.isPresent()) {
+                    OrderItem originalItem = originalOrderItem.get();
+                    if (orderItem.getQuantity()>originalItem.getQuantity()) {
+                        //return error if item to increase quantity
+                        response.setMessage("Cannot increase item quantity");
+                        response.setSuccessStatus(HttpStatus.CONFLICT);            
+                        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+                    }
+                    float itemPrice = originalItem.getProductPrice();
+                    originalItem.setOriginalQuantity(originalItem.getQuantity());
+                    originalItem.setQuantity(orderItem.getQuantity());
+                    originalItem.setPrice(orderItem.getQuantity() * (float)itemPrice);
+                    orderNewItemList.add(originalItem);
+                    //price is already discounted price (if any)
+                }
             }
             
-            //TODO : calculate new order total
-            //Order orderPreview = new Order();
-            //orderPreview.setAppliedDiscount(Double.MIN_VALUE);
+            double newSalesAmount=0.00;
+            //save new quantity
+            for (int i=0;i<orderNewItemList.size();i++) {
+                OrderItem orderNewItem = orderNewItemList.get(i);
+                newSalesAmount = newSalesAmount + orderNewItem.getPrice();
+                orderItemRepository.save(orderNewItem);
+            }
             
+            //get discount from original discount
+            double newAppliedDiscount = 0.00;
+            if (order.getDiscountId()!=null) {
+                String calculationType = order.getDiscountCalculationType();
+                double discountTierAmount = order.getDiscountCalculationValue();
+                Optional<StoreDiscount> storeDiscountOpt = storeDiscountRepository.findById(order.getDiscountId());
+                StoreDiscount storeDiscount = storeDiscountOpt.get();
+                String discountType = storeDiscount.getDiscountType();
+                if (discountType.equals(DiscountType.TOTALSALES.toString())) {
+                    //only recalculate total sales discount
+                    double subdiscount=0;
+                    if (calculationType.equals(DiscountCalculationType.FIX.toString())) {
+                        subdiscount = discountTierAmount;
+                    } else if (calculationType.equals(DiscountCalculationType.PERCENT.toString())) {
+                        subdiscount = discountTierAmount / 100 * newSalesAmount;
+                    }
+                    newAppliedDiscount = subdiscount;            
+                }
+            }
+        
+            double deliveryCharge = order.getDeliveryCharges();
+            double deliveryDiscount = order.getDeliveryDiscount();
+            
+            //calculate Store service charge 
+            StoreWithDetails storeWithDetials = productService.getStoreById(order.getStoreId());            
+            double newStoreServiceCharges = calculateStoreServiceCharges(storeWithDetials.getServiceChargesPercentage(), newSalesAmount, newAppliedDiscount);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store serviceCharges: " + newStoreServiceCharges);
+            
+            //calculate grand total
+            double newGrandTotal = newSalesAmount - newAppliedDiscount + newStoreServiceCharges + deliveryCharge - deliveryDiscount;
+            double oldGranTotal = order.getTotal();
+            
+            //calculating Kalsym commission 
+            double newKLCommission = 0;
+            StoreCommission storeCommission = productService.getStoreCommissionByStoreId(order.getStoreId());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store commission: " + storeCommission);
+            double commission = 0.00;
+            if (storeCommission != null) {
+                commission = newAppliedDiscount * (storeCommission.getRate() / 100);
+                if (commission < storeCommission.getMinChargeAmount()) {
+                    commission = storeCommission.getMinChargeAmount();
+                }
+            }
+            newKLCommission = Round2DecimalPoint(commission);
+            
+            //calculate Store share
+            double newStoreShare = Round2DecimalPoint(newSalesAmount - newAppliedDiscount + newStoreServiceCharges - commission);            
+            String deliveryType = order.getDeliveryType();
+            if (deliveryType!=null) {
+                if (deliveryType.equals(DeliveryType.SELF.name())) {
+                    double storeShare = newStoreShare + deliveryCharge;
+                    newStoreShare = Round2DecimalPoint(storeShare);
+                } 
+            }
+            
+            // update order details           
+            order.setSubTotal(newSalesAmount);
+            order.setAppliedDiscount(newAppliedDiscount);
+            order.setStoreServiceCharges(newStoreServiceCharges);
+            order.setTotal(newGrandTotal);
+            order.setKlCommission(newKLCommission);
+            order.setStoreShare(newStoreShare);
+            order.setIsRevised(true);            
+            order = orderRepository.save(order);
+            
+            //insert refund record for finance to refund
+            double refundAmount = oldGranTotal - newGrandTotal ;            
+            OrderRefund orderRefund = new OrderRefund();
+            orderRefund.setOrderId(order.getId());
+            orderRefund.setRefundType(RefundType.ITEM_REVISED);
+            orderRefund.setPaymentChannel(optPayment.get().getPaymentChannel());
+            orderRefund.setRefundAmount(refundAmount);
+            orderRefund.setRefundStatus(RefundStatus.PENDING);
+            orderRefundRepository.save(orderRefund);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "refund record created for orderId: " + order.getId());
+
             response.setSuccessStatus(HttpStatus.ACCEPTED);            
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         } else {
-            //not allow to cancel
+            //not allow to revise
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "current status not allow to revise : " + order.getCompletionStatus());
             response.setSuccessStatus(HttpStatus.CONFLICT);
             response.setMessage("Order not allow to revise");
@@ -1730,5 +1834,10 @@ public class OrderController {
            
     }
     * */
+    
+    private static Double Round2DecimalPoint(Double input) {
+        if (input == null) { return null; }
+        return Math.round(input * 100.0) / 100.0;
+    }
 }
 

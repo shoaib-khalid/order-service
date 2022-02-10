@@ -1,4 +1,15 @@
 ##################################################
+# order-service-3.6.0-SNAPSHOT | 10-Feb-2022
+##################################################
+New function to Revise Order Quantity
+PUT /orders/reviseitem/{orderId}
+
+##DB Changes:
+ALTER TABLE `order` ADD isRevised TINYINT(1);
+
+
+
+##################################################
 # order-service-3.5.1-SNAPSHOT | 10-Feb-2022
 ##################################################
 Bug fix for putOrderCompletionStatusUpdatesBulk 

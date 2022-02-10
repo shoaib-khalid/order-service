@@ -285,7 +285,7 @@ public class ProductService {
      * @return
      * @throws JsonProcessingException
      */
-    public StoreWithDetails getStoreById(String storeId) throws JsonProcessingException {
+    public StoreWithDetails getStoreById(String storeId) {
         String logprefix = "getStoreById";
 
         RestTemplate restTemplate = new RestTemplate();

@@ -101,6 +101,8 @@ public class Order implements Serializable {
     
     private Double deliveryDiscountMaxAmount;
     
+    private Boolean isRevised;
+            
     /*
     @OneToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="orderId", insertable = false, updatable = false)
