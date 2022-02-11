@@ -1,12 +1,13 @@
 ##################################################
-# order-service-3.6.0-SNAPSHOT | 10-Feb-2022
+# order-service-3.6.0-SNAPSHOT | 11-Feb-2022
 ##################################################
 New function to Revise Order Quantity
 PUT /orders/reviseitem/{orderId}
 
 ##DB Changes:
 ALTER TABLE `order` ADD isRevised TINYINT(1);
-
+INSERT INTO (status, description) VALUES ('ITEM_REVISED', 'Order item is revised by merchant');
+INSERT INTO order_completion_status_config for status = 'ITEM_REVISED'. only put verticalId & status, other field put default value
 
 
 ##################################################

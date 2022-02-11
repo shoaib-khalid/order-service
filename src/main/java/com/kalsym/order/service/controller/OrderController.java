@@ -1731,7 +1731,80 @@ public class OrderController {
             orderRefund.setRefundStatus(RefundStatus.PENDING);
             orderRefundRepository.save(orderRefund);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "refund record created for orderId: " + order.getId());
+            
+            //send email to customer            
+            String subject = null;
+            String content = null;
+            //String[] url = deliveryResponse.data.trackingUrl;
+            String receiver = order.getOrderShipmentDetail().getEmail();
+            OrderPaymentStatusUpdate orderPaymentStatusUpdate = new OrderPaymentStatusUpdate();
+            Body body = new Body();
 
+            body.setCurrency(storeWithDetials.getRegionCountry().getCurrencyCode());
+            body.setDeliveryAddress(order.getOrderShipmentDetail().getAddress());
+            body.setDeliveryCity(order.getOrderShipmentDetail().getCity());
+            body.setOrderStatus(order.getCompletionStatus());
+            body.setDeliveryCharges(order.getOrderPaymentDetail().getDeliveryQuotationAmount());
+            body.setTotal(order.getTotal());
+            body.setInvoiceId(order.getInvoiceId());
+
+            body.setStoreAddress(storeWithDetials.getAddress());
+            body.setStoreContact(storeWithDetials.getPhoneNumber());
+            body.setLogoUrl(storeWithDetials.getStoreAsset() == null ? "" : storeWithDetials.getStoreAsset().getLogoUrl());
+
+            body.setStoreName(storeWithDetials.getName());
+
+            //get order items
+            List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+
+            body.setOrderItems(orderItems);
+
+            Email email = new Email();
+            email.setBody(body);
+            ArrayList<String> tos = new ArrayList<>();
+            tos.add(order.getOrderShipmentDetail().getEmail());
+            String[] to = Utilities.convertArrayListToStringArray(tos);
+            email.setTo(to);
+            
+            OrderCompletionStatusConfig orderCompletionStatusConfig = null;
+            List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatus(storeWithDetials.getVerticalCode(), "ITEM_REVISED");            
+            if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
+                Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: ITEM_REVISED");                
+            } else {        
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
+                orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
+            }
+            
+            //send email to customer if config allows
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email to customer: " + orderCompletionStatusConfig.getEmailToCustomer());
+            if (orderCompletionStatusConfig.getEmailToCustomer()) {
+                String emailContent = orderCompletionStatusConfig.getCustomerEmailContent();
+                if (emailContent != null) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is not null");
+                    //sending email
+                    try {
+                        RegionCountry regionCountry = null;
+                        Optional<RegionCountry> t = regionCountriesRepository.findById(storeWithDetials.getRegionCountryId());
+                        if (t.isPresent()) {
+                            regionCountry = t.get();
+                        }
+                        OrderShipmentDetail orderShipmentDetail = orderShipmentDetailRepository.findByOrderId(orderId);
+                        Optional<PaymentOrder> optPaymentDetails = paymentOrderRepository.findByClientTransactionId(orderId);
+                        PaymentOrder paymentDetails = null;
+                        if (optPaymentDetails.isPresent()) {
+                            paymentDetails = optPaymentDetails.get();
+                        }
+                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, orderShipmentDetail, paymentDetails, regionCountry);
+                        email.setRawBody(emailContent);
+                        emailService.sendEmail(email);
+                    } catch (Exception ex) {
+                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending email :", ex);
+                    }
+                } else {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is null");
+                }
+            }
+            
             response.setSuccessStatus(HttpStatus.ACCEPTED);            
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         } else {
