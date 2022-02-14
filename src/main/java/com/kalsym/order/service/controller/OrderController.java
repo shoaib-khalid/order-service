@@ -892,7 +892,7 @@ public class OrderController {
                     double deliveryCharge = deliveryQuotation.getAmount();
                     VehicleType vehicleType = deliveryQuotation.getVehicleType();
                     cod.getOrderPaymentDetails().setDeliveryQuotationAmount(deliveryCharge);
-                    cod.getOrderShipmentDetails().setVehicleType(vehicleType);
+                    cod.getOrderShipmentDetails().setVehicleType(vehicleType.name());
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliveryCharge from delivery-service:"+deliveryCharge+" vehicleType:"+vehicleType);
                 }                
                 
