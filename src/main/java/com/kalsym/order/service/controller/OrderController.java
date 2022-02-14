@@ -10,6 +10,7 @@ import com.kalsym.order.service.enums.DiscountCalculationType;
 import com.kalsym.order.service.enums.DiscountType;
 import com.kalsym.order.service.enums.RefundType;
 import com.kalsym.order.service.enums.RefundStatus;
+import com.kalsym.order.service.enums.VehicleType;
 import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.OrderPaymentDetail;
 import com.kalsym.order.service.model.object.CustomPageable;
@@ -889,8 +890,9 @@ public class OrderController {
                 if (deliveryQuotationId!=null) {
                     DeliveryQuotation deliveryQuotation = deliveryService.getDeliveryQuotation(deliveryQuotationId);
                     double deliveryCharge = deliveryQuotation.getAmount();
+                    VehicleType vehicleType = deliveryQuotation.getVehicleType();
                     cod.getOrderPaymentDetails().setDeliveryQuotationAmount(deliveryCharge);
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliveryCharge from delivery-service:"+deliveryCharge);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliveryCharge from delivery-service:"+deliveryCharge+" vehicleType:"+vehicleType);
                 }                
                 
                 order.setCartId(cartId);                    

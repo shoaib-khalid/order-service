@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import com.kalsym.order.service.enums.VehicleType;
 
 /**
  *
@@ -26,5 +27,6 @@ public class DeliveryQuotation {
     String storeId;
     String orderId;
     String cartId;
-    Double amount;    
+    Double amount; 
+    VehicleType vehicleType;
 }

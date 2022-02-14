@@ -3,6 +3,11 @@
 ##################################################
 New response parameter in getWeightOfCart : Weight->VehicleType
 Link cartItem & cartSubItem to ProductAsset to show image of product variant
+Add vehicleType in OrderShipmentDetail
+Save vehicleType during placeOrder in OrderShipmentDetail
+
+##DB Changes:
+ALTER TABLE `order_shipment_detail` ADD vehicleType ENUM('MOTORCYCLE','CAR','VAN','PICKUP','LARGEVAN','SMALLLORRY','MEDIUMLORRY','LARGELORRY');
 
 
 ##################################################
