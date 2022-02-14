@@ -2,6 +2,7 @@
 # order-service-3.6.1-SNAPSHOT | 14-Feb-2022
 ##################################################
 New response parameter in getWeightOfCart : Weight->VehicleType
+Link cartItem & cartSubItem to ProductAsset to show image of product variant
 
 
 ##################################################

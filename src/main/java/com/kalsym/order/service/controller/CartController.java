@@ -277,7 +277,7 @@ public class CartController {
             @PathVariable String id) {
         String logprefix = request.getRequestURI() + " ";
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "carts-order-by-id request...");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getWeightOfCart request");
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         List<CartItem> cartItems = cartItemRepository.findByCartId(id);

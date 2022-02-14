@@ -52,7 +52,11 @@ public class CartSubItem {
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "itemCode", referencedColumnName = "itemCode", insertable = false, updatable = false, nullable = true)
     private ProductInventory productInventory;
-  
+    
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "itemCode", referencedColumnName = "itemCode", insertable = false, updatable = false, nullable = true)
+    private ProductAsset productAsset;
+    
     public void update(CartItem cartItem) {
         quantity = cartItem.getQuantity();
         price = (Float.parseFloat(String.valueOf(quantity))) * this.productPrice;

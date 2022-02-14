@@ -63,6 +63,10 @@ public class CartItem {
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "itemCode", referencedColumnName = "itemCode", insertable = false, updatable = false, nullable = true)
     private ProductInventory productInventory;
+    
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "itemCode", referencedColumnName = "itemCode", insertable = false, updatable = false, nullable = true)
+    private ProductAsset productAsset;
   
     public void update(CartItem cartItem, float itemPrice) {
         quantity = cartItem.getQuantity();
