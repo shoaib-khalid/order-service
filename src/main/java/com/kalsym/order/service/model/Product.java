@@ -12,6 +12,8 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 
+import com.kalsym.order.service.enums.VehicleType;
+
 /**
  *
  * @author 7cu
@@ -58,5 +60,7 @@ public class Product {
     @Column(columnDefinition = "ENUM('ACTIVE', 'DELETED', 'DRAFT', 'INACTIVE')")
     @Enumerated(EnumType.STRING)
     private Status status;
+    
+    private VehicleType vehicleType;
    
 }

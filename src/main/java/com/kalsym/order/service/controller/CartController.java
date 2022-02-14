@@ -7,6 +7,7 @@ import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountTierRepository;
+import com.kalsym.order.service.model.repository.ProductRepository;
 import com.kalsym.order.service.utility.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,7 @@ import com.kalsym.order.service.model.StoreDiscount;
 import com.kalsym.order.service.model.StoreDiscountTier;
 import com.kalsym.order.service.enums.DiscountType;
 import com.kalsym.order.service.enums.DiscountCalculationType;
+import com.kalsym.order.service.enums.VehicleType;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.utility.StoreDiscountCalculation;
 import com.kalsym.order.service.model.DeliveryQuotation;
@@ -49,6 +51,7 @@ import com.kalsym.order.service.model.StoreCommission;
 import com.kalsym.order.service.model.StoreDeliveryDetail;
 import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.object.OrderObject;
+import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.utility.OrderCalculation;
 import static com.kalsym.order.service.utility.OrderCalculation.calculateStoreServiceCharges;
@@ -67,9 +70,10 @@ public class CartController {
 
     @Autowired
     CartItemRepository cartItemRepository;
+    
     @Autowired
-
     OrderItemRepository orderItemRepository;
+    
     @Autowired
     OrderRepository orderRepository;
     
@@ -79,6 +83,9 @@ public class CartController {
     @Autowired
     StoreDiscountTierRepository storeDiscountTierRepository;
     
+    @Autowired
+    ProductRepository productRepository;
+     
     @Autowired
     DeliveryService deliveryService;
     
@@ -276,6 +283,8 @@ public class CartController {
         List<CartItem> cartItems = cartItemRepository.findByCartId(id);
 
         double totalWeight = 0;
+        VehicleType vehicleType = VehicleType.MOTORCYCLE;
+        int vehicleSize=1;
         if (null != cartItems) {
             for (int i = 0; i < cartItems.size(); i++) {
                 CartItem cartItem = cartItems.get(i);
@@ -285,13 +294,40 @@ public class CartController {
                 }
                 double itemWeight = cartItem.getQuantity() * singleItemWeight;
                 totalWeight = totalWeight + itemWeight;
+                
+                //check if any of item need a bigger vehicle
+                Optional<Product> productInfoOpt = productRepository.findById(cartItem.getProductId());
+                Product productInfo = productInfoOpt.get();
+                if (productInfo.getVehicleType()==VehicleType.CAR && vehicleSize<2) {
+                    vehicleType=VehicleType.CAR;
+                    vehicleSize=2;
+                } else if (productInfo.getVehicleType()==VehicleType.PICKUP && vehicleSize<3) {
+                    vehicleType=VehicleType.PICKUP;
+                    vehicleSize=3; 
+                } else if (productInfo.getVehicleType()==VehicleType.VAN && vehicleSize<4) {
+                    vehicleType=VehicleType.VAN;
+                    vehicleSize=4; 
+                } else if (productInfo.getVehicleType()==VehicleType.LARGEVAN && vehicleSize<5) {
+                    vehicleType=VehicleType.LARGEVAN;
+                    vehicleSize=5; 
+                } else if (productInfo.getVehicleType()==VehicleType.SMALLLORRY && vehicleSize<6) {
+                    vehicleType=VehicleType.SMALLLORRY;
+                    vehicleSize=6; 
+                } else if (productInfo.getVehicleType()==VehicleType.MEDIUMLORRY && vehicleSize<7) {
+                    vehicleType=VehicleType.MEDIUMLORRY;
+                    vehicleSize=7;
+                } else if (productInfo.getVehicleType()==VehicleType.LARGELORRY && vehicleSize<8) {
+                    vehicleType=VehicleType.LARGELORRY;
+                    vehicleSize=8;
+                } 
             }
         }
 
         class Weight {
 
             Double totalWeight;
-
+            VehicleType vehicleType;
+            
             public Weight() {
             }
 
@@ -302,12 +338,21 @@ public class CartController {
             public void setTotalWeight(Double totalWeight) {
                 this.totalWeight = totalWeight;
             }
+            
+            public VehicleType getVehicleType() {
+                return vehicleType;
+            }
+
+            public void setVehicleType(VehicleType vehicleType) {
+                this.vehicleType = vehicleType;
+            }
 
         }
 
         Weight w = new Weight();
         w.setTotalWeight(totalWeight);
-
+        w.setVehicleType(vehicleType);
+        
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(w);
         return ResponseEntity.status(HttpStatus.OK).body(response);
