@@ -892,6 +892,7 @@ public class OrderController {
                     double deliveryCharge = deliveryQuotation.getAmount();
                     VehicleType vehicleType = deliveryQuotation.getVehicleType();
                     cod.getOrderPaymentDetails().setDeliveryQuotationAmount(deliveryCharge);
+                    cod.getOrderShipmentDetails().setVehicleType(vehicleType);
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliveryCharge from delivery-service:"+deliveryCharge+" vehicleType:"+vehicleType);
                 }                
                 
@@ -951,7 +952,7 @@ public class OrderController {
                         order.setDeliveryType(cod.getOrderShipmentDetails().getDeliveryType());
                     } else {
                         order.setDeliveryType(optStoreDeliveryDetail.get().getType());
-                    }
+                    }                    
                 } else {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Delivery Type:["+cod.getOrderShipmentDetails().getDeliveryType()+"]");
                      if (storePickup) {
