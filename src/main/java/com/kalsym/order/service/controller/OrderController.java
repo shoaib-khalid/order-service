@@ -783,19 +783,17 @@ public class OrderController {
                     if (cartItems.get(i).getDiscountId()!=null) {
                         //check if discount still valid
                         ItemDiscount discountDetails = productInventory.getItemDiscount();
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "productInventory discountId:["+discountDetails.discountId+"] discountedPrice:"+discountDetails.discountedPrice);
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem discountId:["+cartItems.get(i).getDiscountId()+"] price:"+cartItems.get(i).getPrice().doubleValue());
-                        if (discountDetails.discountId.equals(cartItems.get(i).getDiscountId())) {
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "discountId is same");                              
-                        }
-                         if (discountDetails.discountedPrice==cartItems.get(i).getPrice().doubleValue()) {
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "price is same");                              
-                        }
+                        double discountPrice = Round2DecimalPoint(discountDetails.discountedPrice);
+                        double cartItemPrice = Round2DecimalPoint(cartItems.get(i).getPrice().doubleValue());
+                        
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "productInventory discountId:["+discountDetails.discountId+"] discountedPrice:"+discountPrice);
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem discountId:["+cartItems.get(i).getDiscountId()+"] price:"+cartItemPrice);
+                        
                         if (discountDetails.discountId.equals(cartItems.get(i).getDiscountId()) &&
-                                discountDetails.discountedPrice==cartItems.get(i).getPrice().doubleValue()) {
+                                discountPrice==cartItemPrice) {
                             //dicount still valid
-                            subTotal += discountDetails.discountedPrice;
-                            itemPrice = discountDetails.discountedPrice;
+                            subTotal += discountPrice;
+                            itemPrice = discountPrice;
                         } else {
                             //discount no more valid
                             // should return warning if prices are not same
