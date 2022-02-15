@@ -786,7 +786,7 @@ public class OrderController {
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "productInventory discountId:"+discountDetails.discountId+" discountedPrice:"+discountDetails.discountedPrice);
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem discountId:"+cartItems.get(i).getDiscountId()+" price:"+cartItems.get(i).getPrice());
                         if (discountDetails.discountId.equals(cartItems.get(i).getDiscountId()) &&
-                                discountDetails.discountedPrice==cartItems.get(i).getPrice()) {
+                                discountDetails.discountedPrice==cartItems.get(i).getPrice().doubleValue()) {
                             //dicount still valid
                             subTotal += discountDetails.discountedPrice;
                             itemPrice = discountDetails.discountedPrice;
