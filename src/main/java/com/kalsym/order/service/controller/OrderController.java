@@ -783,8 +783,14 @@ public class OrderController {
                     if (cartItems.get(i).getDiscountId()!=null) {
                         //check if discount still valid
                         ItemDiscount discountDetails = productInventory.getItemDiscount();
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "productInventory discountId:"+discountDetails.discountId+" discountedPrice:"+discountDetails.discountedPrice);
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem discountId:"+cartItems.get(i).getDiscountId()+" price:"+cartItems.get(i).getPrice());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "productInventory discountId:["+discountDetails.discountId+"] discountedPrice:"+discountDetails.discountedPrice);
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem discountId:["+cartItems.get(i).getDiscountId()+"] price:"+cartItems.get(i).getPrice().doubleValue());
+                        if (discountDetails.discountId.equals(cartItems.get(i).getDiscountId())) {
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "discountId is same");                              
+                        }
+                         if (discountDetails.discountedPrice==cartItems.get(i).getPrice().doubleValue()) {
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "price is same");                              
+                        }
                         if (discountDetails.discountId.equals(cartItems.get(i).getDiscountId()) &&
                                 discountDetails.discountedPrice==cartItems.get(i).getPrice().doubleValue()) {
                             //dicount still valid
