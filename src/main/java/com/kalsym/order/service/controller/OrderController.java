@@ -783,6 +783,7 @@ public class OrderController {
                     if (cartItems.get(i).getDiscountId()!=null) {
                         //check if discount still valid
                         ItemDiscount discountDetails = productInventory.getItemDiscount();
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "discountDetails from productInventory:"+discountDetails.discountId);
                         if (discountDetails.discountId.equals(cartItems.get(i).getDiscountId()) &&
                                 discountDetails.discountedPrice==cartItems.get(i).getPrice()) {
                             //dicount still valid

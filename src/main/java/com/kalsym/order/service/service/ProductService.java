@@ -424,6 +424,9 @@ public class ProductService {
                 ProductInventory productInventory = objectMapper.readValue(productInventoryObject.toString(), ProductInventory.class);
 
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got productInventoryObject object : " + productInventory.toString());
+                if (productInventory.getItemDiscount()!=null) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "itemDiscount object : " + productInventory.getItemDiscount().toString());
+                }
                 return productInventory;
             }
         } catch (RestClientException e) {

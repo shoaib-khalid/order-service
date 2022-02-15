@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.6.2-SNAPSHOT | 15-Feb-2022
+##################################################
+Bug fix for placeOrder
+
+
+##################################################
 # order-service-3.6.1-SNAPSHOT | 14-Feb-2022
 ##################################################
 New response parameter in getWeightOfCart : Weight->VehicleType
