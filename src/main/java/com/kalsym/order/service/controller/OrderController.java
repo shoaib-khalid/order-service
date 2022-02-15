@@ -784,7 +784,7 @@ public class OrderController {
                         //check if discount still valid
                         ItemDiscount discountDetails = productInventory.getItemDiscount();
                         double discountPrice = Round2DecimalPoint(discountDetails.discountedPrice);
-                        double cartItemPrice = Round2DecimalPoint(cartItems.get(i).getPrice().doubleValue());
+                        double cartItemPrice = Round2DecimalPoint(cartItems.get(i).getProductPrice().doubleValue());
                         
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "productInventory discountId:["+discountDetails.discountId+"] discountedPrice:"+discountPrice);
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem discountId:["+cartItems.get(i).getDiscountId()+"] price:"+cartItemPrice);
@@ -792,7 +792,7 @@ public class OrderController {
                         if (discountDetails.discountId.equals(cartItems.get(i).getDiscountId()) &&
                                 discountPrice==cartItemPrice) {
                             //dicount still valid
-                            subTotal += discountPrice;
+                            subTotal += cartItems.get(i).getPrice() ;
                             itemPrice = discountPrice;
                         } else {
                             //discount no more valid
@@ -812,7 +812,7 @@ public class OrderController {
                             response.setData(cartItems.get(i));
                             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
                         }
-                        subTotal += productInventory.getPrice();
+                        subTotal += cartItems.get(i).getPrice() ;
                         itemPrice = productInventory.getPrice();
                     }
                     
