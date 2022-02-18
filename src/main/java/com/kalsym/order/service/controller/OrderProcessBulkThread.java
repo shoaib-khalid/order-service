@@ -204,6 +204,11 @@ public class OrderProcessBulkThread extends Thread {
             
             //send bulk confirm to delivery-service
             List<DeliveryServiceBulkConfirmResponse> deliveryResponseList = deliveryService.bulkConfirmOrderDelivery(bulkConfirmOrderList);
+            if (deliveryResponseList==null) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "deliveryResponseList is null");
+                //TODO : if null, then revert back all deliveryOrder
+            }
+            
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "deliveryResponseList size:"+deliveryResponseList.size());
             
             //TODO : if deliveryService not return result for all deliveryOrder
