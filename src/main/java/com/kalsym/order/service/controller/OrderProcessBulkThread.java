@@ -100,6 +100,7 @@ public class OrderProcessBulkThread extends Thread {
             RegionCountriesRepository regionCountriesRepository,
             OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository,
             OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository,
+            OrderPaymentDetailRepository orderPaymentDetailRepository,
             
             ProductService productService,
             EmailService emailService,
@@ -126,7 +127,8 @@ public class OrderProcessBulkThread extends Thread {
             this.regionCountriesRepository = regionCountriesRepository;
             this.orderPaymentStatusUpdateRepository = orderPaymentStatusUpdateRepository;
             this.orderCompletionStatusUpdateRepository = orderCompletionStatusUpdateRepository;
-
+            this.orderPaymentDetailRepository = orderPaymentDetailRepository;
+            
             this.productService = productService;
             this.emailService = emailService;
             this.whatsappService = whatsappService;
