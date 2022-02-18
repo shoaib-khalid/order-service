@@ -425,6 +425,7 @@ public class OrderProcessWorker {
                 paymentDetails = optPaymentDetails.get();
             }
             //request delivery
+            orderProcessResult.pendingRequestDelivery=false;
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "request delivery: " + orderCompletionStatusConfig.getRequestDelivery());
             if (orderCompletionStatusConfig.getRequestDelivery() && proceedRequestDelivery) {
                 try {
@@ -441,7 +442,7 @@ public class OrderProcessWorker {
                         orderShipmentDetail.setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
                         orderShipmentDetail.setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
                         orderShipmentDetailRepository.save(orderShipmentDetail);
-
+                                                
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added tracking urls to orderId:" + orderId);
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
                     } else {
@@ -473,102 +474,106 @@ public class OrderProcessWorker {
                 orderProcessResult.pendingRequestDelivery=true;
             }
 
-            //send email to customer if config allows
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email to customer: " + orderCompletionStatusConfig.getEmailToCustomer());
-            if (orderCompletionStatusConfig.getEmailToCustomer()) {
-                String emailContent = orderCompletionStatusConfig.getCustomerEmailContent();
-                if (emailContent != null) {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is not null");
-                    //sending email
-                    try {
-                        RegionCountry regionCountry = null;
-                        Optional<RegionCountry> t = regionCountriesRepository.findById(storeWithDetails.getRegionCountryId());
-                        if (t.isPresent()) {
-                            regionCountry = t.get();
+            if (orderProcessResult.pendingRequestDelivery==false) {
+                            
+                //send email to customer if config allows
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email to customer: " + orderCompletionStatusConfig.getEmailToCustomer());
+                if (orderCompletionStatusConfig.getEmailToCustomer()) {
+                    String emailContent = orderCompletionStatusConfig.getCustomerEmailContent();
+                    if (emailContent != null) {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is not null");
+                        //sending email
+                        try {
+                            RegionCountry regionCountry = null;
+                            Optional<RegionCountry> t = regionCountriesRepository.findById(storeWithDetails.getRegionCountryId());
+                            if (t.isPresent()) {
+                                regionCountry = t.get();
+                            }
+                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry);
+                            email.setRawBody(emailContent);
+                            emailService.sendEmail(email);
+                        } catch (Exception ex) {
+                            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending email :", ex);
                         }
-                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry);
-                        email.setRawBody(emailContent);
-                        emailService.sendEmail(email);
-                    } catch (Exception ex) {
-                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending email :", ex);
+                    } else {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is null");
                     }
-                } else {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is null");
                 }
-            }
-            
-            
-            //send email to finance if config allows
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email to finance: " + orderCompletionStatusConfig.getEmailToFinance());
-            if (orderCompletionStatusConfig.getEmailToFinance()) {
-                String emailContent = orderCompletionStatusConfig.getFinanceEmailContent();
-                if (emailContent != null) {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "finance email is not null");
-                    //sending email
-                    try {
-                        RegionCountry regionCountry = null;
-                        Optional<RegionCountry> t = regionCountriesRepository.findById(storeWithDetails.getRegionCountryId());
-                        if (t.isPresent()) {
-                            regionCountry = t.get();
+                        
+                //send email to finance if config allows
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email to finance: " + orderCompletionStatusConfig.getEmailToFinance());
+                if (orderCompletionStatusConfig.getEmailToFinance()) {
+                    String emailContent = orderCompletionStatusConfig.getFinanceEmailContent();
+                    if (emailContent != null) {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "finance email is not null");
+                        //sending email
+                        try {
+                            RegionCountry regionCountry = null;
+                            Optional<RegionCountry> t = regionCountriesRepository.findById(storeWithDetails.getRegionCountryId());
+                            if (t.isPresent()) {
+                                regionCountry = t.get();
+                            }
+                            String[] emailAddress = {financeEmailAddress};
+                            email.setFrom(null);
+                            email.setTo(emailAddress);
+                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry);
+                            email.setRawBody(emailContent);
+                            emailService.sendEmail(email);
+                        } catch (Exception ex) {
+                            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending email :", ex);
                         }
-                        String[] emailAddress = {financeEmailAddress};
-                        email.setFrom(null);
-                        email.setTo(emailAddress);
-                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry);
-                        email.setRawBody(emailContent);
-                        emailService.sendEmail(email);
-                    } catch (Exception ex) {
-                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending email :", ex);
+                    } else {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "finance email content is null");
                     }
-                } else {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "finance email content is null");
                 }
-            }
 
-            //send rocket chat message
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message to store: " + orderCompletionStatusConfig.getRcMessage());
-            if (orderCompletionStatusConfig.getRcMessage()) {
-                String rcMessageContent = orderCompletionStatusConfig.getRcMessageContent();
-                if (rcMessageContent != null) {
+                //send rocket chat message
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message to store: " + orderCompletionStatusConfig.getRcMessage());
+                if (orderCompletionStatusConfig.getRcMessage()) {
+                    String rcMessageContent = orderCompletionStatusConfig.getRcMessageContent();
+                    if (rcMessageContent != null) {
 
+                        try {
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message content is not null");
+                            rcMessageContent = MessageGenerator.generateRocketChatMessageContent(rcMessageContent, order, orderItems, onboardingOrderLink);
+                            //sending rc messsage
+
+                            orderPostService.postOrderLink(rcMessageContent, order.getStoreId());
+                        } catch (Exception ex) {
+                            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending rc message :", ex);
+                        }
+                    } else {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message content null");
+                    }
+
+                }
+
+                //send push notification to DCM message
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat to store: " + orderCompletionStatusConfig.getPushNotificationToMerchat());
+                if (orderCompletionStatusConfig.getPushNotificationToMerchat()) {
+                    String pushNotificationTitle = orderCompletionStatusConfig.getStorePushNotificationTitle();
+                    String pushNotificationContent = orderCompletionStatusConfig.getStorePushNotificationContent();
                     try {
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message content is not null");
-                        rcMessageContent = MessageGenerator.generateRocketChatMessageContent(rcMessageContent, order, orderItems, onboardingOrderLink);
-                        //sending rc messsage
-
-                        orderPostService.postOrderLink(rcMessageContent, order.getStoreId());
-                    } catch (Exception ex) {
-                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error sending rc message :", ex);
+                        fcmService.sendPushNotification(order, storeWithDetails.getId(), storeWithDetails.getName(), pushNotificationTitle, pushNotificationContent, status);
+                    } catch (Exception e) {
+                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
                     }
-                } else {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "rc message content null");
+
                 }
-
-            }
-
-            //send push notification to DCM message
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat to store: " + orderCompletionStatusConfig.getPushNotificationToMerchat());
-            if (orderCompletionStatusConfig.getPushNotificationToMerchat()) {
-                String pushNotificationTitle = orderCompletionStatusConfig.getStorePushNotificationTitle();
-                String pushNotificationContent = orderCompletionStatusConfig.getStorePushNotificationContent();
-                try {
-                    fcmService.sendPushNotification(order, storeWithDetails.getId(), storeWithDetails.getName(), pushNotificationTitle, pushNotificationContent, status);
-                } catch (Exception e) {
-                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
-                }
-
-            }
             
-            //send push notification to WA alert to admin
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getPushWAToAdmin to store: " + orderCompletionStatusConfig.getPushWAToAdmin());
-            if (orderCompletionStatusConfig.getPushWAToAdmin()) {
-                try {
-                    //String storeName, String invoiceNo, String orderId, String merchantToken
-                    whatsappService.sendAdminAlert(status.name(), storeWithDetails.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp());
-                } catch (Exception e) {
-                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
-                }
+                //send push notification to WA alert to admin
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getPushWAToAdmin to store: " + orderCompletionStatusConfig.getPushWAToAdmin());
+                if (orderCompletionStatusConfig.getPushWAToAdmin()) {
+                    try {
+                        //String storeName, String invoiceNo, String orderId, String merchantToken
+                        whatsappService.sendAdminAlert(status.name(), storeWithDetails.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp());
+                    } catch (Exception e) {
+                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
+                    }
 
+                }
+            } else {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Not done with RequestDelivery");
             }
         }
                 
@@ -581,6 +586,10 @@ public class OrderProcessWorker {
         orderProcessResult.httpStatus = HttpStatus.ACCEPTED;
         orderProcessResult.errorMsg = "Requesting delivery failed";
         orderProcessResult.data = order;
+        orderProcessResult.previousStatus = previousStatus;
+        orderProcessResult.orderCompletionStatusConfig = orderCompletionStatusConfig;
+        orderProcessResult.email = email;
+        orderProcessResult.storeWithDetails = storeWithDetails;
         return orderProcessResult;
         
     }
