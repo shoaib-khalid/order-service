@@ -217,12 +217,14 @@ public class DeliveryService {
                 return deliveryResponseList;
             }
         } catch (RestClientException e) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery order domain: " + orderBulkConfirmURL, e);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "RestClientException rror delivery order domain: " + orderBulkConfirmURL, e);
         } catch (JsonProcessingException ex) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery order domain: " + orderBulkConfirmURL, ex);
-        } catch (Exception ex) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery order domain: " + orderBulkConfirmURL, ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "JsonProcessingException Error delivery order domain: " + orderBulkConfirmURL, ex);
+        } catch (Exception ex2) {
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Exception Error delivery order domain: " + orderBulkConfirmURL, ex2);
         }
+        
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Finish process bulkConfirmOrderDelivery");
         return null;
     }
 
