@@ -201,8 +201,13 @@ public class OrderProcessBulkThread extends Thread {
         
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "BulkConfirmOrderList size:"+bulkConfirmOrderList.size());
         if (bulkConfirmOrderList.size()>0) {
+            
             //send bulk confirm to delivery-service
             List<DeliveryServiceBulkConfirmResponse> deliveryResponseList = deliveryService.bulkConfirmOrderDelivery(bulkConfirmOrderList);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "deliveryResponseList size:"+deliveryResponseList.size());
+            
+            //TODO : if deliveryService not return result for all deliveryOrder
+            
             for (int i=0;i<deliveryResponseList.size();i++) {
                 DeliveryServiceBulkConfirmResponse deliveryResponse = deliveryResponseList.get(i);
                 Optional<Order> orderOpt = orderRepository.findById(deliveryResponse.orderId);
@@ -361,7 +366,7 @@ public class OrderProcessBulkThread extends Thread {
 
                 }                
                 
-            }
+            } 
             
         }
             
