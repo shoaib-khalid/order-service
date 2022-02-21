@@ -185,6 +185,10 @@ public class DeliveryService {
     public List<DeliveryServiceBulkConfirmResponse> bulkConfirmOrderDelivery(List bulkConfirmOrderList)  {
         String logprefix = "bulkConfirmOrderDelivery";
         try {
+            
+            String url = orderBulkConfirmURL;
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderBulkConfirmURL : " + url);
+            
             RestTemplate restTemplate = new RestTemplate(getClientHttpRequestFactory(5000, 120000));
 
             HttpHeaders headers = new HttpHeaders();
@@ -193,13 +197,10 @@ public class DeliveryService {
             HttpEntity<List<DeliveryServiceBulkConfirmRequest>> httpEntity;
             httpEntity = new HttpEntity<>(bulkConfirmOrderList, headers);
         
-            String url = orderBulkConfirmURL;
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderBulkConfirmURL : " + url);
             ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
 
             if (res.getStatusCode() == HttpStatus.OK) {
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
                 JSONObject jsonObject = new JSONObject(res.getBody());
 
                 List<DeliveryServiceBulkConfirmResponse> deliveryResponseList = new ArrayList();
@@ -232,8 +233,7 @@ public class DeliveryService {
     
     
    private ClientHttpRequestFactory getClientHttpRequestFactory(int connectTimeout, int readTimeout) {
-    HttpComponentsClientHttpRequestFactory clientHttpRequestFactory =
-      new HttpComponentsClientHttpRequestFactory();
+    HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory();
     clientHttpRequestFactory.setConnectTimeout(connectTimeout);
     clientHttpRequestFactory.setReadTimeout(readTimeout);
     return clientHttpRequestFactory;
