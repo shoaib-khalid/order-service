@@ -189,7 +189,7 @@ public class DeliveryService {
             String url = orderBulkConfirmURL;
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderBulkConfirmURL : " + url);
             
-            RestTemplate restTemplate = new RestTemplate(getClientHttpRequestFactory(5000, 120000));
+            RestTemplate restTemplate = new RestTemplate();
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", "Bearer accessToken");
@@ -230,13 +230,6 @@ public class DeliveryService {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Finish process bulkConfirmOrderDelivery");
         return null;
     }
-    
-    
-   private ClientHttpRequestFactory getClientHttpRequestFactory(int connectTimeout, int readTimeout) {
-    HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory();
-    clientHttpRequestFactory.setConnectTimeout(connectTimeout);
-    clientHttpRequestFactory.setReadTimeout(readTimeout);
-    return clientHttpRequestFactory;
-}
+      
 
 }
