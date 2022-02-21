@@ -184,16 +184,15 @@ public class DeliveryService {
     
     public List<DeliveryServiceBulkConfirmResponse> bulkConfirmOrderDelivery(List bulkConfirmOrderList)  {
         String logprefix = "bulkConfirmOrderDelivery";
-
-        RestTemplate restTemplate = new RestTemplate(getClientHttpRequestFactory(5000, 120000));
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer accessToken");
-        
-        HttpEntity<List<DeliveryServiceBulkConfirmRequest>> httpEntity;
-        httpEntity = new HttpEntity<>(bulkConfirmOrderList, headers);
-        
         try {
+            RestTemplate restTemplate = new RestTemplate(getClientHttpRequestFactory(5000, 120000));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", "Bearer accessToken");
+
+            HttpEntity<List<DeliveryServiceBulkConfirmRequest>> httpEntity;
+            httpEntity = new HttpEntity<>(bulkConfirmOrderList, headers);
+        
             String url = orderBulkConfirmURL;
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderBulkConfirmURL : " + url);
             ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class);
