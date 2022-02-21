@@ -1,4 +1,11 @@
 ##################################################
+# order-service-3.6.4-SNAPSHOT | 21-Feb-2022
+##################################################
+Bug fix for placeOrder : insert 0.00 if delivery charges is null
+Bug fix for reviseitem : check if delivery charges is null
+
+
+##################################################
 # order-service-3.6.3-SNAPSHOT | 18-Feb-2022
 ##################################################
 Bug fix for process bulk order

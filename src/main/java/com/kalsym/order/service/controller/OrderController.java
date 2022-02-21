@@ -900,7 +900,9 @@ public class OrderController {
                     cod.getOrderPaymentDetails().setDeliveryQuotationAmount(deliveryCharge);
                     cod.getOrderShipmentDetails().setVehicleType(vehicleType.name());
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliveryCharge from delivery-service:"+deliveryCharge+" vehicleType:"+vehicleType);
-                }                
+                } else {
+                    cod.getOrderPaymentDetails().setDeliveryQuotationAmount(0.00);
+                }               
                 
                 order.setCartId(cartId);                    
                 order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE);
@@ -931,7 +933,6 @@ public class OrderController {
                 order.setTotal(orderTotalObject.getTotal());
                 order.setKlCommission(orderTotalObject.getKlCommission());
                 order.setStoreShare(orderTotalObject.getStoreShare());
-                order.setDeliveryCharges(order.getDeliveryCharges());
                 order.setDiscountId(orderTotalObject.getDiscountId());
                 order.setDiscountCalculationType(orderTotalObject.getDiscountCalculationType());
                 order.setDiscountCalculationValue(orderTotalObject.getDiscountCalculationValue());
@@ -1684,9 +1685,15 @@ public class OrderController {
                     newAppliedDiscount = subdiscount;            
                 }
             }
-        
-            double deliveryCharge = order.getDeliveryCharges();
-            double deliveryDiscount = order.getDeliveryDiscount();
+            
+            double deliveryCharge = 0.00;
+            double deliveryDiscount = 0.00;
+            if (order.getDeliveryCharges()==null) {
+                deliveryCharge = order.getDeliveryCharges();
+            }  
+            if (order.getDeliveryDiscount()==null) {
+                deliveryDiscount = order.getDeliveryDiscount();
+            } 
             
             //calculate Store service charge 
             StoreWithDetails storeWithDetials = productService.getStoreById(order.getStoreId());            
