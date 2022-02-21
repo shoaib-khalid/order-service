@@ -43,6 +43,7 @@ import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.PaymentOrder;
 import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.utility.Utilities;
+import com.kalsym.order.service.enums.DeliveryType;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -175,11 +176,13 @@ public class OrderProcessBulkThread extends Thread {
                 OrderProcessResult result = worker.startProcessOrder();
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "result processOrder orderId:"+bodyOrderCompletionStatusUpdate.getOrderId()+" httpStatus:"+result.httpStatus+" message:"+result.errorMsg+" pendingRequestDelivery:"+result.pendingRequestDelivery);
 
-                if (result.pendingRequestDelivery) {
+                if (result.pendingRequestDelivery) {                    
                     //query into from delivery quotation
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "result processOrder orderId:"+bodyOrderCompletionStatusUpdate.getOrderId()+" httpStatus:"+result.httpStatus+" message:"+result.errorMsg+" pendingRequestDelivery:"+result.pendingRequestDelivery);
+                    Order orderDetails = (Order)result.data;
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderDetails deliveryType:"+orderDetails.getDeliveryType());
                     Optional<OrderPaymentDetail> optPaymentDetail = orderPaymentDetailRepository.findById(bodyOrderCompletionStatusUpdate.getOrderId());
-                    if (optPaymentDetail.isPresent()) {
+                    if (optPaymentDetail.isPresent() && !orderDetails.getDeliveryType().equals(DeliveryType.PICKUP)) {
                         DeliveryServiceBulkConfirmRequest bulkConfirmOrder = new DeliveryServiceBulkConfirmRequest();
                         bulkConfirmOrder.deliveryQuotationId=optPaymentDetail.get().getDeliveryQuotationReferenceId();
                         bulkConfirmOrder.orderId=bodyOrderCompletionStatusUpdate.getOrderId();
@@ -189,6 +192,8 @@ public class OrderProcessBulkThread extends Thread {
                         bulkConfirmOrder.storeWithDetails = result.storeWithDetails;
                         bulkConfirmOrderList.add(bulkConfirmOrder);
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "BulkConfirmOrder added deliveryQuotationId:"+bulkConfirmOrder.deliveryQuotationId);
+                    } else if (orderDetails.getDeliveryType().equals(DeliveryType.PICKUP)) {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliveryType is PICKUP");
                     } else {
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Payment details not found");
                     }

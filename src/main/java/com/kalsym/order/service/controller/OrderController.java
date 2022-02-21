@@ -1666,6 +1666,8 @@ public class OrderController {
                 orderItemRepository.save(orderNewItem);
             }
             
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "newSalesAmount: " + newSalesAmount);
+            
             //get discount from original discount
             double newAppliedDiscount = 0.00;
             if (order.getDiscountId()!=null) {
@@ -1684,16 +1686,18 @@ public class OrderController {
                     }
                     newAppliedDiscount = subdiscount;            
                 }
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Discount calculationType:" + calculationType +" discountTierAmount:"+discountTierAmount+" newAppliedDiscount:"+newAppliedDiscount);
             }
             
             double deliveryCharge = 0.00;
             double deliveryDiscount = 0.00;
-            if (order.getDeliveryCharges()==null) {
+            if (order.getDeliveryCharges()!=null) {
                 deliveryCharge = order.getDeliveryCharges();
             }  
-            if (order.getDeliveryDiscount()==null) {
+            if (order.getDeliveryDiscount()!=null) {
                 deliveryDiscount = order.getDeliveryDiscount();
             } 
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "deliveryCharge:" + deliveryCharge +" deliveryDiscount:"+deliveryDiscount);
             
             //calculate Store service charge 
             StoreWithDetails storeWithDetials = productService.getStoreById(order.getStoreId());            
@@ -1703,6 +1707,8 @@ public class OrderController {
             //calculate grand total
             double newGrandTotal = newSalesAmount - newAppliedDiscount + newStoreServiceCharges + deliveryCharge - deliveryDiscount;
             double oldGranTotal = order.getTotal();
+            
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "newGrandTotal:" + newGrandTotal +" oldGranTotal:"+oldGranTotal);
             
             //calculating Kalsym commission 
             double newKLCommission = 0;
@@ -1746,7 +1752,7 @@ public class OrderController {
             orderRefund.setRefundAmount(refundAmount);
             orderRefund.setRefundStatus(RefundStatus.PENDING);
             orderRefundRepository.save(orderRefund);
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "refund record created for orderId: " + order.getId());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "refund record created for orderId: " + order.getId()+" refundAmount:"+refundAmount);
             
             //send email to customer            
             String subject = null;
