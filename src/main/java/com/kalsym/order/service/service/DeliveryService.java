@@ -15,6 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.client.ClientHttpRequestFactory;
+
 import com.kalsym.order.service.model.object.DeliveryServiceSubmitOrder;
 import com.kalsym.order.service.model.object.DeliveryServiceResponse;
 import com.kalsym.order.service.model.object.DeliveryPickup;
@@ -182,7 +185,7 @@ public class DeliveryService {
     public List<DeliveryServiceBulkConfirmResponse> bulkConfirmOrderDelivery(List bulkConfirmOrderList)  {
         String logprefix = "bulkConfirmOrderDelivery";
 
-        RestTemplate restTemplate = new RestTemplate();
+        RestTemplate restTemplate = new RestTemplate(getClientHttpRequestFactory(5000, 120000));
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer accessToken");
@@ -227,5 +230,14 @@ public class DeliveryService {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Finish process bulkConfirmOrderDelivery");
         return null;
     }
+    
+    
+   private ClientHttpRequestFactory getClientHttpRequestFactory(int connectTimeout, int readTimeout) {
+    HttpComponentsClientHttpRequestFactory clientHttpRequestFactory =
+      new HttpComponentsClientHttpRequestFactory();
+    clientHttpRequestFactory.setConnectTimeout(connectTimeout);
+    clientHttpRequestFactory.setReadTimeout(readTimeout);
+    return clientHttpRequestFactory;
+}
 
 }

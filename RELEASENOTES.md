@@ -3,6 +3,7 @@
 ##################################################
 Bug fix for placeOrder : insert 0.00 if delivery charges is null
 Bug fix for reviseitem : check if delivery charges is null
+Bug fix for process bulk order : handle if delivery-service return error/cannot connect
 
 
 ##################################################

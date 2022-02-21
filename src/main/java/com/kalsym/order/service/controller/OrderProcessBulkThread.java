@@ -206,12 +206,23 @@ public class OrderProcessBulkThread extends Thread {
             List<DeliveryServiceBulkConfirmResponse> deliveryResponseList = deliveryService.bulkConfirmOrderDelivery(bulkConfirmOrderList);
             if (deliveryResponseList==null) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "deliveryResponseList is null");
-                //TODO : if null, then revert back all deliveryOrder
+                //if null or error, then revert back all deliveryOrder
+                for (int i=0;i<bulkConfirmOrderList.size();i++) {
+                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while confirming order Delivery. delivery-service return error");
+                    
+                    Optional<Order> orderOpt = orderRepository.findById(bulkConfirmOrderList.get(i).orderId);
+                    Order order = null;
+                    if (orderOpt.isPresent()) {
+                        order = orderOpt.get();
+                    }
+                    insertOrderCompletionStatusUpdate(OrderStatus.REQUESTING_DELIVERY_FAILED, "Request delivery fail in bulk process thread", "OrderProcessBulkThread", order.getId());                        
+                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Revert orderId:"+order.getId()+" to previous status:"+bulkConfirmOrderList.get(i).previousStatus);
+                    order.setCompletionStatus(bulkConfirmOrderList.get(i).previousStatus);
+                    orderRepository.save(order);
+                }
             }
             
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "deliveryResponseList size:"+deliveryResponseList.size());
-            
-            //TODO : if deliveryService not return result for all deliveryOrder
             
             for (int i=0;i<deliveryResponseList.size();i++) {
                 DeliveryServiceBulkConfirmResponse deliveryResponse = deliveryResponseList.get(i);
