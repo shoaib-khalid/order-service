@@ -1635,7 +1635,6 @@ public class OrderController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order item preview revise for orderId: " + orderId);
             
             //get original order item
-            List<OrderItem> orderItemList = orderItemRepository.findByOrderId(orderId);
             List<OrderItem> orderNewItemList = new ArrayList<OrderItem>();
             
             for (int i=0;i<bodyOrderItemList.length;i++) {
@@ -1657,13 +1656,19 @@ public class OrderController {
                     //price is already discounted price (if any)
                 }
             }
-            
-            double newSalesAmount=0.00;
+                        
             //save new quantity
             for (int i=0;i<orderNewItemList.size();i++) {
-                OrderItem orderNewItem = orderNewItemList.get(i);
-                newSalesAmount = newSalesAmount + orderNewItem.getPrice();
+                OrderItem orderNewItem = orderNewItemList.get(i);                
                 orderItemRepository.save(orderNewItem);
+            }
+            
+            //get new sales total amount
+            double newSalesAmount=0.00;
+            List<OrderItem> orderItemList = orderItemRepository.findByOrderId(orderId);
+            for (int i=0;i<orderItemList.size();i++) {
+                OrderItem orderItem = orderItemList.get(i);
+                newSalesAmount = newSalesAmount + orderItem.getPrice();
             }
             
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "newSalesAmount: " + newSalesAmount);
