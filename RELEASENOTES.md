@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.6.5-SNAPSHOT | 23-Feb-2022
+##################################################
+Add totalPcs in getWeightOfCart
+
+
+##################################################
 # order-service-3.6.4-SNAPSHOT | 21-Feb-2022
 ##################################################
 Bug fix for placeOrder : insert 0.00 if delivery charges is null

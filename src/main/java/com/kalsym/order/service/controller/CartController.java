@@ -285,6 +285,7 @@ public class CartController {
         double totalWeight = 0;
         VehicleType vehicleType = VehicleType.MOTORCYCLE;
         int vehicleSize=1;
+        int totalPcs=0;
         if (null != cartItems) {
             for (int i = 0; i < cartItems.size(); i++) {
                 CartItem cartItem = cartItems.get(i);
@@ -294,6 +295,7 @@ public class CartController {
                 }
                 double itemWeight = cartItem.getQuantity() * singleItemWeight;
                 totalWeight = totalWeight + itemWeight;
+                totalPcs = totalPcs + cartItem.getQuantity();
                 
                 //check if any of item need a bigger vehicle
                 Optional<Product> productInfoOpt = productRepository.findById(cartItem.getProductId());
@@ -327,6 +329,7 @@ public class CartController {
 
             Double totalWeight;
             VehicleType vehicleType;
+            Integer totalPcs;
             
             public Weight() {
             }
@@ -346,13 +349,21 @@ public class CartController {
             public void setVehicleType(VehicleType vehicleType) {
                 this.vehicleType = vehicleType;
             }
+            
+            public Integer getTotalPcs() {
+                return totalPcs;
+            }
+
+            public void setTotalPcs(Integer totalPcs) {
+                this.totalPcs = totalPcs;
+            }
 
         }
 
         Weight w = new Weight();
         w.setTotalWeight(totalWeight);
         w.setVehicleType(vehicleType);
-        
+        w.setTotalPcs(totalPcs);
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(w);
         return ResponseEntity.status(HttpStatus.OK).body(response);
