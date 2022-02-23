@@ -250,6 +250,13 @@ public class OrderCompletionStatusController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-completion-status-updates-confirm-put-by-bulk");
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Total order sent:"+bodyOrderCompletionStatusUpdateList.length);
         
+        if (bodyOrderCompletionStatusUpdateList.length>10) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order count more than 10");
+            response.setMessage("Cannot process order more than 10");
+            response.setErrorStatus(HttpStatus.CONFLICT);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
+        
         for (int i=0;i<bodyOrderCompletionStatusUpdateList.length;i++) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Id:"+bodyOrderCompletionStatusUpdateList[i].getId()+" OrderId:"+bodyOrderCompletionStatusUpdateList[i].getOrderId());
         }
