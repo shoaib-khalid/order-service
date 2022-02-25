@@ -61,6 +61,7 @@ public class Product {
     @Enumerated(EnumType.STRING)
     private Status status;
     
+    @Enumerated(EnumType.STRING)
     private VehicleType vehicleType;
    
 }
