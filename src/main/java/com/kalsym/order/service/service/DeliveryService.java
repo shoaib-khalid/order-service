@@ -17,6 +17,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
 import com.kalsym.order.service.model.object.DeliveryServiceSubmitOrder;
 import com.kalsym.order.service.model.object.DeliveryServiceResponse;
@@ -189,14 +190,16 @@ public class DeliveryService {
             String url = orderBulkConfirmURL;
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderBulkConfirmURL : " + url);
             
-            RestTemplate restTemplate = new RestTemplate();
+            //RestTemplate restTemplate = new RestTemplate();
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", "Bearer accessToken");
 
             HttpEntity<List<DeliveryServiceBulkConfirmRequest>> httpEntity;
             httpEntity = new HttpEntity<>(bulkConfirmOrderList, headers);
-        
+            
+            RestTemplate restTemplate = new RestTemplate(getClientHttpRequestFactory());
+
             ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
 
@@ -231,5 +234,16 @@ public class DeliveryService {
         return null;
     }
       
+    //Override timeouts in request factory
+    private HttpComponentsClientHttpRequestFactory getClientHttpRequestFactory() 
+    {
+        HttpComponentsClientHttpRequestFactory clientHttpRequestFactory
+                          = new HttpComponentsClientHttpRequestFactory();
+        //Connect timeout
+        clientHttpRequestFactory.setConnectTimeout(1_000);
 
+        //Read timeout
+        clientHttpRequestFactory.setReadTimeout(10_000);
+        return clientHttpRequestFactory;
+    }
 }
