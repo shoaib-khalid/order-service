@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.7.0-SNAPSHOT | 28-Feb-2022
+##################################################
+Handle calback in delivery-service if delivery-service return PENDING during requestDelivery
+
+
+##################################################
 # order-service-3.6.6-SNAPSHOT | 25-Feb-2022
 ##################################################
 Bug fix for vehicleType in product

@@ -236,6 +236,16 @@ public class OrderProcessWorker {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
                 orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
             }
+        } else if (newStatus.contains("ASSIGNING_DRIVER")) {
+            //delivery-order inform assigning driver            
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "ASSIGNING_DRIVER");
+            List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStoreDeliveryType(verticalId, OrderStatus.AWAITING_PICKUP.name(), storeDeliveryType);            
+            if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
+                Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: AWAITING_PICKUP" + newStatus);                
+            } else {        
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
+                orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
+            }
         } else if (newStatus.contains("FAILED")) {
             //something failed in order processing
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Something failed! Not read config from db");
@@ -427,24 +437,49 @@ public class OrderProcessWorker {
             //request delivery
             orderProcessResult.pendingRequestDelivery=false;
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "request delivery: " + orderCompletionStatusConfig.getRequestDelivery());
-            if (orderCompletionStatusConfig.getRequestDelivery() && proceedRequestDelivery) {
+            if (orderCompletionStatusConfig.getRequestDelivery() && proceedRequestDelivery && newStatus.equals("ASSIGNING_DRIVER")==false) {
                 try {
                     DeliveryOrder deliveryOrder = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), 
                             order.getId(), 
                             bodyOrderCompletionStatusUpdate.getPickupDate(), 
                             bodyOrderCompletionStatusUpdate.getPickupTime());
                     if (deliveryOrder!=null) {
-                        status = OrderStatus.AWAITING_PICKUP;
-                        email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
-                        email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
+                        if (deliveryOrder.getStatus().equals("ASSIGNING_DRIVER")) {
+                            status = OrderStatus.AWAITING_PICKUP;
+                            email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
+                            email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
 
-                        orderShipmentDetail.setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
-                        orderShipmentDetail.setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
-                        orderShipmentDetailRepository.save(orderShipmentDetail);
-                                                
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added tracking urls to orderId:" + orderId);
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
+                            orderShipmentDetail.setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
+                            orderShipmentDetail.setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
+                            orderShipmentDetailRepository.save(orderShipmentDetail);
+
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added tracking urls to orderId:" + orderId);
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
+                        } else if (deliveryOrder.getStatus().equals("FAILED")) {
+                            //failed
+                            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while confirming order Delivery. deliveryOrder is null ");
+                            insertOrderCompletionStatusUpdate(OrderStatus.REQUESTING_DELIVERY_FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);                        
+                            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Revert to previous status:"+previousStatus);
+                            order.setCompletionStatus(previousStatus);
+                            //update order to finish process
+                            orderRepository.UpdateOrderFinishProcess(orderId);
+
+                            orderProcessResult.httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+                            orderProcessResult.errorMsg = "Requesting delivery failed";
+                            return orderProcessResult;
+                        } else if (deliveryOrder.getStatus().equals("PENDING")) {
+                            //pending
+                            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Confirming order Delivery is still pending");                            
+                            orderProcessResult.httpStatus = HttpStatus.ACCEPTED;
+                            orderProcessResult.errorMsg = "Requesting delivery is pending";
+                            orderProcessResult.data = order;
+                            orderProcessResult.previousStatus = previousStatus;
+                            orderProcessResult.orderCompletionStatusConfig = orderCompletionStatusConfig;
+                            orderProcessResult.email = email;
+                            orderProcessResult.storeWithDetails = storeWithDetails;
+                            return orderProcessResult;
+                        }
                     } else {
                         Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while confirming order Delivery. deliveryOrder is null ");
                         insertOrderCompletionStatusUpdate(OrderStatus.REQUESTING_DELIVERY_FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);                        
