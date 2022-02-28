@@ -48,6 +48,8 @@ public class OrderCompletionStatusUpdate {
     private String pickupDate;
     private String pickupTime;
     
+    
+    
     public void update(OrderCompletionStatusUpdate orderCompletionStatusUpdate) {
         orderId = orderCompletionStatusUpdate.getOrderId();
         status = orderCompletionStatusUpdate.getStatus();
