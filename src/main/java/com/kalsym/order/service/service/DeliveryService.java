@@ -118,7 +118,12 @@ public class DeliveryService {
                 JSONObject jsonObject = new JSONObject(res.getBody());
 //        
                 //create ObjectMapper instance
-                JSONObject deliveryObject = jsonObject.getJSONObject("data").getJSONObject("orderCreated");
+                JSONObject deliveryObject = null;
+                if (jsonObject.getJSONObject("data").getJSONObject("orderCreated")!=null) {
+                    deliveryObject = jsonObject.getJSONObject("data").getJSONObject("orderCreated");
+                } else {
+                    deliveryObject = jsonObject.getJSONObject("data");
+                }
                 //create ObjectMapper instance
                 ObjectMapper objectMapper = new ObjectMapper();
                 //convert json string to object
