@@ -195,7 +195,7 @@ public class DeliveryService {
             String url = orderBulkConfirmURL;
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderBulkConfirmURL : " + url);
             
-            //RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = new RestTemplate();
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", "Bearer accessToken");
@@ -203,7 +203,7 @@ public class DeliveryService {
             HttpEntity<List<DeliveryServiceBulkConfirmRequest>> httpEntity;
             httpEntity = new HttpEntity<>(bulkConfirmOrderList, headers);
             
-            RestTemplate restTemplate = new RestTemplate(getClientHttpRequestFactory());
+            //RestTemplate restTemplate = new RestTemplate(getClientHttpRequestFactory());
 
             ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
@@ -240,7 +240,7 @@ public class DeliveryService {
     }
       
     //Override timeouts in request factory
-    private HttpComponentsClientHttpRequestFactory getClientHttpRequestFactory() 
+    /*private HttpComponentsClientHttpRequestFactory getClientHttpRequestFactory() 
     {
         HttpComponentsClientHttpRequestFactory clientHttpRequestFactory
                           = new HttpComponentsClientHttpRequestFactory();
@@ -250,5 +250,5 @@ public class DeliveryService {
         //Read timeout
         clientHttpRequestFactory.setReadTimeout(10_000);
         return clientHttpRequestFactory;
-    }
+    }*/
 }
