@@ -96,8 +96,8 @@ public class DeliveryService {
     public DeliveryOrder confirmOrderDelivery(String refId, String orderId, String pickupDate, String pickupTime)  {
         String logprefix = "confirmOrderDelivery";
 
-        RestTemplate restTemplate = new RestTemplate();
-
+        RestTemplate restTemplate = new RestTemplate(getClientHttpRequestFactory());
+        
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer accessToken");
         
@@ -195,15 +195,13 @@ public class DeliveryService {
             String url = orderBulkConfirmURL;
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderBulkConfirmURL : " + url);
             
-            //RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = new RestTemplate();
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", "Bearer accessToken");
 
             HttpEntity<List<DeliveryServiceBulkConfirmRequest>> httpEntity;
-            httpEntity = new HttpEntity<>(bulkConfirmOrderList, headers);
-            
-            RestTemplate restTemplate = new RestTemplate(getClientHttpRequestFactory());
+            httpEntity = new HttpEntity<>(bulkConfirmOrderList, headers);                        
 
             ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
@@ -245,10 +243,13 @@ public class DeliveryService {
         HttpComponentsClientHttpRequestFactory clientHttpRequestFactory
                           = new HttpComponentsClientHttpRequestFactory();
         //Connect timeout
-        clientHttpRequestFactory.setConnectTimeout(1_000);
+        int connectTimeout = 5000;
+        clientHttpRequestFactory.setConnectTimeout(connectTimeout);
 
         //Read timeout
-        clientHttpRequestFactory.setReadTimeout(10_000);
+        int readTimeout = 10000;
+        clientHttpRequestFactory.setReadTimeout(readTimeout);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "Delivery-Service", "Set Connect Timeout:"+connectTimeout+" WaitTimeout:"+readTimeout);
         return clientHttpRequestFactory;
     }
 }
