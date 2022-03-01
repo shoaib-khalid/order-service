@@ -3,6 +3,7 @@
 ##################################################
 1. Handle calback in delivery-service if delivery-service return PENDING during requestDelivery
 2. Set connect timeout & wait timeout for connection to delivery-service
+3. bug fix for PUT cartItem that cause price become zero
 
 ##Compatibility
 Only compatible with delivery-service 2.4.9 onward. Change in delivery-service response format for confirmOrderDelivery()

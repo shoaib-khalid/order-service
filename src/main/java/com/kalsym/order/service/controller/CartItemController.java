@@ -311,10 +311,13 @@ public class CartItemController {
             isPackage = optProduct.get().getIsPackage();
         }
         if (isPackage) {
-            cartItem.update(bodyCartItem, 0);
-            //clear sub item
+            ProductInventory productInventory = productInventoryRepository.findByItemCode(bodyCartItem.getItemCode());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details for package: " + productInventory.toString());
+            double itemPrice = productInventory.getPrice();
+            cartItem.update(bodyCartItem, (float)itemPrice);
+            //clear sub item for previous item
             cartSubItemRepository.clearCartSubItem(cartItem.getId());
-            //save sub cart item
+             //save sub cart item
             if (bodyCartItem.getCartSubItem()!=null) {
                 for (int i=0;i<bodyCartItem.getCartSubItem().size();i++) {
                     CartSubItem subItem = bodyCartItem.getCartSubItem().get(i);
