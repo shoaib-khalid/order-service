@@ -1,8 +1,9 @@
 ##################################################
-# order-service-3.7.0-SNAPSHOT | 28-Feb-2022
+# order-service-3.7.0-SNAPSHOT | 1-Mar-2022
 ##################################################
 Handle calback in delivery-service if delivery-service return PENDING during requestDelivery
 Only compatible with delivery-service 2.4.9 onward. Change in delivery-service response format for confirmOrderDelivery()
+Set connect timeout & wait timeout for connection to delivery-service
 
 
 ##################################################

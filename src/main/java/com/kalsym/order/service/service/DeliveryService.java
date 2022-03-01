@@ -96,8 +96,8 @@ public class DeliveryService {
     public DeliveryOrder confirmOrderDelivery(String refId, String orderId, String pickupDate, String pickupTime)  {
         String logprefix = "confirmOrderDelivery";
 
-        //RestTemplate restTemplate = new RestTemplate(getClientHttpRequestFactory());
-        RestTemplate restTemplate = new RestTemplate();
+        RestTemplate restTemplate = new RestTemplate(getClientHttpRequestFactory());
+        //RestTemplate restTemplate = new RestTemplate();
         
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer accessToken");
