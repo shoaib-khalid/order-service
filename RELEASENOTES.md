@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.7.1-SNAPSHOT | 3-Mar-2022
+##################################################
+Bug fix for confirmOrderDelivery to delivery-service
+
+
+##################################################
 # order-service-3.7.0-SNAPSHOT | 1-Mar-2022
 ##################################################
 1. Handle calback in delivery-service if delivery-service return PENDING during requestDelivery

@@ -92,11 +92,14 @@ public class DeliveryService {
 //        
                 //create ObjectMapper instance
                 JSONObject deliveryObject = null;
-                if (jsonObject.getJSONObject("data").getJSONObject("orderCreated")!=null) {
+                try {
                     deliveryObject = jsonObject.getJSONObject("data").getJSONObject("orderCreated");
-                } else {
+                } catch (Exception ex) {}
+                if (deliveryObject==null) {
                     deliveryObject = jsonObject.getJSONObject("data");
                 }
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "deliveryObject:"+deliveryObject);
+                
                 //create ObjectMapper instance
                 ObjectMapper objectMapper = new ObjectMapper();
                 //convert json string to object
