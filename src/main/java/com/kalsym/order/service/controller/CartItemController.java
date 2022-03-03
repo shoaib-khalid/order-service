@@ -286,13 +286,15 @@ public class CartItemController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-put-by-id, cartId: " + cartId);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyCartItem.toString(), "");
 
-//        Optional<Cart> optCart = cartRepository.findById(cartId);
-//
-//        if (!optCart.isPresent()) {
-//            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cart not found with cartId: "+ cartId);
-//            response.setErrorStatus(HttpStatus.NOT_FOUND);
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-//        }
+        Optional<Cart> savedCart = null;
+        
+        savedCart = cartRepository.findById(cartId);
+        if (savedCart == null) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-post, cartId not found, cartId: " + cartId);
+            response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
+            return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
+        }
+        
         Optional<CartItem> optCartItem = cartItemRepository.findById(id);
         
         if (!optCartItem.isPresent()) {
@@ -304,7 +306,8 @@ public class CartItemController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem found with cartItemId: " + id);
         CartItem cartItem = optCartItem.get();
         
-        ProductInventory productInventory = productInventoryRepository.findByItemCode(cartItem.getItemCode());
+        ProductInventory productInventory = productService.getProductInventoryById(savedCart.get().getStoreId(), cartItem.getProductId(), cartItem.getItemCode());
+            
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details for package: " + productInventory.toString());
             
         //check for discount
