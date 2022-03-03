@@ -358,7 +358,7 @@ public class OrderProcessWorker {
                 break;
 
             case AWAITING_PICKUP:
-                insertOrderCompletionStatusUpdate(OrderStatus.AWAITING_PICKUP, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
+                insertOrderCompletionStatusUpdate(OrderStatus.AWAITING_PICKUP, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId, bodyOrderCompletionStatusUpdate.getDate(), bodyOrderCompletionStatusUpdate.getTime());
                 order.setCompletionStatus(OrderStatus.AWAITING_PICKUP);
                 break;
                 
@@ -651,6 +651,20 @@ public class OrderProcessWorker {
         orderPaymentStatusUpdate.setComments(comments);
         orderPaymentStatusUpdate.setModifiedBy(modifiedBy);
         orderPaymentStatusUpdate.setOrderId(orderId);
+        orderCompletionStatusUpdateRepository.save(orderPaymentStatusUpdate);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "inserted orderPaymentStatusUpdate: " + completionStatus + " for orderId: " + orderId);
+
+    }
+    
+    void insertOrderCompletionStatusUpdate(OrderStatus completionStatus, String comments, String modifiedBy, String orderId, String pickupDate, String pickupTime) {
+        String logprefix = "insertOrderCompletionStatusUpdate";
+        OrderCompletionStatusUpdate orderPaymentStatusUpdate = new OrderCompletionStatusUpdate();
+        orderPaymentStatusUpdate.setStatus(completionStatus);
+        orderPaymentStatusUpdate.setComments(comments);
+        orderPaymentStatusUpdate.setModifiedBy(modifiedBy);
+        orderPaymentStatusUpdate.setOrderId(orderId);
+        orderPaymentStatusUpdate.setPickupDate(pickupDate);
+        orderPaymentStatusUpdate.setPickupTime(pickupTime);
         orderCompletionStatusUpdateRepository.save(orderPaymentStatusUpdate);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "inserted orderPaymentStatusUpdate: " + completionStatus + " for orderId: " + orderId);
 
