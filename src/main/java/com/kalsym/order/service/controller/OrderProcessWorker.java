@@ -163,7 +163,7 @@ public class OrderProcessWorker {
         
         String newStatus = bodyOrderCompletionStatusUpdate.getStatus().toString();
         
-        if (!newStatus.contains("FAILED_FIND_DRIVER") && newStatus.contains("ASSIGNING_DRIVER")) {
+        if (!newStatus.contains("FAILED_FIND_DRIVER") && !newStatus.contains("ASSIGNING_DRIVER")) {
             //only check if not callback from delivery-service
             if (order.getBeingProcess()!=null) {
                 if (order.getBeingProcess()) {
