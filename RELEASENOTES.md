@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.7.2-SNAPSHOT | 3-Mar-2022
+##################################################
+Bug fix for PUT cartItem for discounted item
+
+
+##################################################
 # order-service-3.7.1-SNAPSHOT | 3-Mar-2022
 ##################################################
 Bug fix for confirmOrderDelivery to delivery-service

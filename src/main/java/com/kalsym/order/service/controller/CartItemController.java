@@ -304,6 +304,26 @@ public class CartItemController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem found with cartItemId: " + id);
         CartItem cartItem = optCartItem.get();
         
+        ProductInventory productInventory = productInventoryRepository.findByItemCode(cartItem.getItemCode());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details for package: " + productInventory.toString());
+            
+        //check for discount
+        double itemPrice = 0.00;
+        if (productInventory.getItemDiscount()!=null) {
+            //got discount
+            ItemDiscount discountDetails = productInventory.getItemDiscount();
+            itemPrice = discountDetails.discountedPrice;
+            bodyCartItem.setDiscountId(discountDetails.discountId);
+            bodyCartItem.setNormalPrice((float)discountDetails.normalPrice);
+            bodyCartItem.setDiscountLabel(discountDetails.discountLabel);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item got discount. price:"+itemPrice);            
+        } else {
+            //no dicount for this item code
+            itemPrice = productInventory.getPrice();
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item no discount. price:"+itemPrice);            
+        }
+        bodyCartItem.setProductPrice((float)itemPrice);
+            
         //check if product is package
         Optional<Product> optProduct = productRepository.findById(cartItem.getProductId());
         boolean isPackage=false;
@@ -311,9 +331,6 @@ public class CartItemController {
             isPackage = optProduct.get().getIsPackage();
         }
         if (isPackage) {
-            ProductInventory productInventory = productInventoryRepository.findByItemCode(bodyCartItem.getItemCode());
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details for package: " + productInventory.toString());
-            double itemPrice = productInventory.getPrice();
             cartItem.update(bodyCartItem, (float)itemPrice);
             //clear sub item for previous item
             cartSubItemRepository.clearCartSubItem(cartItem.getId());
@@ -327,9 +344,6 @@ public class CartItemController {
             }
         } else {
             //find product invertory against itemcode to set sku
-            ProductInventory productInventory = productInventoryRepository.findByItemCode(bodyCartItem.getItemCode());
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventory.toString());
-            double itemPrice = productInventory.getPrice();            
             cartItem.update(bodyCartItem, (float)itemPrice);
         }
                 
