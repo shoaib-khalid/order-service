@@ -442,8 +442,9 @@ public class OrderProcessWorker {
                 try {
                     DeliveryResponse deliveryResponse = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), 
                             order.getId(), 
-                            bodyOrderCompletionStatusUpdate.getPickupDate(), 
-                            bodyOrderCompletionStatusUpdate.getPickupTime());
+                            bodyOrderCompletionStatusUpdate.getDate(), 
+                            bodyOrderCompletionStatusUpdate.getTime());
+                    
                     if (deliveryResponse!=null) {
                         if (deliveryResponse.getStatus().equals("ASSIGNING_DRIVER")) {
                             DeliveryOrder deliveryOrder = (DeliveryOrder)deliveryResponse.getOrderCreated();

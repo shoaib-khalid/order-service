@@ -2,6 +2,7 @@ package com.kalsym.order.service.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.kalsym.order.service.enums.OrderStatus;
+import com.kalsym.order.service.model.object.ItemDiscount;
 import java.util.Date;
 import java.sql.Time;
 import javax.persistence.Entity;
@@ -10,6 +11,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -48,7 +50,10 @@ public class OrderCompletionStatusUpdate {
     private String pickupDate;
     private String pickupTime;
     
-    
+    @Transient
+    private String date;
+    @Transient
+    private String time;
     
     public void update(OrderCompletionStatusUpdate orderCompletionStatusUpdate) {
         orderId = orderCompletionStatusUpdate.getOrderId();
