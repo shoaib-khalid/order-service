@@ -17,6 +17,7 @@ import javax.persistence.ManyToOne;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import com.kalsym.order.service.enums.VehicleType;
+import javax.persistence.OneToOne;
 
 /**
  *
@@ -64,6 +65,11 @@ public class OrderShipmentDetail implements Serializable {
     @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "deliveryProviderId", insertable = false, updatable = false)
     private DeliveryServiceProvider deliveryServiceProvider;
+    
+    @OneToOne(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
+    @JoinColumn(name = "fulfilmentType", insertable = false, updatable = false, nullable = true)    
+    private DeliveryPeriod deliveryPeriodDetails;
     
     public void update(OrderShipmentDetail orderShipmentDetail) {
         if (orderShipmentDetail.getTrackingNumber() != null) {
