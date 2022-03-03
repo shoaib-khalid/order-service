@@ -161,15 +161,20 @@ public class OrderProcessWorker {
             return orderProcessResult;
         }
         
-        if (order.getBeingProcess()!=null) {
-            if (order.getBeingProcess()) {
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order is being processed. orderId: " + orderId);
-                orderProcessResult.httpStatus = HttpStatus.CONFLICT;
-                orderProcessResult.errorMsg = "Order is being processed";
-                return orderProcessResult;
+        String newStatus = bodyOrderCompletionStatusUpdate.getStatus().toString();
+        
+        if (!newStatus.contains("FAILED_FIND_DRIVER") && newStatus.contains("ASSIGNING_DRIVER")) {
+            //only check if not callback from delivery-service
+            if (order.getBeingProcess()!=null) {
+                if (order.getBeingProcess()) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order is being processed. orderId: " + orderId);
+                    orderProcessResult.httpStatus = HttpStatus.CONFLICT;
+                    orderProcessResult.errorMsg = "Order is being processed";
+                    return orderProcessResult;
+                }
             }
         }
-  
+        
         StoreWithDetails storeWithDetails = optStore.get();
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderId:"+order.getId()+" invoiceNo:"+order.getInvoiceId()+" Store details got : " + storeWithDetails.toString());
         OrderStatus status = bodyOrderCompletionStatusUpdate.getStatus();
@@ -207,7 +212,7 @@ public class OrderProcessWorker {
         String[] to = Utilities.convertArrayListToStringArray(tos);
         email.setTo(to);
 
-        String newStatus = bodyOrderCompletionStatusUpdate.getStatus().toString();
+        
         String verticalId = storeWithDetails.getVerticalCode();
         Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
         String storeDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
