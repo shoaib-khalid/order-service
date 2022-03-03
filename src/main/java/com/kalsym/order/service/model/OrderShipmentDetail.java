@@ -58,6 +58,8 @@ public class OrderShipmentDetail implements Serializable {
     
     private String vehicleType;
     
+    private String fulfilmentType;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "deliveryProviderId", insertable = false, updatable = false)

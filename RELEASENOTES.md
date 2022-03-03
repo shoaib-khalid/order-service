@@ -2,6 +2,10 @@
 # order-service-3.7.1-SNAPSHOT | 3-Mar-2022
 ##################################################
 Bug fix for confirmOrderDelivery to delivery-service
+Add delivery fulfilmentType in order_shipment_detail
+
+##DB Changes
+ALTER TABLE order_shipment_detail ADD fulfilmentType VARCHAR(20);
 
 
 ##################################################

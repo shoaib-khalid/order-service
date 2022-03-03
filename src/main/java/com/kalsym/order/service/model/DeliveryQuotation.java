@@ -29,4 +29,5 @@ public class DeliveryQuotation {
     String cartId;
     Double amount; 
     VehicleType vehicleType;
+    String fulfillmentType;
 }

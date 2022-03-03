@@ -897,8 +897,10 @@ public class OrderController {
                     DeliveryQuotation deliveryQuotation = deliveryService.getDeliveryQuotation(deliveryQuotationId);
                     double deliveryCharge = deliveryQuotation.getAmount();
                     VehicleType vehicleType = deliveryQuotation.getVehicleType();
+                    String fulfillmentType = deliveryQuotation.getFulfillmentType();
                     cod.getOrderPaymentDetails().setDeliveryQuotationAmount(deliveryCharge);
                     cod.getOrderShipmentDetails().setVehicleType(vehicleType.name());
+                    cod.getOrderShipmentDetails().setFulfilmentType(fulfillmentType);
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliveryCharge from delivery-service:"+deliveryCharge+" vehicleType:"+vehicleType);
                 } else {
                     cod.getOrderPaymentDetails().setDeliveryQuotationAmount(0.00);
