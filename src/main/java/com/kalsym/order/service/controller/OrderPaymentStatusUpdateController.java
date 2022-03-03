@@ -237,7 +237,8 @@ public class OrderPaymentStatusUpdateController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderCompletionStatusUpdate updated for orderId: {}, with orderStatus: {}", orderId, status.toString());
         try {
 
-            DeliveryOrder deliveryOrder = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), order.getId(), bodyOrderCompletionStatusUpdate.getPickupDate(), bodyOrderCompletionStatusUpdate.getPickupTime());
+            DeliveryResponse deliveryResponse = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), order.getId(), bodyOrderCompletionStatusUpdate.getPickupDate(), bodyOrderCompletionStatusUpdate.getPickupTime());
+            DeliveryOrder deliveryOrder = (DeliveryOrder)deliveryResponse.getOrderCreated();
             status = OrderStatus.AWAITING_PICKUP;
             email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
             email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());

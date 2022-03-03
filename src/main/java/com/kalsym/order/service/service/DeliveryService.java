@@ -26,6 +26,7 @@ import com.kalsym.order.service.model.object.DeliveryServiceBulkConfirmResponse;
 import org.springframework.http.HttpStatus;
 import com.kalsym.order.service.model.DeliveryOrder;
 import com.kalsym.order.service.model.DeliveryQuotation;
+import com.kalsym.order.service.model.DeliveryResponse;
 import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.utility.Logger;
 import com.kalsym.order.service.utility.HttpClient;
@@ -65,7 +66,7 @@ public class DeliveryService {
     @Autowired
     StoreNameService storeNameService;
 
-    public DeliveryOrder confirmOrderDelivery(String refId, String orderId, String pickupDate, String pickupTime)  {
+    public DeliveryResponse confirmOrderDelivery(String refId, String orderId, String pickupDate, String pickupTime)  {
         String logprefix = "confirmOrderDelivery";
 
         RestTemplate restTemplate = new RestTemplate(HttpClient.getClientHttpRequestFactory(orderDeliveryConfirmationConnectTimeout, orderDeliveryConfirmationWaitTimeout));
@@ -91,22 +92,16 @@ public class DeliveryService {
                 JSONObject jsonObject = new JSONObject(res.getBody());
 //        
                 //create ObjectMapper instance
-                JSONObject deliveryObject = null;
-                try {
-                    deliveryObject = jsonObject.getJSONObject("data").getJSONObject("orderCreated");
-                } catch (Exception ex) {}
-                if (deliveryObject==null) {
-                    deliveryObject = jsonObject.getJSONObject("data");
-                }
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "deliveryObject:"+deliveryObject);
+                JSONObject deliveryResponseObject = jsonObject.getJSONObject("data");                
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "deliveryResponse Json:"+deliveryResponseObject);
                 
                 //create ObjectMapper instance
                 ObjectMapper objectMapper = new ObjectMapper();
                 //convert json string to object
-                DeliveryOrder deliveryOrder = objectMapper.readValue(deliveryObject.toString(), DeliveryOrder.class);
+                DeliveryResponse deliveryResponse = objectMapper.readValue(deliveryResponseObject.toString(), DeliveryResponse.class);
 
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got delivery order object : " + deliveryOrder.toString());
-                return deliveryOrder;
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got delivery response object : " + deliveryResponse.toString());
+                return deliveryResponse;
             }
         } catch (RestClientException e) {
             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error delivery order domain: " + orderDeliveryConfirmationURL, e);

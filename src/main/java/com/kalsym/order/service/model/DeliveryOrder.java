@@ -52,5 +52,5 @@ public class DeliveryOrder {
     Long deliveryQuotationId;
     BigDecimal priorityFee;
     BigDecimal deliveryFee;
-    String systemStatus;
+    String systemStatus;    
 }

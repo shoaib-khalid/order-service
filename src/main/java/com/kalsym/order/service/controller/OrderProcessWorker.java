@@ -12,6 +12,7 @@ import com.kalsym.order.service.enums.RefundStatus;
 import com.kalsym.order.service.enums.RefundType;
 import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.DeliveryOrder;
+import com.kalsym.order.service.model.DeliveryResponse;
 import com.kalsym.order.service.model.Email;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderCompletionStatusConfig;
@@ -439,12 +440,13 @@ public class OrderProcessWorker {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "request delivery: " + orderCompletionStatusConfig.getRequestDelivery());
             if (orderCompletionStatusConfig.getRequestDelivery() && proceedRequestDelivery && newStatus.equals("ASSIGNING_DRIVER")==false) {
                 try {
-                    DeliveryOrder deliveryOrder = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), 
+                    DeliveryResponse deliveryResponse = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), 
                             order.getId(), 
                             bodyOrderCompletionStatusUpdate.getPickupDate(), 
                             bodyOrderCompletionStatusUpdate.getPickupTime());
-                    if (deliveryOrder!=null) {
-                        if (deliveryOrder.getStatus().equals("ASSIGNING_DRIVER")) {
+                    if (deliveryResponse!=null) {
+                        if (deliveryResponse.getStatus().equals("ASSIGNING_DRIVER")) {
+                            DeliveryOrder deliveryOrder = (DeliveryOrder)deliveryResponse.getOrderCreated();
                             status = OrderStatus.AWAITING_PICKUP;
                             email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
                             email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
@@ -456,7 +458,7 @@ public class OrderProcessWorker {
 
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added tracking urls to orderId:" + orderId);
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
-                        } else if (deliveryOrder.getStatus().equals("FAILED")) {
+                        } else if (deliveryResponse.getStatus().equals("FAILED")) {
                             //failed
                             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while confirming order Delivery. deliveryOrder is null ");
                             insertOrderCompletionStatusUpdate(OrderStatus.REQUESTING_DELIVERY_FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);                        
@@ -468,7 +470,7 @@ public class OrderProcessWorker {
                             orderProcessResult.httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
                             orderProcessResult.errorMsg = "Requesting delivery failed";
                             return orderProcessResult;
-                        } else if (deliveryOrder.getStatus().equals("PENDING")) {
+                        } else if (deliveryResponse.getStatus().equals("PENDING")) {
                             //pending
                             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Confirming order Delivery is still pending");                            
                             orderProcessResult.httpStatus = HttpStatus.ACCEPTED;
