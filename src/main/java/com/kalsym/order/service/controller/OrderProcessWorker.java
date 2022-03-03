@@ -245,6 +245,7 @@ public class OrderProcessWorker {
         } else if (newStatus.contains("ASSIGNING_DRIVER")) {
             //delivery-order inform assigning driver            
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "ASSIGNING_DRIVER");
+            status = OrderStatus.AWAITING_PICKUP;
             List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStoreDeliveryType(verticalId, OrderStatus.AWAITING_PICKUP.name(), storeDeliveryType);            
             if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
                 Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: AWAITING_PICKUP" + newStatus);                
