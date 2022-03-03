@@ -627,8 +627,7 @@ public class OrderProcessWorker {
         //update order to finish process
         orderRepository.UpdateOrderFinishProcess(orderId);
         
-        orderProcessResult.httpStatus = HttpStatus.ACCEPTED;
-        orderProcessResult.errorMsg = "Requesting delivery failed";
+        orderProcessResult.httpStatus = HttpStatus.ACCEPTED;        
         orderProcessResult.data = order;
         orderProcessResult.previousStatus = previousStatus;
         orderProcessResult.orderCompletionStatusConfig = orderCompletionStatusConfig;
