@@ -1,4 +1,11 @@
 ##################################################
+# order-service-3.7.3-SNAPSHOT | 7-Mar-2022
+##################################################
+Change in kalsym commission : exclude delivery charges from calculation
+example : 15% X (subtotal - subtotal_discount + service_charge)
+
+
+##################################################
 # order-service-3.7.2-SNAPSHOT | 3-Mar-2022
 ##################################################
 Bug fix for PUT cartItem for discounted item

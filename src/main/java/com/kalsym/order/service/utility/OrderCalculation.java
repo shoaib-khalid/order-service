@@ -58,11 +58,12 @@ public class OrderCalculation {
         
         //calculate grand total
         orderTotal.setTotal(orderTotal.getSubTotal() - orderTotal.getAppliedDiscount() + serviceCharges + deliveryCharge - orderTotal.getDeliveryDiscount());
-
+        double totalWithoutDelivery = orderTotal.getSubTotal() - orderTotal.getAppliedDiscount() + serviceCharges;
+                
         //calculating Kalsym commission 
         double commission = 0;
         if (storeCommission != null) {
-            commission = orderTotal.getTotal() * (storeCommission.getRate() / 100);
+            commission = totalWithoutDelivery * (storeCommission.getRate() / 100);
             if (commission < storeCommission.getMinChargeAmount()) {
                 commission = storeCommission.getMinChargeAmount();
             }
