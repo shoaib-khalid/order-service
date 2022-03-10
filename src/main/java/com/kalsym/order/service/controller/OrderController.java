@@ -1483,18 +1483,23 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         
-        Optional<PaymentOrder> optPayment = paymentOrderRepository.findByClientTransactionId(orderId);
-
-        if (!optPayment.isPresent()) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Payment Order not found with orderId: " + orderId);
-            response.setErrorStatus(HttpStatus.NOT_FOUND);
-            response.setMessage("Payment Order not found");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
-
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order found with orderId: " + orderId);
         Order order = optOrder.get();
         
+        PaymentOrder paymentOrder = null;
+        if (order.getPaymentType().equals(StorePaymentType.ONLINEPAYMENT.name())) {
+            Optional<PaymentOrder> optPayment = paymentOrderRepository.findByClientTransactionId(orderId);
+
+            if (!optPayment.isPresent()) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Payment Order not found with orderId: " + orderId);
+                response.setErrorStatus(HttpStatus.NOT_FOUND);
+                response.setMessage("Payment Order not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            
+            paymentOrder = optPayment.get();
+        }
+
         if (order.getIsRevised()!=null) {
             if (order.getIsRevised()) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order already revised. OrderId: " + orderId);
@@ -1621,16 +1626,20 @@ public class OrderController {
             order.setIsRevised(true);            
             order = orderRepository.save(order);
             
-            //insert refund record for finance to refund
-            double refundAmount = oldGranTotal - newGrandTotal ;            
-            OrderRefund orderRefund = new OrderRefund();
-            orderRefund.setOrderId(order.getId());
-            orderRefund.setRefundType(RefundType.ITEM_REVISED);
-            orderRefund.setPaymentChannel(optPayment.get().getPaymentChannel());
-            orderRefund.setRefundAmount(refundAmount);
-            orderRefund.setRefundStatus(RefundStatus.PENDING);
-            orderRefundRepository.save(orderRefund);
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "refund record created for orderId: " + order.getId()+" refundAmount:"+refundAmount);
+            //insert refund record for finance to refund for ONLINEPAYMENT only
+            if (paymentOrder!=null) {
+                double refundAmount = oldGranTotal - newGrandTotal ;            
+                OrderRefund orderRefund = new OrderRefund();
+                orderRefund.setOrderId(order.getId());
+                orderRefund.setRefundType(RefundType.ITEM_REVISED);            
+                orderRefund.setPaymentChannel(paymentOrder.getPaymentChannel());            
+                orderRefund.setRefundAmount(refundAmount);
+                orderRefund.setRefundStatus(RefundStatus.PENDING);
+                orderRefundRepository.save(orderRefund);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "refund record created for orderId: " + order.getId()+" refundAmount:"+refundAmount);
+            } else {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order is COD. no refund record created for orderId: " + order.getId());
+            }
             
             //send email to customer            
             String subject = null;

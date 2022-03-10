@@ -1,8 +1,18 @@
 ##################################################
+# order-service-3.7.4-SNAPSHOT | 10-Mar-2022
+##################################################
+Bug fix for revise quantity for COD
+
+
+##################################################
 # order-service-3.7.3-SNAPSHOT | 7-Mar-2022
 ##################################################
 Change in kalsym commission : exclude delivery charges from calculation
 example : 15% X (subtotal - subtotal_discount + service_charge)
+Send order reminder only 1 time
+
+##DB Changes
+ALTER TABLE `order` ADD totalReminderSent TINYINT(1) DEFAULT 0;
 
 
 ##################################################

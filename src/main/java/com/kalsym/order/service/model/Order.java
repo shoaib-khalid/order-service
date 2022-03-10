@@ -67,7 +67,9 @@ public class Order implements Serializable {
     private Date updated;
 
     private String invoiceId;
-
+    
+    private Integer totalReminderSent;    
+    
     @Column(nullable = true)
     private Double klCommission;
 

@@ -30,6 +30,7 @@ import com.kalsym.order.service.utility.DateTimeUtil;
 
 import java.util.List;
 import java.util.Date;
+import java.util.Arrays;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -68,12 +69,19 @@ public class ReminderScheduler {
     @Value("${order.reminder.enabled:false}")
     private boolean isEnabled;
     
+    @Value("${order.reminder.max.sent:1}")
+    private int maxTotalReminder;
+    
+    @Value("${order.reminder.vertical:FNB,E-Commerce}")
+    private String verticalToSend;
+    
     @Scheduled(fixedRate = 300000)
     public void checkNotProcessOrder() throws Exception {
         if (isEnabled) {
-            String logprefix = "Reminder-Scheduler";        
-            List<Object[]> orderList = orderRepository.getFnBNotProcessOrder();
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Start checking not process order. Order Count:"+orderList.size());        
+            String logprefix = "Reminder-Scheduler"; 
+            List<String> items = Arrays.asList(verticalToSend.split(","));
+            List<Object[]> orderList = orderRepository.getFnBNotProcessOrder(items, maxTotalReminder);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Start checking not process order for vertical:"+verticalToSend+". Order Count:"+orderList.size());        
             for (int i=0;i<orderList.size();i++) {
                 Object[] order = orderList.get(i);
                 String orderId = (String)order[0];
@@ -115,6 +123,9 @@ public class ReminderScheduler {
                 if (merchantToken!=null) {
                     boolean res = whatsappService.sendOrderReminder(recipients, storeName, invoiceId, orderId, merchantToken, updated);
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderId:"+orderId+" InvoiceNo:"+invoiceId+" StoreName:"+storeName+" Reminder result:"+res);
+                    if (res) {
+                        orderRepository.UpdateTotalReminderSent(orderId);
+                    }
                 } else {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderId:"+orderId+" InvoiceNo:"+invoiceId+" StoreName:"+storeName+" Fail to get temp token");
                 }

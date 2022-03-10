@@ -32,9 +32,9 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
     @Query(value = "SELECT A.id, A.invoiceId, B.phoneNumber, B.name, B.clientId,  C.username, C.password, A.updated, A.storeId  "
             + "FROM `order` A INNER JOIN `store` B ON A.storeId=B.id  "
             + "INNER JOIN `client` C ON B.clientId=C.id "
-            + "WHERE completionStatus='PAYMENT_CONFIRMED' AND verticalCode='FNB' "
-            + "AND DATE_ADD(A.created, INTERVAL 5 MINUTE) < NOW()", nativeQuery = true)
-    List<Object[]> getFnBNotProcessOrder();
+            + "WHERE completionStatus='PAYMENT_CONFIRMED' AND verticalCode IN (:verticalList) "
+            + "AND totalReminderSent<:maxReminder AND DATE_ADD(A.created, INTERVAL 5 MINUTE) < NOW()", nativeQuery = true)
+    List<Object[]> getFnBNotProcessOrder(@Param("verticalList") List verticalList, @Param("maxReminder") int maxReminder);
     
     @Transactional 
     @Modifying
@@ -61,5 +61,13 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
             @Param("orderId") String orderId,
             @Param("newStatus") OrderStatus newStatus,
             @Param("updatedTime") Date updatedTime            
+            );
+    
+    
+    @Transactional 
+    @Modifying
+    @Query("UPDATE Order m SET m.totalReminderSent=m.totalReminderSent+1 WHERE m.id = :orderId") 
+    void UpdateTotalReminderSent(
+            @Param("orderId") String orderId
             );
 }

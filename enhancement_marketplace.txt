@@ -1,0 +1,18 @@
+create logical group for cart & order to support multiple store in one cart / order
+CREATE TABLE cart_group (
+id VARCHAR(50) primary key,
+customerId VARCHAR(50),
+created TIMESTAMP,
+updated TIMESTAMP,
+isOpen TINYINT(1)
+);
+ALTER TABLE cart ADD cartGroupId VARCHAR(50);
+
+CREATE TABLE order_group (
+id VARCHAR(50) primary key,
+customerId VARCHAR(50),
+cartGroupId VARCHAR(50),
+created TIMESTAMP,
+updated TIMESTAMP
+);
+ALTER TABLE `order` ADD orderGroupId VARCHAR(50);
