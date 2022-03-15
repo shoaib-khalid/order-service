@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.7.5-SNAPSHOT | 15-Mar-2022
+##################################################
+Bug fix for WA alert for new order notification
+
+
+##################################################
 # order-service-3.7.4-SNAPSHOT | 10-Mar-2022
 ##################################################
 Bug fix for revise quantity for COD
