@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import com.kalsym.order.service.service.EmailService;
 import com.kalsym.order.service.model.Order;
+import com.kalsym.order.service.model.OrderWithDetails;
 import com.kalsym.order.service.model.COD;
 import com.kalsym.order.service.model.CartItem;
 import com.kalsym.order.service.model.CartSubItem;
@@ -68,6 +69,7 @@ import com.kalsym.order.service.model.repository.OrderCompletionStatusUpdateRepo
 import com.kalsym.order.service.model.repository.OrderPaymentDetailRepository;
 import com.kalsym.order.service.model.repository.OrderPaymentStatusUpdateRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
+import com.kalsym.order.service.model.repository.OrderWithDetailsRepository;
 import com.kalsym.order.service.model.repository.OrderRefundRepository;
 import com.kalsym.order.service.model.repository.ProductRepository;
 import com.kalsym.order.service.model.repository.StoreRepository;
@@ -126,6 +128,9 @@ public class OrderController {
 
     @Autowired
     OrderRepository orderRepository;
+    
+    @Autowired
+    OrderWithDetailsRepository orderWithDetailsRepository;
 
     @Autowired
     OrderPostService orderPostService;
@@ -309,6 +314,110 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
+    @GetMapping(path = {"/details"}, name = "orders-get", produces = "application/json")
+    @PreAuthorize("hasAnyAuthority('orders-get', 'all')")
+    public ResponseEntity<HttpResponse> getOrdersWithDetails(HttpServletRequest request,
+            @RequestParam(required = false) String clientId,
+            @RequestParam(required = false) String customerId,
+            @RequestParam(required = false) String storeId,
+            @RequestParam(required = false) PaymentStatus paymentStatus,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+            @RequestParam(required = false) String invoiceId,
+            @RequestParam(required = false) String accountName,
+            @RequestParam(required = false) String deliveryQuotationReferenceId,
+            @RequestParam(required = false) String receiverName,
+            @RequestParam(required = false) String phoneNumber,
+            @RequestParam(required = false) String zipcode,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) OrderStatus completionStatus,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize) {
+        String logprefix = request.getRequestURI() + " getOrdersWithDetails() ";
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "before from : " + from + ", to : " + to);
+//        to.setDate(to.getDate() + 1);
+//        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "after adding 1 day to (todate) from : " + from + ", to : " + to);
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orders-get request " + request.getRequestURL());
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        OrderWithDetails orderMatch = new OrderWithDetails();
+        if (storeId != null && !storeId.isEmpty()) {
+            orderMatch.setStoreId(storeId);
+        }
+        if (customerId != null && !customerId.isEmpty()) {
+            orderMatch.setCustomerId(customerId);
+        }
+
+        if (paymentStatus != null) {
+            orderMatch.setPaymentStatus(paymentStatus);
+        }
+
+        if (invoiceId != null && !invoiceId.isEmpty()) {
+            orderMatch.setInvoiceId(invoiceId);
+        }
+
+        /*if (completionStatus != null) {            
+            orderMatch.setCompletionStatus(completionStatus);            
+        }*/
+        
+        Store storeDetail = new Store();
+        if (clientId != null && !clientId.isEmpty()) {
+            storeDetail.setClientId(clientId);
+        }
+        
+        orderMatch.setStore(storeDetail);        
+        
+        
+        OrderPaymentDetail opd = new OrderPaymentDetail();
+        if (accountName != null && !accountName.isEmpty()) {
+            opd.setAccountName(accountName);
+        }
+
+        if (deliveryQuotationReferenceId != null && !deliveryQuotationReferenceId.isEmpty()) {
+            opd.setDeliveryQuotationReferenceId(deliveryQuotationReferenceId);
+        }
+
+        orderMatch.setOrderPaymentDetail(opd);
+
+        OrderShipmentDetail osd = new OrderShipmentDetail();
+        if (receiverName != null && !receiverName.isEmpty()) {
+            osd.setReceiverName(receiverName);
+        }
+
+        if (phoneNumber != null && !phoneNumber.isEmpty()) {
+            osd.setPhoneNumber(phoneNumber);
+        }
+
+        if (city != null && !city.isEmpty()) {
+            osd.setCity(city);
+        }
+
+        if (zipcode != null && !zipcode.isEmpty()) {
+            osd.setZipcode(zipcode);
+        }
+
+        orderMatch.setOrderShipmentDetail(osd);
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderMatch: " + orderMatch);
+        
+        ExampleMatcher matcher = ExampleMatcher
+                .matchingAll()
+                .withIgnoreCase()
+                .withIgnoreNullValues()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        Example<OrderWithDetails> orderExample = Example.of(orderMatch, matcher);
+
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
+
+        Page<OrderWithDetails> orderWithPage = orderWithDetailsRepository.findAll(getOrderDetailsSpecWithDatesBetween(from, to, completionStatus, orderExample), pageable);
+        
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(orderWithPage);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }    
     
     @GetMapping(path = {"/search"}, name = "orders-get", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-get', 'all')")
@@ -1264,6 +1373,42 @@ public class OrderController {
             Date from, Date to, OrderStatus completionStatus, Example<Order> example) {
 
         return (Specification<Order>) (root, query, builder) -> {
+            final List<Predicate> predicates = new ArrayList<>();
+
+            if (from != null && to != null) {
+                to.setDate(to.getDate() + 1);
+                predicates.add(builder.greaterThanOrEqualTo(root.get("created"), from));
+                predicates.add(builder.lessThanOrEqualTo(root.get("created"), to));
+            }
+           
+            if (completionStatus==OrderStatus.PAYMENT_CONFIRMED) {
+                Predicate predicateForOnlinePayment = builder.equal(root.get("completionStatus"), completionStatus);
+                Predicate predicateForCompletionStatus = builder.equal(root.get("completionStatus"), OrderStatus.RECEIVED_AT_STORE);
+                Predicate predicateForPaymentType = builder.equal(root.get("paymentType"), "COD");
+                Predicate predicateForCOD = builder.and(predicateForCompletionStatus, predicateForPaymentType);
+                Predicate finalPredicate = builder.or(predicateForOnlinePayment, predicateForCOD);
+                predicates.add(finalPredicate);
+            } else if (completionStatus!=null) {
+                predicates.add(builder.equal(root.get("completionStatus"), completionStatus));
+            }
+            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+
+            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
+    
+    /**
+     * Accept two dates and example matcher
+     *
+     * @param from
+     * @param to
+     * @param example
+     * @return
+     */
+    public Specification<OrderWithDetails> getOrderDetailsSpecWithDatesBetween(
+            Date from, Date to, OrderStatus completionStatus, Example<OrderWithDetails> example) {
+
+        return (Specification<OrderWithDetails>) (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
 
             if (from != null && to != null) {

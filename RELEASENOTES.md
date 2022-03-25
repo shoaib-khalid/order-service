@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.7.6-SNAPSHOT | 25-Mar-2022
+##################################################
+New api order with item details : getOrdersWithDetails
+
+
+##################################################
 # order-service-3.7.5-SNAPSHOT | 15-Mar-2022
 ##################################################
 Bug fix for WA alert for new order notification
