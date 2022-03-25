@@ -15,6 +15,7 @@ import org.hibernate.annotations.GenericGenerator;
 import java.util.List;
 import javax.persistence.CascadeType;
 import com.kalsym.order.service.enums.DiscountCalculationType;
+import java.io.Serializable;
 import javax.persistence.OneToOne;
 
 /**
@@ -26,7 +27,7 @@ import javax.persistence.OneToOne;
 @Setter
 @ToString
 @Table(name = "order_item")
-public class OrderItemWithDetails {
+public class OrderItemWithDetails implements Serializable {
 
     @Id
     @GeneratedValue(generator = "uuid2")
