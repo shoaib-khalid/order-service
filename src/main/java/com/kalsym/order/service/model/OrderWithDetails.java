@@ -135,7 +135,7 @@ public class OrderWithDetails implements Serializable {
     
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "orderId", insertable = false, updatable = false, nullable = true)
-    private List<OrderItemWithDetails> orderItem;
+    private List<OrderItemWithDetails> orderItemWithDetails;
      
     public void update(Order order) {
         if (null != order.getStoreId()) {
