@@ -57,10 +57,9 @@ public class OrderItemWithDetails {
     @JoinColumn(name = "orderItemId", insertable = false, updatable = false, nullable = true)
     private List<OrderSubItem> orderSubItem;
     
-    /*@OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "itemCode", insertable = false, updatable = false)
-    private ProductInventory itemDetails;
-    */
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "itemCode", referencedColumnName="itemCode", insertable = false, updatable = false, nullable = true)
+    private List<ProductAsset> itemAssetDetails;    
     
     /*@OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "productId", insertable = false, updatable = false)
