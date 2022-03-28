@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.7.7-SNAPSHOT | 28-Mar-2022
+##################################################
+Bug fix for cartItem that OUTOFSTOCK
+
+
+##################################################
 # order-service-3.7.6-SNAPSHOT | 25-Mar-2022
 ##################################################
 New api order with item details : getOrdersWithDetails

@@ -54,10 +54,11 @@ public class Product {
         ACTIVE,
         DELETED,
         INACTIVE,
-        DRAFT;
+        DRAFT,
+        OUTOFSTOCK;
     }
     
-    @Column(columnDefinition = "ENUM('ACTIVE', 'DELETED', 'DRAFT', 'INACTIVE')")
+    @Column(columnDefinition = "ENUM('ACTIVE', 'DELETED', 'DRAFT', 'INACTIVE', 'OUTOFSTOCK')")
     @Enumerated(EnumType.STRING)
     private Status status;
     
