@@ -206,6 +206,12 @@ public class OrderController {
     
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
+    
+    @Value("${easydukan.orders.email.address:orders@easydukan.co}")
+    private String easydukanOrdersEmailAddress;
+    
+    @Value("${deliverin.orders.email.address:orders@deliverin.my}")
+    private String deliverinOrdersEmailAddress;
      
     //@PreAuthorize("hasAnyAuthority('orders-get', 'all') and (@customOwnerVerifier.VerifyStore(#storeId) or @customOwnerVerifier.VerifyCustomer(#customerId))")
     
@@ -1209,6 +1215,11 @@ public class OrderController {
                                 tos.add(order.getOrderShipmentDetail().getEmail());
                                 String[] to = Utilities.convertArrayListToStringArray(tos);
                                 email.setTo(to);
+                                if (regionCountry.getId().equals("MYS")) {
+                                    email.setFrom(deliverinOrdersEmailAddress);
+                                } else {
+                                    email.setFrom(easydukanOrdersEmailAddress);
+                                }
                                 email.setRawBody(emailContent);
                                 Body body = new Body();
                                 body.setCurrency(storeWithDetials.getRegionCountry().getCurrencyCode());

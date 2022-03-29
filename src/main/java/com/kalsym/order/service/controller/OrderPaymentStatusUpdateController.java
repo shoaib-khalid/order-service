@@ -115,6 +115,12 @@ public class OrderPaymentStatusUpdateController {
     
     @Value("${finance.email.address:finance@symplified.com}")
     private String financeEmailAddress;
+    
+    @Value("${easydukan.orders.email.address:orders@easydukan.co}")
+    private String easydukanOrdersEmailAddress;
+    
+    @Value("${deliverin.orders.email.address:orders@deliverin.my}")
+    private String deliverinOrdersEmailAddress;
 
     @PutMapping(path = {""}, name = "order-completion-status-updates-put-by-order-id")
     @PreAuthorize("hasAnyAuthority('order-completion-status-updates-put-by-order-id', 'all')")

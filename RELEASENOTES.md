@@ -1,4 +1,12 @@
 ##################################################
+# order-service-3.7.8-SNAPSHOT | 29-Mar-2022
+##################################################
+Change sender address based on regionCountry
+MYS -> orders@deliverin.my
+PAK -> orders@easydukan.co
+
+
+##################################################
 # order-service-3.7.7-SNAPSHOT | 28-Mar-2022
 ##################################################
 Bug fix for cartItem that OUTOFSTOCK
