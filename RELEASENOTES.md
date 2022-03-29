@@ -3,7 +3,7 @@
 ##################################################
 Change sender address based on regionCountry
 MYS -> orders@deliverin.my
-PAK -> orders@easydukan.co
+PAK -> no-reply@easydukan.co
 
 
 ##################################################
