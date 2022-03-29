@@ -116,7 +116,7 @@ public class OrderPaymentStatusUpdateController {
     @Value("${finance.email.address:finance@symplified.com}")
     private String financeEmailAddress;
     
-    @Value("${easydukan.orders.email.address:orders@easydukan.co}")
+    @Value("${easydukan.orders.email.address:no-reply@easydukan.co }")
     private String easydukanOrdersEmailAddress;
     
     @Value("${deliverin.orders.email.address:orders@deliverin.my}")
@@ -155,7 +155,9 @@ public class OrderPaymentStatusUpdateController {
             fcmService,
             deliveryService,
             orderPostService,
-            true) ;
+            true,
+            easydukanOrdersEmailAddress,
+            deliverinOrdersEmailAddress) ;
         OrderProcessResult result = worker.startProcessOrder();
         response.setData(result.data);
         response.setSuccessStatus(result.httpStatus);

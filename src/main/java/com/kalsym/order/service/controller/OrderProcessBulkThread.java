@@ -82,6 +82,8 @@ public class OrderProcessBulkThread extends Thread {
     private OrderPostService orderPostService;
     
     private OrderPaymentDetailRepository orderPaymentDetailRepository;
+    private String easydukanOrdersEmailAddress;
+    private String deliverinOrdersEmailAddress;
     
     public OrderProcessBulkThread(
             String logprefix, 
@@ -108,7 +110,9 @@ public class OrderProcessBulkThread extends Thread {
             WhatsappService whatsappService,
             FCMService fcmService,
             DeliveryService deliveryService,
-            OrderPostService orderPostService
+            OrderPostService orderPostService,
+            String easydukanOrdersEmailAddress,
+            String deliverinOrdersEmailAddress
             ) {
         
             this.logprefix = logprefix;
@@ -136,6 +140,8 @@ public class OrderProcessBulkThread extends Thread {
             this.fcmService = fcmService;
             this.deliveryService = deliveryService;
             this.orderPostService = orderPostService;
+            this.easydukanOrdersEmailAddress = easydukanOrdersEmailAddress;
+            this.deliverinOrdersEmailAddress = deliverinOrdersEmailAddress;
     }
         
     public void run(){
@@ -172,7 +178,9 @@ public class OrderProcessBulkThread extends Thread {
                         fcmService,
                         deliveryService,
                         orderPostService,
-                        false) ;
+                        false,
+                        easydukanOrdersEmailAddress,
+                        deliverinOrdersEmailAddress) ;
                 OrderProcessResult result = worker.startProcessOrder();
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "result processOrder orderId:"+bodyOrderCompletionStatusUpdate.getOrderId()+" httpStatus:"+result.httpStatus+" message:"+result.errorMsg+" pendingRequestDelivery:"+result.pendingRequestDelivery);
 

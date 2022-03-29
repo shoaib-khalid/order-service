@@ -145,6 +145,12 @@ public class OrderCompletionStatusController {
     @Value("${finance.email.address:finance@symplified.com}")
     private String financeEmailAddress;
     
+    @Value("${easydukan.orders.email.address:no-reply@easydukan.co }")
+    private String easydukanOrdersEmailAddress;
+    
+    @Value("${deliverin.orders.email.address:orders@deliverin.my}")
+    private String deliverinOrdersEmailAddress;
+    
     @GetMapping(path = {""}, name = "order-completion-statuses-get")
     @PreAuthorize("hasAnyAuthority('order-completion-statuses-get', 'all')")
     public ResponseEntity<HttpResponse> getOrderCompletionStatuses(HttpServletRequest request,
@@ -285,7 +291,9 @@ public class OrderCompletionStatusController {
               whatsappService,
               fcmService,
               deliveryService,
-              orderPostService) ;
+              orderPostService,
+              easydukanOrdersEmailAddress,
+              deliverinOrdersEmailAddress) ;
         processThread.start();
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderProcessThread started");

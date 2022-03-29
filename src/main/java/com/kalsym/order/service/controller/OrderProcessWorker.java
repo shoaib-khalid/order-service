@@ -81,6 +81,8 @@ public class OrderProcessWorker {
     private OrderPostService orderPostService;    
     
     private boolean proceedRequestDelivery;
+    private String pakSenderEmailAddress;
+    private String mysSenderEmailAddress;
     
     public OrderProcessWorker(
             String logprefix, 
@@ -108,7 +110,9 @@ public class OrderProcessWorker {
             FCMService fcmService,
             DeliveryService deliveryService,
             OrderPostService orderPostService,
-            boolean proceedRequestDelivery
+            boolean proceedRequestDelivery,
+            String pakSenderEmailAddress,
+            String mysSenderEmailAddress
             ) {
         
         this.logprefix = logprefix;
@@ -137,6 +141,8 @@ public class OrderProcessWorker {
         this.deliveryService = deliveryService;
         this.orderPostService = orderPostService;
         this.proceedRequestDelivery = proceedRequestDelivery;
+        this.pakSenderEmailAddress = pakSenderEmailAddress;
+        this.mysSenderEmailAddress = mysSenderEmailAddress;
     }
     
     public OrderProcessResult startProcessOrder() {
@@ -211,7 +217,12 @@ public class OrderProcessWorker {
         tos.add(order.getOrderShipmentDetail().getEmail());
         String[] to = Utilities.convertArrayListToStringArray(tos);
         email.setTo(to);
-
+        
+        if (storeWithDetails.getRegionCountryId().equalsIgnoreCase("MYS")) {
+            email.setFrom(mysSenderEmailAddress);                            
+        } else {
+            email.setFrom(pakSenderEmailAddress);                            
+        }
         
         String verticalId = storeWithDetails.getVerticalCode();
         Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();

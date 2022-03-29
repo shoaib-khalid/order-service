@@ -36,7 +36,7 @@ public class EmailService {
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "starting");
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "mail to :" + Arrays.toString(email.getTo()));
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "mail to :" + Arrays.toString(email.getTo())+" from:"+email.getFrom());
         try {
 
             RestTemplate restTemplate = new RestTemplate();
