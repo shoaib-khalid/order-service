@@ -133,7 +133,7 @@ public class CartController {
 
         if (!optCart.isPresent()) {
             response.setSuccessStatus(HttpStatus.NOT_FOUND);
-            response.setError("cart not foud");
+            response.setError("cart not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 

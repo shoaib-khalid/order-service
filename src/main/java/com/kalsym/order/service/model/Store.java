@@ -46,7 +46,7 @@ public class Store implements Serializable {
     private String paymentType;
     private Integer invoiceSeqNo;
     
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "regionCountryId", insertable = false, updatable = false)
     private RegionCountry regionCountry;
     
