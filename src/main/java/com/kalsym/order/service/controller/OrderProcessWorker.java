@@ -145,8 +145,10 @@ public class OrderProcessWorker {
         this.deliveryService = deliveryService;
         this.orderPostService = orderPostService;
         this.proceedRequestDelivery = proceedRequestDelivery;
-        this.pakSenderEmailAddress = pakSenderName;
-        this.mysSenderEmailAddress = mysSenderName;
+        this.pakSenderEmailAddress = pakSenderEmailAddress;
+        this.mysSenderEmailAddress = mysSenderEmailAddress;
+        this.pakSenderName = pakSenderName;
+        this.mysSenderName = mysSenderName;
     }
     
     public OrderProcessResult startProcessOrder() {
