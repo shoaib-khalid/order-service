@@ -2,8 +2,11 @@ package com.kalsym.order.service.model;
 
 import java.io.Serializable;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,11 +40,15 @@ public class Store implements Serializable {
     private String phoneNumber;
     private String email;
     private String verticalCode;
-    
+    private String regionCountryId;
     private Double serviceChargesPercentage;
 
     private String paymentType;
     private Integer invoiceSeqNo;
+    
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "regionCountryId", insertable = false, updatable = false)
+    private RegionCountry regionCountry;
     
     public String getNameAbreviation() {
         String abbreviation = "";

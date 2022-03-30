@@ -15,5 +15,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CartRepository extends PagingAndSortingRepository<Cart, String>, JpaRepository<Cart, String> {
 
-    //List<Cart> findByCustomerId(@Param("customerId") String customerId);
+    List<Cart> findByCustomerId(@Param("customerId") String customerId);
 }
