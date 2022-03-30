@@ -83,6 +83,8 @@ public class OrderProcessWorker {
     private boolean proceedRequestDelivery;
     private String pakSenderEmailAddress;
     private String mysSenderEmailAddress;
+    private String pakSenderName;
+    private String mysSenderName;
     
     public OrderProcessWorker(
             String logprefix, 
@@ -112,7 +114,9 @@ public class OrderProcessWorker {
             OrderPostService orderPostService,
             boolean proceedRequestDelivery,
             String pakSenderEmailAddress,
-            String mysSenderEmailAddress
+            String mysSenderEmailAddress,
+            String pakSenderName,
+            String mysSenderName
             ) {
         
         this.logprefix = logprefix;
@@ -219,9 +223,11 @@ public class OrderProcessWorker {
         email.setTo(to);
         
         if (storeWithDetails.getRegionCountryId().equalsIgnoreCase("MYS")) {
-            email.setFrom(mysSenderEmailAddress);                            
+            email.setFrom(mysSenderEmailAddress);  
+            email.setFromName(mysSenderName);
         } else {
-            email.setFrom(pakSenderEmailAddress);                            
+            email.setFrom(pakSenderEmailAddress);    
+            email.setFromName(pakSenderName);
         }
         
         String verticalId = storeWithDetails.getVerticalCode();

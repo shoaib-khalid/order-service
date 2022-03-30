@@ -210,8 +210,14 @@ public class OrderController {
     @Value("${easydukan.orders.email.address:orders@easydukan.co}")
     private String easydukanOrdersEmailAddress;
     
+    @Value("${easydukan.orders.sender.name:Easy Dukan}")
+    private String easydukanOrdersSenderName;
+    
     @Value("${deliverin.orders.email.address:orders@deliverin.my}")
     private String deliverinOrdersEmailAddress;
+    
+    @Value("${deliverin.orders.sender.name:Deliver In Orders}")
+    private String deliverinOrdersSenderName;
      
     //@PreAuthorize("hasAnyAuthority('orders-get', 'all') and (@customOwnerVerifier.VerifyStore(#storeId) or @customOwnerVerifier.VerifyCustomer(#customerId))")
     
@@ -1217,8 +1223,10 @@ public class OrderController {
                                 email.setTo(to);
                                 if (regionCountry.getId().equals("MYS")) {
                                     email.setFrom(deliverinOrdersEmailAddress);
+                                    email.setFromName(deliverinOrdersSenderName);
                                 } else {
                                     email.setFrom(easydukanOrdersEmailAddress);
+                                    email.setFromName(easydukanOrdersSenderName);
                                 }
                                 email.setRawBody(emailContent);
                                 Body body = new Body();

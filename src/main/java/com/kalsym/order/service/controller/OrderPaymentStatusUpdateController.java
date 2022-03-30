@@ -119,8 +119,14 @@ public class OrderPaymentStatusUpdateController {
     @Value("${easydukan.orders.email.address:no-reply@easydukan.co }")
     private String easydukanOrdersEmailAddress;
     
+    @Value("${easydukan.orders.sender.name:Easy Dukan }")
+    private String easydukanOrdersSenderName;
+    
     @Value("${deliverin.orders.email.address:orders@deliverin.my}")
     private String deliverinOrdersEmailAddress;
+    
+    @Value("${deliverin.orders.sender.name:Deliver In Orders}")
+    private String deliverinOrdersSenderName;
 
     @PutMapping(path = {""}, name = "order-completion-status-updates-put-by-order-id")
     @PreAuthorize("hasAnyAuthority('order-completion-status-updates-put-by-order-id', 'all')")
@@ -157,7 +163,9 @@ public class OrderPaymentStatusUpdateController {
             orderPostService,
             true,
             easydukanOrdersEmailAddress,
-            deliverinOrdersEmailAddress) ;
+            deliverinOrdersEmailAddress,
+            easydukanOrdersSenderName,
+            deliverinOrdersSenderName) ;
         OrderProcessResult result = worker.startProcessOrder();
         response.setData(result.data);
         response.setSuccessStatus(result.httpStatus);

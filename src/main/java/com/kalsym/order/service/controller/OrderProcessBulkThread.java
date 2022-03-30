@@ -84,6 +84,8 @@ public class OrderProcessBulkThread extends Thread {
     private OrderPaymentDetailRepository orderPaymentDetailRepository;
     private String easydukanOrdersEmailAddress;
     private String deliverinOrdersEmailAddress;
+     private String easydukanOrdersSenderName;
+    private String deliverinOrdersSenderName;
     
     public OrderProcessBulkThread(
             String logprefix, 
@@ -180,7 +182,10 @@ public class OrderProcessBulkThread extends Thread {
                         orderPostService,
                         false,
                         easydukanOrdersEmailAddress,
-                        deliverinOrdersEmailAddress) ;
+                        deliverinOrdersEmailAddress,
+                        easydukanOrdersSenderName,
+                        deliverinOrdersSenderName
+                        ) ;
                 OrderProcessResult result = worker.startProcessOrder();
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "result processOrder orderId:"+bodyOrderCompletionStatusUpdate.getOrderId()+" httpStatus:"+result.httpStatus+" message:"+result.errorMsg+" pendingRequestDelivery:"+result.pendingRequestDelivery);
 
