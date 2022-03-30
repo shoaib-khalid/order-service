@@ -142,7 +142,7 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
    
-    @GetMapping(path = {"/{id}"}, name = "carts-get-by-id", produces = "application/json")
+    @GetMapping(path = {"/{customerId}"}, name = "carts-get-by-id", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('carts-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> getCartsByCustomerId(HttpServletRequest request,
             @RequestParam(required = true) String customerId) {
