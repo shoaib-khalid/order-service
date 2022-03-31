@@ -607,16 +607,7 @@ public class OrderController {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        Order orderMatch = new Order();
-        orderMatch.setId(id);
-
-//        ExampleMatcher matcher = ExampleMatcher
-//                .matchingAll()
-//                .withIgnoreCase()
-//                .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
-//        Example<Order> orderExample = Example.of(orderMatch, matcher);
-//        Pageable pageable = PageRequest.of(page, pageSize);
-        Optional<Order> optOrder = orderRepository.findById(id);
+        Optional<OrderWithDetails> optOrder = orderWithDetailsRepository.findById(id);
         if (!optOrder.isPresent()) {
             response.setStatus(HttpStatus.NOT_FOUND.value());
             response.setMessage("order with id " + id + " not found");
