@@ -166,6 +166,30 @@ public class CartController {
             totalItem = totalItem + cartItemList.size();
         }
         
+        class CustomerCart {
+            List<Cart> cartList;
+            int totalItem;
+         
+            public CustomerCart() {
+            }
+
+            public List<Cart> getCartList() {
+                return cartList;
+            }
+
+            public void setCartList(List<Cart> cartList) {
+                this.cartList = cartList;
+            }
+            
+            public int getTotalItem() {
+                return totalItem;
+            }
+
+            public void setTotalItem(int totalItem) {
+                this.totalItem = totalItem;
+            }
+        }
+        
         CustomerCart customerCart = new CustomerCart();
         customerCart.cartList = cartList;
         customerCart.totalItem = totalItem;
@@ -175,11 +199,7 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
-    class CustomerCart implements Serializable {
-         List<Cart> cartList;
-         int totalItem;
-                  
-    }
+    
    
     @PostMapping(path = {""}, name = "carts-post")
     @PreAuthorize("hasAnyAuthority('carts-post', 'all')")
