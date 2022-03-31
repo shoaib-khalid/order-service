@@ -142,7 +142,7 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
    
-    @GetMapping(path = {"/{customerId}"}, name = "carts-get-by-id", produces = "application/json")
+    @GetMapping(path = {"/customer"}, name = "carts-get-by-id", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('carts-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> getCartsByCustomerId(HttpServletRequest request,
             @RequestParam(required = true) String customerId) {
@@ -157,10 +157,26 @@ public class CartController {
             response.setError("cart not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
-
+        
+        int totalItem=0;
+        for (int i=0;i<cartList.size();i++) {
+            Cart cart = cartList.get(i);
+            List<CartItem> cartItemList = cartItemRepository.findByCartId(cart.getId());
+            totalItem = totalItem + cartItemList.size();
+        }
+        
+        CustomerCart customerCart = new CustomerCart();
+        customerCart.cartList = cartList;
+        customerCart.totalItem = totalItem;
+        
         response.setSuccessStatus(HttpStatus.OK);
-        response.setData(cartList.get(0));
+        response.setData(customerCart);
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    
+    class CustomerCart {
+         List<Cart> cartList;
+         int totalItem;
     }
    
     @PostMapping(path = {""}, name = "carts-post")
