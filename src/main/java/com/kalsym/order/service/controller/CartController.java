@@ -56,6 +56,7 @@ import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.utility.OrderCalculation;
 import static com.kalsym.order.service.utility.OrderCalculation.calculateStoreServiceCharges;
 import com.kalsym.order.service.utility.Utilities;
+import java.io.Serializable;
 
 /**
  *
@@ -174,9 +175,10 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
-    class CustomerCart {
+    class CustomerCart implements Serializable {
          List<Cart> cartList;
          int totalItem;
+                  
     }
    
     @PostMapping(path = {""}, name = "carts-post")
