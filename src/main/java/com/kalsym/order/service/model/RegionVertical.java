@@ -55,6 +55,7 @@ public class RegionVertical implements Serializable {
     private Double commissionPercentage;  
     private Double minChargeAmount;  
     private String senderEmailAdress;
-    private String senderEmailName;    
+    private String senderEmailName; 
+    private String defaultLogoUrl;
 
 }

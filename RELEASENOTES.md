@@ -1,20 +1,24 @@
 ##################################################
 # order-service-3.7.10-SNAPSHOT |01-Apr-2022
 ##################################################
-Add sender email address, name inside regionVertical table.
+Add sender email address, name, defaultLogo inside regionVertical table.
 
 ##DB Changes:
 ALTER TABLE region_vertical ADD senderEmailAdress VARCHAR(255);
 ALTER TABLE region_vertical ADD senderEmailName VARCHAR(255);
+ALTER TABLE region_vertical ADD senderEmailName VARCHAR(255);
 
 UPDATE region_vertical SET senderEmailAdress='no-reply@easydukan.co' WHERE domain LIKE '%easydukan%';
 UPDATE region_vertical SET senderEmailName='Easy Dukan' WHERE domain LIKE '%easydukan%';
+UPDATE region_vertical SET defaultLogoUrl='https://symplified.biz/store-assets/easydukan-logo-small.png' WHERE domain LIKE '%easydukan%';
 
 UPDATE region_vertical SET senderEmailAdress='orders@deliverin.my' WHERE domain LIKE '%symplified%';
 UPDATE region_vertical SET senderEmailName='Deliver In Orders' WHERE domain LIKE '%symplified%';
+UPDATE region_vertical SET defaultLogoUrl='https://symplified.biz/store-assets/deliverin-logo-small.png' domain LIKE '%symplified%';
 
 UPDATE region_vertical SET senderEmailAdress='orders@deliverin.my' WHERE domain LIKE '%deliverin%';
 UPDATE region_vertical SET senderEmailName='Deliver In Orders' WHERE domain LIKE '%deliverin%';
+UPDATE region_vertical SET defaultLogoUrl='https://symplified.biz/store-assets/deliverin-logo-small.png' domain LIKE '%symplified%';
 
 
 ##################################################

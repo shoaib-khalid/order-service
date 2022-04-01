@@ -196,7 +196,11 @@ public class OrderProcessWorker {
 
         body.setStoreAddress(storeWithDetails.getAddress());
         body.setStoreContact(storeWithDetails.getPhoneNumber());
-        body.setLogoUrl(storeWithDetails.getStoreLogoUrl() == null ? "" : storeWithDetails.getStoreLogoUrl());
+        if (storeWithDetails.getStoreLogoUrl()!=null) {
+            body.setLogoUrl(storeWithDetails.getStoreLogoUrl());
+        } else {
+            body.setLogoUrl(storeWithDetails.getRegionVertical().getDefaultLogoUrl());
+        }
         body.setStoreName(storeWithDetails.getName());
 
         //get order items

@@ -1215,7 +1215,11 @@ public class OrderController {
 
                                 body.setStoreAddress(storeWithDetials.getAddress());
                                 body.setStoreContact(storeWithDetials.getPhoneNumber());
-                                body.setLogoUrl(storeWithDetials.getStoreLogoUrl() == null ? "" : storeWithDetials.getStoreLogoUrl());
+                                if (storeWithDetials.getStoreLogoUrl()!=null) {
+                                    body.setLogoUrl(storeWithDetials.getStoreLogoUrl());
+                                } else {
+                                    body.setLogoUrl(storeWithDetials.getRegionVertical().getDefaultLogoUrl());
+                                }
                                 body.setStoreName(storeWithDetials.getName());
                                 body.setOrderItems(orderItems);
                                 email.setBody(body);
