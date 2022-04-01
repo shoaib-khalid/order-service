@@ -81,10 +81,6 @@ public class OrderProcessWorker {
     private OrderPostService orderPostService;    
     
     private boolean proceedRequestDelivery;
-    private String pakSenderEmailAddress;
-    private String mysSenderEmailAddress;
-    private String pakSenderName;
-    private String mysSenderName;
     
     public OrderProcessWorker(
             String logprefix, 
@@ -112,11 +108,7 @@ public class OrderProcessWorker {
             FCMService fcmService,
             DeliveryService deliveryService,
             OrderPostService orderPostService,
-            boolean proceedRequestDelivery,
-            String pakSenderEmailAddress,
-            String mysSenderEmailAddress,
-            String pakSenderName,
-            String mysSenderName
+            boolean proceedRequestDelivery
             ) {
         
         this.logprefix = logprefix;
@@ -145,10 +137,6 @@ public class OrderProcessWorker {
         this.deliveryService = deliveryService;
         this.orderPostService = orderPostService;
         this.proceedRequestDelivery = proceedRequestDelivery;
-        this.pakSenderEmailAddress = pakSenderEmailAddress;
-        this.mysSenderEmailAddress = mysSenderEmailAddress;
-        this.pakSenderName = pakSenderName;
-        this.mysSenderName = mysSenderName;
     }
     
     public OrderProcessResult startProcessOrder() {
@@ -223,14 +211,9 @@ public class OrderProcessWorker {
         tos.add(order.getOrderShipmentDetail().getEmail());
         String[] to = Utilities.convertArrayListToStringArray(tos);
         email.setTo(to);
-        
-        if (storeWithDetails.getRegionCountryId().equalsIgnoreCase("MYS")) {
-            email.setFrom(mysSenderEmailAddress);  
-            email.setFromName(mysSenderName);
-        } else {
-            email.setFrom(pakSenderEmailAddress);    
-            email.setFromName(pakSenderName);
-        }
+        email.setFrom(storeWithDetails.getRegionVertical().getSenderEmailAdress());
+        email.setFromName(storeWithDetails.getRegionVertical().getSenderEmailName());
+        email.setDomain(storeWithDetails.getRegionVertical().getDomain()); 
         
         String verticalId = storeWithDetails.getVerticalCode();
         Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();

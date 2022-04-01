@@ -23,4 +23,5 @@ public class Email {
     private Body body;
     private String from;
     private String fromName;
+    private String domain;
 }

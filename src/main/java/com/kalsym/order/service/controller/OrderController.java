@@ -207,18 +207,6 @@ public class OrderController {
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
     
-    @Value("${easydukan.orders.email.address:orders@easydukan.co}")
-    private String easydukanOrdersEmailAddress;
-    
-    @Value("${easydukan.orders.sender.name:Easy Dukan}")
-    private String easydukanOrdersSenderName;
-    
-    @Value("${deliverin.orders.email.address:orders@deliverin.my}")
-    private String deliverinOrdersEmailAddress;
-    
-    @Value("${deliverin.orders.sender.name:Deliver In Orders}")
-    private String deliverinOrdersSenderName;
-     
     //@PreAuthorize("hasAnyAuthority('orders-get', 'all') and (@customOwnerVerifier.VerifyStore(#storeId) or @customOwnerVerifier.VerifyCustomer(#customerId))")
     
     @GetMapping(path = {""}, name = "orders-get", produces = "application/json")
@@ -1212,13 +1200,9 @@ public class OrderController {
                                 tos.add(order.getOrderShipmentDetail().getEmail());
                                 String[] to = Utilities.convertArrayListToStringArray(tos);
                                 email.setTo(to);
-                                if (regionCountry.getId().equals("MYS")) {
-                                    email.setFrom(deliverinOrdersEmailAddress);
-                                    email.setFromName(deliverinOrdersSenderName);
-                                } else {
-                                    email.setFrom(easydukanOrdersEmailAddress);
-                                    email.setFromName(easydukanOrdersSenderName);
-                                }
+                                email.setFrom(storeWithDetials.getRegionVertical().getSenderEmailAdress());
+                                email.setFromName(storeWithDetials.getRegionVertical().getSenderEmailName());
+                                email.setDomain(storeWithDetials.getRegionVertical().getDomain());                                
                                 email.setRawBody(emailContent);
                                 Body body = new Body();
                                 body.setCurrency(storeWithDetials.getRegionCountry().getCurrencyCode());

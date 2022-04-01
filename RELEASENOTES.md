@@ -1,4 +1,23 @@
 ##################################################
+# order-service-3.7.10-SNAPSHOT |01-Apr-2022
+##################################################
+Add sender email address, name inside regionVertical table.
+
+##DB Changes:
+ALTER TABLE region_vertical ADD senderEmailAdress VARCHAR(255);
+ALTER TABLE region_vertical ADD senderEmailName VARCHAR(255);
+
+UPDATE region_vertical SET senderEmailAdress='no-reply@easydukan.co' WHERE domain LIKE '%easydukan%';
+UPDATE region_vertical SET senderEmailName='Easy Dukan' WHERE domain LIKE '%easydukan%';
+
+UPDATE region_vertical SET senderEmailAdress='orders@deliverin.my' WHERE domain LIKE '%symplified%';
+UPDATE region_vertical SET senderEmailName='Deliver In Orders' WHERE domain LIKE '%symplified%';
+
+UPDATE region_vertical SET senderEmailAdress='orders@deliverin.my' WHERE domain LIKE '%deliverin%';
+UPDATE region_vertical SET senderEmailName='Deliver In Orders' WHERE domain LIKE '%deliverin%';
+
+
+##################################################
 # order-service-3.7.9-SNAPSHOT |31-Mar-2022
 ##################################################
 New end point for get cart by customerId : getCartsByCustomerId

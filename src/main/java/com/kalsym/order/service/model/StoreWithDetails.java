@@ -91,6 +91,10 @@ public class StoreWithDetails implements Serializable {
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id", insertable = false, updatable = false, nullable = true)
     private StoreDeliveryDetail storeDeliveryDetail;
+    
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "verticalCode", insertable = false, updatable = false, nullable = true)
+    private RegionVertical regionVertical;
 
     public void update(StoreWithDetails store) {
 

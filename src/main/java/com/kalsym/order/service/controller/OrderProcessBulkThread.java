@@ -180,11 +180,7 @@ public class OrderProcessBulkThread extends Thread {
                         fcmService,
                         deliveryService,
                         orderPostService,
-                        false,
-                        easydukanOrdersEmailAddress,
-                        deliverinOrdersEmailAddress,
-                        easydukanOrdersSenderName,
-                        deliverinOrdersSenderName
+                        false
                         ) ;
                 OrderProcessResult result = worker.startProcessOrder();
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "result processOrder orderId:"+bodyOrderCompletionStatusUpdate.getOrderId()+" httpStatus:"+result.httpStatus+" message:"+result.errorMsg+" pendingRequestDelivery:"+result.pendingRequestDelivery);

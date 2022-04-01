@@ -113,20 +113,8 @@ public class OrderPaymentStatusUpdateController {
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
     
-    @Value("${finance.email.address:finance@symplified.com}")
-    private String financeEmailAddress;
-    
-    @Value("${easydukan.orders.email.address:no-reply@easydukan.co }")
-    private String easydukanOrdersEmailAddress;
-    
-    @Value("${easydukan.orders.sender.name:Easy Dukan }")
-    private String easydukanOrdersSenderName;
-    
-    @Value("${deliverin.orders.email.address:orders@deliverin.my}")
-    private String deliverinOrdersEmailAddress;
-    
-    @Value("${deliverin.orders.sender.name:Deliver In Orders}")
-    private String deliverinOrdersSenderName;
+    @Value("${finance.email.address:finance@symplified.biz}")
+    private String financeEmailAddress;       
 
     @PutMapping(path = {""}, name = "order-completion-status-updates-put-by-order-id")
     @PreAuthorize("hasAnyAuthority('order-completion-status-updates-put-by-order-id', 'all')")
@@ -161,11 +149,7 @@ public class OrderPaymentStatusUpdateController {
             fcmService,
             deliveryService,
             orderPostService,
-            true,
-            easydukanOrdersEmailAddress,
-            deliverinOrdersEmailAddress,
-            easydukanOrdersSenderName,
-            deliverinOrdersSenderName) ;
+            true) ;
         OrderProcessResult result = worker.startProcessOrder();
         response.setData(result.data);
         response.setSuccessStatus(result.httpStatus);
