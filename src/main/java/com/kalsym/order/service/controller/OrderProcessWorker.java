@@ -196,8 +196,7 @@ public class OrderProcessWorker {
 
         body.setStoreAddress(storeWithDetails.getAddress());
         body.setStoreContact(storeWithDetails.getPhoneNumber());
-        body.setLogoUrl(storeWithDetails.getStoreAsset() == null ? "" : storeWithDetails.getStoreAsset().getLogoUrl());
-
+        body.setLogoUrl(storeWithDetails.getStoreLogoUrl() == null ? "" : storeWithDetails.getStoreLogoUrl());
         body.setStoreName(storeWithDetails.getName());
 
         //get order items

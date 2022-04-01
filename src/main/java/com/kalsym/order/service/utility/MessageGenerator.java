@@ -24,11 +24,10 @@ public class MessageGenerator {
             OrderShipmentDetail orderShipmentDetail,
             PaymentOrder paymentDetails,
             RegionCountry regionCountry) {
+        
         if (emailContent != null) {
-            if ( storeWithDetails.getStoreAsset()!=null) {
-                if ( storeWithDetails.getStoreAsset().getLogoUrl()!=null) {
-                    emailContent = emailContent.replace("{{store-logo}}", storeWithDetails.getStoreAsset().getLogoUrl());            
-                }
+            if ( storeWithDetails.getStoreLogoUrl()!=null) {
+                emailContent = emailContent.replace("{{store-logo}}", storeWithDetails.getStoreLogoUrl());                            
             }
             emailContent = emailContent.replace("{{store-name}}", storeWithDetails.getName());
             emailContent = emailContent.replace("{{store-address}}", storeWithDetails.getAddress());

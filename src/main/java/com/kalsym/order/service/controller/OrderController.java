@@ -1215,7 +1215,7 @@ public class OrderController {
 
                                 body.setStoreAddress(storeWithDetials.getAddress());
                                 body.setStoreContact(storeWithDetials.getPhoneNumber());
-                                body.setLogoUrl(storeWithDetials.getStoreAsset() == null ? "" : storeWithDetials.getStoreAsset().getLogoUrl());
+                                body.setLogoUrl(storeWithDetials.getStoreLogoUrl() == null ? "" : storeWithDetials.getStoreLogoUrl());
                                 body.setStoreName(storeWithDetials.getName());
                                 body.setOrderItems(orderItems);
                                 email.setBody(body);
@@ -1799,8 +1799,7 @@ public class OrderController {
 
             body.setStoreAddress(storeWithDetials.getAddress());
             body.setStoreContact(storeWithDetials.getPhoneNumber());
-            body.setLogoUrl(storeWithDetials.getStoreAsset() == null ? "" : storeWithDetials.getStoreAsset().getLogoUrl());
-
+            body.setLogoUrl(storeWithDetials.getStoreLogoUrl() == null ? "" : storeWithDetials.getStoreLogoUrl());
             body.setStoreName(storeWithDetials.getName());
 
             //get order items

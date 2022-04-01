@@ -2,6 +2,7 @@ package com.kalsym.order.service.model;
 
 
 import com.kalsym.order.service.enums.StorePaymentType;
+import com.kalsym.order.service.enums.StoreAssetType;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -78,10 +79,15 @@ public class StoreWithDetails implements Serializable {
     private RegionCountry regionCountry;
 
 
-    @OneToOne(fetch = FetchType.EAGER)
+    /*@OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id", insertable = false, updatable = false, nullable = true)
     private StoreAsset storeAsset;
+    */
     
+    @OneToMany(cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY)
+    @JoinColumn(name = "storeId", insertable = false, updatable = false, nullable = true)
+    private List<StoreAssets> storeAssets;
     
     @OneToMany(cascade = CascadeType.ALL,
             fetch = FetchType.EAGER)
@@ -166,5 +172,17 @@ public class StoreWithDetails implements Serializable {
             }
         }
         return abbreviation;
+    }
+    
+    
+    public String getStoreLogoUrl() {
+        if (!storeAssets.isEmpty()) {
+            for (int i=0;i<storeAssets.size();i++) {
+                if (storeAssets.get(i).getAssetType()==StoreAssetType.LogoUrl) {
+                    return storeAssets.get(i).getAssetUrl();
+                }
+            }
+        }
+        return null;
     }
 }
