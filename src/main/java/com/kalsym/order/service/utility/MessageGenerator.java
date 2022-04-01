@@ -28,6 +28,8 @@ public class MessageGenerator {
         if (emailContent != null) {
             if ( storeWithDetails.getStoreLogoUrl()!=null) {
                 emailContent = emailContent.replace("{{store-logo}}", storeWithDetails.getStoreLogoUrl());                            
+            } else {
+                emailContent = emailContent.replace("{{store-logo}}", storeWithDetails.getRegionVertical().getDefaultLogoUrl());                            
             }
             emailContent = emailContent.replace("{{store-name}}", storeWithDetails.getName());
             emailContent = emailContent.replace("{{store-address}}", storeWithDetails.getAddress());
