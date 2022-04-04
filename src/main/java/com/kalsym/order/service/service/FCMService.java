@@ -23,10 +23,13 @@ public class FCMService {
     @Value("${fcm.url:https://fcm.googleapis.com/fcm/send}")
     String fcmUrl;
 
-    @Value("${fcm.token:key=AAAAj5hNRLI:APA91bEBW0gxueP0sjTtvixEb41IK7mZvDxyiSMDalS6ombzXoidlwGmvsagaF520jTxZxxLd1qsX4H-8iSs2qsgqY-rpdLvpTJFOYq0EGj7Mssjno0A7Xwd7nV8pt29HmewypxfaQ65}")
-    String fcmToken;
+    @Value("${fcm.token.deliverin:key=AAAAj5hNRLI:APA91bEBW0gxueP0sjTtvixEb41IK7mZvDxyiSMDalS6ombzXoidlwGmvsagaF520jTxZxxLd1qsX4H-8iSs2qsgqY-rpdLvpTJFOYq0EGj7Mssjno0A7Xwd7nV8pt29HmewypxfaQ65}")
+    String fcmTokenDeliverIn;
+    
+    @Value("${fcm.token.easydukan:key=AAAAj5hNRLI:APA91bEBW0gxueP0sjTtvixEb41IK7mZvDxyiSMDalS6ombzXoidlwGmvsagaF520jTxZxxLd1qsX4H-8iSs2qsgqY-rpdLvpTJFOYq0EGj7Mssjno0A7Xwd7nV8pt29HmewypxfaQ65}")
+    String fcmTokenEasyDukan;
 
-    public void sendPushNotification(Order order, String storeId, String storeName, String title, String content, OrderStatus orderStatus) {
+    public void sendPushNotification(Order order, String storeId, String storeName, String title, String content, OrderStatus orderStatus, String domain) {
         String logprefix = "sendPushNotification";
         RestTemplate restTemplate = new RestTemplate();
 
@@ -42,7 +45,13 @@ public class FCMService {
         body = body.replace("$%invoiceNo$%", order.getInvoiceId());
         fcmNotificationData.setBody(body);
         fcmNotification.setData(fcmNotificationData);
-
+        
+        String fcmToken = fcmTokenDeliverIn;
+        if (domain.contains("deliverin")) {
+            fcmToken = fcmTokenDeliverIn;
+        } else if (domain.contains("easydukan")) {
+            fcmToken = fcmTokenEasyDukan;
+        } 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", fcmToken);
 

@@ -46,10 +46,17 @@ public class StoreDiscountCalculation {
         } else {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "discountAvailable found:"+discountAvailable.size());
             double salesAmount=0;
+            double salesDiscountedItem=0;
             List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
             for (int i=0;i<cartItems.size();i++) {
                 CartItem item = cartItems.get(i);
+                //check if item already discounted item 
+                if (item.getDiscountId()!=null) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item "+item.getItemCode()+" already discounted price:"+item.getPrice());
+                    salesDiscountedItem = salesDiscountedItem + item.getPrice();
+                }
                 salesAmount = salesAmount + item.getPrice();
+                
             }
             discount.setCartSubTotal(Utilities.roundDouble(salesAmount,2));
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "total sales amount:"+salesAmount);    
@@ -67,8 +74,14 @@ public class StoreDiscountCalculation {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "tier found type:"+storeDiscount.getDiscountType()+" formula:"+discountTier.getCalculationType()+" value:"+discountTier.getDiscountAmount());    
                     
                     if (storeDiscount.getDiscountType().equals(DiscountType.TOTALSALES.toString())) {
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Calculate based on total sales");
-                        subTotalDiscount = CalculateDiscount(DiscountType.TOTALSALES.toString(), discountTier.getCalculationType(), discountTier.getDiscountAmount(), salesAmount, deliveryCharge, storeDiscount.getMaxDiscountAmount());                        
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Calculate based on total sales. Normal item only:"+storeDiscount.getNormalPriceItemOnly());
+                        double eligibleSalesAmount=0;
+                        if (storeDiscount.getNormalPriceItemOnly()) {
+                            eligibleSalesAmount = salesAmount - salesDiscountedItem;
+                        } else {
+                            eligibleSalesAmount = salesAmount;
+                        }
+                        subTotalDiscount = CalculateDiscount(DiscountType.TOTALSALES.toString(), discountTier.getCalculationType(), discountTier.getDiscountAmount(), eligibleSalesAmount, deliveryCharge, storeDiscount.getMaxDiscountAmount());                        
                         subDescription = GetSubTotalDiscountDescription(discountTier.getCalculationType(), discountTier.getDiscountAmount(), subTotalDiscount);
                         discount.setDiscountMaxAmount(Utilities.roundDouble(storeDiscount.getMaxDiscountAmount(),2));
                         if (subTotalDiscountDescription==null)

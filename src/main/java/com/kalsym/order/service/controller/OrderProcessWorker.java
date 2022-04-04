@@ -603,7 +603,7 @@ public class OrderProcessWorker {
                     String pushNotificationTitle = orderCompletionStatusConfig.getStorePushNotificationTitle();
                     String pushNotificationContent = orderCompletionStatusConfig.getStorePushNotificationContent();
                     try {
-                        fcmService.sendPushNotification(order, storeWithDetails.getId(), storeWithDetails.getName(), pushNotificationTitle, pushNotificationContent, status);
+                        fcmService.sendPushNotification(order, storeWithDetails.getId(), storeWithDetails.getName(), pushNotificationTitle, pushNotificationContent, status, storeWithDetails.getRegionVertical().getDomain());
                     } catch (Exception e) {
                         Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
                     }

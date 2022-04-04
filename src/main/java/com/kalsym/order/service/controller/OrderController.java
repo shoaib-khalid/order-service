@@ -1259,7 +1259,7 @@ public class OrderController {
                         String pushNotificationTitle = orderCompletionStatusConfig.getStorePushNotificationTitle();
                         String pushNotificationContent = orderCompletionStatusConfig.getStorePushNotificationContent();
                         try {
-                            fcmService.sendPushNotification(order, storeWithDetials.getId(), storeWithDetials.getName(), pushNotificationTitle, pushNotificationContent, OrderStatus.RECEIVED_AT_STORE);
+                            fcmService.sendPushNotification(order, storeWithDetials.getId(), storeWithDetials.getName(), pushNotificationTitle, pushNotificationContent, OrderStatus.RECEIVED_AT_STORE, storeWithDetials.getRegionVertical().getDomain());
                         } catch (Exception e) {
                             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
                         }
