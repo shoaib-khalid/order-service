@@ -2,6 +2,12 @@
 # order-service-3.7.11-SNAPSHOT |04-Apr-2022
 ##################################################
 Bug fix for discount calculation : deduct discounted item if discount is only for normal item price
+Differentiate FCM token for deliverin & easydukan
+
+##Config Changes:
+fcm.token.deliverin=
+fcm.token.easydukan=
+
 
 ##################################################
 # order-service-3.7.10-SNAPSHOT |01-Apr-2022
