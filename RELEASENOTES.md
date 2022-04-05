@@ -32,11 +32,11 @@ UPDATE region_vertical SET defaultLogoUrl='https://symplified.biz/store-assets/e
 
 UPDATE region_vertical SET senderEmailAdress='orders@deliverin.my' WHERE domain LIKE '%symplified%';
 UPDATE region_vertical SET senderEmailName='Deliver In Orders' WHERE domain LIKE '%symplified%';
-UPDATE region_vertical SET defaultLogoUrl='https://symplified.biz/store-assets/deliverin-logo-small.png' domain LIKE '%symplified%';
+UPDATE region_vertical SET defaultLogoUrl='https://symplified.biz/store-assets/deliverin-logo-small.png' WHERE domain LIKE '%symplified%';
 
 UPDATE region_vertical SET senderEmailAdress='orders@deliverin.my' WHERE domain LIKE '%deliverin%';
 UPDATE region_vertical SET senderEmailName='Deliver In Orders' WHERE domain LIKE '%deliverin%';
-UPDATE region_vertical SET defaultLogoUrl='https://symplified.biz/store-assets/deliverin-logo-small.png' domain LIKE '%symplified%';
+UPDATE region_vertical SET defaultLogoUrl='https://symplified.biz/store-assets/deliverin-logo-small.png' WHERE domain LIKE '%deliverin%';
 
 
 ##################################################
