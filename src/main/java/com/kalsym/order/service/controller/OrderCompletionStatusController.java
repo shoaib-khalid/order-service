@@ -142,8 +142,11 @@ public class OrderCompletionStatusController {
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
     
-    @Value("${finance.email.address:finance@symplified.com}")
+    @Value("${finance.email.address:orders@deliverin.my}")
     private String financeEmailAddress;
+    
+    @Value("${finance.email.sender.name:Deliver In Orders}")
+    private String financeEmailSenderName;
     
     @Value("${easydukan.orders.email.address:no-reply@easydukan.co }")
     private String easydukanOrdersEmailAddress;
@@ -269,6 +272,7 @@ public class OrderCompletionStatusController {
         
         OrderProcessBulkThread processThread = new OrderProcessBulkThread(logprefix,                  
               financeEmailAddress,
+              financeEmailSenderName,
               bodyOrderCompletionStatusUpdateList,
 
               onboardingOrderLink,

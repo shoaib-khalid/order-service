@@ -57,6 +57,7 @@ public class OrderProcessWorker {
     private final String logprefix;
     private final String orderId;
     private final String financeEmailAddress;
+    private final String financeEmailSenderName;
     private OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate;
     private String onboardingOrderLink;
     
@@ -86,6 +87,7 @@ public class OrderProcessWorker {
             String logprefix, 
             String orderId, 
             String financeEmailAddress,
+            String financeEmailSenderName,
             OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate,
             String onboardingOrderLink,
             
@@ -114,6 +116,7 @@ public class OrderProcessWorker {
         this.logprefix = logprefix;
         this.orderId = orderId;
         this.financeEmailAddress = financeEmailAddress;
+        this.financeEmailSenderName = financeEmailSenderName;
         this.bodyOrderCompletionStatusUpdate = bodyOrderCompletionStatusUpdate;
         this.onboardingOrderLink = onboardingOrderLink;
                 
@@ -417,6 +420,7 @@ public class OrderProcessWorker {
                 //update statut to cancel
                 orderRepository.CancelOrder(order.getId(), OrderStatus.CANCELED_BY_MERCHANT, new Date());
                 email.setFrom(financeEmailAddress);
+                email.setFromName(financeEmailSenderName);
                 
                 Optional<PaymentOrder> optPayment = paymentOrderRepository.findByClientTransactionId(order.getId());
                 if (optPayment.isPresent()) {
@@ -564,6 +568,7 @@ public class OrderProcessWorker {
                             }
                             String[] emailAddress = {financeEmailAddress};
                             email.setFrom(null);
+                            email.setFromName(financeEmailSenderName);
                             email.setTo(emailAddress);
                             emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry);
                             email.setRawBody(emailContent);

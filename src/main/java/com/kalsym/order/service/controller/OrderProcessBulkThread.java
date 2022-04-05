@@ -58,6 +58,7 @@ public class OrderProcessBulkThread extends Thread {
     
     private String logprefix;
     private final String financeEmailAddress;
+    private final String financeEmailSenderName;
     private OrderCompletionStatusUpdate[] bodyOrderCompletionStatusUpdateList;
     private String onboardingOrderLink;
     
@@ -90,6 +91,7 @@ public class OrderProcessBulkThread extends Thread {
     public OrderProcessBulkThread(
             String logprefix, 
             String financeEmailAddress,
+            String financeEmailSenderName,
             OrderCompletionStatusUpdate[] bodyOrderCompletionStatusUpdateList,            
             String onboardingOrderLink,
             
@@ -119,6 +121,7 @@ public class OrderProcessBulkThread extends Thread {
         
             this.logprefix = logprefix;
             this.financeEmailAddress = financeEmailAddress;
+            this.financeEmailSenderName = financeEmailSenderName;
             this.bodyOrderCompletionStatusUpdateList = bodyOrderCompletionStatusUpdateList;
             this.onboardingOrderLink = onboardingOrderLink;
 
@@ -160,6 +163,7 @@ public class OrderProcessBulkThread extends Thread {
                 OrderProcessWorker worker = new OrderProcessWorker(logprefix, 
                         bodyOrderCompletionStatusUpdate.getOrderId(), 
                         financeEmailAddress,
+                        financeEmailSenderName,
                         bodyOrderCompletionStatusUpdate,
                         onboardingOrderLink,
                         orderRepository,

@@ -113,8 +113,11 @@ public class OrderPaymentStatusUpdateController {
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
     
-    @Value("${finance.email.address:finance@symplified.biz}")
-    private String financeEmailAddress;       
+    @Value("${finance.email.address:orders@deliverin.my}")
+    private String financeEmailAddress; 
+    
+    @Value("${finance.email.sender.name:Deliver In Orders}")
+    private String financeEmailSenderName;
 
     @PutMapping(path = {""}, name = "order-completion-status-updates-put-by-order-id")
     @PreAuthorize("hasAnyAuthority('order-completion-status-updates-put-by-order-id', 'all')")
@@ -127,6 +130,7 @@ public class OrderPaymentStatusUpdateController {
         OrderProcessWorker worker = new OrderProcessWorker(logprefix, 
             orderId, 
             financeEmailAddress,
+            financeEmailSenderName,
             bodyOrderCompletionStatusUpdate,
             onboardingOrderLink,
             
