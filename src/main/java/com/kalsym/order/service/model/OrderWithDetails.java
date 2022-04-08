@@ -122,7 +122,7 @@ public class OrderWithDetails implements Serializable {
     
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "storeId", insertable = false, updatable = false)
-    private Store store;
+    private StoreWithDetails store;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)

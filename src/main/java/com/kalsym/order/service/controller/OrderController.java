@@ -362,7 +362,7 @@ public class OrderController {
             orderMatch.setCompletionStatus(completionStatus);            
         }*/
         
-        Store storeDetail = new Store();
+        StoreWithDetails storeDetail = new StoreWithDetails();
         if (clientId != null && !clientId.isEmpty()) {
             storeDetail.setClientId(clientId);
         }
