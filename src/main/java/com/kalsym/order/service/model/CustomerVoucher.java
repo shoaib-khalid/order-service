@@ -53,5 +53,9 @@ public class CustomerVoucher implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date created;
+    
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "voucherId", insertable = false, updatable = false)
+    private Voucher voucher;
    
 }

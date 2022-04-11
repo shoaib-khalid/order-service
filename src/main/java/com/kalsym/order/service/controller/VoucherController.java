@@ -153,6 +153,38 @@ public class VoucherController {
         response.setData(customerVoucher);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+    
+    /*
+    @GetMapping(path = {"/claim/{customerId}"})
+    public ResponseEntity<HttpResponse> getAvailableCustomerVoucher(HttpServletRequest request,
+            @RequestParam(required = false) VoucherType voucherType,
+            @RequestParam(required = false) String storeId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize
+            )
+    {
+
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        String logprefix = request.getRequestURI();
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "voucherType:" + voucherType+" storeId:"+storeId);
+      
+        CustomerVoucher customerVoucherMatch = new CustomerVoucher();
+        customerVoucherMatch.getVoucher().setStatus(VoucherStatus.ACTIVE);
+        Pageable pageable = PageRequest.of(page, pageSize);
+        ExampleMatcher matcher = ExampleMatcher
+                .matchingAll()
+                .withIgnoreCase()
+                .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
+        Example<CustomerVoucher> example = Example.of(customerVoucherMatch, matcher);
+        
+        Specification voucherSpec = VoucherSearchSpecs.getSpecWithDatesBetween(new Date(), voucherType, storeId, example );
+        Page<Voucher> voucherWithPage = customerVoucherRepository.findAll(voucherSpec, pageable);
+        
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(voucherWithPage);
+        
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }*/
 
 
 }

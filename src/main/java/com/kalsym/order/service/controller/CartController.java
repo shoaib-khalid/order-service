@@ -8,6 +8,7 @@ import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountTierRepository;
 import com.kalsym.order.service.model.repository.ProductRepository;
+import com.kalsym.order.service.model.repository.StoreDeliveryDetailRepository;
 import com.kalsym.order.service.utility.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import com.kalsym.order.service.model.Cart;
 import com.kalsym.order.service.model.CartItem;
+import com.kalsym.order.service.model.StoreDeliveryDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -77,6 +79,9 @@ public class CartController {
     
     @Autowired
     OrderRepository orderRepository;
+    
+    @Autowired
+    StoreDeliveryDetailRepository storeDeliveryDetailRepository;
     
     @Autowired
     StoreDiscountRepository storeDiscountRepository;
@@ -383,7 +388,18 @@ public class CartController {
                 } 
             }
         }
-
+        
+        //check if item reach max for motorcycle
+        if (vehicleType==VehicleType.MOTORCYCLE) {
+            Optional<Cart> cart = cartRepository.findById(id);
+            Optional<StoreDeliveryDetail> storeDelivery = storeDeliveryDetailRepository.findByStoreId(cart.get().getStoreId());
+            if (totalPcs > storeDelivery.get().getMaxOrderQuantityForBike()) {
+                //convert to car
+                vehicleType=VehicleType.CAR;
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "TotalPcs:"+totalPcs+" is more than max for bike:"+storeDelivery.get().getMaxOrderQuantityForBike()+". Upgrade Vehicle type to CAR");
+            }
+        }
+        
         class Weight {
 
             Double totalWeight;

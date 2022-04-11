@@ -51,7 +51,13 @@ public class FCMService {
             fcmToken = fcmTokenDeliverIn;
         } else if (domain.contains("easydukan")) {
             fcmToken = fcmTokenEasyDukan;
-        } 
+        } else if (domain.contains("dev-my")) {
+            fcmToken = fcmTokenDeliverIn;
+        } else if (domain.contains("dev-pk")) {
+            fcmToken = fcmTokenEasyDukan;
+        } else {
+            fcmToken = fcmTokenDeliverIn;
+        }
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", fcmToken);
 
