@@ -32,9 +32,10 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
     @Query(value = "SELECT A.id, A.invoiceId, B.phoneNumber, B.name, B.clientId,  C.username, C.password, A.updated, A.storeId  "
             + "FROM `order` A INNER JOIN `store` B ON A.storeId=B.id  "
             + "INNER JOIN `client` C ON B.clientId=C.id "
-            + "WHERE completionStatus='PAYMENT_CONFIRMED' AND verticalCode IN (:verticalList) "
+            + "WHERE ( (completionStatus='PAYMENT_CONFIRMED' AND A.paymentType='ONLINEPAYMENT') OR (completionStatus='RECEIVED_AT_STORE' AND A.paymentType='COD') ) "
+            + "AND verticalCode IN (:verticalList) "
             + "AND totalReminderSent<:maxReminder AND DATE_ADD(A.created, INTERVAL 5 MINUTE) < NOW()", nativeQuery = true)
-    List<Object[]> getFnBNotProcessOrder(@Param("verticalList") List verticalList, @Param("maxReminder") int maxReminder);
+    List<Object[]> getNotProcessOrder(@Param("verticalList") List verticalList, @Param("maxReminder") int maxReminder);
     
     @Transactional 
     @Modifying

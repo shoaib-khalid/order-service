@@ -1,4 +1,48 @@
 ##################################################
+# order-service-3.7.14-SNAPSHOT |11-Apr-2022
+##################################################
+New API for voucher
+Send Whatsapp Alert for order with paymentType=COD
+
+##DB Changes:
+CREATE TABLE `voucher` (
+  `id` varchar(50) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `status` enum('ACTIVE','INACTIVE','DELETED','EXPIRED') DEFAULT NULL,
+  `startDate` date DEFAULT NULL,
+  `endDate` date DEFAULT NULL,
+  `voucherType` enum('DELIVERIN','EASYDUKAN','STORE') DEFAULT NULL,
+  `storeId` varchar(50) DEFAULT NULL,
+  `discountType` enum('TOTALSALES','SHIPPING') DEFAULT NULL,
+  `calculationType` enum('PERCENT','FIX','SHIPAMT') DEFAULT NULL,
+  `discountValue` decimal(10,2) DEFAULT NULL,
+  `maxDiscountAmount` decimal(10,2) DEFAULT NULL,
+  `voucherCode` varchar(50) DEFAULT NULL,
+  `totalQuantity` int DEFAULT NULL,
+  `totalRedeem` int DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `created_by` varchar(100) DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `updated_by` varchar(100) DEFAULT NULL,
+  `deleteReason` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+
+CREATE TABLE customer_voucher (
+customerId VARCHAR(50),
+voucherId VARCHAR(50),
+created DATETIME,
+isUsed TINYINT(1) NOT NULL DEFAULT 0
+);
+
+
+Insert autority for new api. Execute after order-service patched:
+
+INSERT INTO role_authority VALUES ('STORE_OWNER','voucher-post','order-service');
+
+
+##################################################
 # order-service-3.7.13-SNAPSHOT |08-Apr-2022
 ##################################################
 Add store asset in orderWithDetails

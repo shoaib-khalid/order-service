@@ -80,7 +80,7 @@ public class ReminderScheduler {
         if (isEnabled) {
             String logprefix = "Reminder-Scheduler"; 
             List<String> items = Arrays.asList(verticalToSend.split(","));
-            List<Object[]> orderList = orderRepository.getFnBNotProcessOrder(items, maxTotalReminder);
+            List<Object[]> orderList = orderRepository.getNotProcessOrder(items, maxTotalReminder);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Start checking not process order for vertical:"+verticalToSend+". Order Count:"+orderList.size());        
             for (int i=0;i<orderList.size();i++) {
                 Object[] order = orderList.get(i);
