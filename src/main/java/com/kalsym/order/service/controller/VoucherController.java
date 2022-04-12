@@ -26,7 +26,7 @@ import com.kalsym.order.service.model.repository.VoucherSearchSpecs;
 import com.kalsym.order.service.model.repository.VoucherRepository;
 import com.kalsym.order.service.model.repository.CustomerRepository;
 import com.kalsym.order.service.model.repository.CustomerVoucherRepository;
-
+import com.kalsym.order.service.model.repository.CustomerVoucherSearchSpecs;
 import com.kalsym.order.service.utility.HttpResponse;
 import com.kalsym.order.service.utility.Logger;
 import java.util.Optional;
@@ -154,11 +154,13 @@ public class VoucherController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
     
-    /*
+    
     @GetMapping(path = {"/claim/{customerId}"})
-    public ResponseEntity<HttpResponse> getAvailableCustomerVoucher(HttpServletRequest request,
+    public ResponseEntity<HttpResponse> getAvailableCustomerVoucher(HttpServletRequest request,            
+            @PathVariable(required = true) String customerId,
             @RequestParam(required = false) VoucherType voucherType,
-            @RequestParam(required = false) String storeId,
+            @RequestParam(required = false) String voucherCode,
+            @RequestParam(required = false) Boolean isUsed,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize
             )
@@ -166,10 +168,11 @@ public class VoucherController {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
         String logprefix = request.getRequestURI();
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "voucherType:" + voucherType+" storeId:"+storeId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerId:"+customerId+" voucherType:" + voucherType);
       
         CustomerVoucher customerVoucherMatch = new CustomerVoucher();
-        customerVoucherMatch.getVoucher().setStatus(VoucherStatus.ACTIVE);
+        //customerVoucherMatch.setVoucher(voucher);
+        //customerVoucherMatch.getVoucher().setStatus(VoucherStatus.ACTIVE);
         Pageable pageable = PageRequest.of(page, pageSize);
         ExampleMatcher matcher = ExampleMatcher
                 .matchingAll()
@@ -177,14 +180,14 @@ public class VoucherController {
                 .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
         Example<CustomerVoucher> example = Example.of(customerVoucherMatch, matcher);
         
-        Specification voucherSpec = VoucherSearchSpecs.getSpecWithDatesBetween(new Date(), voucherType, storeId, example );
-        Page<Voucher> voucherWithPage = customerVoucherRepository.findAll(voucherSpec, pageable);
+        Specification voucherSpec = CustomerVoucherSearchSpecs.getSpecWithDatesBetween(new Date(), voucherType, customerId, VoucherStatus.ACTIVE, voucherCode, isUsed, example );
+        Page<CustomerVoucher> customerVoucherWithPage = customerVoucherRepository.findAll(voucherSpec, pageable);
         
         response.setSuccessStatus(HttpStatus.OK);
-        response.setData(voucherWithPage);
+        response.setData(customerVoucherWithPage);
         
         return ResponseEntity.status(response.getStatus()).body(response);
-    }*/
+    }
 
 
 }
