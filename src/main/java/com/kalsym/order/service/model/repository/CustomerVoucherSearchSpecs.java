@@ -67,7 +67,7 @@ public class CustomerVoucherSearchSpecs {
             }
             
             if (voucherType!=null) {
-                predicates.add(builder.equal(root.get("voucherType"), voucherType));
+                predicates.add(builder.equal(voucher.get("voucherType"), voucherType));
             } 
             
             if (customerId!=null) {
