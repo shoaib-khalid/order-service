@@ -1160,8 +1160,10 @@ public class OrderController {
 
                 }
                 
-                voucherRepository.deductVoucherBalance(customerVoucher.getVoucherId());
-                    
+                if (customerVoucher!=null) {
+                    voucherRepository.deductVoucherBalance(customerVoucher.getVoucherId());
+                }
+                
                 //clear cart item for COD. for online payment only clear after payment confirmed
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Payment Type:"+order.getPaymentType());
                 if (order.getPaymentType().equals(StorePaymentType.COD.name())) {
