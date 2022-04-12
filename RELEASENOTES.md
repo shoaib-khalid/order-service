@@ -1,6 +1,7 @@
 ##################################################
 # order-service-3.7.14-SNAPSHOT |12-Apr-2022
 ##################################################
+Bug fix for get vehicle type in getWeight, check store max item for bike
 New API for voucher
 Send Whatsapp Alert for order with paymentType=COD
 

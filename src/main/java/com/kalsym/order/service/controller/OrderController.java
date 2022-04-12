@@ -37,6 +37,7 @@ import com.kalsym.order.service.model.ProductInventory;
 import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.StoreDeliveryDetail;
 import com.kalsym.order.service.model.Cart;
+import com.kalsym.order.service.model.CustomerVoucher;
 import com.kalsym.order.service.model.DeliveryOrder;
 import com.kalsym.order.service.model.DeliveryQuotation;
 import com.kalsym.order.service.model.Email;
@@ -56,6 +57,7 @@ import com.kalsym.order.service.model.ProductVariantAvailable;
 import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.PaymentOrder;
 import com.kalsym.order.service.model.StoreDiscount;
+import com.kalsym.order.service.model.Voucher;
 import com.kalsym.order.service.model.object.Discount;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.object.OrderDetails;
@@ -81,6 +83,8 @@ import com.kalsym.order.service.model.repository.StoreDiscountRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountTierRepository;
 import com.kalsym.order.service.model.repository.StoreDeliveryDetailRepository;
 import com.kalsym.order.service.model.repository.PaymentOrderRepository;
+import com.kalsym.order.service.model.repository.CustomerVoucherRepository;
+import com.kalsym.order.service.model.repository.VoucherRepository;
 import com.kalsym.order.service.service.CustomerService;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.FCMService;
@@ -203,6 +207,12 @@ public class OrderController {
     
     @Autowired
     PaymentOrderRepository paymentOrderRepository;
+    
+    @Autowired
+    CustomerVoucherRepository customerVoucherRepository;
+    
+    @Autowired
+    VoucherRepository voucherRepository;
     
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
@@ -796,10 +806,21 @@ public class OrderController {
             if (!optCart.isPresent()) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart with id " + cartId + " not found");
                 response.setStatus(HttpStatus.NOT_FOUND.value());
-                response.setMessage("cart with id " + cartId + " not found");
+                response.setMessage("Cart with id " + cartId + " not found");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
-
+            
+            //check voucher code if provided
+            CustomerVoucher customerVoucher = null;
+            if (cod.getVoucherCode()!=null) {
+                customerVoucher = customerVoucherRepository.findCustomerVoucherByCode(cod.getCustomerId(), cod.getVoucherCode());
+                if (customerVoucher==null) {
+                    response.setStatus(HttpStatus.NOT_FOUND.value());
+                    response.setMessage("Voucher code " + cartId + " not found");
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                }
+            }
+            
             Cart cart = optCart.get();
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart exists against cartId: " + cartId);
 
@@ -1024,7 +1045,7 @@ public class OrderController {
                 order.setPrivateAdminNotes("");
 
                 OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission, 
-                        cod.getOrderPaymentDetails().getDeliveryQuotationAmount(), cod.getOrderShipmentDetails().getDeliveryType(), 
+                        cod.getOrderPaymentDetails().getDeliveryQuotationAmount(), cod.getOrderShipmentDetails().getDeliveryType(), customerVoucher, 
                         cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
                 order.setSubTotal(orderTotalObject.getSubTotal());
                 order.setAppliedDiscount(orderTotalObject.getAppliedDiscount());
@@ -1138,6 +1159,8 @@ public class OrderController {
                     }
 
                 }
+                
+                voucherRepository.deductVoucherBalance(customerVoucher.getVoucherId());
                     
                 //clear cart item for COD. for online payment only clear after payment confirmed
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Payment Type:"+order.getPaymentType());

@@ -420,7 +420,7 @@ public class CustomerService {
 
                 id = updatedCustomer.getString("id");
 
-                addCustomerAddress(id, customer.getName(), orderShipmentDetail);
+                //addCustomerAddress(id, customer.getName(), orderShipmentDetail);
             }
 
         } catch (RestClientException e) {

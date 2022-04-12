@@ -11,7 +11,9 @@ import com.kalsym.order.service.model.Cart;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.Store;
 import com.kalsym.order.service.model.StoreCommission;
+import com.kalsym.order.service.model.CustomerVoucher;
 import com.kalsym.order.service.model.object.Discount;
+import com.kalsym.order.service.model.object.DiscountVoucher;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountRepository;
@@ -28,7 +30,7 @@ import org.springframework.http.ResponseEntity;
 public class OrderCalculation {
     
     public static OrderObject CalculateOrderTotal(Cart cart, Double storeSvcChargePercentage, StoreCommission storeCommission, 
-            Double deliveryCharge, String deliveryType,
+            Double deliveryCharge, String deliveryType, CustomerVoucher customerVoucher,
             CartItemRepository cartItemRepository, 
             StoreDiscountRepository storeDiscountRepository, 
             StoreDiscountTierRepository storeDiscountTierRepository, String logprefix) {
@@ -50,6 +52,14 @@ public class OrderCalculation {
         orderTotal.setDiscountCalculationValue(Utilities.convertToDouble(discount.getDiscountCalculationValue()));
         orderTotal.setDiscountMaxAmount(Utilities.convertToDouble(discount.getDiscountMaxAmount()));
         orderTotal.setDeliveryDiscountMaxAmount(Utilities.convertToDouble(discount.getDeliveryDiscountMaxAmount()));
+        
+        //calculate voucher code discount
+        if (customerVoucher!=null) {
+            DiscountVoucher discountVoucher = VoucherDiscountCalculation.CalculateVoucherDiscount(cart, deliveryCharge, orderTotal.getSubTotal(), customerVoucher, logprefix);                
+            double newSubTotal = orderTotal.getSubTotal() - discountVoucher.getSubTotalDiscount().doubleValue();
+            orderTotal.setSubTotal(newSubTotal);
+            deliveryCharge = deliveryCharge - discountVoucher.getDeliveryDiscount().doubleValue();
+        }
         
         //calculate Store service charge        
         double serviceCharges = calculateStoreServiceCharges(storeSvcChargePercentage, orderTotal.getSubTotal(), orderTotal.getAppliedDiscount());

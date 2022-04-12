@@ -20,4 +20,18 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CustomerVoucherRepository extends PagingAndSortingRepository<CustomerVoucher, String>, JpaRepository<CustomerVoucher, String>, JpaSpecificationExecutor<CustomerVoucher> {
     
+    @Query("SELECT m FROM CustomerVoucher m "
+            + "WHERE m.customerId = :queryCustomerId AND m.isUsed=0 "
+            + "AND m.voucher.status='ACTIVE' "
+            + "AND m.voucher.startDate < :currentDate AND m.voucher.endDate > :currentDate "
+            + "AND m.vouchertotal.totalRedeem < m.voucher.totalQuantity "
+            + "AND m.voucher.voucherCode = :queryVoucherCode") 
+    CustomerVoucher findCustomerVoucherByCode(
+            @Param("queryCustomerId") String queryCustomerId,
+            @Param("queryVoucherCode") String queryVoucherCode
+            );
+    
+    
+    CustomerVoucher findByCustomerIdAndVoucherId(@Param("customerId") String customerId, @Param("voucherId") String voucherId);
+    
 }

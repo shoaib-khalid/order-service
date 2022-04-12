@@ -9,6 +9,7 @@ import com.kalsym.order.service.model.repository.StoreDiscountRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountTierRepository;
 import com.kalsym.order.service.model.repository.ProductRepository;
 import com.kalsym.order.service.model.repository.StoreDeliveryDetailRepository;
+import com.kalsym.order.service.model.repository.CustomerVoucherRepository;
 import com.kalsym.order.service.utility.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,7 @@ import com.kalsym.order.service.model.StoreDiscountTier;
 import com.kalsym.order.service.enums.DiscountType;
 import com.kalsym.order.service.enums.DiscountCalculationType;
 import com.kalsym.order.service.enums.VehicleType;
+import com.kalsym.order.service.model.CustomerVoucher;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.utility.StoreDiscountCalculation;
 import com.kalsym.order.service.model.DeliveryQuotation;
@@ -88,6 +90,9 @@ public class CartController {
     
     @Autowired
     StoreDiscountTierRepository storeDiscountTierRepository;
+    
+    @Autowired
+    CustomerVoucherRepository customerVoucherRepository;
     
     @Autowired
     ProductRepository productRepository;
@@ -452,7 +457,9 @@ public class CartController {
             @PathVariable String id,
             @RequestParam(defaultValue = "0") Double deliveryCharge,
             @RequestParam(required = false) String deliveryQuotationId,
-            @RequestParam(required = false) String deliveryType
+            @RequestParam(required = false) String deliveryType,
+            @RequestParam(required = false) String voucherCode,
+            @RequestParam(required = false) String customerId
             ) {
         String logprefix = request.getRequestURI() + " ";
 
@@ -464,6 +471,17 @@ public class CartController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cart not found with cartId: " + id);
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
+        //check voucher code if provided
+        CustomerVoucher customerVoucher = null;
+        if (voucherCode!=null && customerId!=null) {
+            customerVoucher = customerVoucherRepository.findCustomerVoucherByCode(customerId, voucherCode);
+            if (customerVoucher==null) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Voucher code " + voucherCode + " not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
         }
         
         //get delivery charges from delivery-service
@@ -487,8 +505,8 @@ public class CartController {
             Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);        
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:"+id+" deliveryCharge:"+deliveryCharge+" totalSubTotalDiscount:"+discount.getSubTotalDiscount()+" totalShipmentDiscount:"+discount.getDeliveryDiscount());
             
-            OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission, 
-                            deliveryCharge, deliveryType, 
+            OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission,  
+                            deliveryCharge, deliveryType, customerVoucher,
                             cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
             discount.setCartGrandTotal(Utilities.roundDouble(orderTotalObject.getTotal(),2));
             discount.setCartDeliveryCharge(Utilities.roundDouble(deliveryCharge,2));

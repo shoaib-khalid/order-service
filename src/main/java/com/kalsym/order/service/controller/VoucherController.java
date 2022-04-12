@@ -95,7 +95,7 @@ public class VoucherController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "voucherType:" + voucherType+" storeId:"+storeId);
       
         Voucher voucherMatch = new Voucher();
-        voucherMatch.setStatus(VoucherStatus.ACTIVE);
+        voucherMatch.setStatus(VoucherStatus.ACTIVE);       
         Pageable pageable = PageRequest.of(page, pageSize);
         ExampleMatcher matcher = ExampleMatcher
                 .matchingAll()
@@ -143,6 +143,14 @@ public class VoucherController {
             return ResponseEntity.status(response.getStatus()).body(response);
         }
         
+        CustomerVoucher existingVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(customerId, voucher.getId());
+        if (existingVoucher!=null) {
+            Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " Voucher already exist customerId: " + customerId+" voucherId:"+voucher.getId());
+            response.setSuccessStatus(HttpStatus.CONFLICT);
+            response.setError("Voucher already exist");
+            return ResponseEntity.status(response.getStatus()).body(response);
+        }
+        
         CustomerVoucher customerVoucher = new CustomerVoucher();
         customerVoucher.setCustomerId(customerId);
         customerVoucher.setIsUsed(Boolean.FALSE);
@@ -171,8 +179,6 @@ public class VoucherController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerId:"+customerId+" voucherType:" + voucherType);
       
         CustomerVoucher customerVoucherMatch = new CustomerVoucher();
-        //customerVoucherMatch.setVoucher(voucher);
-        //customerVoucherMatch.getVoucher().setStatus(VoucherStatus.ACTIVE);
         Pageable pageable = PageRequest.of(page, pageSize);
         ExampleMatcher matcher = ExampleMatcher
                 .matchingAll()
