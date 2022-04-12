@@ -823,12 +823,24 @@ public class OrderController {
             
             Cart cart = optCart.get();
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart exists against cartId: " + cartId);
-
+            
+            /*
             //getting store details for cart if from product service
             StoreWithDetails storeWithDetials = productService.getStoreById(cart.getStoreId());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store details of cartId: " + cartId + ", and storeId: " + cart.getStoreId());
 
             if (storeWithDetials == null) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "store with storeId: " + cart.getStoreId() + " not found");
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("store not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }*/
+            
+            StoreWithDetails storeWithDetials = null;
+            Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(cart.getStoreId());
+            if (optStore.isPresent()) {
+                storeWithDetials = optStore.get();
+            } else {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "store with storeId: " + cart.getStoreId() + " not found");
                 response.setStatus(HttpStatus.NOT_FOUND.value());
                 response.setMessage("store not found");
@@ -1203,7 +1215,7 @@ public class OrderController {
                 if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
                     Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + OrderStatus.RECEIVED_AT_STORE.name());             
                 } else {        
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size()+" regionVertical:"+storeWithDetials.getRegionVertical());
                     orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);                        
 
                     //send email to customer if config allows
