@@ -160,7 +160,7 @@ public class VoucherController {
         
         //query back info
         Optional<CustomerVoucher> updatedVoucher = customerVoucherRepository.findById(customerVoucher.getId());
-        
+        Logger.application.info(OrderServiceApplication.VERSION, logprefix,"Voucher id"+updatedVoucher.get().getVoucher().getId());
         response.setSuccessStatus(HttpStatus.CREATED);
         response.setData(updatedVoucher.get());
         return ResponseEntity.status(response.getStatus()).body(response);
