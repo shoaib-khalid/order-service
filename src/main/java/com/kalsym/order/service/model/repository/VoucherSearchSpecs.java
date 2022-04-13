@@ -67,7 +67,7 @@ public class VoucherSearchSpecs {
                 predicates.add(builder.equal(root.get("storeId"), storeId));
             } 
             
-            Predicate predicateForTotalRedeem = builder.lessThanOrEqualTo(root.get("totalReddem"), root.get("totalQuantity"));
+            Predicate predicateForTotalRedeem = builder.lessThanOrEqualTo(root.get("totalRedeem"), root.get("totalQuantity"));
             predicates.add(predicateForTotalRedeem);
 
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
