@@ -20,11 +20,8 @@ import org.hibernate.annotations.GenericGenerator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.io.Serializable;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -61,8 +58,6 @@ public class RegionVertical implements Serializable {
     private String senderEmailName; 
     private String defaultLogoUrl;
     
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "regionCountryId", insertable = false, updatable = false)
-    private RegionCountry regionCountry;
+    
 
 }
