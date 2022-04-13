@@ -156,11 +156,11 @@ public class VoucherController {
         customerVoucher.setIsUsed(Boolean.FALSE);
         customerVoucher.setVoucherId(voucher.getId());
         customerVoucher.setCreated(new Date());
-        customerVoucherRepository.save(customerVoucher);
+        CustomerVoucher savedVoucher = customerVoucherRepository.save(customerVoucher);
         
         //refresh and retrieve back the data
-        customerVoucherRepository.refresh(customerVoucher);
-        Optional<CustomerVoucher> updatedVoucher = customerVoucherRepository.findById(customerVoucher.getId());
+        customerVoucherRepository.refresh(savedVoucher);
+        Optional<CustomerVoucher> updatedVoucher = customerVoucherRepository.findById(savedVoucher.getId());
         
         response.setSuccessStatus(HttpStatus.CREATED);
         response.setData(updatedVoucher.get());
