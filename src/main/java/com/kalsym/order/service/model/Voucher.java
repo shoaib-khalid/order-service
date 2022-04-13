@@ -55,6 +55,7 @@ public class Voucher implements Serializable {
     private String voucherCode;
     private Integer totalQuantity;
     private Integer totalRedeem;
+    private String currencyLabel;
     
     @Enumerated(EnumType.STRING)
     private VoucherStatus status;
