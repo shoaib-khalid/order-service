@@ -17,8 +17,9 @@ import org.springframework.stereotype.Repository;
  * @author 7cu
  */
 
+
 @Repository
-public interface CustomerVoucherRepository extends PagingAndSortingRepository<CustomerVoucher, String>, JpaRepository<CustomerVoucher, String>, JpaSpecificationExecutor<CustomerVoucher> {
+public interface CustomerVoucherRepository extends PagingAndSortingRepository<CustomerVoucher, String>, JpaRepository<CustomerVoucher, String>, JpaSpecificationExecutor<CustomerVoucher>, CustomRepository<CustomerVoucher, String> {
     
     @Query("SELECT m FROM CustomerVoucher m "
             + "WHERE m.customerId = :queryCustomerId AND m.isUsed=0 "
