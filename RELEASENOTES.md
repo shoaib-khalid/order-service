@@ -1,9 +1,13 @@
 ##################################################
-# order-service-3.7.14-SNAPSHOT |12-Apr-2022
+# order-service-3.7.14-SNAPSHOT |13-Apr-2022
 ##################################################
-Bug fix for get vehicle type in getWeight, check store max item for bike
-New API for voucher
-Send Whatsapp Alert for order with paymentType=COD
+1. Bug fix for get vehicle type in getWeight, check store max item for bike
+2. Bug fix for COD store during placeOrder
+3. Bug fix for email during edit order. fix sender address & name to read from region_vertical
+4. Send Whatsapp Alert for order with paymentType=COD
+5. New API for voucher
+6. New parameter in getDiscountOfCart() : customerId & voucherCode`
+7. New parameter in placeOrder() : voucherCode
 
 ##DB Changes:
 CREATE TABLE `voucher` (
@@ -12,7 +16,8 @@ CREATE TABLE `voucher` (
   `status` enum('ACTIVE','INACTIVE','DELETED','EXPIRED') DEFAULT NULL,
   `startDate` date DEFAULT NULL,
   `endDate` date DEFAULT NULL,
-  `voucherType` enum('DELIVERIN','EASYDUKAN','STORE') DEFAULT NULL,
+  `voucherType` enum('PLATFORM','STORE') DEFAULT NULL,
+  `verticalCode` varchra(50),
   `storeId` varchar(50) DEFAULT NULL,
   `discountType` enum('TOTALSALES','SHIPPING') DEFAULT NULL,
   `calculationType` enum('PERCENT','FIX','SHIPAMT') DEFAULT NULL,
@@ -29,13 +34,23 @@ CREATE TABLE `voucher` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
+CREATE TABLE voucher_terms (
+`id` VARCHAR(50) NOT NULL,
+voucherId VARCHAR(50),
+terms VARCHAR(255),
+FOREIGN KEY (voucherId) REFERENCES voucher(id)
+) ENGINE=INNODB DEFAULT CHARSET=utf8mb3;
+
 
 CREATE TABLE customer_voucher (
-customerId VARCHAR(50),
+id VARCHAR(50) PRIMARY KEY,
+customerId VARCHAR(50) CHARACTER SET latin1,
 voucherId VARCHAR(50),
 created DATETIME,
-isUsed TINYINT(1) NOT NULL DEFAULT 0
-);
+isUsed TINYINT(1) NOT NULL DEFAULT 0,
+FOREIGN KEY (voucherId) REFERENCES voucher(id),
+FOREIGN KEY (customerId) REFERENCES customer(id)
+)  ENGINE=INNODB DEFAULT CHARSET=utf8mb3;
 
 
 Insert autority for new api. Execute after order-service patched:

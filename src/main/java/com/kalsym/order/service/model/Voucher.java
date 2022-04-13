@@ -47,7 +47,8 @@ public class Voucher implements Serializable {
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
     
-    private String name;    
+    private String name;   
+    private String verticalCode;
     private String storeId;    
     private Double discountValue;
     private Double maxDiscountAmount;
@@ -75,5 +76,11 @@ public class Voucher implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date endDate;
    
-
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "verticalCode", insertable = false, updatable = false)
+    private RegionVertical regionVertical;
+    
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "voucherId", insertable = false, updatable = false, nullable = true)
+    private List<VoucherTerms> voucherTerms;
 }

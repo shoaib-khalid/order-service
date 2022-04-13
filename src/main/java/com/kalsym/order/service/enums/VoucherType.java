@@ -21,7 +21,6 @@ package com.kalsym.order.service.enums;
  * @author taufik
  */
 public enum VoucherType {
-   DELIVERIN,
-   EASYDUKAN,
+   PLATFORM,
    STORE;
 }

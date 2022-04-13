@@ -615,166 +615,7 @@ public class OrderController {
         response.setData(optOrder.get());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
     
-    //TODO: add save customer info request parameter
-    /** NOT USE ANYMORE, ALL ORDER will posted in placeOrder
-     * 
-    @PostMapping(path = {""}, name = "orders-post")
-    @PreAuthorize("hasAnyAuthority('orders-post', 'all')")
-    public ResponseEntity<HttpResponse> postOrders(HttpServletRequest request,
-            @Valid @RequestBody Order order,
-            @RequestParam(required = false) Boolean saveCustomerInformation) throws Exception {
-        String logprefix = request.getRequestURI() + " ";
-        HttpResponse response = new HttpResponse(request.getRequestURI());
-
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orders-post request on url: " + request.getRequestURI());
-
-//        OrderObject bodyOrder = new OrderObject();
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, order.toString(), "");
-
-        try {
-
-            Optional<Store> optStore = storeRepository.findById(order.getStoreId());
-
-            if (!optStore.isPresent()) {
-                response.setStatus(HttpStatus.NOT_FOUND.value());
-                response.setMessage("store not found");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
-            
-            Optional<StoreDeliveryDetail> optStoreDeliveryDetail = storeDeliveryDetailRepository.findByStoreId(order.getStoreId());
-
-            if (!optStoreDeliveryDetail.isPresent()) {
-                response.setStatus(HttpStatus.NOT_FOUND.value());
-                response.setMessage("store delivery detail not found");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
-
-            Store store = optStore.get();
-            order.setPaymentType(store.getPaymentType());
-
-            StoreCommission storeCommission = productService.getStoreCommissionByStoreId(store.getId());
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store commission: " + storeCommission);
-//            while (true) {
-            try {
-
-                String invoiceId = TxIdUtil.generateInvoiceId(store.getId(), store.getNameAbreviation(), storeRepository);
-                order.setInvoiceId(invoiceId);
-                OrderPaymentDetail opd = order.getOrderPaymentDetail();
-                OrderShipmentDetail osd = order.getOrderShipmentDetail();
-
-                order.setDeliveryCharges(opd.getDeliveryQuotationAmount());
-                order.setOrderPaymentDetail(null);
-                order.setOrderShipmentDetail(null);
-                order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE);
-                order.setPaymentStatus(PaymentStatus.PENDING);
-
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceChargesPercentage: " + store.getServiceChargesPercentage());
-                
-                //calculate Store discount
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Validate cartId: " + order.getCartId());
-                Optional<Cart> optCart = cartRepository.findById(order.getCartId());
-                if (!optCart.isPresent()) {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart with id " + order.getCartId() + " not found");
-                    response.setStatus(HttpStatus.NOT_FOUND.value());
-                    response.setMessage("cart with id " + order.getCartId() + " not found");
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-                } 
-                
-                Cart cart = optCart.get();
-                OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, order, store.getServiceChargesPercentage(), storeCommission, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
-                order.setSubTotal(orderTotalObject.getSubTotal());
-                order.setAppliedDiscount(orderTotalObject.getAppliedDiscount());
-                order.setAppliedDiscountDescription(orderTotalObject.getAppliedDiscountDescription());
-                order.setDeliveryDiscount(orderTotalObject.getDeliveryDiscount());
-                order.setDeliveryDiscountDescription(orderTotalObject.getDeliveryDiscountDescription());                
-                order.setStoreServiceCharges(orderTotalObject.getStoreServiceCharge());
-                order.setTotal(orderTotalObject.getTotal());
-                order.setKlCommission(orderTotalObject.getKlCommission());
-                order.setStoreShare(orderTotalObject.getStoreShare());
-                order.setDeliveryCharges(order.getDeliveryCharges());  
-                order.setDeliveryType(optStoreDeliveryDetail.get().getType());
-                order = orderRepository.save(order);
-                
-                opd.setOrderId(order.getId());
-                osd.setOrderId(order.getId());
-                orderPaymentDetailRepository.save(opd);
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order payment details created for orderId:" + order.getId());
-                orderShipmentDetailRepository.save(osd);
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderShipmentDetail created for orderId: " + order.getId());
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "create customer from OrderShipmentDetails");
-
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order customer Id: " + order.getCustomerId());
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order check: " + "undefined".equalsIgnoreCase(order.getCustomerId()));
-
-                //TODO: Uncomment this and fix
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "saveCustomerInformation: " + saveCustomerInformation);
-
-                if (saveCustomerInformation != null && saveCustomerInformation == true) {
-                    if (order.getCustomerId() == null || "undefined".equalsIgnoreCase(order.getCustomerId())) {
-                        String customerId = customerService.addCustomer(osd, order.getStoreId());
-
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerId: " + customerId);
-
-                        if (customerId != null) {
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer created with id: " + customerId);
-                            order.setCustomerId(customerId);
-                            orderRepository.save(order);
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added customerId: " + customerId + " to order: " + order.getId());
-
-                        }
-                    } else {
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer already created with id: " + order.getCustomerId());
-                        String customerId = customerService.updateCustomer(osd, order.getStoreId(), order.getCustomerId());
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "updated customer information for id: " + customerId);
-
-                    }
-                } else {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "user information not saved");
-                }
-
-            } catch (Exception ex) {
-                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "exception occure while storing order ", ex);
-                response.setMessage(ex.getMessage());
-                return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
-            }
-//            }
-
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order created with id: " + order.getId());
-
-            //inserting ordercompleting statusupdate  to pending
-            OrderCompletionStatusUpdate orderCompletionStatusUpdate = new OrderCompletionStatusUpdate();
-            orderCompletionStatusUpdate.setOrderId(order.getId());
-            orderCompletionStatusUpdate.setStatus(OrderStatus.RECEIVED_AT_STORE);
-            orderCompletionStatusUpdateRepository.save(orderCompletionStatusUpdate);
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "update order status:" + orderCompletionStatusUpdate.getStatus().toString());
-
-            //inserting paymentstatusupdate
-            OrderPaymentStatusUpdate orderPaymentStatusUpdate = new OrderPaymentStatusUpdate();
-            orderPaymentStatusUpdate.setOrderId(order.getId());
-            orderPaymentStatusUpdate.setStatus(PaymentStatus.PENDING);
-            orderPaymentStatusUpdateRepository.save(orderPaymentStatusUpdate);
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "update order status: " + orderPaymentStatusUpdate.getStatus().toString());
-
-//            //clear cart item
-//            cartItemRepository.clearCartItem(cart.getCartId());
-            // pass orderId to OrderPostService, even though the status is not completed yet
-            //orderPostService.postOrderLink(cart.getId(), cart.getStoreId());
-        } catch (Exception exp) {
-            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error saving order", exp);
-            response.setMessage(exp.getMessage());
-            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
-        }
-
-        //Optional<Order> orderDetails = orderRepository.findById(savedOrder.getId());
-        response.setSuccessStatus(HttpStatus.CREATED);
-        response.setData(order);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-    * 
-    * /
-
     /**
      *
      *
@@ -1690,6 +1531,17 @@ public class OrderController {
             }
         }
         
+        StoreWithDetails storeWithDetials = null;
+        Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(order.getStoreId());
+        if (optStore.isPresent()) {
+            storeWithDetials = optStore.get();
+        } else {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "store with storeId: " + order.getStoreId() + " not found");
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            response.setMessage("store not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
         if (order.getCompletionStatus()==OrderStatus.PAYMENT_CONFIRMED || order.getCompletionStatus()==OrderStatus.RECEIVED_AT_STORE) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order item preview revise for orderId: " + orderId);
             
@@ -1764,7 +1616,6 @@ public class OrderController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "deliveryCharge:" + deliveryCharge +" deliveryDiscount:"+deliveryDiscount);
             
             //calculate Store service charge 
-            StoreWithDetails storeWithDetials = productService.getStoreById(order.getStoreId());            
             double newStoreServiceCharges = calculateStoreServiceCharges(storeWithDetials.getServiceChargesPercentage(), newSalesAmount, newAppliedDiscount);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store serviceCharges: " + newStoreServiceCharges);
             
@@ -1854,7 +1705,10 @@ public class OrderController {
             tos.add(order.getOrderShipmentDetail().getEmail());
             String[] to = Utilities.convertArrayListToStringArray(tos);
             email.setTo(to);
-            
+            email.setFrom(storeWithDetials.getRegionVertical().getSenderEmailAdress());
+            email.setFromName(storeWithDetials.getRegionVertical().getSenderEmailName());
+            email.setDomain(storeWithDetials.getRegionVertical().getDomain()); 
+
             OrderCompletionStatusConfig orderCompletionStatusConfig = null;
             List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatus(storeWithDetials.getVerticalCode(), "ITEM_REVISED");            
             if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
