@@ -157,8 +157,12 @@ public class VoucherController {
         customerVoucher.setVoucherId(voucher.getId());
         customerVoucher.setCreated(new Date());
         customerVoucherRepository.save(customerVoucher);
+        
+        //query back info
+        Optional<CustomerVoucher> updatedVoucher = customerVoucherRepository.findById(customerVoucher.getId());
+        
         response.setSuccessStatus(HttpStatus.CREATED);
-        response.setData(customerVoucher);
+        response.setData(updatedVoucher.get());
         return ResponseEntity.status(response.getStatus()).body(response);
     }
     
