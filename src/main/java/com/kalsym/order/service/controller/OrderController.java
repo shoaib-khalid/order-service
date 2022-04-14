@@ -38,6 +38,7 @@ import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.StoreDeliveryDetail;
 import com.kalsym.order.service.model.Cart;
 import com.kalsym.order.service.model.CustomerVoucher;
+import com.kalsym.order.service.model.Customer;
 import com.kalsym.order.service.model.DeliveryOrder;
 import com.kalsym.order.service.model.DeliveryQuotation;
 import com.kalsym.order.service.model.Email;
@@ -85,6 +86,7 @@ import com.kalsym.order.service.model.repository.StoreDeliveryDetailRepository;
 import com.kalsym.order.service.model.repository.PaymentOrderRepository;
 import com.kalsym.order.service.model.repository.CustomerVoucherRepository;
 import com.kalsym.order.service.model.repository.VoucherRepository;
+import com.kalsym.order.service.model.repository.CustomerRepository;
 import com.kalsym.order.service.service.CustomerService;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.FCMService;
@@ -213,6 +215,9 @@ public class OrderController {
     
     @Autowired
     VoucherRepository voucherRepository;
+    
+    @Autowired
+    CustomerRepository customerRepository;
     
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
@@ -663,19 +668,7 @@ public class OrderController {
             }
             
             Cart cart = optCart.get();
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart exists against cartId: " + cartId);
-            
-            /*
-            //getting store details for cart if from product service
-            StoreWithDetails storeWithDetials = productService.getStoreById(cart.getStoreId());
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store details of cartId: " + cartId + ", and storeId: " + cart.getStoreId());
-
-            if (storeWithDetials == null) {
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "store with storeId: " + cart.getStoreId() + " not found");
-                response.setStatus(HttpStatus.NOT_FOUND.value());
-                response.setMessage("store not found");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }*/
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart exists against cartId: " + cartId);          
             
             StoreWithDetails storeWithDetials = null;
             Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(cart.getStoreId());
@@ -1072,7 +1065,16 @@ public class OrderController {
                                 if (t.isPresent()) {
                                     regionCountry = t.get();
                                 }
-                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, order.getOrderShipmentDetail(), null, regionCountry);
+                                //get customer info
+                                Optional<Customer> customerOpt = customerRepository.findById(order.getCustomerId());
+                                Customer customer = null;
+                                boolean sendActivationLink=false;
+                                if (customerOpt.isPresent()) {
+                                    customer = customerOpt.get();
+                                    if (customer.getIsActivated()==false)
+                                    sendActivationLink = true;
+                                }
+                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, order.getOrderShipmentDetail(), null, regionCountry, sendActivationLink, storeWithDetials.getRegionVertical().getCustomerActivationNotice());
                                 Email email = new Email();
                                 ArrayList<String> tos = new ArrayList<>();
                                 tos.add(order.getOrderShipmentDetail().getEmail());
@@ -1737,7 +1739,7 @@ public class OrderController {
                         if (optPaymentDetails.isPresent()) {
                             paymentDetails = optPaymentDetails.get();
                         }
-                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, orderShipmentDetail, paymentDetails, regionCountry);
+                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null);
                         email.setRawBody(emailContent);
                         emailService.sendEmail(email);
                     } catch (Exception ex) {

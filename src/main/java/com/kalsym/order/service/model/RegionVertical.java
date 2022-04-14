@@ -57,7 +57,7 @@ public class RegionVertical implements Serializable {
     private String senderEmailAdress;
     private String senderEmailName; 
     private String defaultLogoUrl;
-    
+    private String customerActivationNotice;
     
 
 }

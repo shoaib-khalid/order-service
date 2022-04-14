@@ -11,6 +11,7 @@ import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.enums.RefundStatus;
 import com.kalsym.order.service.enums.RefundType;
 import com.kalsym.order.service.model.Body;
+import com.kalsym.order.service.model.Customer;
 import com.kalsym.order.service.model.DeliveryOrder;
 import com.kalsym.order.service.model.DeliveryResponse;
 import com.kalsym.order.service.model.Email;
@@ -73,6 +74,7 @@ public class OrderProcessWorker {
     private RegionCountriesRepository regionCountriesRepository;
     private OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository;
     private OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository;
+    private CustomerRepository customerRepository;
     
     private ProductService productService;
     private EmailService emailService;
@@ -103,6 +105,7 @@ public class OrderProcessWorker {
             RegionCountriesRepository regionCountriesRepository,
             OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository,
             OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository,
+            CustomerRepository customerRepository,
             
             ProductService productService,
             EmailService emailService,
@@ -132,7 +135,8 @@ public class OrderProcessWorker {
         this.regionCountriesRepository = regionCountriesRepository;
         this.orderPaymentStatusUpdateRepository = orderPaymentStatusUpdateRepository;
         this.orderCompletionStatusUpdateRepository = orderCompletionStatusUpdateRepository;
-                    
+        this.customerRepository = customerRepository;
+        
         this.productService = productService;
         this.emailService = emailService;
         this.whatsappService = whatsappService;
@@ -542,7 +546,16 @@ public class OrderProcessWorker {
                             if (t.isPresent()) {
                                 regionCountry = t.get();
                             }
-                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry);
+                            //get customer info
+                            Optional<Customer> customerOpt = customerRepository.findById(order.getCustomerId());
+                            boolean sendActivationLink = false;
+                            if (customerOpt.isPresent()) {
+                                Customer customer = customerOpt.get();
+                                if (customer.getIsActivated()==false) {
+                                    sendActivationLink=true;
+                                }
+                            }
+                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, sendActivationLink, storeWithDetails.getRegionVertical().getCustomerActivationNotice());
                             email.setRawBody(emailContent);
                             emailService.sendEmail(email);
                         } catch (Exception ex) {
@@ -570,7 +583,7 @@ public class OrderProcessWorker {
                             email.setFrom(null);
                             email.setFromName(financeEmailSenderName);
                             email.setTo(emailAddress);
-                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry);
+                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null);
                             email.setRawBody(emailContent);
                             emailService.sendEmail(email);
                         } catch (Exception ex) {

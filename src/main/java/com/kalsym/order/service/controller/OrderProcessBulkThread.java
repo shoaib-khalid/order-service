@@ -44,6 +44,8 @@ import com.kalsym.order.service.model.PaymentOrder;
 import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.utility.Utilities;
 import com.kalsym.order.service.enums.DeliveryType;
+import com.kalsym.order.service.model.Customer;
+import com.kalsym.order.service.model.repository.CustomerRepository;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -74,6 +76,7 @@ public class OrderProcessBulkThread extends Thread {
     private RegionCountriesRepository regionCountriesRepository;
     private OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository;
     private OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository;
+    private CustomerRepository customerRepository;
     
     private ProductService productService;
     private EmailService emailService;
@@ -108,6 +111,7 @@ public class OrderProcessBulkThread extends Thread {
             OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository,
             OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository,
             OrderPaymentDetailRepository orderPaymentDetailRepository,
+            CustomerRepository customerRepository,
             
             ProductService productService,
             EmailService emailService,
@@ -138,6 +142,7 @@ public class OrderProcessBulkThread extends Thread {
             this.orderPaymentStatusUpdateRepository = orderPaymentStatusUpdateRepository;
             this.orderCompletionStatusUpdateRepository = orderCompletionStatusUpdateRepository;
             this.orderPaymentDetailRepository = orderPaymentDetailRepository;
+            this.customerRepository = customerRepository;
             
             this.productService = productService;
             this.emailService = emailService;
@@ -178,6 +183,8 @@ public class OrderProcessBulkThread extends Thread {
                         regionCountriesRepository,
                         orderPaymentStatusUpdateRepository,
                         orderCompletionStatusUpdateRepository,
+                        customerRepository,
+                        
                         productService,
                         emailService,
                         whatsappService,
@@ -306,7 +313,16 @@ public class OrderProcessBulkThread extends Thread {
                                 if (t.isPresent()) {
                                     regionCountry = t.get();
                                 }
-                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry);
+                                //get customer info
+                                Optional<Customer> customerOpt = customerRepository.findById(order.getCustomerId());
+                                boolean sendActivationLink = false;
+                                if (customerOpt.isPresent()) {
+                                    Customer customer = customerOpt.get();
+                                    if (customer.getIsActivated()==false) {
+                                        sendActivationLink=true;
+                                    }
+                                }
+                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, sendActivationLink, storeWithDetails.getRegionVertical().getCustomerActivationNotice());
                                 email.setRawBody(emailContent);
                                 emailService.sendEmail(email);
                             } catch (Exception ex) {
@@ -333,7 +349,7 @@ public class OrderProcessBulkThread extends Thread {
                                 String[] emailAddress = {financeEmailAddress};
                                 email.setFrom(null);
                                 email.setTo(emailAddress);
-                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry);
+                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null);
                                 email.setRawBody(emailContent);
                                 emailService.sendEmail(email);
                             } catch (Exception ex) {

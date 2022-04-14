@@ -49,4 +49,5 @@ public class Customer {
     @UpdateTimestamp
     private Date updated;
    
+    private Boolean isActivated;
 }

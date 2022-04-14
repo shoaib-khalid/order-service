@@ -23,7 +23,9 @@ public class MessageGenerator {
             List<OrderItem> orderItems,
             OrderShipmentDetail orderShipmentDetail,
             PaymentOrder paymentDetails,
-            RegionCountry regionCountry) {
+            RegionCountry regionCountry,
+            boolean sendActivationLink,
+            String customerActivationNotice) {
         
         if (emailContent != null) {
             if ( storeWithDetails.getStoreLogoUrl()!=null) {
@@ -92,6 +94,10 @@ public class MessageGenerator {
                 if (paymentDetails.getCreatedDate()!= null) {                    
                     emailContent = emailContent.replace("{{payment-date}}", paymentDetails.getCreatedDate().toString());
                 }
+            }
+            
+            if (sendActivationLink && customerActivationNotice!=null) {
+                emailContent = emailContent.replace("{{customer-activation-notice}}", customerActivationNotice);
             }
 
         }

@@ -110,6 +110,9 @@ public class OrderPaymentStatusUpdateController {
     @Autowired
     PaymentOrderRepository paymentOrderRepository;
     
+    @Autowired
+    CustomerRepository customerRepository;
+    
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
     
@@ -146,7 +149,8 @@ public class OrderPaymentStatusUpdateController {
             regionCountriesRepository,
             orderPaymentStatusUpdateRepository,
             orderCompletionStatusUpdateRepository,
-            
+            customerRepository, 
+                
             productService,
             emailService,
             whatsappService,

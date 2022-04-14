@@ -23,6 +23,7 @@ import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.object.OrderProcessResult;
 import com.kalsym.order.service.model.repository.CartItemRepository;
+import com.kalsym.order.service.model.repository.CustomerRepository;
 import com.kalsym.order.service.model.repository.OrderCompletionStatusConfigRepository;
 import com.kalsym.order.service.model.repository.OrderCompletionStatusRepository;
 import com.kalsym.order.service.model.repository.OrderCompletionStatusUpdateRepository;
@@ -138,6 +139,9 @@ public class OrderCompletionStatusController {
     
     @Autowired
     OrderPaymentDetailRepository orderPaymentDetailRepository;
+    
+    @Autowired
+    CustomerRepository customerRepository;
     
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
@@ -289,6 +293,7 @@ public class OrderCompletionStatusController {
               orderPaymentStatusUpdateRepository,
               orderCompletionStatusUpdateRepository,
               orderPaymentDetailRepository,
+              customerRepository, 
                 
               productService,
               emailService,
