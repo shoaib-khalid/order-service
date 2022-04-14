@@ -1069,12 +1069,14 @@ public class OrderController {
                                 Optional<Customer> customerOpt = customerRepository.findById(order.getCustomerId());
                                 Customer customer = null;
                                 boolean sendActivationLink=false;
+                                String customerEmail=null;
                                 if (customerOpt.isPresent()) {
                                     customer = customerOpt.get();
                                     if (customer.getIsActivated()==false)
-                                    sendActivationLink = true;
+                                        sendActivationLink = true;
+                                    customerEmail = customer.getEmail();
                                 }
-                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, order.getOrderShipmentDetail(), null, regionCountry, sendActivationLink, storeWithDetials.getRegionVertical().getCustomerActivationNotice());
+                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, order.getOrderShipmentDetail(), null, regionCountry, sendActivationLink, storeWithDetials.getRegionVertical().getCustomerActivationNotice(), customerEmail);
                                 Email email = new Email();
                                 ArrayList<String> tos = new ArrayList<>();
                                 tos.add(order.getOrderShipmentDetail().getEmail());
@@ -1739,7 +1741,7 @@ public class OrderController {
                         if (optPaymentDetails.isPresent()) {
                             paymentDetails = optPaymentDetails.get();
                         }
-                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null);
+                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null);
                         email.setRawBody(emailContent);
                         emailService.sendEmail(email);
                     } catch (Exception ex) {

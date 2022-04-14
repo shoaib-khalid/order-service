@@ -549,13 +549,15 @@ public class OrderProcessWorker {
                             //get customer info
                             Optional<Customer> customerOpt = customerRepository.findById(order.getCustomerId());
                             boolean sendActivationLink = false;
+                            String customerEmail = null;
                             if (customerOpt.isPresent()) {
                                 Customer customer = customerOpt.get();
                                 if (customer.getIsActivated()==false) {
                                     sendActivationLink=true;
                                 }
+                                customerEmail = customer.getEmail();
                             }
-                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, sendActivationLink, storeWithDetails.getRegionVertical().getCustomerActivationNotice());
+                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, sendActivationLink, storeWithDetails.getRegionVertical().getCustomerActivationNotice(), customerEmail);
                             email.setRawBody(emailContent);
                             emailService.sendEmail(email);
                         } catch (Exception ex) {
@@ -583,7 +585,7 @@ public class OrderProcessWorker {
                             email.setFrom(null);
                             email.setFromName(financeEmailSenderName);
                             email.setTo(emailAddress);
-                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null);
+                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null);
                             email.setRawBody(emailContent);
                             emailService.sendEmail(email);
                         } catch (Exception ex) {

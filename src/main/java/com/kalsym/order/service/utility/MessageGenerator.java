@@ -25,7 +25,8 @@ public class MessageGenerator {
             PaymentOrder paymentDetails,
             RegionCountry regionCountry,
             boolean sendActivationLink,
-            String customerActivationNotice) {
+            String customerActivationNotice,
+            String customerEmail) {
         
         if (emailContent != null) {
             if ( storeWithDetails.getStoreLogoUrl()!=null) {
@@ -98,6 +99,7 @@ public class MessageGenerator {
             
             if (sendActivationLink && customerActivationNotice!=null) {
                 emailContent = emailContent.replace("{{customer-activation-notice}}", customerActivationNotice);
+                emailContent = emailContent.replace("{{customer-email}}", customerEmail);
             }
 
         }
