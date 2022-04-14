@@ -1,8 +1,9 @@
 ##################################################
 # order-service-3.7.15-SNAPSHOT |14-Apr-2022
 ##################################################
-Send activation link when customer not activate yet. Status whether customer activated or not saved in customer table. 
-Activate notice content with activation link saved in region_vertical, this will append to email content from order_completion_status_config 
+1. Bug fix for send tracking url in email to customer
+2. Send activation link when customer not activate yet. Status whether customer activated or not saved in customer table. 
+   Activate notice content with activation link saved in region_vertical, this will append to email content from order_completion_status_config 
 
 ALTER TABLE customer ADD isActivated TINYINT(1) NOT NULL DEFAULT 0;
 ALTER TABLE region_vertical ADD customerActivationNotice varchar(255);

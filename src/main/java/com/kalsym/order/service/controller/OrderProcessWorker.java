@@ -465,7 +465,7 @@ public class OrderProcessWorker {
                             bodyOrderCompletionStatusUpdate.getTime());
                     
                     if (deliveryResponse!=null) {
-                        if (deliveryResponse.getStatus().equals("ASSIGNING_DRIVER")) {
+                        if (deliveryResponse.getStatus().equals("ASSIGNING_DRIVER") || deliveryResponse.getStatus().equals("NEW_ORDER")) {
                             DeliveryOrder deliveryOrder = (DeliveryOrder)deliveryResponse.getOrderCreated();
                             status = OrderStatus.AWAITING_PICKUP;
                             email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
