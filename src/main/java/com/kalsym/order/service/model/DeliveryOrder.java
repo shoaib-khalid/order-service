@@ -15,14 +15,12 @@ import java.math.BigDecimal;
  *
  * @author Faisal Hayat
  */
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @ToString
 public class DeliveryOrder {
     
-    @Id @GeneratedValue(strategy=GenerationType.IDENTITY)
     Long id;
     String customerId;
     String productCode;
