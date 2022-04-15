@@ -1,0 +1,92 @@
+2022-04-14 08:49:04,340 INFO confirmOrderDelivery 96 [http-nio-0.0.0.0-7001-exec-4] - [vnot-known][confirmOrderDelivery] deliveryResponse Json:{"orderCreated":{"pickupContactPhone":"60133309331","itemType":"PARCEL","orderId":"8405ad21-38ab-45f2-88ef-00d6533d4ac1","deliveryContactPhone":"0133731869","totalWeightKg":2,"customerTrackingUrl":"https://share.sandbox.lalamove.com?MY100220414164903673410010044877375&lang=en_MY&sign=7c3af6eba85eddd4b3a235faa7f90d08&source=api_wrapper","spOrderName":"173390500233","deliveryQuotationId":3371,"spOrderId":"173390500233","updatedDate":"2022-04-14 08:49:04.222","pickupContactName":"Cinema Online","totalRequest":2,"systemTransactionId":"DL140422083448f510","deliveryContactName":"mohd taufik bin mustajid","createdDate":"2022-04-14 08:49:04.222","deliveryFee":44.94,"pickupAddress":"First Subang, Unit S-14-09, Level 14, Jalan SS15/4G,47500,Subang Jaya,Selangor","deliveryAddress":"no 3, jalan arked 5/4, taman arked,43800,dengkil,Selangor","deliveryProviderId":3,"systemStatus":"ASSIGNING_RIDER","customerId":"bfa6cd41-980f-43f3-a4c8-7ed46024a76d","id":107,"status":"ASSIGNING_DRIVER"},"systemTransactionId":"DL140422083448f510","deliveryProviderId":3,"orderId":"8405ad21-38ab-45f2-88ef-00d6533d4ac1","message":null,"isSuccess":true,"status":"ASSIGNING_DRIVER"}
+
+
+{
+   "orderCreated":{
+      "pickupContactPhone":"60133309331",
+      "itemType":"PARCEL",
+      "orderId":"8405ad21-38ab-45f2-88ef-00d6533d4ac1",
+      "deliveryContactPhone":"0133731869",
+      "totalWeightKg":2,
+      "customerTrackingUrl":"https://share.sandbox.lalamove.com?MY100220414164903673410010044877375&lang=en_MY&sign=7c3af6eba85eddd4b3a235faa7f90d08&source=api_wrapper",
+      "spOrderName":"173390500233",
+      "deliveryQuotationId":3371,
+      "spOrderId":"173390500233",
+      "updatedDate":"2022-04-14 08:49:04.222",
+      "pickupContactName":"Cinema Online",
+      "totalRequest":2,
+      "systemTransactionId":"DL140422083448f510",
+      "deliveryContactName":"mohd taufik bin mustajid",
+      "createdDate":"2022-04-14 08:49:04.222",
+      "deliveryFee":44.94,
+      "pickupAddress":"First Subang, Unit S-14-09, Level 14, Jalan SS15/4G,47500,Subang Jaya,Selangor",
+      "deliveryAddress":"no 3, jalan arked 5/4, taman arked,43800,dengkil,Selangor",
+      "deliveryProviderId":3,
+      "systemStatus":"ASSIGNING_RIDER",
+      "customerId":"bfa6cd41-980f-43f3-a4c8-7ed46024a76d",
+      "id":107,
+      "status":"ASSIGNING_DRIVER"
+   },
+   "systemTransactionId":"DL140422083448f510",
+   "deliveryProviderId":3,
+   "orderId":"8405ad21-38ab-45f2-88ef-00d6533d4ac1",
+   "message":null,
+   "isSuccess":true,
+   "status":"ASSIGNING_DRIVER"
+}
+
+
+2022-04-14 08:49:04,343 INFO confirmOrderDelivery 103 [http-nio-0.0.0.0-7001-exec-4] - [vnot-known][confirmOrderDelivery] got delivery response object : DeliveryResponse(deliveryProviderId=3, isSuccess=true, message=null, status=ASSIGNING_DRIVER, systemTransactionId=DL140422083448f510, orderId=8405ad21-38ab-45f2-88ef-00d6533d4ac1, orderCreated={pickupContactPhone=60133309331, itemType=PARCEL, orderId=8405ad21-38ab-45f2-88ef-00d6533d4ac1, deliveryContactPhone=0133731869, totalWeightKg=2, customerTrackingUrl=https://share.sandbox.lalamove.com?MY100220414164903673410010044877375&lang=en_MY&sign=7c3af6eba85eddd4b3a235faa7f90d08&source=api_wrapper, spOrderName=173390500233, deliveryQuotationId=3371, spOrderId=173390500233, updatedDate=2022-04-14 08:49:04.222, pickupContactName=Cinema Online, totalRequest=2, systemTransactionId=DL140422083448f510, deliveryContactName=mohd taufik bin mustajid, createdDate=2022-04-14 08:49:04.222, deliveryFee=44.94, pickupAddress=First Subang, Unit S-14-09, Level 14, Jalan SS15/4G,47500,Subang Jaya,Selangor, deliveryAddress=no 3, jalan arked 5/4, taman arked,43800,dengkil,Selangor, deliveryProviderId=3, systemStatus=ASSIGNING_RIDER, customerId=bfa6cd41-980f-43f3-a4c8-7ed46024a76d, id=107, status=ASSIGNING_DRIVER})
+2022-04-14 08:49:04,344 ERROR startProcessOrder 519 [http-nio-0.0.0.0-7001-exec-4] - [vnot-known][/order-service/v1/orders/8405ad21-38ab-45f2-88ef-00d6533d4ac1/completion-status-updates ] Exception occur while confirming order Delivery 
+
+
+
+
+
+2022-04-11 09:04:50,742 INFO confirmOrderDelivery 96 [http-nio-0.0.0.0-7001-exec-2] - [vnot-known][confirmOrderDelivery] deliveryResponse Json:{"orderCreated":{"pickupContactPhone":"60133309331","
+itemType":"PARCEL","orderId":"e2b33d0f-6ca2-4d7c-9745-e7a0b6a5741d","deliveryContactPhone":"0192802728","totalWeightKg":2,"customerTrackingUrl":"https://share.sandbox.lalamove.com?MY10022041117044
+9999410010037869361&lang=en_MY&sign=1148d1c394476cd8883b98678f05d0a9&source=api_wrapper","spOrderName":"177790505251","deliveryQuotationId":3340,"spOrderId":"177790505251","updatedDate":"2022-04-1
+1 09:04:50.655","pickupContactName":"Cinema Online","totalRequest":1,"systemTransactionId":"DL110422090449b2be","deliveryContactName":"Google Map check","createdDate":"2022-04-11 09:04:50.655","de
+liveryFee":7.35,"pickupAddress":"First Subang, Unit S-14-09, Level 14, Jalan SS15/4G,47500,Subang Jaya,Selangor","deliveryAddress":"First Subang, Unit S-14-09, Level 14, Jalan SS15/4G, 47500 Suban
+g Jaya, Selangor,47500,Subang Jaya,Selangor","deliveryProviderId":3,"systemStatus":"NEW_ORDER","customerId":"f7dae95b-4773-489d-be98-453546b9c197","id":103,"status":"ASSIGNING_DRIVER"},"systemTran
+sactionId":"DL110422090449b2be","deliveryProviderId":3,"orderId":"e2b33d0f-6ca2-4d7c-9745-e7a0b6a5741d","message":null,"isSuccess":true,"status":"NEW_ORDER"}
+
+{
+   "orderCreated":{
+      "pickupContactPhone":"60133309331",
+      "
+itemType":"PARCEL",
+      "orderId":"e2b33d0f-6ca2-4d7c-9745-e7a0b6a5741d",
+      "deliveryContactPhone":"0192802728",
+      "totalWeightKg":2,
+      "customerTrackingUrl":"https://share.sandbox.lalamove.com?MY10022041117044
+9999410010037869361&lang=en_MY&sign=1148d1c394476cd8883b98678f05d0a9&source=api_wrapper",
+      "spOrderName":"177790505251",
+      "deliveryQuotationId":3340,
+      "spOrderId":"177790505251",
+      "updatedDate":"2022-04-1
+1 09:04:50.655",
+      "pickupContactName":"Cinema Online",
+      "totalRequest":1,
+      "systemTransactionId":"DL110422090449b2be",
+      "deliveryContactName":"Google Map check",
+      "createdDate":"2022-04-11 09:04:50.655",
+      "de
+liveryFee":7.35,
+      "pickupAddress":"First Subang, Unit S-14-09, Level 14, Jalan SS15/4G,47500,Subang Jaya,Selangor",
+      "deliveryAddress":"First Subang, Unit S-14-09, Level 14, Jalan SS15/4G, 47500 Suban
+g Jaya, Selangor,47500,Subang Jaya,Selangor",
+      "deliveryProviderId":3,
+      "systemStatus":"NEW_ORDER",
+      "customerId":"f7dae95b-4773-489d-be98-453546b9c197",
+      "id":103,
+      "status":"ASSIGNING_DRIVER"
+   },
+   "systemTran
+sactionId":"DL110422090449b2be",
+   "deliveryProviderId":3,
+   "orderId":"e2b33d0f-6ca2-4d7c-9745-e7a0b6a5741d",
+   "message":null,
+   "isSuccess":true,
+   "status":"NEW_ORDER"
+}
