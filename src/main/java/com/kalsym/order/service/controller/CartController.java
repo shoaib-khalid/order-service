@@ -476,7 +476,7 @@ public class CartController {
         //check voucher code if provided
         CustomerVoucher customerVoucher = null;
         if (voucherCode!=null && customerId!=null) {
-            customerVoucher = customerVoucherRepository.findCustomerVoucherByCode(customerId, voucherCode);
+            customerVoucher = customerVoucherRepository.findCustomerVoucherByCode(customerId, voucherCode, new Date());
             if (customerVoucher==null) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
                 response.setMessage("Voucher code " + voucherCode + " not found");

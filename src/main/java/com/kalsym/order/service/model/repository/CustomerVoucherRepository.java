@@ -29,7 +29,8 @@ public interface CustomerVoucherRepository extends PagingAndSortingRepository<Cu
             + "AND m.voucher.voucherCode = :queryVoucherCode") 
     CustomerVoucher findCustomerVoucherByCode(
             @Param("queryCustomerId") String queryCustomerId,
-            @Param("queryVoucherCode") String queryVoucherCode
+            @Param("queryVoucherCode") String queryVoucherCode,
+            @Param("currentDate") Date currentDate
             );
     
     
