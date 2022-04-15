@@ -60,10 +60,20 @@ public class OrderCalculation {
             double deliveryDiscount=0.00;
             if (discountVoucher.getSubTotalDiscount()!=null) {
                 subTotalDiscount=discountVoucher.getSubTotalDiscount().doubleValue();
+                orderTotal.setVoucherSubTotalDiscount(Utilities.convertToDouble(discountVoucher.getSubTotalDiscount()));
+                orderTotal.setVoucherSubTotalDiscountDescription(discountVoucher.getSubTotalDiscountDescription());
             }
             if (discountVoucher.getDeliveryDiscount()!=null) {
                 deliveryDiscount=discountVoucher.getDeliveryDiscount().doubleValue();
+                orderTotal.setVoucherDeliveryDiscount(Utilities.convertToDouble(discountVoucher.getDeliveryDiscount()));
+                orderTotal.setVoucherDeliveryDiscountDescription(discountVoucher.getDeliveryDiscountDescription());
             }
+            
+            orderTotal.setVoucherDiscountType(discountVoucher.getDiscountType());
+            orderTotal.setVoucherDiscountCalculationType(discountVoucher.getDiscountCalculationType());
+            orderTotal.setVoucherDiscountCalculationValue(Utilities.convertToDouble(discountVoucher.getDiscountCalculationValue()));
+            orderTotal.setVoucherDiscountMaxAmount(Utilities.convertToDouble(discountVoucher.getDiscountMaxAmount()));
+        
             double newSubTotal = orderTotal.getSubTotal() - subTotalDiscount;
             orderTotal.setSubTotal(newSubTotal);
             deliveryCharge = deliveryCharge - deliveryDiscount;

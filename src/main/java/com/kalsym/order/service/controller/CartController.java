@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Date;
-import java.math.BigDecimal;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -512,6 +511,18 @@ public class CartController {
             discount.setCartDeliveryCharge(Utilities.roundDouble(deliveryCharge,2));
             discount.setStoreServiceCharge(Utilities.roundDouble(orderTotalObject.getStoreServiceCharge(),2));
             discount.setStoreServiceChargePercentage(Utilities.roundDouble(storeWithDetials.getServiceChargesPercentage(),2));
+            
+            if (customerVoucher!=null) {
+                discount.setVoucherSubTotalDiscount(orderTotalObject.getVoucherSubTotalDiscount());
+                discount.setVoucherSubTotalDiscountDescription(orderTotalObject.getVoucherSubTotalDiscountDescription());
+                discount.setVoucherDeliveryDiscount(orderTotalObject.getVoucherDeliveryDiscount());
+                discount.setVoucherDeliveryDiscountDescription(orderTotalObject.getVoucherDeliveryDiscountDescription());
+                discount.setVoucherDiscountType(orderTotalObject.getVoucherDiscountType());
+                discount.setVoucherDiscountCalculationType(orderTotalObject.getVoucherDiscountCalculationType());
+                discount.setVoucherDiscountMaxAmount(orderTotalObject.getVoucherDiscountMaxAmount());
+                discount.setVoucherDiscountCalculationType(orderTotalObject.getVoucherDiscountCalculationType());
+                discount.setVoucherDiscountCalculationValue(orderTotalObject.getVoucherDiscountCalculationValue());
+            }
             
             response.setSuccessStatus(HttpStatus.OK);
             response.setData(discount);

@@ -28,5 +28,9 @@ public class DiscountVoucher {
     String voucherId;
     BigDecimal discountMaxAmount;
     BigDecimal deliveryDiscountMaxAmount;
+    
+    String subTotalDiscountDescription;
+    String deliveryDiscountDescription;
+    
         
 }

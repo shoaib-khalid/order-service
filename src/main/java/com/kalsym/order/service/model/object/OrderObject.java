@@ -61,4 +61,15 @@ public class OrderObject {
     private String discountId;
     private Double discountMaxAmount;
     private Double deliveryDiscountMaxAmount;
+    
+    private Double voucherSubTotalDiscount;
+    private String voucherSubTotalDiscountDescription;
+    private Double voucherDeliveryDiscount;
+    private String voucherDeliveryDiscountDescription;
+    private String voucherDiscountCalculationType;
+    private Double voucherDiscountCalculationValue;
+    private String voucherDiscountType;
+    private Double voucherDiscountMaxAmount;
+    private Double voucherDeliveryDiscountMaxAmount;
+    
 }

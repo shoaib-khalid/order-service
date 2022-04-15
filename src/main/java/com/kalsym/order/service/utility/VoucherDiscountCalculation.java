@@ -20,6 +20,7 @@ import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountTierRepository;
 import com.kalsym.order.service.utility.Utilities;
+import java.math.BigDecimal;
 
 import java.util.Optional;
 import java.util.Date;
@@ -40,9 +41,13 @@ public class VoucherDiscountCalculation {
         if (voucher.getDiscountType()==VoucherDiscountType.SHIPPING) {
             subTotalDiscount = CalculateDiscount(VoucherDiscountType.SHIPPING, voucher.getCalculationType(), voucher.getDiscountValue(), subTotalAmount, deliveryCharge, voucher.getMaxDiscountAmount());                        
             discount.setDeliveryDiscount(Utilities.roundDouble(subTotalDiscount,2));
+            String subTotalDescription = GetSubTotalDiscountDescription(voucher.getCalculationType(), voucher.getDiscountValue());
+            discount.setDeliveryDiscountDescription(subTotalDescription);
         } else if (voucher.getDiscountType()==VoucherDiscountType.TOTALSALES) {
             subTotalDiscount = CalculateDiscount(VoucherDiscountType.TOTALSALES, voucher.getCalculationType(), voucher.getDiscountValue(), subTotalAmount, deliveryCharge, voucher.getMaxDiscountAmount());                        
             discount.setSubTotalDiscount(Utilities.roundDouble(subTotalDiscount,2));
+            String deliveryDescription = GetSubTotalDiscountDescription(voucher.getCalculationType(), voucher.getDiscountValue());
+            discount.setSubTotalDiscountDescription(deliveryDescription);
         }
         
         return discount;
@@ -73,6 +78,29 @@ public class VoucherDiscountCalculation {
         }
         
         return subdiscount;
+    }
+    
+    
+    private static String GetSubTotalDiscountDescription(DiscountCalculationType calculationType, double discountAmount) {
+        if (calculationType==DiscountCalculationType.PERCENT) {
+            return "-"+discountAmount+"%";
+        } else if (calculationType==DiscountCalculationType.FIX) {
+            return "-"+discountAmount;
+        } else {
+            return "";
+        }
+    }
+    
+    private static String GetShipmentDiscountDescription(DiscountCalculationType calculationType, double discountAmount) {
+        if (calculationType==DiscountCalculationType.PERCENT) {
+            return "-"+discountAmount+"%";
+        } else if (calculationType==DiscountCalculationType.FIX) {
+            return "-"+discountAmount;
+        } else if (calculationType==DiscountCalculationType.SHIPAMT) {
+            return "-"+discountAmount;
+        } else {
+            return "";
+        }
     }
   
 }

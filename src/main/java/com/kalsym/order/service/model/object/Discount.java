@@ -36,4 +36,13 @@ public class Discount {
     BigDecimal storeServiceChargePercentage;
     BigDecimal cartDeliveryCharge;
     BigDecimal cartGrandTotal;
+    
+    Double voucherSubTotalDiscount;
+    Double voucherDeliveryDiscount;
+    String voucherSubTotalDiscountDescription;
+    String voucherDeliveryDiscountDescription;
+    String voucherDiscountType;
+    String voucherDiscountCalculationType;
+    Double voucherDiscountCalculationValue;
+    Double voucherDiscountMaxAmount;
 }
