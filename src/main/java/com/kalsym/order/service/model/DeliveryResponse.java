@@ -30,5 +30,5 @@ public class DeliveryResponse {
    String status;
    String systemTransactionId;
    String orderId;
-   Object orderCreated;
+   DeliveryOrder orderCreated;
 }

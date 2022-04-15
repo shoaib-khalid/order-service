@@ -193,6 +193,10 @@ public class DeliveryService {
                     JSONObject deliveryObject = deliveryList.getJSONObject(i);
                     //create ObjectMapper instance
                     ObjectMapper objectMapper = new ObjectMapper();
+                    objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+                    objectMapper.disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
+                    objectMapper.disable(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES);
+
                     //convert json string to object
                     DeliveryServiceBulkConfirmResponse deliveryResponse = objectMapper.readValue(deliveryObject.toString(), DeliveryServiceBulkConfirmResponse.class);
                     deliveryResponseList.add(deliveryResponse);
