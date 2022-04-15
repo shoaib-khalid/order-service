@@ -56,9 +56,17 @@ public class OrderCalculation {
         //calculate voucher code discount
         if (customerVoucher!=null) {
             DiscountVoucher discountVoucher = VoucherDiscountCalculation.CalculateVoucherDiscount(cart, deliveryCharge, orderTotal.getSubTotal(), customerVoucher, logprefix);                
-            double newSubTotal = orderTotal.getSubTotal() - discountVoucher.getSubTotalDiscount().doubleValue();
+            double subTotalDiscount=0.00;
+            double deliveryDiscount=0.00;
+            if (discountVoucher.getSubTotalDiscount()!=null) {
+                subTotalDiscount=discountVoucher.getSubTotalDiscount().doubleValue();
+            }
+            if (discountVoucher.getDeliveryDiscount()!=null) {
+                deliveryDiscount=discountVoucher.getDeliveryDiscount().doubleValue();
+            }
+            double newSubTotal = orderTotal.getSubTotal() - subTotalDiscount;
             orderTotal.setSubTotal(newSubTotal);
-            deliveryCharge = deliveryCharge - discountVoucher.getDeliveryDiscount().doubleValue();
+            deliveryCharge = deliveryCharge - deliveryDiscount;
         }
         
         //calculate Store service charge        
