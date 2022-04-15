@@ -92,11 +92,16 @@ public class DeliveryService {
                 JSONObject jsonObject = new JSONObject(res.getBody());
 //        
                 //create ObjectMapper instance
-                JSONObject deliveryResponseObject = jsonObject.getJSONObject("data");                
+                JSONObject deliveryResponseObject = jsonObject.getJSONObject("data");
+                
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "deliveryResponse Json:"+deliveryResponseObject);
                 
                 //create ObjectMapper instance
                 ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+                objectMapper.disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
+                objectMapper.disable(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES);
+                
                 //convert json string to object
                 DeliveryResponse deliveryResponse = objectMapper.readValue(deliveryResponseObject.toString(), DeliveryResponse.class);
 
