@@ -465,7 +465,7 @@ public class OrderProcessWorker {
                             bodyOrderCompletionStatusUpdate.getTime());
                     
                     if (deliveryResponse!=null) {
-                        if (deliveryResponse.getStatus().equals("ASSIGNING_DRIVER") || deliveryResponse.getStatus().equals("NEW_ORDER")) {
+                        if (deliveryResponse.getStatus().equals("ASSIGNING_DRIVER") || deliveryResponse.getStatus().equals("NEW_ORDER") || deliveryResponse.getStatus().equals("ASSIGNING_RIDER")) {
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderCreated:"+deliveryResponse.getOrderCreated().toString());
                             DeliveryOrder deliveryOrder = (DeliveryOrder)deliveryResponse.getOrderCreated();
                             status = OrderStatus.AWAITING_PICKUP;
