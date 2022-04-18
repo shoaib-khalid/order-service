@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.7.16-SNAPSHOT |17-Apr-2022
+##################################################
+Bug fix for email to customer during receive callback from delivery-service for ASSIGNING_DRIVER
+
+
+##################################################
 # order-service-3.7.15-SNAPSHOT |14-Apr-2022
 ##################################################
 1. Bug fix for send tracking url in email to customer

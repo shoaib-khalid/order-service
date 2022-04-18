@@ -258,6 +258,7 @@ public class OrderProcessWorker {
             //delivery-order inform assigning driver            
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "ASSIGNING_DRIVER");
             status = OrderStatus.AWAITING_PICKUP;
+            email.getBody().setOrderStatus(status);
             List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStoreDeliveryType(verticalId, OrderStatus.AWAITING_PICKUP.name(), storeDeliveryType);            
             if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
                 Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: AWAITING_PICKUP" + newStatus);                
@@ -469,6 +470,7 @@ public class OrderProcessWorker {
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderCreated:"+deliveryResponse.getOrderCreated().toString());
                             DeliveryOrder deliveryOrder = (DeliveryOrder)deliveryResponse.getOrderCreated();
                             status = OrderStatus.AWAITING_PICKUP;
+                            email.getBody().setOrderStatus(status);
                             email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
                             email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
