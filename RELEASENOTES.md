@@ -4,7 +4,7 @@
 Bug fix for email to customer during receive callback from delivery-service for ASSIGNING_DRIVER
 Bug fix for getOrdersWithDetails()
 Bug for voucher feature in placeOrder
-
+Bug fix for get claimed voucher
 
 ##################################################
 # order-service-3.7.15-SNAPSHOT |14-Apr-2022
