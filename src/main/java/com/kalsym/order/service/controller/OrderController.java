@@ -1008,6 +1008,8 @@ public class OrderController {
                 
                 if (customerVoucher!=null) {
                     voucherRepository.deductVoucherBalance(customerVoucher.getVoucherId());
+                    customerVoucher.setIsUsed(true);
+                    customerVoucherRepository.save(customerVoucher));
                 }
                 
                 //clear cart item for COD. for online payment only clear after payment confirmed

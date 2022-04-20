@@ -24,7 +24,7 @@ public class OrderPaymentDetail implements Serializable {
 
     private String accountName;
     private String gatewayId;
-    private String couponId;
+    //private String couponId;
     private Date time;
     @Id
     private String orderId;
