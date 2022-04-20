@@ -173,6 +173,7 @@ public class VoucherController {
     public ResponseEntity<HttpResponse> getAvailableCustomerVoucher(HttpServletRequest request,            
             @PathVariable(required = true) String customerId,
             @RequestParam(required = false) VoucherType voucherType,
+            @RequestParam(required = false) String verticalCode,
             @RequestParam(required = false) String voucherCode,
             @RequestParam(required = false) Boolean isUsed,
             @RequestParam(defaultValue = "0") int page,
@@ -192,7 +193,7 @@ public class VoucherController {
                 .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
         Example<CustomerVoucher> example = Example.of(customerVoucherMatch, matcher);
         
-        Specification voucherSpec = CustomerVoucherSearchSpecs.getSpecWithDatesBetween(new Date(), voucherType, customerId, VoucherStatus.ACTIVE, voucherCode, isUsed, example );
+        Specification voucherSpec = CustomerVoucherSearchSpecs.getSpecWithDatesBetween(new Date(), voucherType, verticalCode, customerId, VoucherStatus.ACTIVE, voucherCode, isUsed, example );
         Page<CustomerVoucher> customerVoucherWithPage = customerVoucherRepository.findAll(voucherSpec, pageable);
         
         response.setSuccessStatus(HttpStatus.OK);

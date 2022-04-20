@@ -47,7 +47,7 @@ public class CustomerVoucherSearchSpecs {
      */
     public static Specification<CustomerVoucher> getSpecWithDatesBetween(
             Date currentDate, 
-            VoucherType voucherType, String customerId, VoucherStatus voucherStatus, 
+            VoucherType voucherType, String verticalCode, String customerId, VoucherStatus voucherStatus, 
             String voucherCode, Boolean isUsed,
             Example<CustomerVoucher> example) {
 
@@ -68,6 +68,10 @@ public class CustomerVoucherSearchSpecs {
             
             if (voucherType!=null) {
                 predicates.add(builder.equal(voucher.get("voucherType"), voucherType));
+            } 
+            
+            if (verticalCode!=null) {
+                predicates.add(builder.equal(voucher.get("verticalCode"), verticalCode));
             } 
             
             if (customerId!=null) {
