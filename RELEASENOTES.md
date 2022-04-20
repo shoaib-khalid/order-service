@@ -1,7 +1,8 @@
 ##################################################
-# order-service-3.7.16-SNAPSHOT |17-Apr-2022
+# order-service-3.7.16-SNAPSHOT |20-Apr-2022
 ##################################################
 Bug fix for email to customer during receive callback from delivery-service for ASSIGNING_DRIVER
+Bug fix for getOrdersWithDetails()
 
 
 ##################################################

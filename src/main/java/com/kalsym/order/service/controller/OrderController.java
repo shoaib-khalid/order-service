@@ -345,7 +345,7 @@ public class OrderController {
             @RequestParam(required = false) String phoneNumber,
             @RequestParam(required = false) String zipcode,
             @RequestParam(required = false) String city,
-            @RequestParam(required = false) OrderStatus completionStatus,
+            @RequestParam(required = false) OrderStatus[] completionStatusList,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
         String logprefix = request.getRequestURI() + " getOrdersWithDetails() ";
@@ -426,7 +426,7 @@ public class OrderController {
 
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
 
-        Page<OrderWithDetails> orderWithPage = orderWithDetailsRepository.findAll(getOrderDetailsSpecWithDatesBetween(from, to, completionStatus, orderExample), pageable);
+        Page<OrderWithDetails> orderWithPage = orderWithDetailsRepository.findAll(getOrderWithDetailsSpecWithDatesBetweenMultipleStatus(from, to, completionStatusList, orderExample), pageable);
         
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(orderWithPage);
@@ -1364,6 +1364,54 @@ public class OrderController {
             } else if (completionStatusList!=null) {
                 predicates.add(builder.equal(root.get("completionStatus"), completionStatus));
             }*/
+            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+
+            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
+    
+    
+    /**
+     * Accept two dates and example matcher
+     *
+     * @param from
+     * @param to
+     * @param example
+     * @param completionStatusList
+     * @return
+     */
+    public Specification<OrderWithDetails> getOrderWithDetailsSpecWithDatesBetweenMultipleStatus(
+            Date from, Date to, OrderStatus[] completionStatusList, Example<OrderWithDetails> example) {
+
+        return (Specification<OrderWithDetails>) (root, query, builder) -> {
+            final List<Predicate> predicates = new ArrayList<>();
+
+            if (from != null && to != null) {
+                to.setDate(to.getDate() + 1);
+                predicates.add(builder.greaterThanOrEqualTo(root.get("created"), from));
+                predicates.add(builder.lessThanOrEqualTo(root.get("created"), to));
+            }
+            
+            if (completionStatusList!=null) {
+                int statusCount = completionStatusList.length;
+                List<Predicate> statusPredicatesList = new ArrayList<>();
+                for (int i=0;i<completionStatusList.length;i++) {
+                    Predicate predicateForCompletionStatus = builder.equal(root.get("completionStatus"), completionStatusList[i]);
+                                        
+                    if (completionStatusList[i]==OrderStatus.RECEIVED_AT_STORE) {
+                        Predicate predicateForStatus = builder.equal(root.get("completionStatus"), OrderStatus.RECEIVED_AT_STORE);
+                        Predicate predicateForPaymentType = builder.equal(root.get("paymentType"), "COD");
+                        Predicate predicateForCOD = builder.and(predicateForStatus, predicateForPaymentType);
+                        statusPredicatesList.add(predicateForCOD);            
+                    } else if (completionStatusList[i]!=null) {
+                        statusPredicatesList.add(predicateForCompletionStatus);
+                    }
+                }
+
+                Predicate finalPredicate = builder.or(statusPredicatesList.toArray(new Predicate[statusCount]));
+                predicates.add(finalPredicate);
+            }
+                       
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
