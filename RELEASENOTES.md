@@ -111,7 +111,6 @@ Add sender email address, name, defaultLogo inside regionVertical table.
 ##DB Changes:
 ALTER TABLE region_vertical ADD senderEmailAdress VARCHAR(255);
 ALTER TABLE region_vertical ADD senderEmailName VARCHAR(255);
-ALTER TABLE region_vertical ADD senderEmailName VARCHAR(255);
 
 UPDATE region_vertical SET senderEmailAdress='no-reply@easydukan.co' WHERE domain LIKE '%easydukan%';
 UPDATE region_vertical SET senderEmailName='Easy Dukan' WHERE domain LIKE '%easydukan%';

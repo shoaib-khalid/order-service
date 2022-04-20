@@ -345,7 +345,7 @@ public class OrderController {
             @RequestParam(required = false) String phoneNumber,
             @RequestParam(required = false) String zipcode,
             @RequestParam(required = false) String city,
-            @RequestParam(required = false) OrderStatus[] completionStatusList,
+            @RequestParam(required = false) OrderStatus[] completionStatus,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
         String logprefix = request.getRequestURI() + " getOrdersWithDetails() ";
@@ -417,16 +417,17 @@ public class OrderController {
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderMatch: " + orderMatch);
         
+        
         ExampleMatcher matcher = ExampleMatcher
                 .matchingAll()
                 .withIgnoreCase()
                 .withIgnoreNullValues()
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         Example<OrderWithDetails> orderExample = Example.of(orderMatch, matcher);
-
+        
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
-
-        Page<OrderWithDetails> orderWithPage = orderWithDetailsRepository.findAll(getOrderWithDetailsSpecWithDatesBetweenMultipleStatus(from, to, completionStatusList, orderExample), pageable);
+        
+        Page<OrderWithDetails> orderWithPage = orderWithDetailsRepository.findAll(getOrderWithDetailsSpecWithDatesBetweenMultipleStatus(from, to, completionStatus, orderExample), pageable);
         
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(orderWithPage);
@@ -1415,7 +1416,8 @@ public class OrderController {
             }
                        
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
-
+            
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "getOrderWithDetailsSpecWithDatesBetweenMultipleStatus", "Predicates:"+predicates.toString());
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
