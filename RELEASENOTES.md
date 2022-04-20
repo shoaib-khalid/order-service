@@ -3,7 +3,7 @@
 ##################################################
 Bug fix for email to customer during receive callback from delivery-service for ASSIGNING_DRIVER
 Bug fix for getOrdersWithDetails()
-Bug for voucher in placeOrder
+Bug for voucher feature in placeOrder
 
 
 ##################################################
