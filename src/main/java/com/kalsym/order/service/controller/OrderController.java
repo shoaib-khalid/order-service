@@ -659,7 +659,7 @@ public class OrderController {
             
             //check voucher code if provided
             CustomerVoucher customerVoucher = null;
-            if (cod.getVoucherCode()!=null) {
+            if (cod.getVoucherCode()!=null || "".equals(cod.getVoucherCode())) {
                 customerVoucher = customerVoucherRepository.findCustomerVoucherByCode(cod.getCustomerId(), cod.getVoucherCode(), new Date());
                 if (customerVoucher==null) {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
