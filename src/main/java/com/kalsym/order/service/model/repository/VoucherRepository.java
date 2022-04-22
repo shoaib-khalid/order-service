@@ -32,6 +32,9 @@ public interface VoucherRepository extends PagingAndSortingRepository<Voucher, S
             @Param("currentDate") Date currentDate
            );
     
+    
+    Voucher findByVoucherCode(@Param("voucherCode") String voucherCode);
+    
     /**
      * clear cart item
      * @param voucherId

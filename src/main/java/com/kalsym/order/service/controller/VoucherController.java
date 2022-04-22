@@ -135,13 +135,32 @@ public class VoucherController {
         }
         
         //check promo code
-        Voucher voucher = voucherRepository.findAvailableVoucherByCode(voucherCode, new Date());
+        Voucher voucher = voucherRepository.findByVoucherCode(voucherCode);
         if (voucher==null) {
-            //check expired date
             Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " NOT_FOUND customerId: " + customerId);
             response.setSuccessStatus(HttpStatus.NOT_FOUND);
-            response.setError("voucher not found");
+            response.setError("Voucher not found");
             return ResponseEntity.status(response.getStatus()).body(response);
+        } else {
+            //check status
+            if (voucher.getStatus()!=VoucherStatus.ACTIVE) {
+                response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
+                response.setError("Voucher not active");
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
+            //check total redeem
+            if (voucher.getTotalRedeem()>=voucher.getTotalQuantity()) {
+                response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
+                response.setError("Voucher fully redeemed");
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
+            //check expiry date
+            Date currentDate = new Date();
+            if (currentDate.compareTo(voucher.getStartDate()) < 0 || currentDate.compareTo(voucher.getEndDate()) > 0) {
+                response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
+                response.setError("Voucher is expired");
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
         }
         
         CustomerVoucher existingVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(customerId, voucher.getId());
