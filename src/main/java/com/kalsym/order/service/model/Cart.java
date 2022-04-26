@@ -7,6 +7,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
@@ -43,11 +44,16 @@ public class Cart {
     private String customerId;
 
     private String storeId;
+    
     @CreationTimestamp
     private Date created;
     @UpdateTimestamp
     private Date updated;
-   
+    
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "storeId", insertable = false, updatable = false)
+    private StoreWithDetails store;
+    
     /*@OneToMany(fetch = FetchType.LAZY, mappedBy = "cartMain")
     private List<CartItem> cartItems;
     */
