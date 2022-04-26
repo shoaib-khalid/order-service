@@ -161,12 +161,6 @@ public class CartController {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         List<Cart> cartList = cartRepository.findByCustomerId(customerId);
-
-        if (cartList.isEmpty()) {
-            response.setSuccessStatus(HttpStatus.NOT_FOUND);
-            response.setError("cart not found");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
         
         int totalItem=0;
         for (int i=0;i<cartList.size();i++) {
