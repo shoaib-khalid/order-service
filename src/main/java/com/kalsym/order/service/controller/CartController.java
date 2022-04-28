@@ -290,6 +290,66 @@ public class CartController {
         response.setData(cartRepository.save(cart));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
+    
+    
+     /**
+     *
+     * @param request
+     * @param customerCartId
+     * @param guestCartId
+     * @return
+     */
+    @PutMapping(path = {"/{customerCartId}/{guestCustomerId}"}, name = "merge-cart")
+    @PreAuthorize("hasAnyAuthority('carts-put-by-id', 'all')")
+    public ResponseEntity<HttpResponse> mergeCart(HttpServletRequest request, 
+            @PathVariable String customerCartId,
+            @PathVariable String guestCartId) {
+        String logprefix = request.getRequestURI() + " ";
+        String location = Thread.currentThread().getStackTrace()[1].getMethodName();
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "", "customerCartId:"+customerCartId+" guestCustomerId:"+guestCartId);
+        
+        Optional<Cart> optCart = cartRepository.findById(customerCartId);
+
+        if (!optCart.isPresent()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Customer Cart not found with cartId: " + customerCartId);
+            response.setErrorStatus(HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
+        Cart customerCart = optCart.get();
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Customer cart found with cartId: " + customerCartId);
+        
+        Optional<Cart> optCart2 = cartRepository.findById(guestCartId);
+        
+        if (!optCart2.isPresent()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Guest Cart not found with cartId: " + guestCartId);
+            response.setErrorStatus(HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
+        Cart guestCart = optCart.get();
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Guest cart found with cartId: " + guestCartId);
+        
+        //copy all item from guest cart
+        List<CartItem> cartItemList = cartItemRepository.findByCartId(guestCart.getId());
+        for (int i=0;i<cartItemList.size();i++) {
+            CartItem cartItem = cartItemList.get(i);
+            cartItem.setCartId(customerCart.getId());
+            cartItemRepository.save(cartItem);
+        }
+        
+        //remove guest cart
+        cartRepository.delete(guestCart);
+        
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Customer cart updated for cartId: " + customerCartId);
+        response.setSuccessStatus(HttpStatus.ACCEPTED);        
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
+    
 
     /**
      * TODO: create endpoint to empty the cart by deleting all the cart-items in
