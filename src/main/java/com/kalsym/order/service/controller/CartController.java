@@ -299,7 +299,7 @@ public class CartController {
      * @param guestCartId
      * @return
      */
-    @PutMapping(path = {"/{customerCartId}/{guestCustomerId}"}, name = "merge-cart")
+    @PutMapping(path = {"/{customerCartId}/{guestCartId}"}, name = "merge-cart")
     @PreAuthorize("hasAnyAuthority('carts-put-by-id', 'all')")
     public ResponseEntity<HttpResponse> mergeCart(HttpServletRequest request, 
             @PathVariable String customerCartId,
