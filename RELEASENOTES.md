@@ -1,4 +1,12 @@
 ##################################################
+# order-service-3.7.20-SNAPSHOT |09-May-2022
+##################################################
+New API : postClaimNewUserVoucher()
+
+ALTER TABLE voucher ADD isNewUserVoucher TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE voucher ADD checkTotalRedeem TINYINT(1) NOT NULL DEFAULT 1;
+
+##################################################
 # order-service-3.7.19-SNAPSHOT |28-Apr-2022
 ##################################################
 New API : mergeCart()

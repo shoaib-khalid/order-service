@@ -25,8 +25,11 @@ public interface CustomerVoucherRepository extends PagingAndSortingRepository<Cu
             + "WHERE m.customerId = :queryCustomerId AND m.isUsed=0 "
             + "AND m.voucher.status='ACTIVE' "
             + "AND m.voucher.startDate < :currentDate AND m.voucher.endDate > :currentDate "
-            + "AND m.voucher.totalRedeem < m.voucher.totalQuantity "
-            + "AND m.voucher.voucherCode = :queryVoucherCode") 
+            + "AND m.voucher.voucherCode = :queryVoucherCode"
+            + "AND ("
+                + "(m.voucher.totalRedeem < m.voucher.totalQuantity AND m.checkTotalRedeem=true) OR "
+                + "(m.checkTotalRedeem=false)"
+            + ")")           
     CustomerVoucher findCustomerVoucherByCode(
             @Param("queryCustomerId") String queryCustomerId,
             @Param("queryVoucherCode") String queryVoucherCode,

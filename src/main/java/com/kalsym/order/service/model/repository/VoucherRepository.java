@@ -45,4 +45,15 @@ public interface VoucherRepository extends PagingAndSortingRepository<Voucher, S
     public void deductVoucherBalance(
             @Param("voucherId") String voucherId
     );
+    
+    
+    @Query("SELECT m FROM Voucher m WHERE "
+            + "m.isNewUser = true "
+            + "AND m.status='ACTIVE' "
+            + "AND m.startDate < :currentDate AND m.endDate > :currentDate "
+            + "AND m.isClaimable = false") 
+    Voucher findAvailableNewUserVoucher(
+            @Param("currentDate") Date currentDate
+           );
+    
 }
