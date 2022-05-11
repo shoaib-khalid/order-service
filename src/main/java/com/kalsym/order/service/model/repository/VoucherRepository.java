@@ -56,4 +56,5 @@ public interface VoucherRepository extends PagingAndSortingRepository<Voucher, S
             @Param("currentDate") Date currentDate
            );
     
+    
 }

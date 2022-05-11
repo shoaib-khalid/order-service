@@ -38,6 +38,7 @@ public class CustomerVoucherSearchSpecs {
      *
      * @param currentDate     
      * @param voucherType
+     * @param verticalCode
      * @param customerId
      * @param voucherStatus
      * @param voucherCode

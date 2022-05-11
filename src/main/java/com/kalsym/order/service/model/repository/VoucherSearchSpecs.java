@@ -18,10 +18,12 @@ package com.kalsym.order.service.model.repository;
 
 import com.kalsym.order.service.enums.VoucherStatus;
 import com.kalsym.order.service.enums.VoucherType;
+import com.kalsym.order.service.model.VoucherVertical;
 import com.kalsym.order.service.model.Voucher;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.domain.Specification;
@@ -48,6 +50,7 @@ public class VoucherSearchSpecs {
 
         return (Specification<Voucher>) (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
+            Join<Voucher, VoucherVertical> voucherVertical = root.join("voucherVertical");
             
             if (currentDate != null) {
                 
@@ -69,7 +72,7 @@ public class VoucherSearchSpecs {
             } 
             
             if (verticalCode!=null) {
-                predicates.add(builder.equal(root.get("verticalCode"), verticalCode));
+                predicates.add(builder.equal(voucherVertical.get("verticalCode"), verticalCode));
             } 
             
             Predicate predicateForTotalRedeem = builder.lessThanOrEqualTo(root.get("totalRedeem"), root.get("totalQuantity"));
