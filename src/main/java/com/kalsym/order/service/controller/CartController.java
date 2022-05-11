@@ -330,7 +330,7 @@ public class CartController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         
-        Cart guestCart = optCart.get();
+        Cart guestCart = optCart2.get();
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Guest cart found with cartId: " + guestCartId);
         

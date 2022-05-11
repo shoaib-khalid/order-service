@@ -20,6 +20,7 @@ import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.model.Voucher;
 import com.kalsym.order.service.model.Customer;
 import com.kalsym.order.service.model.CustomerVoucher;
+import com.kalsym.order.service.model.VoucherVertical;
 import com.kalsym.order.service.enums.VoucherStatus;
 import com.kalsym.order.service.enums.VoucherType;
 import com.kalsym.order.service.model.repository.VoucherSearchSpecs;
@@ -242,31 +243,53 @@ public class VoucherController {
         }
         
         //find 'newuser' voucher code
-        Voucher voucher = voucherRepository.findAvailableNewUserVoucher(new Date());
-        if (voucher==null) {
+        Voucher selectedVoucher = null;
+        List<Voucher> voucherList = voucherRepository.findAvailableNewUserVoucher(new Date());
+        if (voucherList.isEmpty()) {
             Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " NOT_FOUND customerId: " + customerId);
             response.setSuccessStatus(HttpStatus.NOT_FOUND);
             response.setError("Voucher not found");
             return ResponseEntity.status(response.getStatus()).body(response);
         } else {
-            //check status
-            if (voucher.getStatus()!=VoucherStatus.ACTIVE) {
-                response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
-                response.setError("Voucher not active");
+            Customer customer = optCustomer.get();            
+            for (int i=0;i<voucherList.size();i++) {
+                Voucher voucher = voucherList.get(i);
+                //check region vertical based on customer countrId
+                List<VoucherVertical> voucherVerticalList = voucher.getVoucherVerticalList();
+                for (int x=0;x<voucherVerticalList.size();x++) {
+                    String voucherRegion = voucherVerticalList.get(x).getRegionVertical().getRegionId();
+                    String customerRegion = customer.getRegionCountry().getRegion();
+                    if (voucherRegion.equals(customerRegion)) {
+                        selectedVoucher = voucher;
+                    }
+                }                
+            }
+            
+            if (selectedVoucher!=null) {
+                Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " NOT_FOUND customerId: " + customerId);
+                response.setSuccessStatus(HttpStatus.NOT_FOUND);
+                response.setError("Voucher not found");
                 return ResponseEntity.status(response.getStatus()).body(response);
-            }            
-            //check expiry date
-            Date currentDate = new Date();
-            if (currentDate.compareTo(voucher.getStartDate()) < 0 || currentDate.compareTo(voucher.getEndDate()) > 0) {
-                response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
-                response.setError("Voucher is expired");
-                return ResponseEntity.status(response.getStatus()).body(response);
+            } else {
+                //check status
+                if (selectedVoucher.getStatus()!=VoucherStatus.ACTIVE) {
+                    response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
+                    response.setError("Voucher not active");
+                    return ResponseEntity.status(response.getStatus()).body(response);
+                }            
+                //check expiry date
+                Date currentDate = new Date();
+                if (currentDate.compareTo(selectedVoucher.getStartDate()) < 0 || currentDate.compareTo(selectedVoucher.getEndDate()) > 0) {
+                    response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
+                    response.setError("Voucher is expired");
+                    return ResponseEntity.status(response.getStatus()).body(response);
+                }
             }
         }
         
-        CustomerVoucher existingVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(customerId, voucher.getId());
+        CustomerVoucher existingVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(customerId, selectedVoucher.getId());
         if (existingVoucher!=null) {
-            Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " Voucher already exist customerId: " + customerId+" voucherId:"+voucher.getId());
+            Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " Voucher already exist customerId: " + customerId+" voucherId:"+selectedVoucher.getId());
             response.setSuccessStatus(HttpStatus.CONFLICT);
             response.setError("Voucher already exist");
             return ResponseEntity.status(response.getStatus()).body(response);
@@ -275,7 +298,7 @@ public class VoucherController {
         CustomerVoucher customerVoucher = new CustomerVoucher();
         customerVoucher.setCustomerId(customerId);
         customerVoucher.setIsUsed(Boolean.FALSE);
-        customerVoucher.setVoucherId(voucher.getId());
+        customerVoucher.setVoucherId(selectedVoucher.getId());
         customerVoucher.setCreated(new Date());
         CustomerVoucher savedVoucher = customerVoucherRepository.save(customerVoucher);
         

@@ -7,6 +7,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
@@ -50,4 +51,10 @@ public class Customer {
     private Date updated;
    
     private Boolean isActivated;
+    
+    private String countryId;
+    
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "countryId", insertable = false, updatable = false)
+    private RegionCountry regionCountry;
 }

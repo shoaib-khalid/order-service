@@ -88,4 +88,8 @@ public class Voucher implements Serializable {
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "voucherId", insertable = false, updatable = false, nullable = true)
     private List<VoucherTerms> voucherTerms;
+    
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "voucherId", insertable = false, updatable = false, nullable = true)
+    private List<VoucherVertical> voucherVerticalList;
 }

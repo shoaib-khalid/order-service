@@ -5,6 +5,7 @@
 2. check voucher allowDoubleDiscount during cartDiscount & placeOrder()
 3. check voucher minimumSpend during cartDiscount & placeOrder()
 4. Add voucher discount in email to customer
+5. Multiple verticalCode for voucher
 
 ##DB changes:
 ALTER TABLE voucher ADD isNewUserVoucher TINYINT(1) NOT NULL DEFAULT 0;
@@ -12,6 +13,15 @@ ALTER TABLE voucher ADD checkTotalRedeem TINYINT(1) NOT NULL DEFAULT 1;
 ALTER TABLE voucher ADD minimumSpend DECIMAL(10,2);
 ALTER TABLE voucher ADD allowDoubleDiscount TINYINT(1) NOT NULL DEFAULT 0;
 ALTER TABLE `order` ADD voucherDiscount DECIMAL(10,2);
+
+
+CREATE TABLE voucher_vertical (
+id VARCHAR(50),
+voucherId VARCHAR(50),
+verticalCode VARCHAR(50)
+);
+
+Update email template in order_completion_config table : add voucher discount
 
 
 ##################################################
