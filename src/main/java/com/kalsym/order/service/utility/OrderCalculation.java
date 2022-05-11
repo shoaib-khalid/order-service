@@ -12,6 +12,7 @@ import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.Store;
 import com.kalsym.order.service.model.StoreCommission;
 import com.kalsym.order.service.model.CustomerVoucher;
+import com.kalsym.order.service.model.VoucherVertical;
 import com.kalsym.order.service.model.object.Discount;
 import com.kalsym.order.service.model.object.DiscountVoucher;
 import com.kalsym.order.service.model.object.OrderObject;
@@ -30,7 +31,7 @@ import org.springframework.http.ResponseEntity;
 public class OrderCalculation {
     
     public static OrderObject CalculateOrderTotal(Cart cart, Double storeSvcChargePercentage, StoreCommission storeCommission, 
-            Double deliveryCharge, String deliveryType, CustomerVoucher customerVoucher,
+            Double deliveryCharge, String deliveryType, CustomerVoucher customerVoucher, String storeVerticalCode,
             CartItemRepository cartItemRepository, 
             StoreDiscountRepository storeDiscountRepository, 
             StoreDiscountTierRepository storeDiscountTierRepository, String logprefix) {
@@ -52,13 +53,45 @@ public class OrderCalculation {
         orderTotal.setDiscountCalculationValue(Utilities.convertToDouble(discount.getDiscountCalculationValue()));
         orderTotal.setDiscountMaxAmount(Utilities.convertToDouble(discount.getDiscountMaxAmount()));
         orderTotal.setDeliveryDiscountMaxAmount(Utilities.convertToDouble(discount.getDeliveryDiscountMaxAmount()));
-                
-        if (discount.getDiscountId()==null) {
-            
-        }
         
         //calculate voucher code discount
         if (customerVoucher!=null) {
+            
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "voucher minimum spend: " + customerVoucher.getVoucher().getMinimumSpend());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "voucher allowDoubleDiscount: " + customerVoucher.getVoucher().getAllowDoubleDiscount());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "voucher verticalList: " + customerVoucher.getVoucher().getVoucherVerticalList().toString());
+            
+            //check voucher minimum spend
+            if (Utilities.convertToDouble(discount.getCartSubTotal()) < customerVoucher.getVoucher().getMinimumSpend()) {
+                //error, not reach minimum amount
+                orderTotal.setGotError(Boolean.TRUE);
+                orderTotal.setErrorMessage("Voucher cannot be used. Not reach minimum spend amount");
+                return orderTotal;
+            }
+            
+            //check voucher double discount
+            if (discount.getDiscountId()!=null && customerVoucher.getVoucher().getAllowDoubleDiscount()==false) {
+                //error, not allow double discount
+                orderTotal.setGotError(Boolean.TRUE);
+                orderTotal.setErrorMessage("Voucher cannot be used. Purchase already have discount");
+                return orderTotal;
+            }            
+            
+            //check vertical code
+            boolean verticalValid=false;
+            for (int i=0;i<customerVoucher.getVoucher().getVoucherVerticalList().size();i++) {
+                VoucherVertical voucherVertical = customerVoucher.getVoucher().getVoucherVerticalList().get(i);
+                if (voucherVertical.getVerticalCode().equals(storeVerticalCode)) {
+                    verticalValid=true;
+                }
+            }
+            if (!verticalValid) {
+                //error, not allow for this store
+                orderTotal.setGotError(Boolean.TRUE);
+                orderTotal.setErrorMessage("Voucher cannot be used for this store");
+                return orderTotal;
+            }
+            
             DiscountVoucher discountVoucher = VoucherDiscountCalculation.CalculateVoucherDiscount(cart, deliveryCharge, orderTotal.getSubTotal(), customerVoucher, logprefix);                
             double subTotalDiscount=0.00;
             double deliveryDiscount=0.00;

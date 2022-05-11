@@ -665,6 +665,10 @@ public class OrderController {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
                     response.setMessage("Voucher code " + cartId + " not found");
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                } else {
+                    //check minimum amount
+                    //check vertical code
+                    //check double discount allowed
                 }
             }
             
@@ -892,8 +896,17 @@ public class OrderController {
                 order.setPrivateAdminNotes("");
 
                 OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission, 
-                        cod.getOrderPaymentDetails().getDeliveryQuotationAmount(), cod.getOrderShipmentDetails().getDeliveryType(), customerVoucher, 
+                        cod.getOrderPaymentDetails().getDeliveryQuotationAmount(), cod.getOrderShipmentDetails().getDeliveryType(), customerVoucher, storeWithDetials.getVerticalCode(), 
                         cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
+                
+                if (orderTotalObject.getGotError()) {
+                    // should return warning if got error
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while calculating discount:"+orderTotalObject.getErrorMessage());
+                    response.setSuccessStatus(HttpStatus.CONFLICT);
+                    response.setMessage(orderTotalObject.getErrorMessage());
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+                }
+                
                 order.setSubTotal(orderTotalObject.getSubTotal());
                 order.setAppliedDiscount(orderTotalObject.getAppliedDiscount());
                 order.setAppliedDiscountDescription(orderTotalObject.getAppliedDiscountDescription());

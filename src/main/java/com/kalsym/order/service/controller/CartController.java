@@ -534,7 +534,7 @@ public class CartController {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
                 response.setMessage("Voucher code " + voucherCode + " not found");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
+            } 
         }
         
         //get delivery charges from delivery-service
@@ -559,8 +559,17 @@ public class CartController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:"+id+" deliveryCharge:"+deliveryCharge+" totalSubTotalDiscount:"+discount.getSubTotalDiscount()+" totalShipmentDiscount:"+discount.getDeliveryDiscount());
             
             OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission,  
-                            deliveryCharge, deliveryType, customerVoucher,
+                            deliveryCharge, deliveryType, customerVoucher, storeWithDetials.getVerticalCode(),
                             cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
+            
+            if (orderTotalObject.getGotError()) {
+                // should return warning if got error
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while calculating discount:"+orderTotalObject.getErrorMessage());
+                response.setSuccessStatus(HttpStatus.CONFLICT);
+                response.setMessage(orderTotalObject.getErrorMessage());
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+            }
+
             discount.setCartGrandTotal(Utilities.roundDouble(orderTotalObject.getTotal(),2));
             discount.setCartDeliveryCharge(Utilities.roundDouble(deliveryCharge,2));
             discount.setStoreServiceCharge(Utilities.roundDouble(orderTotalObject.getStoreServiceCharge(),2));

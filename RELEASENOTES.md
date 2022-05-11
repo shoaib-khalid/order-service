@@ -18,7 +18,9 @@ ALTER TABLE `order` ADD voucherDiscount DECIMAL(10,2);
 CREATE TABLE voucher_vertical (
 id VARCHAR(50),
 voucherId VARCHAR(50),
-verticalCode VARCHAR(50)
+verticalCode VARCHAR(50),
+created_at datetime,
+updated_at datetime
 );
 
 Update email template in order_completion_config table : add voucher discount
