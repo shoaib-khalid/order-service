@@ -50,7 +50,7 @@ public class VoucherSearchSpecs {
 
         return (Specification<Voucher>) (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
-            Join<Voucher, VoucherVertical> voucherVertical = root.join("voucherVertical");
+            Join<Voucher, VoucherVertical> voucherVertical = root.join("voucherVerticalList");
             
             if (currentDate != null) {
                 

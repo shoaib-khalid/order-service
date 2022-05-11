@@ -20,6 +20,7 @@ import com.kalsym.order.service.enums.VoucherStatus;
 import com.kalsym.order.service.enums.VoucherType;
 import com.kalsym.order.service.model.Voucher;
 import com.kalsym.order.service.model.CustomerVoucher;
+import com.kalsym.order.service.model.VoucherVertical;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -55,6 +56,7 @@ public class CustomerVoucherSearchSpecs {
         return (Specification<CustomerVoucher>) (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
             Join<CustomerVoucher, Voucher> voucher = root.join("voucher");
+            Join<Voucher, VoucherVertical> voucherVertical = voucher.join("voucherVerticalList");
             
             if (currentDate != null) {
                 
@@ -70,9 +72,9 @@ public class CustomerVoucherSearchSpecs {
             if (voucherType!=null) {
                 predicates.add(builder.equal(voucher.get("voucherType"), voucherType));
             } 
-            
+          
             if (verticalCode!=null) {
-                predicates.add(builder.equal(voucher.get("verticalCode"), verticalCode));
+                predicates.add(builder.equal(voucherVertical.get("verticalCode"), verticalCode));
             } 
             
             if (customerId!=null) {
