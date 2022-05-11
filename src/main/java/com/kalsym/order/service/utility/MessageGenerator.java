@@ -78,6 +78,12 @@ public class MessageGenerator {
                 emailContent = emailContent.replace("{{delivery-discount}}", "N/A");
             }
             
+            if(null!=order.getVoucherDiscount()){
+                emailContent = emailContent.replace("{{voucher-discount}}", String.format("%.2f",order.getVoucherDiscount()) + "");
+            } else {
+                emailContent = emailContent.replace("{{voucher-discount}}", "N/A");
+            }
+            
             emailContent = emailContent.replace("{{sub-total}}", String.format("%.2f",order.getSubTotal()) + "");
             emailContent = emailContent.replace("{{grand-total}}", String.format("%.2f",order.getTotal()) + "");
             emailContent = emailContent.replace("{{store-contact}}", storeWithDetails.getPhoneNumber());
@@ -100,6 +106,8 @@ public class MessageGenerator {
             if (sendActivationLink && customerActivationNotice!=null) {
                 emailContent = emailContent.replace("{{customer-activation-notice}}", customerActivationNotice);
                 emailContent = emailContent.replace("{{customer-email}}", customerEmail);
+            } else {
+               emailContent = emailContent.replace("{{customer-activation-notice}}", "");
             }
 
         }

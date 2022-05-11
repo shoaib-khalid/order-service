@@ -1,10 +1,18 @@
 ##################################################
-# order-service-3.7.20-SNAPSHOT |09-May-2022
+# order-service-3.7.20-SNAPSHOT |11-May-2022
 ##################################################
-New API : postClaimNewUserVoucher()
+1. New API : postClaimNewUserVoucher()
+2. check voucher allowDoubleDiscount during cartDiscount & placeOrder()
+3. check voucher minimumSpend during cartDiscount & placeOrder()
+4. Add voucher discount in email to customer
 
+##DB changes:
 ALTER TABLE voucher ADD isNewUserVoucher TINYINT(1) NOT NULL DEFAULT 0;
 ALTER TABLE voucher ADD checkTotalRedeem TINYINT(1) NOT NULL DEFAULT 1;
+ALTER TABLE voucher ADD minimumSpend DECIMAL(10,2);
+ALTER TABLE voucher ADD allowDoubleDiscount TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE `order` ADD voucherDiscount DECIMAL(10,2);
+
 
 ##################################################
 # order-service-3.7.19-SNAPSHOT |28-Apr-2022

@@ -86,8 +86,11 @@ public class Order implements Serializable {
     @Column(nullable = true)
     private Double appliedDiscount;
     
-     @Column(nullable = true)
+    @Column(nullable = true)
     private Double deliveryDiscount;
+     
+    @Column(nullable = true)
+    private Double voucherDiscount;    
      
     private String appliedDiscountDescription ;
      

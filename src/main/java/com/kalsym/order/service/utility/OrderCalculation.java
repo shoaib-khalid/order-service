@@ -52,6 +52,10 @@ public class OrderCalculation {
         orderTotal.setDiscountCalculationValue(Utilities.convertToDouble(discount.getDiscountCalculationValue()));
         orderTotal.setDiscountMaxAmount(Utilities.convertToDouble(discount.getDiscountMaxAmount()));
         orderTotal.setDeliveryDiscountMaxAmount(Utilities.convertToDouble(discount.getDeliveryDiscountMaxAmount()));
+                
+        if (discount.getDiscountId()==null) {
+            
+        }
         
         //calculate voucher code discount
         if (customerVoucher!=null) {
@@ -77,6 +81,9 @@ public class OrderCalculation {
             double newSubTotal = orderTotal.getSubTotal() - subTotalDiscount;
             orderTotal.setSubTotal(newSubTotal);
             deliveryCharge = deliveryCharge - deliveryDiscount;
+            
+            double voucherDiscountAmount = subTotalDiscount + deliveryDiscount;
+            orderTotal.setVoucherDiscount(voucherDiscountAmount);
         }
         
         //calculate Store service charge        

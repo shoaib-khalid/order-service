@@ -71,5 +71,5 @@ public class OrderObject {
     private String voucherDiscountType;
     private Double voucherDiscountMaxAmount;
     private Double voucherDeliveryDiscountMaxAmount;
-    
+    private Double voucherDiscount;
 }
