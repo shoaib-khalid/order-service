@@ -1,11 +1,12 @@
 ##################################################
-# order-service-3.7.20-SNAPSHOT |11-May-2022
+# order-service-3.7.20-SNAPSHOT |12-May-2022
 ##################################################
 1. New API : postClaimNewUserVoucher()
 2. check voucher allowDoubleDiscount during cartDiscount & placeOrder()
 3. check voucher minimumSpend during cartDiscount & placeOrder()
 4. Add voucher discount in email to customer
 5. Multiple verticalCode for voucher
+6. change error messages for voucher validation
 
 ##DB changes:
 ALTER TABLE voucher ADD isNewUserVoucher TINYINT(1) NOT NULL DEFAULT 0;

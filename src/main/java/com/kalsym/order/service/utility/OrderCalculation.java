@@ -66,7 +66,7 @@ public class OrderCalculation {
             if (Utilities.convertToDouble(discount.getCartSubTotal()) < customerVoucher.getVoucher().getMinimumSpend()) {
                 //error, not reach minimum amount
                 orderTotal.setGotError(Boolean.TRUE);
-                orderTotal.setErrorMessage("Voucher cannot be used. Not reach minimum spend amount");
+                orderTotal.setErrorMessage("Your order did not meet the minimum spend required of the voucher.");
                 return orderTotal;
             }
             
@@ -74,7 +74,7 @@ public class OrderCalculation {
             if (discount.getDiscountId()!=null && customerVoucher.getVoucher().getAllowDoubleDiscount()==false) {
                 //error, not allow double discount
                 orderTotal.setGotError(Boolean.TRUE);
-                orderTotal.setErrorMessage("Voucher cannot be used. Purchase already have discount");
+                orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");
                 return orderTotal;
             }            
             
@@ -89,7 +89,7 @@ public class OrderCalculation {
             if (!verticalValid) {
                 //error, not allow for this store
                 orderTotal.setGotError(Boolean.TRUE);
-                orderTotal.setErrorMessage("Voucher cannot be used for this store");
+                orderTotal.setErrorMessage("Voucher cannot be used for this store.");
                 return orderTotal;
             }
             
