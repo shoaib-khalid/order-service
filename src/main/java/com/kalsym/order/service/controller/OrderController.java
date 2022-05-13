@@ -663,7 +663,7 @@ public class OrderController {
                 customerVoucher = customerVoucherRepository.findCustomerVoucherByCode(cod.getCustomerId(), cod.getVoucherCode(), new Date());
                 if (customerVoucher==null) {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
-                    response.setMessage("Voucher code " + cartId + " not found");
+                    response.setMessage("Voucher code " + cod.getVoucherCode() + " not found");
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                 } else {
                     //check minimum amount

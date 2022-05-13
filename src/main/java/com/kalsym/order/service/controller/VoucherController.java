@@ -141,18 +141,21 @@ public class VoucherController {
             Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " NOT_FOUND customerId: " + customerId);
             response.setSuccessStatus(HttpStatus.NOT_FOUND);
             response.setError("Voucher not found");
+            response.setMessage("Voucher not found");
             return ResponseEntity.status(response.getStatus()).body(response);
         } else {
             //check status
             if (voucher.getStatus()!=VoucherStatus.ACTIVE) {
                 response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
                 response.setError("Voucher not active");
+                response.setMessage("Voucher not active");
                 return ResponseEntity.status(response.getStatus()).body(response);
             }
             //check total redeem
             if (voucher.getTotalRedeem()>=voucher.getTotalQuantity()) {
                 response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
                 response.setError("Voucher fully redeemed");
+                response.setMessage("Sorry, you have redeemed this voucher");
                 return ResponseEntity.status(response.getStatus()).body(response);
             }
             //check expiry date
@@ -160,6 +163,7 @@ public class VoucherController {
             if (currentDate.compareTo(voucher.getStartDate()) < 0 || currentDate.compareTo(voucher.getEndDate()) > 0) {
                 response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
                 response.setError("Voucher is expired");
+                response.setMessage("Voucher is expired");
                 return ResponseEntity.status(response.getStatus()).body(response);
             }
         }
@@ -169,6 +173,7 @@ public class VoucherController {
             Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " Voucher already exist customerId: " + customerId+" voucherId:"+voucher.getId());
             response.setSuccessStatus(HttpStatus.CONFLICT);
             response.setError("Voucher already exist");
+            response.setMessage("Voucher already exist");
             return ResponseEntity.status(response.getStatus()).body(response);
         }
         
@@ -249,6 +254,7 @@ public class VoucherController {
             Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " NOT_FOUND customerId: " + customerId);
             response.setSuccessStatus(HttpStatus.NOT_FOUND);
             response.setError("Voucher not found");
+            response.setMessage("Voucher not found");
             return ResponseEntity.status(response.getStatus()).body(response);
         } else {
             Customer customer = optCustomer.get();            
@@ -269,12 +275,14 @@ public class VoucherController {
                 Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " NOT_FOUND customerId: " + customerId);
                 response.setSuccessStatus(HttpStatus.NOT_FOUND);
                 response.setError("Voucher not found");
+                response.setMessage("Voucher not found");
                 return ResponseEntity.status(response.getStatus()).body(response);
             } else {
                 //check status
                 if (selectedVoucher.getStatus()!=VoucherStatus.ACTIVE) {
                     response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
                     response.setError("Voucher not active");
+                    response.setMessage("Voucher not active");
                     return ResponseEntity.status(response.getStatus()).body(response);
                 }            
                 //check expiry date
@@ -282,6 +290,7 @@ public class VoucherController {
                 if (currentDate.compareTo(selectedVoucher.getStartDate()) < 0 || currentDate.compareTo(selectedVoucher.getEndDate()) > 0) {
                     response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
                     response.setError("Voucher is expired");
+                    response.setMessage("Voucher is expired");
                     return ResponseEntity.status(response.getStatus()).body(response);
                 }
             }
@@ -292,6 +301,7 @@ public class VoucherController {
             Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " Voucher already exist customerId: " + customerId+" voucherId:"+selectedVoucher.getId());
             response.setSuccessStatus(HttpStatus.CONFLICT);
             response.setError("Voucher already exist");
+            response.setMessage("Sorry, you have redeemed this voucher");
             return ResponseEntity.status(response.getStatus()).body(response);
         }
         
