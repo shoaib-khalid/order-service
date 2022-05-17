@@ -56,6 +56,7 @@ public class OrderCalculation {
         orderTotal.setDeliveryDiscountMaxAmount(Utilities.convertToDouble(discount.getDeliveryDiscountMaxAmount()));
         
         //calculate voucher code discount
+        double voucherDiscountAmount = 0.00;
         if (customerVoucher!=null) {
             
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "voucher minimum spend: " + customerVoucher.getVoucher().getMinimumSpend());
@@ -112,11 +113,9 @@ public class OrderCalculation {
             orderTotal.setVoucherDiscountCalculationValue(customerVoucher.getVoucher().getDiscountValue());
             orderTotal.setVoucherDiscountMaxAmount(customerVoucher.getVoucher().getMaxDiscountAmount());
         
-            double newSubTotal = orderTotal.getSubTotal() - subTotalDiscount;
-            orderTotal.setSubTotal(newSubTotal);
             deliveryCharge = deliveryCharge - deliveryDiscount;
             
-            double voucherDiscountAmount = subTotalDiscount + deliveryDiscount;
+            voucherDiscountAmount = subTotalDiscount + deliveryDiscount;
             orderTotal.setVoucherDiscount(voucherDiscountAmount);
             orderTotal.setVoucherId(customerVoucher.getVoucher().getId());
         }
@@ -127,7 +126,7 @@ public class OrderCalculation {
         orderTotal.setStoreServiceCharge(serviceCharges); 
         
         //calculate grand total
-        orderTotal.setTotal(orderTotal.getSubTotal() - orderTotal.getAppliedDiscount() + serviceCharges + deliveryCharge - orderTotal.getDeliveryDiscount());
+        orderTotal.setTotal(orderTotal.getSubTotal() - orderTotal.getAppliedDiscount() + serviceCharges + deliveryCharge - orderTotal.getDeliveryDiscount() - voucherDiscountAmount);
         double totalWithoutDelivery = orderTotal.getSubTotal() - orderTotal.getAppliedDiscount() + serviceCharges;
                 
         //calculating Kalsym commission 
