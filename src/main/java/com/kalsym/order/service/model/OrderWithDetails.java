@@ -109,6 +109,8 @@ public class OrderWithDetails implements Serializable {
     private Double deliveryDiscountMaxAmount;
     
     private Boolean isRevised;
+    
+    private String voucherId;
             
     /*
     @OneToOne(fetch=FetchType.LAZY)
@@ -139,7 +141,11 @@ public class OrderWithDetails implements Serializable {
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "orderId", insertable = false, updatable = false, nullable = true)
     private List<OrderItemWithDetails> orderItemWithDetails;
-     
+    
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "voucherId", insertable = false, updatable = false)
+    private Voucher voucherDetail;
+    
     public void update(Order order) {
         if (null != order.getStoreId()) {
             this.setStoreId(order.getStoreId());

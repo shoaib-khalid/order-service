@@ -118,6 +118,7 @@ public class OrderCalculation {
             
             double voucherDiscountAmount = subTotalDiscount + deliveryDiscount;
             orderTotal.setVoucherDiscount(voucherDiscountAmount);
+            orderTotal.setVoucherId(customerVoucher.getVoucher().getId());
         }
         
         //calculate Store service charge        

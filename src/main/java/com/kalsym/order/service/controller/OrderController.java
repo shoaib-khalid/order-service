@@ -923,6 +923,7 @@ public class OrderController {
                 order.setDeliveryDiscountMaxAmount(orderTotalObject.getDeliveryDiscountMaxAmount());
                 order.setTotalReminderSent(0);
                 order.setVoucherDiscount(orderTotalObject.getVoucherDiscount());
+                order.setVoucherId(orderTotalObject.getVoucherId());
                 
                 // saving order object to get order Id
                 order = orderRepository.save(order);

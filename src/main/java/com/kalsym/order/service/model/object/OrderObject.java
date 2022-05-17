@@ -72,6 +72,7 @@ public class OrderObject {
     private Double voucherDiscountMaxAmount;
     private Double voucherDeliveryDiscountMaxAmount;
     private Double voucherDiscount;
+    private String voucherId;
     
     private Boolean gotError;
     private String errorMessage;

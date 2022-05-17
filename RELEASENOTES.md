@@ -1,4 +1,13 @@
 ##################################################
+# order-service-3.7.21-SNAPSHOT |17-May-2022
+##################################################
+Add voucherId in order details
+
+##DB changes:
+ALTER TABLE `order` ADD voucherId VARCHAR(50);
+
+
+##################################################
 # order-service-3.7.20-SNAPSHOT |12-May-2022
 ##################################################
 1. New API : postClaimNewUserVoucher()
