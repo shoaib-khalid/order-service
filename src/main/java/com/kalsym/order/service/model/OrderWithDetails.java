@@ -143,6 +143,7 @@ public class OrderWithDetails implements Serializable {
     private List<OrderItemWithDetails> orderItemWithDetails;
     
     @OneToOne(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "voucherId", insertable = false, updatable = false, nullable = true)
     private Voucher voucherDetail;
     
