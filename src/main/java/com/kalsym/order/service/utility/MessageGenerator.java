@@ -66,20 +66,32 @@ public class MessageGenerator {
             }
 
             if (null != order.getAppliedDiscount()) {
-                emailContent = emailContent.replace("{{applied-discount}}", String.format("%.2f",order.getAppliedDiscount()) + "");
+                if (order.getAppliedDiscount()>0){
+                    emailContent = emailContent.replace("{{applied-discount}}", "-"+String.format("%.2f",order.getAppliedDiscount()) + "");
+                } else {
+                    emailContent = emailContent.replace("{{applied-discount}}", "N/A");
+                }
             } else {
                 emailContent = emailContent.replace("{{applied-discount}}", "N/A");
             }
             
             
             if(null!=order.getDeliveryDiscount()){
-                 emailContent = emailContent.replace("{{delivery-discount}}", String.format("%.2f",order.getDeliveryDiscount()) + "");
+                if (order.getDeliveryDiscount()>0) {
+                    emailContent = emailContent.replace("{{delivery-discount}}", "-"+String.format("%.2f",order.getDeliveryDiscount()) + "");
+                } else {
+                    emailContent = emailContent.replace("{{delivery-discount}}", "N/A");
+                }
             } else {
                 emailContent = emailContent.replace("{{delivery-discount}}", "N/A");
             }
             
             if(null!=order.getVoucherDiscount()){
-                emailContent = emailContent.replace("{{voucher-discount}}", String.format("%.2f",order.getVoucherDiscount()) + "");
+                if (order.getVoucherDiscount()>0) {
+                    emailContent = emailContent.replace("{{voucher-discount}}", "-"+String.format("%.2f",order.getVoucherDiscount()) + "");
+                } else {
+                    emailContent = emailContent.replace("{{voucher-discount}}", "N/A");
+                }
             } else {
                 emailContent = emailContent.replace("{{voucher-discount}}", "N/A");
             }
@@ -102,6 +114,7 @@ public class MessageGenerator {
                     emailContent = emailContent.replace("{{payment-date}}", paymentDetails.getCreatedDate().toString());
                 }
             }
+            
             
             if (sendActivationLink && customerActivationNotice!=null) {
                 emailContent = emailContent.replace("{{customer-activation-notice}}", customerActivationNotice);
