@@ -277,7 +277,7 @@ public class VoucherController {
                 }                
             }
             
-            if (selectedVoucher!=null) {
+            if (selectedVoucher==null) {
                 Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " Voucher not found. Check vertical & customer region. customerId: " + customerId);
                 response.setSuccessStatus(HttpStatus.NOT_FOUND);
                 response.setError("Voucher not found");
