@@ -267,9 +267,12 @@ public class VoucherController {
                 for (int x=0;x<voucherVerticalList.size();x++) {
                     String voucherRegion = voucherVerticalList.get(x).getRegionVertical().getRegionId();
                     String customerRegion = customer.getRegionCountry().getRegion();
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " voucherRegion:" + voucherRegion +" customerRegion:"+customerRegion);
-                    if (voucherRegion.equals(customerRegion)) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " voucherRegion:[" + voucherRegion +"] customerRegion:["+customerRegion+"]");
+                    if (voucherRegion.equalsIgnoreCase(customerRegion)) {
                         selectedVoucher = voucher;
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "SelectedVoucher:"+selectedVoucher.getId());
+                    } else {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Wrong region");
                     }
                 }                
             }
