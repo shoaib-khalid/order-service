@@ -251,20 +251,23 @@ public class VoucherController {
         Voucher selectedVoucher = null;
         List<Voucher> voucherList = voucherRepository.findAvailableNewUserVoucher(new Date());
         if (voucherList.isEmpty()) {
-            Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " NOT_FOUND customerId: " + customerId);
+            Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " Cannot find active voucher. customerId: " + customerId);
             response.setSuccessStatus(HttpStatus.NOT_FOUND);
             response.setError("Voucher not found");
             response.setMessage("Voucher not found");
             return ResponseEntity.status(response.getStatus()).body(response);
         } else {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " Found active voucher:"+voucherList.size()+". customerId: " + customerId);
             Customer customer = optCustomer.get();            
             for (int i=0;i<voucherList.size();i++) {
                 Voucher voucher = voucherList.get(i);
                 //check region vertical based on customer countrId
                 List<VoucherVertical> voucherVerticalList = voucher.getVoucherVerticalList();
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " VoucherId:"+voucher.getId()+". voucherVerticalList: " + voucherVerticalList.size());
                 for (int x=0;x<voucherVerticalList.size();x++) {
                     String voucherRegion = voucherVerticalList.get(x).getRegionVertical().getRegionId();
                     String customerRegion = customer.getRegionCountry().getRegion();
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " voucherRegion:" + voucherRegion +" customerRegion:"+customerRegion);
                     if (voucherRegion.equals(customerRegion)) {
                         selectedVoucher = voucher;
                     }
@@ -272,7 +275,7 @@ public class VoucherController {
             }
             
             if (selectedVoucher!=null) {
-                Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " NOT_FOUND customerId: " + customerId);
+                Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " Voucher not found. Check vertical & customer region. customerId: " + customerId);
                 response.setSuccessStatus(HttpStatus.NOT_FOUND);
                 response.setError("Voucher not found");
                 response.setMessage("Voucher not found");
@@ -280,6 +283,7 @@ public class VoucherController {
             } else {
                 //check status
                 if (selectedVoucher.getStatus()!=VoucherStatus.ACTIVE) {
+                    Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " Voucher not active customerId: " + customerId+" voucherId:"+selectedVoucher.getId());
                     response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
                     response.setError("Voucher not active");
                     response.setMessage("Voucher not active");
@@ -288,6 +292,7 @@ public class VoucherController {
                 //check expiry date
                 Date currentDate = new Date();
                 if (currentDate.compareTo(selectedVoucher.getStartDate()) < 0 || currentDate.compareTo(selectedVoucher.getEndDate()) > 0) {
+                    Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " Voucher is expired customerId: " + customerId+" voucherId:"+selectedVoucher.getId());
                     response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
                     response.setError("Voucher is expired");
                     response.setMessage("Voucher is expired");

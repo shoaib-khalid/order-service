@@ -1,8 +1,9 @@
 ##################################################
-# order-service-3.7.21-SNAPSHOT |17-May-2022
+# order-service-3.7.22-SNAPSHOT |18-May-2022
 ##################################################
 Add voucherId in order details
 Bug fix for voucher discount calculation
+Bug fix for newuser voucher
 
 ##DB changes:
 ALTER TABLE `order` ADD voucherId VARCHAR(50);
