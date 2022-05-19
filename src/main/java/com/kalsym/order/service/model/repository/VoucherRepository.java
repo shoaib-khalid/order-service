@@ -50,8 +50,7 @@ public interface VoucherRepository extends PagingAndSortingRepository<Voucher, S
     @Query("SELECT m FROM Voucher m WHERE "
             + "m.isNewUserVoucher = true "
             + "AND m.status='ACTIVE' "
-            + "AND m.startDate < :currentDate AND m.endDate > :currentDate "
-            + "AND m.checkTotalRedeem = false") 
+            + "AND m.startDate < :currentDate AND m.endDate > :currentDate ") 
     List<Voucher> findAvailableNewUserVoucher(
             @Param("currentDate") Date currentDate
            );
