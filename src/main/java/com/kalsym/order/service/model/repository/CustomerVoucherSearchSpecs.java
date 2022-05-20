@@ -58,9 +58,7 @@ public class CustomerVoucherSearchSpecs {
         return (Specification<CustomerVoucher>) (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
             Join<CustomerVoucher, Voucher> voucher = root.join("voucher");
-            ListJoin<Voucher, VoucherVertical> voucherVerticalList = voucher.joinList("voucherVerticalList", JoinType.INNER);
-            //Join<Voucher, VoucherVertical> voucherVertical = voucher.join("voucherVerticalList");
-            
+             
             if (currentDate != null) {
                 
                 //date1
@@ -77,6 +75,7 @@ public class CustomerVoucherSearchSpecs {
             } 
           
             if (verticalCode!=null) {
+                ListJoin<Voucher, VoucherVertical> voucherVerticalList = voucher.joinList("voucherVerticalList", JoinType.INNER);
                 predicates.add(builder.equal(voucherVerticalList.get("verticalCode"), verticalCode));
             } 
             
