@@ -211,11 +211,7 @@ public class VoucherController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerId:"+customerId+" voucherType:" + voucherType);
       
         CustomerVoucher customerVoucherMatch = new CustomerVoucher();
-        
-        if (verticalCode!=null) {
-            customerVoucherMatch.getVoucher().getVoucherVerticalList().get(0).setVerticalCode(verticalCode);
-        }
-        
+      
         Pageable pageable = PageRequest.of(page, pageSize);
         ExampleMatcher matcher = ExampleMatcher
                 .matchingAll()
