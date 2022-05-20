@@ -56,7 +56,7 @@ public class CustomerVoucherSearchSpecs {
         return (Specification<CustomerVoucher>) (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
             Join<CustomerVoucher, Voucher> voucher = root.join("voucher");
-            Join<Voucher, VoucherVertical> voucherVertical = voucher.join("voucherVerticalList");
+            //Join<Voucher, VoucherVertical> voucherVertical = voucher.join("voucherVerticalList");
             
             if (currentDate != null) {
                 
@@ -73,9 +73,9 @@ public class CustomerVoucherSearchSpecs {
                 predicates.add(builder.equal(voucher.get("voucherType"), voucherType));
             } 
           
-            if (verticalCode!=null) {
+            /*if (verticalCode!=null) {
                 predicates.add(builder.equal(voucherVertical.get("verticalCode"), verticalCode));
-            } 
+            } */
             
             if (customerId!=null) {
                 predicates.add(builder.equal(root.get("customerId"), customerId));
