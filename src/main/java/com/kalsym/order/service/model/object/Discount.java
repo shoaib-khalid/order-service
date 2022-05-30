@@ -45,4 +45,14 @@ public class Discount {
     String voucherDiscountCalculationType;
     Double voucherDiscountCalculationValue;
     Double voucherDiscountMaxAmount;
+    
+    Double storeVoucherSubTotalDiscount;
+    Double storeVoucherDeliveryDiscount;
+    String storeVoucherSubTotalDiscountDescription;
+    String storeVoucherDeliveryDiscountDescription;
+    String storeVoucherDiscountType;
+    String storeVoucherDiscountCalculationType;
+    Double storeVoucherDiscountCalculationValue;
+    Double storeVoucherDiscountMaxAmount;
+    
 }

@@ -32,7 +32,7 @@ import java.util.List;
  */
 public class VoucherDiscountCalculation {
     
-    public static DiscountVoucher CalculateVoucherDiscount(Cart cart, double deliveryCharge, double subTotalAmount, 
+    public static DiscountVoucher CalculateVoucherDiscount(double deliveryCharge, double subTotalAmount, 
             CustomerVoucher customerVoucher, String logprefix) {
         
         DiscountVoucher discount = new DiscountVoucher(); 

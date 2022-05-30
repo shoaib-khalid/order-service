@@ -71,4 +71,12 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
     void UpdateTotalReminderSent(
             @Param("orderId") String orderId
             );
+    
+    @Transactional 
+    @Modifying
+    @Query("UPDATE Order m SET m.orderGroupId=:orderGroupId WHERE m.id = :orderId") 
+    void UpdateOrderGroupId(
+            @Param("orderId") String orderId,
+            @Param("orderGroupId") String orderGroupId
+            );
 }

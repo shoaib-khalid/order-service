@@ -31,7 +31,8 @@ import org.springframework.http.ResponseEntity;
 public class OrderCalculation {
     
     public static OrderObject CalculateOrderTotal(Cart cart, Double storeSvcChargePercentage, StoreCommission storeCommission, 
-            Double deliveryCharge, String deliveryType, CustomerVoucher customerVoucher, String storeVerticalCode,
+            Double deliveryCharge, String deliveryType, 
+            CustomerVoucher customerPlatformVoucher, CustomerVoucher customerStoreVoucher, String storeVerticalCode,
             CartItemRepository cartItemRepository, 
             StoreDiscountRepository storeDiscountRepository, 
             StoreDiscountTierRepository storeDiscountTierRepository, String logprefix) {
@@ -56,15 +57,15 @@ public class OrderCalculation {
         orderTotal.setDeliveryDiscountMaxAmount(Utilities.convertToDouble(discount.getDeliveryDiscountMaxAmount()));
         
         //calculate voucher code discount
-        double voucherDiscountAmount = 0.00;
-        if (customerVoucher!=null) {
+        double platformVoucherDiscountAmount = 0.00;
+        if (customerPlatformVoucher!=null) {
             
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "voucher minimum spend: " + customerVoucher.getVoucher().getMinimumSpend());
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "voucher allowDoubleDiscount: " + customerVoucher.getVoucher().getAllowDoubleDiscount());
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "voucher verticalList: " + customerVoucher.getVoucher().getVoucherVerticalList().toString());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher minimum spend: " + customerPlatformVoucher.getVoucher().getMinimumSpend());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher allowDoubleDiscount: " + customerPlatformVoucher.getVoucher().getAllowDoubleDiscount());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher verticalList: " + customerPlatformVoucher.getVoucher().getVoucherVerticalList().toString());
             
             //check voucher minimum spend
-            if (Utilities.convertToDouble(discount.getCartSubTotal()) < customerVoucher.getVoucher().getMinimumSpend()) {
+            if (Utilities.convertToDouble(discount.getCartSubTotal()) < customerPlatformVoucher.getVoucher().getMinimumSpend()) {
                 //error, not reach minimum amount
                 orderTotal.setGotError(Boolean.TRUE);
                 orderTotal.setErrorMessage("Your order did not meet the minimum spend required of the voucher.");
@@ -72,7 +73,7 @@ public class OrderCalculation {
             }
             
             //check voucher double discount
-            if (discount.getDiscountId()!=null && customerVoucher.getVoucher().getAllowDoubleDiscount()==false) {
+            if (discount.getDiscountId()!=null && customerPlatformVoucher.getVoucher().getAllowDoubleDiscount()==false) {
                 //error, not allow double discount
                 orderTotal.setGotError(Boolean.TRUE);
                 orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");
@@ -81,8 +82,8 @@ public class OrderCalculation {
             
             //check vertical code
             boolean verticalValid=false;
-            for (int i=0;i<customerVoucher.getVoucher().getVoucherVerticalList().size();i++) {
-                VoucherVertical voucherVertical = customerVoucher.getVoucher().getVoucherVerticalList().get(i);
+            for (int i=0;i<customerPlatformVoucher.getVoucher().getVoucherVerticalList().size();i++) {
+                VoucherVertical voucherVertical = customerPlatformVoucher.getVoucher().getVoucherVerticalList().get(i);
                 if (voucherVertical.getVerticalCode().equals(storeVerticalCode)) {
                     verticalValid=true;
                 }
@@ -94,7 +95,7 @@ public class OrderCalculation {
                 return orderTotal;
             }
             
-            DiscountVoucher discountVoucher = VoucherDiscountCalculation.CalculateVoucherDiscount(cart, deliveryCharge, orderTotal.getSubTotal(), customerVoucher, logprefix);                
+            DiscountVoucher discountVoucher = VoucherDiscountCalculation.CalculateVoucherDiscount( deliveryCharge, orderTotal.getSubTotal(), customerPlatformVoucher, logprefix);                
             double subTotalDiscount=0.00;
             double deliveryDiscount=0.00;
             if (discountVoucher.getSubTotalDiscount()!=null) {
@@ -108,16 +109,89 @@ public class OrderCalculation {
                 orderTotal.setVoucherDeliveryDiscountDescription(discountVoucher.getDeliveryDiscountDescription());
             }
             
-            orderTotal.setVoucherDiscountType(customerVoucher.getVoucher().getDiscountType().toString());
-            orderTotal.setVoucherDiscountCalculationType(customerVoucher.getVoucher().getCalculationType().toString());
-            orderTotal.setVoucherDiscountCalculationValue(customerVoucher.getVoucher().getDiscountValue());
-            orderTotal.setVoucherDiscountMaxAmount(customerVoucher.getVoucher().getMaxDiscountAmount());
+            orderTotal.setVoucherDiscountType(customerPlatformVoucher.getVoucher().getDiscountType().toString());
+            orderTotal.setVoucherDiscountCalculationType(customerPlatformVoucher.getVoucher().getCalculationType().toString());
+            orderTotal.setVoucherDiscountCalculationValue(customerPlatformVoucher.getVoucher().getDiscountValue());
+            orderTotal.setVoucherDiscountMaxAmount(customerPlatformVoucher.getVoucher().getMaxDiscountAmount());
         
             deliveryCharge = deliveryCharge - deliveryDiscount;
             
-            voucherDiscountAmount = subTotalDiscount + deliveryDiscount;
-            orderTotal.setVoucherDiscount(voucherDiscountAmount);
-            orderTotal.setVoucherId(customerVoucher.getVoucher().getId());
+            platformVoucherDiscountAmount = subTotalDiscount + deliveryDiscount;
+            orderTotal.setVoucherDiscount(platformVoucherDiscountAmount);
+            orderTotal.setVoucherId(customerPlatformVoucher.getVoucher().getId());
+        }
+        
+        //TOO : calculate store voucher discount
+        double storeVoucherDiscountAmount = 0.00;
+        if (customerStoreVoucher!=null) {
+            
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher minimum spend: " + customerStoreVoucher.getVoucher().getMinimumSpend());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher allowDoubleDiscount: " + customerStoreVoucher.getVoucher().getAllowDoubleDiscount());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher verticalList: " + customerStoreVoucher.getVoucher().getVoucherVerticalList().toString());
+            
+            //check voucher minimum spend
+            if (Utilities.convertToDouble(discount.getCartSubTotal()) < customerStoreVoucher.getVoucher().getMinimumSpend()) {
+                //error, not reach minimum amount
+                orderTotal.setGotError(Boolean.TRUE);
+                orderTotal.setErrorMessage("Your order did not meet the minimum spend required of the voucher.");
+                return orderTotal;
+            }
+            
+            //check voucher double discount
+            if (discount.getDiscountId()!=null && customerStoreVoucher.getVoucher().getAllowDoubleDiscount()==false) {
+                //error, not allow double discount
+                orderTotal.setGotError(Boolean.TRUE);
+                orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");
+                return orderTotal;
+            }            
+            
+            //check vertical code
+            boolean verticalValid=false;
+            for (int i=0;i<customerStoreVoucher.getVoucher().getVoucherVerticalList().size();i++) {
+                VoucherVertical voucherVertical = customerStoreVoucher.getVoucher().getVoucherVerticalList().get(i);
+                if (voucherVertical.getVerticalCode().equals(storeVerticalCode)) {
+                    verticalValid=true;
+                }
+            }
+            if (!verticalValid) {
+                //error, not allow for this store
+                orderTotal.setGotError(Boolean.TRUE);
+                orderTotal.setErrorMessage("Voucher cannot be used for this store.");
+                return orderTotal;
+            }
+            
+            //check store
+            if (!customerStoreVoucher.getVoucher().getStoreId().equals(cart.getStoreId())) {
+                //error, wrong store Id
+                orderTotal.setGotError(Boolean.TRUE);
+                orderTotal.setErrorMessage("Voucher cannot be used for this store.");
+                return orderTotal;
+            }
+            
+            DiscountVoucher discountVoucher = VoucherDiscountCalculation.CalculateVoucherDiscount(deliveryCharge, orderTotal.getSubTotal(), customerStoreVoucher, logprefix);                
+            double subTotalDiscount=0.00;
+            double deliveryDiscount=0.00;
+            if (discountVoucher.getSubTotalDiscount()!=null) {
+                subTotalDiscount=discountVoucher.getSubTotalDiscount().doubleValue();
+                orderTotal.setStoreVoucherSubTotalDiscount(Utilities.convertToDouble(discountVoucher.getSubTotalDiscount()));
+                orderTotal.setStoreVoucherSubTotalDiscountDescription(discountVoucher.getSubTotalDiscountDescription());
+            }
+            if (discountVoucher.getDeliveryDiscount()!=null) {
+                deliveryDiscount=discountVoucher.getDeliveryDiscount().doubleValue();
+                orderTotal.setStoreVoucherDeliveryDiscount(Utilities.convertToDouble(discountVoucher.getDeliveryDiscount()));
+                orderTotal.setStoreVoucherDeliveryDiscountDescription(discountVoucher.getDeliveryDiscountDescription());
+            }
+            
+            orderTotal.setStoreVoucherDiscountType(customerStoreVoucher.getVoucher().getDiscountType().toString());
+            orderTotal.setStoreVoucherDiscountCalculationType(customerStoreVoucher.getVoucher().getCalculationType().toString());
+            orderTotal.setStoreVoucherDiscountCalculationValue(customerStoreVoucher.getVoucher().getDiscountValue());
+            orderTotal.setStoreVoucherDiscountMaxAmount(customerStoreVoucher.getVoucher().getMaxDiscountAmount());
+        
+            deliveryCharge = deliveryCharge - deliveryDiscount;
+            
+            storeVoucherDiscountAmount = subTotalDiscount + deliveryDiscount;
+            orderTotal.setStoreVoucherDiscount(storeVoucherDiscountAmount);
+            orderTotal.setStoreVoucherId(customerStoreVoucher.getVoucher().getId());
         }
         
         //calculate Store service charge        
@@ -126,7 +200,7 @@ public class OrderCalculation {
         orderTotal.setStoreServiceCharge(serviceCharges); 
         
         //calculate grand total
-        orderTotal.setTotal(orderTotal.getSubTotal() - orderTotal.getAppliedDiscount() + serviceCharges + deliveryCharge - orderTotal.getDeliveryDiscount() - voucherDiscountAmount);
+        orderTotal.setTotal(orderTotal.getSubTotal() - orderTotal.getAppliedDiscount() + serviceCharges + deliveryCharge - orderTotal.getDeliveryDiscount() - platformVoucherDiscountAmount - storeVoucherDiscountAmount);
         double totalWithoutDelivery = orderTotal.getSubTotal() - orderTotal.getAppliedDiscount() + serviceCharges;
                 
         //calculating Kalsym commission 
@@ -139,7 +213,7 @@ public class OrderCalculation {
         }
                                
         orderTotal.setKlCommission(Round2DecimalPoint(commission));
-        orderTotal.setStoreShare(Round2DecimalPoint(orderTotal.getSubTotal() - orderTotal.getAppliedDiscount() + orderTotal.getStoreServiceCharge() - commission));
+        orderTotal.setStoreShare(Round2DecimalPoint(orderTotal.getSubTotal() - orderTotal.getAppliedDiscount() + orderTotal.getStoreServiceCharge() - commission - storeVoucherDiscountAmount));
         
         if (deliveryType!=null) {
             if (deliveryType.equals(DeliveryType.SELF.name())) {
@@ -147,6 +221,62 @@ public class OrderCalculation {
                 orderTotal.setStoreShare(Round2DecimalPoint(storeShare));
             } 
         }
+        
+        return orderTotal;
+    }
+    
+    
+    public static OrderObject CalculateGroupOrderTotal(Double sumCartSubTotal,  
+            Double sumDeliveryCharge, CustomerVoucher platformVoucher, 
+            String logprefix) {
+        
+        OrderObject orderTotal = new OrderObject();
+        orderTotal.setGotError(Boolean.FALSE);
+        if (sumDeliveryCharge==null) { sumDeliveryCharge=0.00; }
+        
+        //calculate voucher code discount
+        double voucherDiscountAmount = 0.00;
+        if (platformVoucher!=null) {
+            
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher minimum spend: " + platformVoucher.getVoucher().getMinimumSpend());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher allowDoubleDiscount: " + platformVoucher.getVoucher().getAllowDoubleDiscount());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher verticalList: " + platformVoucher.getVoucher().getVoucherVerticalList().toString());
+            
+            //check voucher minimum spend
+            if (sumCartSubTotal < platformVoucher.getVoucher().getMinimumSpend()) {
+                //error, not reach minimum amount
+                orderTotal.setGotError(Boolean.TRUE);
+                orderTotal.setErrorMessage("Your order did not meet the minimum spend required of the voucher.");
+                return orderTotal;
+            }                                  
+            
+            DiscountVoucher discountVoucher = VoucherDiscountCalculation.CalculateVoucherDiscount( sumDeliveryCharge, sumCartSubTotal, platformVoucher, logprefix);                
+            double subTotalDiscount=0.00;
+            double deliveryDiscount=0.00;
+            if (discountVoucher.getSubTotalDiscount()!=null) {
+                subTotalDiscount=discountVoucher.getSubTotalDiscount().doubleValue();
+                orderTotal.setVoucherSubTotalDiscount(Utilities.convertToDouble(discountVoucher.getSubTotalDiscount()));
+                orderTotal.setVoucherSubTotalDiscountDescription(discountVoucher.getSubTotalDiscountDescription());
+            }
+            if (discountVoucher.getDeliveryDiscount()!=null) {
+                deliveryDiscount=discountVoucher.getDeliveryDiscount().doubleValue();
+                orderTotal.setVoucherDeliveryDiscount(Utilities.convertToDouble(discountVoucher.getDeliveryDiscount()));
+                orderTotal.setVoucherDeliveryDiscountDescription(discountVoucher.getDeliveryDiscountDescription());
+            }
+            
+            orderTotal.setVoucherDiscountType(platformVoucher.getVoucher().getDiscountType().toString());
+            orderTotal.setVoucherDiscountCalculationType(platformVoucher.getVoucher().getCalculationType().toString());
+            orderTotal.setVoucherDiscountCalculationValue(platformVoucher.getVoucher().getDiscountValue());
+            orderTotal.setVoucherDiscountMaxAmount(platformVoucher.getVoucher().getMaxDiscountAmount());
+         
+            voucherDiscountAmount = subTotalDiscount + deliveryDiscount;
+            orderTotal.setVoucherDiscount(voucherDiscountAmount);
+            orderTotal.setVoucherId(platformVoucher.getVoucher().getId());
+        }
+        
+       
+        //calculate grand total
+        orderTotal.setTotal(orderTotal.getSubTotal() + sumDeliveryCharge - voucherDiscountAmount);
         
         return orderTotal;
     }

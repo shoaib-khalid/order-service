@@ -74,6 +74,18 @@ public class OrderObject {
     private Double voucherDiscount;
     private String voucherId;
     
+    private Double storeVoucherSubTotalDiscount;
+    private String storeVoucherSubTotalDiscountDescription;
+    private Double storeVoucherDeliveryDiscount;
+    private String storeVoucherDeliveryDiscountDescription;
+    private String storeVoucherDiscountCalculationType;
+    private Double storeVoucherDiscountCalculationValue;
+    private String storeVoucherDiscountType;
+    private Double storeVoucherDiscountMaxAmount;
+    private Double storeVoucherDeliveryDiscountMaxAmount;
+    private Double storeVoucherDiscount;
+    private String storeVoucherId;
+    
     private Boolean gotError;
     private String errorMessage;
 }

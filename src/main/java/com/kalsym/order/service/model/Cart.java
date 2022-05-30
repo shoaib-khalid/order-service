@@ -1,5 +1,6 @@
 package com.kalsym.order.service.model;
 
+import com.kalsym.order.service.model.object.ItemDiscount;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
@@ -13,6 +14,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -45,6 +47,15 @@ public class Cart {
 
     private String storeId;
     
+    @Transient
+    private String storeVoucherCode;
+    
+    @Transient
+    private String deliveryQuotationId;
+    
+    @Transient
+    private String deliveryType;
+        
     @CreationTimestamp
     private Date created;
     @UpdateTimestamp

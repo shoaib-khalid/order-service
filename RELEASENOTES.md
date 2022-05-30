@@ -1,3 +1,40 @@
+
+##################################################
+# order-service-3.8.0-SNAPSHOT |27-May-2022
+##################################################
+Create order_group to support order from multiple store put in 1 order
+Platform discount & platform voucher will save here. order table only save store discount & store voucher
+Every order will have order_group even order only have 1 store
+
+##API Changes:
+Current API : POST /placeOrder -> remove voucherCode from request body, add new parameter 'platformVoucherCode' in request parameter
+New API : POST /placeGroupOrder -> FE to send multiple cart to create group order
+
+##DB Changes
+CREATE TABLE order_group (
+id VARCHAR(50),
+customerId VARCHAR(50),
+created DATETIME,
+updated DATETIME,
+subTotal DECIMAL(10,2),
+deliveryCharges DECIMAL(10,2),
+total DECIMAL(10,2),
+appliedDiscount DECIMAL(10,2),
+appliedDiscountDescription VARCHAR(20),
+deliveryDiscount DECIMAL(10,2),
+deliveryDiscountDescription VARCHAR(20),
+discountId VARCHAR(50),
+discountCalculationType VARCHAR(20),
+discountCalculationValue DECIMAL(10,2),
+deliveryDiscountMaxAmount DECIMAL(10,2),
+discountMaxAmount DECIMAL(10,2),
+voucherDiscount DECIMAL(10,2),
+voucherId VARCHAR(50),
+);
+
+ALTER TABLE order ADD orderGroupId VARCHAR(50);
+
+
 ##################################################
 # order-service-3.7.23-SNAPSHOT |20-May-2022
 ##################################################

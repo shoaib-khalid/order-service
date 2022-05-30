@@ -34,4 +34,9 @@ public class Utilities {
         if (value==null) return null;               
         return value.doubleValue();
     }
+    
+    public static Double Round2DecimalPoint(Double input) {
+        if (input == null) { return null; }
+        return Math.round(input * 100.0) / 100.0;
+    }
 }
