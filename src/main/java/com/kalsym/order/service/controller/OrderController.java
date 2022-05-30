@@ -675,6 +675,7 @@ public class OrderController {
         //check platform voucher code if provided
         CustomerVoucher customerPlatformVoucher = null;
         if (platformVoucherCode!=null && !"".equals(platformVoucherCode)) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "PlatformVoucherCode provided : "+platformVoucherCode);
             customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(cod.getCustomerId(), platformVoucherCode, new Date());
             if (customerPlatformVoucher==null) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
@@ -684,6 +685,20 @@ public class OrderController {
                 //check minimum amount
                 //check vertical code
                 //check double discount allowed
+            }            
+        } else {
+            if (cod.getVoucherCode()!=null && !"".equals(cod.getVoucherCode())) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "COD VoucherCode provided : "+cod.getVoucherCode());
+                customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(cod.getCustomerId(), cod.getVoucherCode(), new Date());
+                if (customerPlatformVoucher==null) {
+                    response.setStatus(HttpStatus.NOT_FOUND.value());
+                    response.setMessage("Voucher code " + cod.getVoucherCode() + " not found");
+                    return ResponseEntity.status(response.getStatus()).body(response);
+                } else {
+                    //check minimum amount
+                    //check vertical code
+                    //check double discount allowed
+                }
             }
         }
             

@@ -18,7 +18,9 @@ public class COD implements Serializable {
     
     private String cartId;
     private String customerId;
-    private String customerNotes;    
+    private String customerNotes;
+    //voucher code will be remove in next release
+    private String voucherCode;
     private String storeVoucherCode;
     private OrderShipmentDetail orderShipmentDetails;
     private OrderPaymentDetail orderPaymentDetails;
