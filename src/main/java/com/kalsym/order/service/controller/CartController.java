@@ -404,104 +404,112 @@ public class CartController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getWeightOfCart request");
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        List<CartItem> cartItems = cartItemRepository.findByCartId(id);
+        try {
+        
+            List<CartItem> cartItems = cartItemRepository.findByCartId(id);
 
-        double totalWeight = 0;
-        VehicleType vehicleType = VehicleType.MOTORCYCLE;
-        int vehicleSize=1;
-        int totalPcs=0;
-        if (null != cartItems) {
-            for (int i = 0; i < cartItems.size(); i++) {
-                CartItem cartItem = cartItems.get(i);
-                double singleItemWeight = 0;
-                if (null == cartItem.getWeight()) {
-                    singleItemWeight = 1;
+            double totalWeight = 0;
+            VehicleType vehicleType = VehicleType.MOTORCYCLE;
+            int vehicleSize=1;
+            int totalPcs=0;
+            if (null != cartItems) {
+                for (int i = 0; i < cartItems.size(); i++) {
+                    CartItem cartItem = cartItems.get(i);
+                    double singleItemWeight = 0;
+                    if (null == cartItem.getWeight()) {
+                        singleItemWeight = 1;
+                    }
+                    double itemWeight = cartItem.getQuantity() * singleItemWeight;
+                    totalWeight = totalWeight + itemWeight;
+                    totalPcs = totalPcs + cartItem.getQuantity();
+
+                    //check if any of item need a bigger vehicle
+                    Optional<Product> productInfoOpt = productRepository.findById(cartItem.getProductId());
+                    Product productInfo = productInfoOpt.get();
+                    if (productInfo.getVehicleType()==VehicleType.CAR && vehicleSize<2) {
+                        vehicleType=VehicleType.CAR;
+                        vehicleSize=2;
+                    } else if (productInfo.getVehicleType()==VehicleType.PICKUP && vehicleSize<3) {
+                        vehicleType=VehicleType.PICKUP;
+                        vehicleSize=3; 
+                    } else if (productInfo.getVehicleType()==VehicleType.VAN && vehicleSize<4) {
+                        vehicleType=VehicleType.VAN;
+                        vehicleSize=4; 
+                    } else if (productInfo.getVehicleType()==VehicleType.LARGEVAN && vehicleSize<5) {
+                        vehicleType=VehicleType.LARGEVAN;
+                        vehicleSize=5; 
+                    } else if (productInfo.getVehicleType()==VehicleType.SMALLLORRY && vehicleSize<6) {
+                        vehicleType=VehicleType.SMALLLORRY;
+                        vehicleSize=6; 
+                    } else if (productInfo.getVehicleType()==VehicleType.MEDIUMLORRY && vehicleSize<7) {
+                        vehicleType=VehicleType.MEDIUMLORRY;
+                        vehicleSize=7;
+                    } else if (productInfo.getVehicleType()==VehicleType.LARGELORRY && vehicleSize<8) {
+                        vehicleType=VehicleType.LARGELORRY;
+                        vehicleSize=8;
+                    } 
                 }
-                double itemWeight = cartItem.getQuantity() * singleItemWeight;
-                totalWeight = totalWeight + itemWeight;
-                totalPcs = totalPcs + cartItem.getQuantity();
-                
-                //check if any of item need a bigger vehicle
-                Optional<Product> productInfoOpt = productRepository.findById(cartItem.getProductId());
-                Product productInfo = productInfoOpt.get();
-                if (productInfo.getVehicleType()==VehicleType.CAR && vehicleSize<2) {
+            }
+
+            //check if item reach max for motorcycle
+            if (vehicleType==VehicleType.MOTORCYCLE) {
+                Optional<Cart> cart = cartRepository.findById(id);
+                Optional<StoreDeliveryDetail> storeDelivery = storeDeliveryDetailRepository.findByStoreId(cart.get().getStoreId());
+                if (totalPcs > storeDelivery.get().getMaxOrderQuantityForBike()) {
+                    //convert to car
                     vehicleType=VehicleType.CAR;
-                    vehicleSize=2;
-                } else if (productInfo.getVehicleType()==VehicleType.PICKUP && vehicleSize<3) {
-                    vehicleType=VehicleType.PICKUP;
-                    vehicleSize=3; 
-                } else if (productInfo.getVehicleType()==VehicleType.VAN && vehicleSize<4) {
-                    vehicleType=VehicleType.VAN;
-                    vehicleSize=4; 
-                } else if (productInfo.getVehicleType()==VehicleType.LARGEVAN && vehicleSize<5) {
-                    vehicleType=VehicleType.LARGEVAN;
-                    vehicleSize=5; 
-                } else if (productInfo.getVehicleType()==VehicleType.SMALLLORRY && vehicleSize<6) {
-                    vehicleType=VehicleType.SMALLLORRY;
-                    vehicleSize=6; 
-                } else if (productInfo.getVehicleType()==VehicleType.MEDIUMLORRY && vehicleSize<7) {
-                    vehicleType=VehicleType.MEDIUMLORRY;
-                    vehicleSize=7;
-                } else if (productInfo.getVehicleType()==VehicleType.LARGELORRY && vehicleSize<8) {
-                    vehicleType=VehicleType.LARGELORRY;
-                    vehicleSize=8;
-                } 
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "TotalPcs:"+totalPcs+" is more than max for bike:"+storeDelivery.get().getMaxOrderQuantityForBike()+". Upgrade Vehicle type to CAR");
+                }
             }
-        }
         
-        //check if item reach max for motorcycle
-        if (vehicleType==VehicleType.MOTORCYCLE) {
-            Optional<Cart> cart = cartRepository.findById(id);
-            Optional<StoreDeliveryDetail> storeDelivery = storeDeliveryDetailRepository.findByStoreId(cart.get().getStoreId());
-            if (totalPcs > storeDelivery.get().getMaxOrderQuantityForBike()) {
-                //convert to car
-                vehicleType=VehicleType.CAR;
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "TotalPcs:"+totalPcs+" is more than max for bike:"+storeDelivery.get().getMaxOrderQuantityForBike()+". Upgrade Vehicle type to CAR");
+            class Weight {
+
+                Double totalWeight;
+                VehicleType vehicleType;
+                Integer totalPcs;
+
+                public Weight() {
+                }
+
+                public Double getTotalWeight() {
+                    return totalWeight;
+                }
+
+                public void setTotalWeight(Double totalWeight) {
+                    this.totalWeight = totalWeight;
+                }
+
+                public VehicleType getVehicleType() {
+                    return vehicleType;
+                }
+
+                public void setVehicleType(VehicleType vehicleType) {
+                    this.vehicleType = vehicleType;
+                }
+
+                public Integer getTotalPcs() {
+                    return totalPcs;
+                }
+
+                public void setTotalPcs(Integer totalPcs) {
+                    this.totalPcs = totalPcs;
+                }
+
             }
-        }
+
+            Weight w = new Weight();
+            w.setTotalWeight(totalWeight);
+            w.setVehicleType(vehicleType);
+            w.setTotalPcs(totalPcs);
+            response.setSuccessStatus(HttpStatus.OK);
+            response.setData(w);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         
-        class Weight {
-
-            Double totalWeight;
-            VehicleType vehicleType;
-            Integer totalPcs;
-            
-            public Weight() {
-            }
-
-            public Double getTotalWeight() {
-                return totalWeight;
-            }
-
-            public void setTotalWeight(Double totalWeight) {
-                this.totalWeight = totalWeight;
-            }
-            
-            public VehicleType getVehicleType() {
-                return vehicleType;
-            }
-
-            public void setVehicleType(VehicleType vehicleType) {
-                this.vehicleType = vehicleType;
-            }
-            
-            public Integer getTotalPcs() {
-                return totalPcs;
-            }
-
-            public void setTotalPcs(Integer totalPcs) {
-                this.totalPcs = totalPcs;
-            }
-
+        } catch (Exception exp) {
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error getWeight", exp);
+            response.setMessage(exp.getMessage());
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
-
-        Weight w = new Weight();
-        w.setTotalWeight(totalWeight);
-        w.setVehicleType(vehicleType);
-        w.setTotalPcs(totalPcs);
-        response.setSuccessStatus(HttpStatus.OK);
-        response.setData(w);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
 
     }
     
