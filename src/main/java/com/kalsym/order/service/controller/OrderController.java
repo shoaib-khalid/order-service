@@ -920,12 +920,13 @@ public class OrderController {
         }
                 
         OrderObject groupTotal = OrderCalculation.CalculateGroupOrderTotal(sumCartSubTotal, sumDeliveryCharges, customerPlatformVoucher, logprefix);
-        double platformVoucherDiscountAmt = groupTotal.getVoucherDiscount();
-                
+        if (groupTotal.getVoucherId()!=null) {
+            double platformVoucherDiscountAmt = groupTotal.getVoucherDiscount();
+            orderGroup.setPlatformVoucherDiscount(platformVoucherDiscountAmt);
+            orderGroup.setPlatformVoucherId(customerPlatformVoucher.getId());
+        }
         orderGroup.setCustomerId(logprefix);
-        orderGroup.setDeliveryCharges(sumDeliveryCharges);
-        orderGroup.setPlatformVoucherDiscount(platformVoucherDiscountAmt);
-        orderGroup.setPlatformVoucherId(customerPlatformVoucher.getId());
+        orderGroup.setDeliveryCharges(sumDeliveryCharges);        
         orderGroup.setSubTotal(sumCartSubTotal);
         orderGroup.setTotal(sumTotal);
         orderGroupRepository.save(orderGroup);
