@@ -741,7 +741,7 @@ public class OrderController {
         response = OrderWorker.placeOrder(
                 request.getRequestURI(), optCart.get(), cartItems, 
                 cod, storeWithDetials, storeDeliveryDetail,
-                customerPlatformVoucher, customerStoreVoucher,
+                customerStoreVoucher,
                 saveCustomerInformation, onboardingOrderLink, logprefix, 
                 cartRepository, cartItemRepository, customerVoucherRepository, 
                 storeDetailsRepository, storeDeliveryDetailRepository, 
@@ -757,13 +757,27 @@ public class OrderController {
             Order orderCreated = (Order)response.getData();  
             String customerId = optCart.get().getCustomerId();
             
+            
+
             //create order group
             OrderGroup orderGroup = new OrderGroup();
             orderGroup.setCustomerId(customerId);
             orderGroup.setDeliveryCharges(orderCreated.getDeliveryCharges());
+            
+            OrderObject groupTotal = OrderCalculation.CalculateGroupOrderTotal(orderCreated.getSubTotal(), orderCreated.getDeliveryCharges(), customerPlatformVoucher, logprefix);            
+            if (groupTotal.getVoucherId()!=null) {
+                double platformVoucherDiscountAmt = groupTotal.getVoucherDiscount();
+                orderGroup.setPlatformVoucherDiscount(platformVoucherDiscountAmt);
+                orderGroup.setPlatformVoucherId(customerPlatformVoucher.getId());
+                
+                if (customerPlatformVoucher!=null) {
+                    voucherRepository.deductVoucherBalance(customerPlatformVoucher.getVoucherId());
+                    customerPlatformVoucher.setIsUsed(true);
+                    customerVoucherRepository.save(customerPlatformVoucher);
+                }
+            }
+            
             OrderObject totalDataObject = orderCreated.getTotalDataObject();
-            orderGroup.setPlatformVoucherDiscount(totalDataObject.getVoucherDiscount());
-            orderGroup.setPlatformVoucherId(totalDataObject.getVoucherId());
             orderGroup.setSubTotal(totalDataObject.getSubTotal());
             orderGroup.setTotal(totalDataObject.getTotal());
             orderGroup.setAppliedDiscount(orderCreated.getAppliedDiscount());
@@ -903,7 +917,7 @@ public class OrderController {
                 
             HttpResponse orderResponse = OrderWorker.placeOrder(
                     request.getRequestURI(), optCart.get(), cartItems, cod, optStore.get(), optStoreDeliveryDetail.get(),
-                    customerPlatformVoucher, customerStoreVoucher,
+                    customerStoreVoucher,
                     saveCustomerInformation,             
                     onboardingOrderLink, logprefix, 
                     cartRepository, cartItemRepository, customerVoucherRepository, 
@@ -933,6 +947,12 @@ public class OrderController {
             double platformVoucherDiscountAmt = groupTotal.getVoucherDiscount();
             orderGroup.setPlatformVoucherDiscount(platformVoucherDiscountAmt);
             orderGroup.setPlatformVoucherId(customerPlatformVoucher.getId());
+            
+            if (customerPlatformVoucher!=null) {
+                voucherRepository.deductVoucherBalance(customerPlatformVoucher.getVoucherId());
+                customerPlatformVoucher.setIsUsed(true);
+                customerVoucherRepository.save(customerPlatformVoucher);
+            }
         }
         orderGroup.setCustomerId(customerId);
         orderGroup.setDeliveryCharges(sumDeliveryCharges);        

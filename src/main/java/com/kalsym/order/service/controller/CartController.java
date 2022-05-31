@@ -538,10 +538,10 @@ public class CartController {
         }
         
         //check platform voucher code if provided
-        CustomerVoucher customerVoucher = null;
+        CustomerVoucher customerPlatformVoucher = null;
         if (voucherCode!=null && customerId!=null) {
-            customerVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(customerId, voucherCode, new Date());
-            if (customerVoucher==null) {
+            customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(customerId, voucherCode, new Date());
+            if (customerPlatformVoucher==null) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
                 response.setMessage("Voucher code " + voucherCode + " not found");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
@@ -583,7 +583,7 @@ public class CartController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:"+id+" deliveryCharge:"+deliveryCharge+" totalSubTotalDiscount:"+discount.getSubTotalDiscount()+" totalShipmentDiscount:"+discount.getDeliveryDiscount());
             
             OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission,  
-                            deliveryCharge, deliveryType, customerVoucher, customerStoreVoucher, storeWithDetials.getVerticalCode(),
+                            deliveryCharge, deliveryType, customerPlatformVoucher, customerStoreVoucher, storeWithDetials.getVerticalCode(),
                             cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
             
             if (orderTotalObject.getGotError()) {
@@ -599,7 +599,7 @@ public class CartController {
             discount.setStoreServiceCharge(Utilities.roundDouble(orderTotalObject.getStoreServiceCharge(),2));
             discount.setStoreServiceChargePercentage(Utilities.roundDouble(storeWithDetials.getServiceChargesPercentage(),2));
             
-            if (customerVoucher!=null) {
+            if (customerPlatformVoucher!=null) {
                 discount.setVoucherSubTotalDiscount(orderTotalObject.getVoucherSubTotalDiscount());
                 discount.setVoucherSubTotalDiscountDescription(orderTotalObject.getVoucherSubTotalDiscountDescription());
                 discount.setVoucherDeliveryDiscount(orderTotalObject.getVoucherDeliveryDiscount());

@@ -56,7 +56,7 @@ public class OrderCalculation {
         orderTotal.setDiscountMaxAmount(Utilities.convertToDouble(discount.getDiscountMaxAmount()));
         orderTotal.setDeliveryDiscountMaxAmount(Utilities.convertToDouble(discount.getDeliveryDiscountMaxAmount()));
         
-        //calculate voucher code discount
+        //calculate platform voucher code discount
         double platformVoucherDiscountAmount = 0.00;
         if (customerPlatformVoucher!=null) {
             
@@ -121,7 +121,7 @@ public class OrderCalculation {
             orderTotal.setVoucherId(customerPlatformVoucher.getVoucher().getId());
         }
         
-        //TOO : calculate store voucher discount
+        //calculate store voucher discount
         double storeVoucherDiscountAmount = 0.00;
         if (customerStoreVoucher!=null) {
             

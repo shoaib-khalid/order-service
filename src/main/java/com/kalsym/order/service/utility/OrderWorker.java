@@ -79,7 +79,6 @@ public class OrderWorker {
             COD cod,
             StoreWithDetails storeWithDetials,
             StoreDeliveryDetail storeDeliveryDetail,
-            CustomerVoucher customerPlatformVoucher,
             CustomerVoucher customerStoreVoucher,
             Boolean saveCustomerInformation,            
             String onboardingOrderLink,
@@ -305,7 +304,7 @@ public class OrderWorker {
                 order.setPrivateAdminNotes("");
 
                 OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission, 
-                        cod.getOrderPaymentDetails().getDeliveryQuotationAmount(), cod.getOrderShipmentDetails().getDeliveryType(), customerPlatformVoucher, customerStoreVoucher, storeWithDetials.getVerticalCode(), 
+                        cod.getOrderPaymentDetails().getDeliveryQuotationAmount(), cod.getOrderShipmentDetails().getDeliveryType(), null, customerStoreVoucher, storeWithDetials.getVerticalCode(), 
                         cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
                 
                 if (orderTotalObject.getGotError()) {
@@ -432,11 +431,12 @@ public class OrderWorker {
 
                 }
                 
+                /*
                 if (customerPlatformVoucher!=null) {
                     voucherRepository.deductVoucherBalance(customerPlatformVoucher.getVoucherId());
                     customerPlatformVoucher.setIsUsed(true);
                     customerVoucherRepository.save(customerPlatformVoucher);
-                }
+                }*/
                 
                 if (customerStoreVoucher!=null) {
                     voucherRepository.deductVoucherBalance(customerStoreVoucher.getVoucherId());
