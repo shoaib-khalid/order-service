@@ -628,7 +628,7 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
-    @GetMapping(path = {"/group/{group-id}"}, name = "orders-get-by-id", produces = "application/json")
+    @GetMapping(path = {"/group/{groupId}"}, name = "orders-get-by-id", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> getOrderGroupById(HttpServletRequest request,
             @PathVariable(required = true) String groupId) {
