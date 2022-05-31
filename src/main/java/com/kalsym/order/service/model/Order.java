@@ -92,7 +92,10 @@ public class Order implements Serializable {
     private Double deliveryDiscount;
      
     @Column(nullable = true)
-    private Double voucherDiscount;    
+    private Double voucherDiscount;  
+    
+    @Column(nullable = true)
+    private Double storeVoucherDiscount;   
      
     private String appliedDiscountDescription ;
      
@@ -113,6 +116,8 @@ public class Order implements Serializable {
     private Boolean isRevised;
     
     private String voucherId;
+    
+    private String storeVoucherId;
     
     private String orderGroupId;
     

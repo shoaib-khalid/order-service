@@ -331,7 +331,9 @@ public class OrderWorker {
                 order.setDeliveryDiscountMaxAmount(orderTotalObject.getDeliveryDiscountMaxAmount());
                 order.setTotalReminderSent(0);
                 order.setVoucherDiscount(orderTotalObject.getVoucherDiscount());
-                order.setVoucherId(orderTotalObject.getVoucherId());                
+                order.setVoucherId(orderTotalObject.getVoucherId()); 
+                order.setStoreVoucherDiscount(orderTotalObject.getStoreVoucherDiscount());
+                order.setStoreVoucherId(orderTotalObject.getStoreVoucherId());
                 order.setTotalDataObject(orderTotalObject);
                 
                 // saving order object to get order Id
