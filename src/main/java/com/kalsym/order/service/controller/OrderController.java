@@ -763,23 +763,24 @@ public class OrderController {
             OrderGroup orderGroup = new OrderGroup();
             orderGroup.setCustomerId(customerId);
             orderGroup.setDeliveryCharges(orderCreated.getDeliveryCharges());
+            OrderObject totalDataObject = orderCreated.getTotalDataObject();
             
+            double orderTotal=0.00;
             OrderObject groupTotal = OrderCalculation.CalculateGroupOrderTotal(orderCreated.getSubTotal(), orderCreated.getDeliveryCharges(), customerPlatformVoucher, logprefix);            
             if (groupTotal.getVoucherId()!=null) {
                 double platformVoucherDiscountAmt = groupTotal.getVoucherDiscount();
                 orderGroup.setPlatformVoucherDiscount(platformVoucherDiscountAmt);
                 orderGroup.setPlatformVoucherId(customerPlatformVoucher.getId());
-                
-                if (customerPlatformVoucher!=null) {
-                    voucherRepository.deductVoucherBalance(customerPlatformVoucher.getVoucherId());
-                    customerPlatformVoucher.setIsUsed(true);
-                    customerVoucherRepository.save(customerPlatformVoucher);
-                }
+                orderTotal = totalDataObject.getTotal() - platformVoucherDiscountAmt;
+                voucherRepository.deductVoucherBalance(customerPlatformVoucher.getVoucherId());
+                customerPlatformVoucher.setIsUsed(true);
+                customerVoucherRepository.save(customerPlatformVoucher);
+            } else {
+                orderTotal = totalDataObject.getTotal();
             }
             
-            OrderObject totalDataObject = orderCreated.getTotalDataObject();
             orderGroup.setSubTotal(totalDataObject.getSubTotal());
-            orderGroup.setTotal(totalDataObject.getTotal());
+            orderGroup.setTotal(orderTotal);
             orderGroup.setAppliedDiscount(orderCreated.getAppliedDiscount());
             orderGroup.setDeliveryDiscount(orderCreated.getDeliveryDiscount());
             orderGroupRepository.save(orderGroup);
@@ -903,6 +904,7 @@ public class OrderController {
         double sumCartSubTotal=0.00;
         double sumDeliveryCharges=0.00;
         double sumTotal=0.00;
+        double orderTotal=0.00;
         double sumAppliedDiscount=0.00;
         double sumDeliveryDiscount=0.00;
         
@@ -932,7 +934,7 @@ public class OrderController {
             Order orderCreated = (Order)orderResponse.getData();
             sumCartSubTotal = sumCartSubTotal + orderCreated.getSubTotal();
             sumDeliveryCharges = sumDeliveryCharges + orderCreated.getDeliveryCharges();
-            sumTotal = sumTotal + orderCreated.getTotal();
+            orderTotal = orderTotal + orderCreated.getTotal();
             if (orderCreated.getAppliedDiscount()!=null) {
                 sumAppliedDiscount = sumAppliedDiscount + orderCreated.getAppliedDiscount();
             }
@@ -947,12 +949,12 @@ public class OrderController {
             double platformVoucherDiscountAmt = groupTotal.getVoucherDiscount();
             orderGroup.setPlatformVoucherDiscount(platformVoucherDiscountAmt);
             orderGroup.setPlatformVoucherId(customerPlatformVoucher.getId());
-            
-            if (customerPlatformVoucher!=null) {
-                voucherRepository.deductVoucherBalance(customerPlatformVoucher.getVoucherId());
-                customerPlatformVoucher.setIsUsed(true);
-                customerVoucherRepository.save(customerPlatformVoucher);
-            }
+            sumTotal = orderTotal - platformVoucherDiscountAmt;
+            voucherRepository.deductVoucherBalance(customerPlatformVoucher.getVoucherId());
+            customerPlatformVoucher.setIsUsed(true);
+            customerVoucherRepository.save(customerPlatformVoucher);
+        } else {
+            sumTotal = orderTotal;
         }
         orderGroup.setCustomerId(customerId);
         orderGroup.setDeliveryCharges(sumDeliveryCharges);        
