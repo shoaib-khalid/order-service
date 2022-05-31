@@ -28,8 +28,8 @@ discountCalculationType VARCHAR(20),
 discountCalculationValue DECIMAL(10,2),
 deliveryDiscountMaxAmount DECIMAL(10,2),
 discountMaxAmount DECIMAL(10,2),
-voucherDiscount DECIMAL(10,2),
-voucherId VARCHAR(50),
+platformVoucherDiscount DECIMAL(10,2),
+platformVoucherId VARCHAR(50)
 );
 
 ALTER TABLE order ADD orderGroupId VARCHAR(50);

@@ -276,7 +276,7 @@ public class OrderCalculation {
         
        
         //calculate grand total
-        orderTotal.setTotal(orderTotal.getSubTotal() + sumDeliveryCharge - voucherDiscountAmount);
+        orderTotal.setTotal(sumCartSubTotal + sumDeliveryCharge - voucherDiscountAmount);
         
         return orderTotal;
     }
