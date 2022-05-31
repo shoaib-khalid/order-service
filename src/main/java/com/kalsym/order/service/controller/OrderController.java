@@ -628,6 +628,24 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
+    @GetMapping(path = {"/group/{group-id}"}, name = "orders-get-by-id", produces = "application/json")
+    @PreAuthorize("hasAnyAuthority('orders-get-by-id', 'all')")
+    public ResponseEntity<HttpResponse> getOrderGroupById(HttpServletRequest request,
+            @PathVariable(required = true) String groupId) {
+
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Optional<OrderGroup> optOrderGroup = orderGroupRepository.findById(groupId);
+        if (!optOrderGroup.isPresent()) {
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            response.setMessage("Order with group id " + groupId + " not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(optOrderGroup.get());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }    
+    
     /**
      *
      *
