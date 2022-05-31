@@ -766,6 +766,8 @@ public class OrderController {
             orderGroup.setPlatformVoucherId(totalDataObject.getVoucherId());
             orderGroup.setSubTotal(totalDataObject.getSubTotal());
             orderGroup.setTotal(totalDataObject.getTotal());
+            orderGroup.setAppliedDiscount(orderCreated.getAppliedDiscount());
+            orderGroup.setDeliveryDiscount(orderCreated.getDeliveryDiscount());
             orderGroupRepository.save(orderGroup);
             
             orderRepository.UpdateOrderGroupId(orderCreated.getId(), orderGroup.getId());
@@ -887,6 +889,8 @@ public class OrderController {
         double sumCartSubTotal=0.00;
         double sumDeliveryCharges=0.00;
         double sumTotal=0.00;
+        double sumAppliedDiscount=0.00;
+        double sumDeliveryDiscount=0.00;
         
         for (int i=0;i<codList.length;i++) {
             COD cod = codList[i];
@@ -915,7 +919,12 @@ public class OrderController {
             sumCartSubTotal = sumCartSubTotal + orderCreated.getSubTotal();
             sumDeliveryCharges = sumDeliveryCharges + orderCreated.getDeliveryCharges();
             sumTotal = sumTotal + orderCreated.getTotal();
-            
+            if (orderCreated.getAppliedDiscount()!=null) {
+                sumAppliedDiscount = sumAppliedDiscount + orderCreated.getAppliedDiscount();
+            }
+            if (orderCreated.getDeliveryDiscount()!=null) {
+                sumDeliveryDiscount = sumDeliveryDiscount + orderCreated.getDeliveryDiscount();
+            }
             orderCreatedList.add(orderCreated);
         }
                 
@@ -929,6 +938,8 @@ public class OrderController {
         orderGroup.setDeliveryCharges(sumDeliveryCharges);        
         orderGroup.setSubTotal(sumCartSubTotal);
         orderGroup.setTotal(sumTotal);
+        orderGroup.setAppliedDiscount(sumAppliedDiscount);
+        orderGroup.setDeliveryDiscount(sumDeliveryDiscount);
         orderGroupRepository.save(orderGroup);
         
         //update orderGroupId for each order

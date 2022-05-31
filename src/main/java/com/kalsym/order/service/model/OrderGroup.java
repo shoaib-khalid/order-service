@@ -49,6 +49,9 @@ public class OrderGroup implements Serializable {
     private Double deliveryCharges;
     private Double total;
     private String customerId;
+    private Double appliedDiscount;
+    private Double deliveryDiscount;
+    
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
