@@ -804,6 +804,8 @@ public class OrderController {
             orderGroupRepository.save(orderGroup);
             
             orderRepository.UpdateOrderGroupId(orderCreated.getId(), orderGroup.getId());
+            orderCreated.setOrderGroupId(orderGroup.getId());
+            response.setData(orderCreated);
         }
         return ResponseEntity.status(response.getStatus()).body(response);
                 
