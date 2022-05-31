@@ -925,7 +925,7 @@ public class OrderController {
             orderGroup.setPlatformVoucherDiscount(platformVoucherDiscountAmt);
             orderGroup.setPlatformVoucherId(customerPlatformVoucher.getId());
         }
-        orderGroup.setCustomerId(logprefix);
+        orderGroup.setCustomerId(customerId);
         orderGroup.setDeliveryCharges(sumDeliveryCharges);        
         orderGroup.setSubTotal(sumCartSubTotal);
         orderGroup.setTotal(sumTotal);
