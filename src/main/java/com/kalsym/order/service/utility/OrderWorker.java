@@ -440,17 +440,19 @@ public class OrderWorker {
                     customerVoucherRepository.save(customerPlatformVoucher);
                 }*/
                 
-                if (customerStoreVoucher!=null) {
-                    voucherRepository.deductVoucherBalance(customerStoreVoucher.getVoucherId());
-                    customerStoreVoucher.setIsUsed(true);
-                    customerVoucherRepository.save(customerStoreVoucher);
-                }
+                
                 
                 //clear cart item for COD. for online payment only clear after payment confirmed
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Payment Type:"+order.getPaymentType());
                 if (order.getPaymentType().equals(StorePaymentType.COD.name())) {
                     cartItemRepository.clearCartItem(cart.getId());
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cart item cleared for cartId:"+cart.getId());
+                    
+                    if (customerStoreVoucher!=null) {
+                        voucherRepository.deductVoucherBalance(customerStoreVoucher.getVoucherId());
+                        customerStoreVoucher.setIsUsed(true);
+                        customerVoucherRepository.save(customerStoreVoucher);
+                    }
                 }
 
                 if (saveCustomerInformation != null && saveCustomerInformation == true) {

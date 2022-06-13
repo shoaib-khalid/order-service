@@ -75,6 +75,8 @@ public class OrderProcessWorker {
     private OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository;
     private OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository;
     private CustomerRepository customerRepository;
+    private VoucherRepository voucherRepository;
+    private CustomerVoucherRepository customerVoucherRepository;
     
     private ProductService productService;
     private EmailService emailService;
@@ -106,6 +108,8 @@ public class OrderProcessWorker {
             OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository,
             OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository,
             CustomerRepository customerRepository,
+            VoucherRepository voucherRepository,
+            CustomerVoucherRepository customerVoucherRepository,
             
             ProductService productService,
             EmailService emailService,
@@ -136,6 +140,8 @@ public class OrderProcessWorker {
         this.orderPaymentStatusUpdateRepository = orderPaymentStatusUpdateRepository;
         this.orderCompletionStatusUpdateRepository = orderCompletionStatusUpdateRepository;
         this.customerRepository = customerRepository;
+        this.voucherRepository = voucherRepository;
+        this.customerVoucherRepository = customerVoucherRepository;
         
         this.productService = productService;
         this.emailService = emailService;
@@ -315,7 +321,13 @@ public class OrderProcessWorker {
                 //clear cart item
                 cartItemRepository.clearCartItem(order.getCartId());
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cleared cartItem for cartId: " + order.getCartId());
-
+                //deduct customer voucher
+                if (order.getVoucherId()!=null) {
+                    voucherRepository.deductVoucherBalance(order.getVoucherId());
+                    customerStoreVoucher.setIsUsed(true);
+                    customerVoucherRepository.save(customerStoreVoucher);
+                }
+                
                 //update status
                 bodyOrderCompletionStatusUpdate.setStatus(OrderStatus.PAYMENT_CONFIRMED);
                 order.setPaymentStatus(PaymentStatus.PAID);
