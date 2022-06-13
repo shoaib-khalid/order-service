@@ -12,6 +12,7 @@ import com.kalsym.order.service.enums.RefundStatus;
 import com.kalsym.order.service.enums.RefundType;
 import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.Customer;
+import com.kalsym.order.service.model.CustomerVoucher;
 import com.kalsym.order.service.model.DeliveryOrder;
 import com.kalsym.order.service.model.DeliveryResponse;
 import com.kalsym.order.service.model.Email;
@@ -321,13 +322,16 @@ public class OrderProcessWorker {
                 //clear cart item
                 cartItemRepository.clearCartItem(order.getCartId());
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cleared cartItem for cartId: " + order.getCartId());
-                //deduct customer voucher
-                if (order.getVoucherId()!=null) {
-                    voucherRepository.deductVoucherBalance(order.getVoucherId());
-                    customerStoreVoucher.setIsUsed(true);
-                    customerVoucherRepository.save(customerStoreVoucher);
-                }
                 
+                //deduct customer voucher 
+                if (order.getVoucherId()!=null) {
+                    voucherRepository.deductVoucherBalance(order.getVoucherId());                                        
+                    CustomerVoucher customerVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(order.getCustomerId(), order.getVoucherId());
+                    if (customerVoucher!=null) {
+                        customerVoucher.setIsUsed(true);
+                        customerVoucherRepository.save(customerVoucher);
+                    } 
+                }
                 //update status
                 bodyOrderCompletionStatusUpdate.setStatus(OrderStatus.PAYMENT_CONFIRMED);
                 order.setPaymentStatus(PaymentStatus.PAID);

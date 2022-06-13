@@ -46,6 +46,8 @@ import com.kalsym.order.service.utility.Utilities;
 import com.kalsym.order.service.enums.DeliveryType;
 import com.kalsym.order.service.model.Customer;
 import com.kalsym.order.service.model.repository.CustomerRepository;
+import com.kalsym.order.service.model.repository.CustomerVoucherRepository;
+import com.kalsym.order.service.model.repository.VoucherRepository;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -77,6 +79,8 @@ public class OrderProcessBulkThread extends Thread {
     private OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository;
     private OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository;
     private CustomerRepository customerRepository;
+    private VoucherRepository voucherRepository;
+    private CustomerVoucherRepository customerVoucherRepository;
     
     private ProductService productService;
     private EmailService emailService;
@@ -112,6 +116,8 @@ public class OrderProcessBulkThread extends Thread {
             OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository,
             OrderPaymentDetailRepository orderPaymentDetailRepository,
             CustomerRepository customerRepository,
+            VoucherRepository voucherRepository,
+            CustomerVoucherRepository customerVoucherRepository,
             
             ProductService productService,
             EmailService emailService,
@@ -143,7 +149,9 @@ public class OrderProcessBulkThread extends Thread {
             this.orderCompletionStatusUpdateRepository = orderCompletionStatusUpdateRepository;
             this.orderPaymentDetailRepository = orderPaymentDetailRepository;
             this.customerRepository = customerRepository;
-            
+            this.voucherRepository = voucherRepository;
+            this.customerVoucherRepository = customerVoucherRepository;
+        
             this.productService = productService;
             this.emailService = emailService;
             this.whatsappService = whatsappService;
@@ -184,6 +192,8 @@ public class OrderProcessBulkThread extends Thread {
                         orderPaymentStatusUpdateRepository,
                         orderCompletionStatusUpdateRepository,
                         customerRepository,
+                        voucherRepository,
+                        customerVoucherRepository,
                         
                         productService,
                         emailService,

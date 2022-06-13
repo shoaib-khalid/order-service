@@ -1,5 +1,11 @@
 
 ##################################################
+# order-service-3.8.1-SNAPSHOT |13-June-2022
+##################################################
+Move deduct customer voucher to payment_confirmed for onlinepayment
+
+
+##################################################
 # order-service-3.8.0-SNAPSHOT |27-May-2022
 ##################################################
 Create order_group to support order from multiple store put in 1 order

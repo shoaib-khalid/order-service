@@ -24,6 +24,7 @@ import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.object.OrderProcessResult;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.CustomerRepository;
+import com.kalsym.order.service.model.repository.CustomerVoucherRepository;
 import com.kalsym.order.service.model.repository.OrderCompletionStatusConfigRepository;
 import com.kalsym.order.service.model.repository.OrderCompletionStatusRepository;
 import com.kalsym.order.service.model.repository.OrderCompletionStatusUpdateRepository;
@@ -37,6 +38,7 @@ import com.kalsym.order.service.model.repository.PaymentOrderRepository;
 import com.kalsym.order.service.model.repository.ProductInventoryRepository;
 import com.kalsym.order.service.model.repository.RegionCountriesRepository;
 import com.kalsym.order.service.model.repository.StoreDetailsRepository;
+import com.kalsym.order.service.model.repository.VoucherRepository;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.EmailService;
 import com.kalsym.order.service.service.FCMService;
@@ -142,6 +144,12 @@ public class OrderCompletionStatusController {
     
     @Autowired
     CustomerRepository customerRepository;
+    
+    @Autowired
+    VoucherRepository voucherRepository;
+    
+    @Autowired
+    CustomerVoucherRepository customerVoucherRepository;
     
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
@@ -294,6 +302,8 @@ public class OrderCompletionStatusController {
               orderCompletionStatusUpdateRepository,
               orderPaymentDetailRepository,
               customerRepository, 
+              voucherRepository,
+              customerVoucherRepository,
                 
               productService,
               emailService,
