@@ -787,10 +787,7 @@ public class OrderController {
                 double platformVoucherDiscountAmt = groupTotal.getVoucherDiscount();
                 orderGroup.setPlatformVoucherDiscount(platformVoucherDiscountAmt);
                 orderGroup.setPlatformVoucherId(customerPlatformVoucher.getId());
-                orderTotal = totalDataObject.getTotal() - platformVoucherDiscountAmt;
-                voucherRepository.deductVoucherBalance(customerPlatformVoucher.getVoucherId());
-                customerPlatformVoucher.setIsUsed(true);
-                customerVoucherRepository.save(customerPlatformVoucher);
+                orderTotal = totalDataObject.getTotal() - platformVoucherDiscountAmt;                
             } else {
                 orderTotal = totalDataObject.getTotal();
             }
@@ -972,10 +969,7 @@ public class OrderController {
             double platformVoucherDiscountAmt = groupTotal.getVoucherDiscount();
             orderGroup.setPlatformVoucherDiscount(platformVoucherDiscountAmt);
             orderGroup.setPlatformVoucherId(customerPlatformVoucher.getId());
-            sumTotal = orderTotal - platformVoucherDiscountAmt;
-            voucherRepository.deductVoucherBalance(customerPlatformVoucher.getVoucherId());
-            customerPlatformVoucher.setIsUsed(true);
-            customerVoucherRepository.save(customerPlatformVoucher);
+            sumTotal = orderTotal - platformVoucherDiscountAmt;           
         } else {
             sumTotal = orderTotal;
         }
