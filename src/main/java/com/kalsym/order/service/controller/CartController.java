@@ -639,7 +639,7 @@ public class CartController {
     @GetMapping(path = {"/groupdiscount"}, name = "carts-discount-by-group", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('carts-discount-by-group', 'all')")
     public ResponseEntity<HttpResponse> getDiscountOfCartGroup(HttpServletRequest request,
-                @Valid @RequestBody Cart[] bodyCartList,
+                @Valid @RequestBody String[] cartIdList,
                 @RequestParam(required = false) String platformVoucherCode,
                 @RequestParam(required = false) String customerId
             ) throws Exception {
@@ -650,8 +650,8 @@ public class CartController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getDiscountOfCartGroup request...");
         HttpResponse response = new HttpResponse(request.getRequestURI());
         
-        for (int i=0;i<bodyCartList.length;i++) {
-            String cartId = bodyCartList[i].getId();
+        for (int i=0;i<cartIdList.length;i++) {
+            String cartId = cartIdList[i];
             Optional<Cart> cartOptional = cartRepository.findById(cartId);
             if (!cartOptional.isPresent()) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cart not found with cartId: " + cartId);
@@ -674,15 +674,14 @@ public class CartController {
         double groupDeliveryCharge=0;
         double groupCartSubTotal=0;
         List<Discount> storeDiscountList = new ArrayList();
-        for (int i=0;i<bodyCartList.length;i++) {
-            
-            Cart cart = bodyCartList[i];
-            String cartId = cart.getId();
+        for (int i=0;i<cartIdList.length;i++) {            
+            String cartId = cartIdList[i];
+            Optional<Cart> cartOptional = cartRepository.findById(cartId);
+            Cart cart = cartOptional.get();
             String deliveryQuotationId = cart.getDeliveryQuotationId();
             String deliveryType = cart.getDeliveryType();
             String storeVoucherCode = cart.getStoreVoucherCode();
-            CustomerVoucher storeVoucher = null;
-            
+             
             //get delivery charges from delivery-service
             double deliveryCharge=0;
             if (deliveryQuotationId!=null) {
