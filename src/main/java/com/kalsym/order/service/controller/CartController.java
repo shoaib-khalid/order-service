@@ -3,6 +3,7 @@ package com.kalsym.order.service.controller;
 import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.enums.DeliveryType;
 import com.kalsym.order.service.model.repository.CartRepository;
+import com.kalsym.order.service.model.repository.CartWithDetailsRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountRepository;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import com.kalsym.order.service.model.Cart;
+import com.kalsym.order.service.model.CartWithDetails;
 import com.kalsym.order.service.model.CartItem;
 import com.kalsym.order.service.model.StoreDeliveryDetail;
 import org.springframework.http.ResponseEntity;
@@ -73,6 +75,9 @@ public class CartController {
 
     @Autowired
     CartRepository cartRepository;
+    
+    @Autowired
+    CartWithDetailsRepository cartWithDetailsRepository;
 
     @Autowired
     CartItemRepository cartItemRepository;
@@ -130,6 +135,35 @@ public class CartController {
 
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(cartRepository.findAll(cartExample, pageable));
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    
+    @GetMapping(path = {"/details"}, name = "carts-get", produces = "application/json")
+    @PreAuthorize("hasAnyAuthority('carts-get', 'all')")
+    public ResponseEntity<HttpResponse> getCartsWithDetails(HttpServletRequest request,
+            @RequestParam(required = false) String customerId,
+            @RequestParam(required = false) String storeId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize) {
+        String logprefix = request.getRequestURI() + " ";
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "carts-get request...");
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        CartWithDetails cartMatch = new CartWithDetails();
+        cartMatch.setCustomerId(customerId);
+        cartMatch.setStoreId(storeId);
+
+        ExampleMatcher exampleCartMatcher = ExampleMatcher
+                .matchingAll()
+                .withIgnoreCase()
+                .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
+        Example<CartWithDetails> cartExample = Example.of(cartMatch, exampleCartMatcher);
+
+        Pageable pageable = PageRequest.of(page, pageSize);
+
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(cartWithDetailsRepository.findAll(cartExample, pageable));
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
