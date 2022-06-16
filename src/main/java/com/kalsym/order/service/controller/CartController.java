@@ -143,6 +143,7 @@ public class CartController {
     public ResponseEntity<HttpResponse> getCartsWithDetails(HttpServletRequest request,
             @RequestParam(required = false) String customerId,
             @RequestParam(required = false) String storeId,
+            @RequestParam(required = false) Boolean includeEmptyCart,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
         String logprefix = request.getRequestURI() + " ";
@@ -153,7 +154,9 @@ public class CartController {
         CartWithDetails cartMatch = new CartWithDetails();
         cartMatch.setCustomerId(customerId);
         cartMatch.setStoreId(storeId);
-
+        if (!includeEmptyCart) {
+            cartMatch.getCartItems()>0
+        }
         ExampleMatcher exampleCartMatcher = ExampleMatcher
                 .matchingAll()
                 .withIgnoreCase()
