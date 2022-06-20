@@ -153,7 +153,7 @@ public class OrderWorker {
                     if (productInventory.getQuantity()<cartItems.get(i).getQuantity() && productInventory.getProduct().isAllowOutOfStockPurchases()==false) {
                         //out of stock
                         response.setMessage(productInventory.getProduct().getName()+" is out of stock");
-                        response.setStatus(HttpStatus.CONFLICT.value());
+                        response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
                         return response;
                     }
                     
@@ -178,7 +178,7 @@ public class OrderWorker {
                             //discount no more valid
                             // should return warning if prices are not same
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Discount not valid");
-                            response.setStatus(HttpStatus.CONFLICT.value());
+                            response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
                             response.setMessage("Discount not valid");
                             response.setData(cartItems.get(i));
                             return response;
@@ -187,8 +187,8 @@ public class OrderWorker {
                         if (cartItems.get(i).getProductPrice() != Float.parseFloat(String.valueOf(productInventory.getPrice()))) {
                             // should return warning if prices are not same
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
-                            response.setStatus(HttpStatus.CONFLICT.value());
-                            response.setMessage("Conflict in prices, oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
+                            response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+                            response.setMessage("Ops! The product price for "+cartItems.get(i).getProductName()+" has been updated. Please refresh the Checkout page.");
                             response.setData(cartItems.get(i));
                             return response;
                         }
@@ -310,7 +310,7 @@ public class OrderWorker {
                 if (orderTotalObject.getGotError()) {
                     // should return warning if got error
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while calculating discount:"+orderTotalObject.getErrorMessage());
-                    response.setStatus(HttpStatus.CONFLICT.value());
+                    response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
                     response.setMessage(orderTotalObject.getErrorMessage());
                     return response;
                 }

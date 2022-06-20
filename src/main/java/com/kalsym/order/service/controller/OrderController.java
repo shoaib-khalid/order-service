@@ -685,7 +685,7 @@ public class OrderController {
 
         //if cart empty
         if (cartItems.isEmpty()) {
-            response.setStatus(HttpStatus.CONFLICT.value());
+            response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
             response.setMessage("Cart is empty");
             return ResponseEntity.status(response.getStatus()).body(response);
         }
@@ -876,7 +876,7 @@ public class OrderController {
 
             //if cart empty
             if (cartItems.isEmpty()) {
-                response.setStatus(HttpStatus.CONFLICT.value());
+                response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
                 response.setMessage("Cart is empty");
                 return ResponseEntity.status(response.getStatus()).body(response);
             }
@@ -1411,9 +1411,9 @@ public class OrderController {
         if (order.getIsRevised()!=null) {
             if (order.getIsRevised()) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order already revised. OrderId: " + orderId);
-                response.setErrorStatus(HttpStatus.CONFLICT);
+                response.setErrorStatus(HttpStatus.EXPECTATION_FAILED);
                 response.setMessage("Order already revised");
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+                return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
             }
         }
         
@@ -1442,8 +1442,8 @@ public class OrderController {
                     if (orderItem.getQuantity()>originalItem.getQuantity()) {
                         //return error if item to increase quantity
                         response.setMessage("Cannot increase item quantity");
-                        response.setSuccessStatus(HttpStatus.CONFLICT);            
-                        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+                        response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);            
+                        return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
                     }
                     float itemPrice = originalItem.getProductPrice();
                     originalItem.setOriginalQuantity(originalItem.getQuantity());
@@ -1639,9 +1639,9 @@ public class OrderController {
         } else {
             //not allow to revise
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "current status not allow to revise : " + order.getCompletionStatus());
-            response.setSuccessStatus(HttpStatus.CONFLICT);
+            response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
             response.setMessage("Order not allow to revise");
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }               
     }
     

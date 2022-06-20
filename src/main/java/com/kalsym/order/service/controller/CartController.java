@@ -631,9 +631,9 @@ public class CartController {
             if (orderTotalObject.getGotError()) {
                 // should return warning if got error
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while calculating discount:"+orderTotalObject.getErrorMessage());
-                response.setSuccessStatus(HttpStatus.CONFLICT);
+                response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
                 response.setMessage(orderTotalObject.getErrorMessage());
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+                return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
             }
 
             discount.setCartGrandTotal(Utilities.roundDouble(orderTotalObject.getTotal(),2));
@@ -769,9 +769,9 @@ public class CartController {
             if (orderTotalObject.getGotError()) {
                 // should return warning if got error
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while calculating discount:"+orderTotalObject.getErrorMessage());
-                response.setSuccessStatus(HttpStatus.CONFLICT);
+                response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
                 response.setMessage(orderTotalObject.getErrorMessage());
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+                return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
             }
 
             discount.setCartGrandTotal(Utilities.roundDouble(orderTotalObject.getTotal(),2));
@@ -807,9 +807,9 @@ public class CartController {
         if (groupOrderTotalObject.getGotError()) {
             // should return warning if got error
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while calculating discount:"+groupOrderTotalObject.getErrorMessage());
-            response.setSuccessStatus(HttpStatus.CONFLICT);
+            response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
             response.setMessage(groupOrderTotalObject.getErrorMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
 
         groupDiscount.setSumCartGrandTotal(Utilities.roundDouble(groupOrderTotalObject.getTotal(),2));
