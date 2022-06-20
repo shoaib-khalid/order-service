@@ -8,6 +8,7 @@ package com.kalsym.order.service.utility;
 import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.enums.DeliveryType;
 import com.kalsym.order.service.model.Cart;
+import com.kalsym.order.service.model.CartItem;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.Store;
 import com.kalsym.order.service.model.StoreCommission;
@@ -20,6 +21,7 @@ import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountTierRepository;
 import java.util.Optional;
+import java.util.List;
 import java.text.DecimalFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,13 +37,14 @@ public class OrderCalculation {
             CustomerVoucher customerPlatformVoucher, CustomerVoucher customerStoreVoucher, String storeVerticalCode,
             CartItemRepository cartItemRepository, 
             StoreDiscountRepository storeDiscountRepository, 
-            StoreDiscountTierRepository storeDiscountTierRepository, String logprefix) {
+            StoreDiscountTierRepository storeDiscountTierRepository, String logprefix,
+            List<CartItem> selectedCartItemList) {
         
         OrderObject orderTotal = new OrderObject();
         orderTotal.setGotError(Boolean.FALSE);
         if (deliveryCharge==null) { deliveryCharge=0.00; }
         //calculate Store discount
-        Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
+        Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, selectedCartItemList);                
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "subTotalDiscount: " +discount.getSubTotalDiscount());
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "deliveryDiscount: " +discount.getDeliveryDiscount());
         orderTotal.setAppliedDiscount(Utilities.convertToDouble(discount.getSubTotalDiscount()));

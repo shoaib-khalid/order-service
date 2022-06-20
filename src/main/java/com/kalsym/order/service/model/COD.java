@@ -1,6 +1,7 @@
 package com.kalsym.order.service.model;
 
 import java.io.Serializable;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,7 +25,8 @@ public class COD implements Serializable {
     private String storeVoucherCode;
     private OrderShipmentDetail orderShipmentDetails;
     private OrderPaymentDetail orderPaymentDetails;
-
+    private List<CartItem> cartItems;
+    
     public COD(String cartId, OrderShipmentDetail orderShipmentDetails, OrderPaymentDetail orderPaymentDetails) {
         this.cartId = cartId;
         this.orderShipmentDetails = orderShipmentDetails;

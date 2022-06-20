@@ -1,6 +1,7 @@
 package com.kalsym.order.service.model;
 
 import com.kalsym.order.service.model.object.ItemDiscount;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
@@ -36,7 +37,7 @@ import org.hibernate.annotations.UpdateTimestamp;
  * When a customer leaves an online store without making a purchase it is
  * recorded as an abandoned cart
  */
-public class CartWithDetails {
+public class CartWithDetails implements Serializable {
 
     @Id
     @GeneratedValue(generator = "uuid2")

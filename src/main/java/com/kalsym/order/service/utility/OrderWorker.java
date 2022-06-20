@@ -305,7 +305,7 @@ public class OrderWorker {
 
                 OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission, 
                         cod.getOrderPaymentDetails().getDeliveryQuotationAmount(), cod.getOrderShipmentDetails().getDeliveryType(), null, customerStoreVoucher, storeWithDetials.getVerticalCode(), 
-                        cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
+                        cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, cartItems);                
                 
                 if (orderTotalObject.getGotError()) {
                     // should return warning if got error

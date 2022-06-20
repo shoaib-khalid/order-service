@@ -620,12 +620,12 @@ public class CartController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store commission: " + storeCommission);
 
             
-            Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);        
+            Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, null);        
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:"+id+" deliveryCharge:"+deliveryCharge+" totalSubTotalDiscount:"+discount.getSubTotalDiscount()+" totalShipmentDiscount:"+discount.getDeliveryDiscount());
             
             OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission,  
                             deliveryCharge, deliveryType, customerPlatformVoucher, customerStoreVoucher, storeWithDetials.getVerticalCode(),
-                            cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
+                            cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, null);                
             
             if (orderTotalObject.getGotError()) {
                 // should return warning if got error
@@ -677,22 +677,21 @@ public class CartController {
     }
     
     
-    @GetMapping(path = {"/groupdiscount"}, name = "carts-discount-by-group", produces = "application/json")
+    @PostMapping(path = {"/groupdiscount"}, name = "carts-discount-by-group", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('carts-discount-by-group', 'all')")
     public ResponseEntity<HttpResponse> getDiscountOfCartGroup(HttpServletRequest request,
-                @RequestParam(required = true) String[] cartIdList,
+                @Valid @RequestBody CartWithDetails[] cartList,
                 @RequestParam(required = false) String platformVoucherCode,
                 @RequestParam(required = false) String customerId
             ) throws Exception {
-    
-        String logprefix = request.getRequestURI() + " ";
         
+        String logprefix = request.getRequestURI() + " ";        
         
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getDiscountOfCartGroup request. CartIdList count:"+cartIdList.length);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getDiscountOfCartGroup request. CartList count:"+cartList.length);
         HttpResponse response = new HttpResponse(request.getRequestURI());
         
-        for (int i=0;i<cartIdList.length;i++) {
-            String cartId = cartIdList[i];
+        for (int i=0;i<cartList.length;i++) {
+            String cartId = cartList[i].getId();
             Optional<Cart> cartOptional = cartRepository.findById(cartId);
             if (!cartOptional.isPresent()) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cart not found with cartId: " + cartId);
@@ -715,8 +714,8 @@ public class CartController {
         double groupDeliveryCharge=0;
         double groupCartSubTotal=0;
         List<Discount> storeDiscountList = new ArrayList();
-        for (int i=0;i<cartIdList.length;i++) {            
-            String cartId = cartIdList[i];
+        for (int i=0;i<cartList.length;i++) {            
+            String cartId = cartList[i].getId();
             Optional<Cart> cartOptional = cartRepository.findById(cartId);
             Cart cart = cartOptional.get();
             String deliveryQuotationId = cart.getDeliveryQuotationId();
@@ -749,14 +748,22 @@ public class CartController {
 
             StoreCommission storeCommission = productService.getStoreCommissionByStoreId(cart.getStoreId());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store commission: " + storeCommission);
-
             
-            Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);        
+            List<CartItem> selectedCartItem = new ArrayList<>();
+            for (int x=0;x<cartList[i].getCartItems().size();x++) {
+                String itemId = cartList[i].getCartItems().get(x).getId();
+                Optional<CartItem> cartItemOpt = cartItemRepository.findById(itemId);
+                if (cartItemOpt.isPresent()) {
+                    selectedCartItem.add(cartItemOpt.get());
+                }
+            }
+            
+            Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, selectedCartItem);        
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:"+cartId+" deliveryCharge:"+deliveryCharge+" totalSubTotalDiscount:"+discount.getSubTotalDiscount()+" totalShipmentDiscount:"+discount.getDeliveryDiscount());
             
             OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission,  
                             deliveryCharge, deliveryType, null, customerStoreVoucher, storeWithDetials.getVerticalCode(),
-                            cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);                
+                            cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, selectedCartItem);                
             
             if (orderTotalObject.getGotError()) {
                 // should return warning if got error
@@ -852,7 +859,7 @@ public class CartController {
             StoreCommission storeCommission = productService.getStoreCommissionByStoreId(cart.getStoreId());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store commission: " + storeCommission);
             
-            Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, 0.00, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix);        
+            Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, 0.00, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, null);        
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:"+id+" totalSubTotalDiscount:"+discount.getSubTotalDiscount()+" totalShipmentDiscount:"+discount.getDeliveryDiscount());
             
             Double storeSvcChargePercentage = storeWithDetials.getServiceChargesPercentage();

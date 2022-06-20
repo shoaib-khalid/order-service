@@ -1,6 +1,7 @@
 package com.kalsym.order.service.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -24,7 +25,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Getter
 @ToString
 @Table(name = "cart_subitem")
-public class CartSubItem {
+public class CartSubItem implements Serializable {
 
     @Id
     @GeneratedValue(generator = "uuid2")

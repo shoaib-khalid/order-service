@@ -29,7 +29,7 @@ import java.util.List;
 public class StoreDiscountCalculation {
     
     public static Discount CalculateStoreDiscount(Cart cart, double deliveryCharge, CartItemRepository cartItemRepository,
-            StoreDiscountRepository storeDiscountRepository, StoreDiscountTierRepository storeDiscountTierRepository, String logprefix) {
+            StoreDiscountRepository storeDiscountRepository, StoreDiscountTierRepository storeDiscountTierRepository, String logprefix, List<CartItem> selectedCartItem) {
          //check if any discount is active within date range
         List<StoreDiscount> discountAvailable = storeDiscountRepository.findAvailableDiscount(cart.getStoreId(), new Date());
         Discount discount = new Discount();
@@ -37,7 +37,12 @@ public class StoreDiscountCalculation {
             discount.setDeliveryDiscount(Utilities.roundDouble(0.00,2));
             discount.setSubTotalDiscount(Utilities.roundDouble(0.00,2));
             double salesAmount=0;
-            List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
+            List<CartItem> cartItems = null;
+            if (selectedCartItem!=null) {
+                cartItems = selectedCartItem;
+            } else {
+                cartItems = cartItemRepository.findByCartId(cart.getId());
+            }
             for (int i=0;i<cartItems.size();i++) {
                 CartItem item = cartItems.get(i);
                 salesAmount = salesAmount + item.getPrice();
@@ -47,7 +52,12 @@ public class StoreDiscountCalculation {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "discountAvailable found:"+discountAvailable.size());
             double salesAmount=0;
             double salesDiscountedItem=0;
-            List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
+            List<CartItem> cartItems = null;
+            if (selectedCartItem!=null) {
+                cartItems = selectedCartItem;
+            } else {
+                cartItems = cartItemRepository.findByCartId(cart.getId());
+            }
             for (int i=0;i<cartItems.size();i++) {
                 CartItem item = cartItems.get(i);
                 //check if item already discounted item 

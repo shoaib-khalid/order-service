@@ -870,8 +870,8 @@ public class OrderController {
                 return ResponseEntity.status(response.getStatus()).body(response);
             }
 
-            // get cart items 
-            List<CartItem> cartItems = cartItemRepository.findByCartId(cartId);
+            // get cart items based on selected item
+            List<CartItem> cartItems = cod.getCartItems();
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got cartItems of cartId: " + cartId + ", items: " + cartItems.toString());
 
             //if cart empty
@@ -931,14 +931,22 @@ public class OrderController {
         for (int i=0;i<codList.length;i++) {
             COD cod = codList[i];
             String cartId = cod.getCartId();
-            Optional<Cart> optCart = cartRepository.findById(cartId);
-            List<CartItem> cartItems = cartItemRepository.findByCartId(cartId);
+            Optional<Cart> optCart = cartRepository.findById(cartId);            
             Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(optCart.get().getStoreId());
             Optional<StoreDeliveryDetail> optStoreDeliveryDetail = storeDeliveryDetailRepository.findByStoreId(optCart.get().getStoreId());        
             CustomerVoucher customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(cod.getCustomerId(), cod.getStoreVoucherCode(), new Date(), optCart.get().getStoreId());
-                
+            
+            List<CartItem> selectedCartItem = new ArrayList<>();
+            for (int x=0;x<cod.getCartItems().size();x++) {
+                String itemId = cod.getCartItems().get(x).getId();
+                Optional<CartItem> cartItemOpt = cartItemRepository.findById(itemId);
+                if (cartItemOpt.isPresent()) {
+                    selectedCartItem.add(cartItemOpt.get());
+                }
+            }
+            
             HttpResponse orderResponse = OrderWorker.placeOrder(
-                    request.getRequestURI(), optCart.get(), cartItems, cod, optStore.get(), optStoreDeliveryDetail.get(),
+                    request.getRequestURI(), optCart.get(), selectedCartItem, cod, optStore.get(), optStoreDeliveryDetail.get(),
                     customerStoreVoucher,
                     saveCustomerInformation,             
                     onboardingOrderLink, logprefix, 

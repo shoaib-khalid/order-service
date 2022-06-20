@@ -16,6 +16,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 import com.kalsym.order.service.enums.DiscountCalculationType;
+import java.io.Serializable;
 
 /**
  *
@@ -26,7 +27,7 @@ import com.kalsym.order.service.enums.DiscountCalculationType;
 @Getter
 @ToString
 @Table(name = "cart_item")
-public class CartItem {
+public class CartItem implements Serializable {
 
     @Id
     @GeneratedValue(generator = "uuid2")
