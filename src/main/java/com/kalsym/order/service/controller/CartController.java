@@ -62,6 +62,7 @@ import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.model.Voucher;
 import com.kalsym.order.service.model.repository.VoucherSearchSpecs;
+import com.kalsym.order.service.model.object.CartWithItem;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.utility.OrderCalculation;
 import static com.kalsym.order.service.utility.OrderCalculation.calculateStoreServiceCharges;
@@ -680,18 +681,18 @@ public class CartController {
     @PostMapping(path = {"/groupdiscount"}, name = "carts-discount-by-group", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('carts-discount-by-group', 'all')")
     public ResponseEntity<HttpResponse> getDiscountOfCartGroup(HttpServletRequest request,
-                @Valid @RequestBody CartWithDetails[] cartList,
+                @Valid @RequestBody CartWithItem[] cartList,
                 @RequestParam(required = false) String platformVoucherCode,
                 @RequestParam(required = false) String customerId
             ) throws Exception {
-        
+                          
         String logprefix = request.getRequestURI() + " ";        
         
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getDiscountOfCartGroup request. CartList count:"+cartList.length);
         HttpResponse response = new HttpResponse(request.getRequestURI());
         
         for (int i=0;i<cartList.length;i++) {
-            String cartId = cartList[i].getId();
+            String cartId = cartList[i].getCartId();
             Optional<Cart> cartOptional = cartRepository.findById(cartId);
             if (!cartOptional.isPresent()) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cart not found with cartId: " + cartId);
@@ -715,7 +716,7 @@ public class CartController {
         double groupCartSubTotal=0;
         List<Discount> storeDiscountList = new ArrayList();
         for (int i=0;i<cartList.length;i++) {            
-            String cartId = cartList[i].getId();
+            String cartId = cartList[i].getCartId();
             Optional<Cart> cartOptional = cartRepository.findById(cartId);
             Cart cart = cartOptional.get();
             String deliveryQuotationId = cart.getDeliveryQuotationId();
@@ -750,8 +751,8 @@ public class CartController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store commission: " + storeCommission);
             
             List<CartItem> selectedCartItem = new ArrayList<>();
-            for (int x=0;x<cartList[i].getCartItems().size();x++) {
-                String itemId = cartList[i].getCartItems().get(x).getId();
+            for (int x=0;x<cartList[i].getCartItem().size();x++) {
+                String itemId = cartList[i].getCartItem().get(x).getId();
                 Optional<CartItem> cartItemOpt = cartItemRepository.findById(itemId);
                 if (cartItemOpt.isPresent()) {
                     selectedCartItem.add(cartItemOpt.get());
