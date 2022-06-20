@@ -53,36 +53,24 @@ public class ClearEmtpyCartScheduler {
     
     @Autowired
     CartRepository cartRepository;
-    
-    @Autowired
-    RegionCountriesRepository regionCountriesRepository;
-    
-    @Autowired
-    StoreDetailsRepository storeDetailsRepository;
-    
-    @Autowired
-    WhatsappService whatsappService;
-    
-    @Autowired
-    CustomerService customerService;
-    
+   
     @Value("${emptycart.scheduler.enabled:false}")
     private boolean isEnabled;
     
     @Scheduled(fixedRate = 300000)
     public void checkEmptyCart() throws Exception {
-        /*if (isEnabled) {
+        if (isEnabled) {
             String logprefix = "ClearEmtpyCart-Scheduler"; 
-            List<Object[]> cartList = cartRepository.getEmptyCart(items);
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Start checking not process order for vertical:"+verticalToSend+". Order Count:"+orderList.size());        
+            List<Object[]> cartList = cartRepository.findEmptyCart();
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Start checking empty cart. Cart Count:"+cartList.size());        
             for (int i=0;i<cartList.size();i++) {
                 Object[] cart = cartList.get(i);    
                 String cartId = (String)cart[0];
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderId:"+orderId+" storeId:"+storeId+" storeName:"+storeName+" timestamp:"+ts.toString()+" phoneNumber:"+phoneNumber);
                 
-                //convert time to merchant timezone
-                TODO : delete empty cart
+                //delete empty cart
+                cartRepository.deleteById(cartId);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:"+cartId+" deleted");
             }
-        }*/
+        }
     }
 }
