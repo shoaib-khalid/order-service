@@ -154,9 +154,9 @@ public class CartController {
         CartWithDetails cartMatch = new CartWithDetails();
         cartMatch.setCustomerId(customerId);
         cartMatch.setStoreId(storeId);
-        if (!includeEmptyCart) {
+        /*if (!includeEmptyCart) {
             cartMatch.getCartItems()>0
-        }
+        }*/
         ExampleMatcher exampleCartMatcher = ExampleMatcher
                 .matchingAll()
                 .withIgnoreCase()
@@ -676,7 +676,7 @@ public class CartController {
     @GetMapping(path = {"/groupdiscount"}, name = "carts-discount-by-group", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('carts-discount-by-group', 'all')")
     public ResponseEntity<HttpResponse> getDiscountOfCartGroup(HttpServletRequest request,
-                @Valid @RequestBody String[] cartIdList,
+                @RequestParam(required = true) String[] cartIdList,
                 @RequestParam(required = false) String platformVoucherCode,
                 @RequestParam(required = false) String customerId
             ) throws Exception {
@@ -684,7 +684,7 @@ public class CartController {
         String logprefix = request.getRequestURI() + " ";
         
         
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getDiscountOfCartGroup request...");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getDiscountOfCartGroup request. CartIdList count:"+cartIdList.length);
         HttpResponse response = new HttpResponse(request.getRequestURI());
         
         for (int i=0;i<cartIdList.length;i++) {

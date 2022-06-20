@@ -17,7 +17,7 @@
 package com.kalsym.order.service;
 
 import com.kalsym.order.service.OrderServiceApplication;
-import com.kalsym.order.service.model.repository.OrderRepository;
+import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.model.repository.StoreDetailsRepository;
 import com.kalsym.order.service.model.repository.RegionCountriesRepository;
 import com.kalsym.order.service.utility.Logger;
@@ -52,7 +52,7 @@ import org.springframework.beans.factory.annotation.Value;
 public class ClearEmtpyCartScheduler {
     
     @Autowired
-    OrderRepository orderRepository;
+    CartRepository cartRepository;
     
     @Autowired
     RegionCountriesRepository regionCountriesRepository;
@@ -66,41 +66,23 @@ public class ClearEmtpyCartScheduler {
     @Autowired
     CustomerService customerService;
     
-    @Value("${order.reminder.enabled:false}")
+    @Value("${emptycart.scheduler.enabled:false}")
     private boolean isEnabled;
-    
-    @Value("${order.reminder.max.sent:1}")
-    private int maxTotalReminder;
-    
-    @Value("${order.reminder.vertical:FNB,E-Commerce}")
-    private String verticalToSend;
     
     @Scheduled(fixedRate = 300000)
     public void checkEmptyCart() throws Exception {
-        if (isEnabled) {
-            String logprefix = "Reminder-Scheduler"; 
-            List<String> items = Arrays.asList(verticalToSend.split(","));
-            List<Object[]> cartList = cartRepository.getEmptyCart(items, maxTotalReminder);
+        /*if (isEnabled) {
+            String logprefix = "ClearEmtpyCart-Scheduler"; 
+            List<Object[]> cartList = cartRepository.getEmptyCart(items);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Start checking not process order for vertical:"+verticalToSend+". Order Count:"+orderList.size());        
-            for (int i=0;i<orderList.size();i++) {
-                Object[] order = orderList.get(i);
-                String orderId = (String)order[0];
-                String invoiceId = (String)order[1];
-                String phoneNumber = (String)order[2];
-                String storeName = (String)order[3];
-                String clientId = (String)order[4];
-                String username = (String)order[5];
-                String password = (String)order[6];
-                Timestamp ts = (java.sql.Timestamp)order[7];
-                String storeId = (String)order[8];
-                String[] recipients = {phoneNumber};
-                String updated = null;   
-                
+            for (int i=0;i<cartList.size();i++) {
+                Object[] cart = cartList.get(i);    
+                String cartId = (String)cart[0];
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderId:"+orderId+" storeId:"+storeId+" storeName:"+storeName+" timestamp:"+ts.toString()+" phoneNumber:"+phoneNumber);
                 
                 //convert time to merchant timezone
                 TODO : delete empty cart
             }
-        }
+        }*/
     }
 }
