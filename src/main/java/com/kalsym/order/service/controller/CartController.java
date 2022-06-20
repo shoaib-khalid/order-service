@@ -11,6 +11,7 @@ import com.kalsym.order.service.model.repository.StoreDiscountTierRepository;
 import com.kalsym.order.service.model.repository.ProductRepository;
 import com.kalsym.order.service.model.repository.StoreDeliveryDetailRepository;
 import com.kalsym.order.service.model.repository.CustomerVoucherRepository;
+import com.kalsym.order.service.model.repository.CartSearchSpecs;
 import com.kalsym.order.service.utility.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,11 +60,15 @@ import com.kalsym.order.service.model.StoreDeliveryDetail;
 import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.Product;
+import com.kalsym.order.service.model.Voucher;
+import com.kalsym.order.service.model.repository.VoucherSearchSpecs;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.utility.OrderCalculation;
 import static com.kalsym.order.service.utility.OrderCalculation.calculateStoreServiceCharges;
 import com.kalsym.order.service.utility.Utilities;
 import java.io.Serializable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.domain.Specification;
 
 /**
  *
@@ -153,20 +158,19 @@ public class CartController {
 
         CartWithDetails cartMatch = new CartWithDetails();
         cartMatch.setCustomerId(customerId);
-        cartMatch.setStoreId(storeId);
-        /*if (!includeEmptyCart) {
-            cartMatch.getCartItems()>0
-        }*/
+        cartMatch.setStoreId(storeId);        
         ExampleMatcher exampleCartMatcher = ExampleMatcher
                 .matchingAll()
                 .withIgnoreCase()
                 .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
         Example<CartWithDetails> cartExample = Example.of(cartMatch, exampleCartMatcher);
-
+        
+        Specification cartSpec = CartSearchSpecs.getEmptyCart(includeEmptyCart, cartExample );
         Pageable pageable = PageRequest.of(page, pageSize);
-
-        response.setSuccessStatus(HttpStatus.OK);
-        response.setData(cartWithDetailsRepository.findAll(cartExample, pageable));
+        Page<CartWithDetails> cartWithPage = cartWithDetailsRepository.findAll(cartSpec, pageable);
+        response.setData(cartWithPage);
+        
+        response.setSuccessStatus(HttpStatus.OK);        
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
