@@ -2,6 +2,7 @@
 # order-service-3.8.2-SNAPSHOT |20-June-2022
 ##################################################
 Bug fix for get cart groupdiscount
+Change response error HTTP 409 CONFLICT to HTTP 417 EXPECTATION_FAILED in cart & order controller
 
 
 ##################################################
