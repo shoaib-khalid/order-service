@@ -51,7 +51,7 @@ public class CartSearchSpecs {
         return (Specification<CartWithDetails>) (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
             ListJoin<CartWithDetails, CartItem> cartItemList = root.joinList("cartItems", JoinType.INNER);
-            if (!includeEmptyCart) {
+            if (includeEmptyCart!=null && !includeEmptyCart) {
                 predicates.add(builder.isNotNull(cartItemList));
             }
                        
