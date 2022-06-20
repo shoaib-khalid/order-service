@@ -52,7 +52,7 @@ public class CartSearchSpecs {
             final List<Predicate> predicates = new ArrayList<>();
             ListJoin<CartWithDetails, CartItem> cartItemList = root.joinList("cartItems", JoinType.INNER);
             if (!includeEmptyCart) {
-                predicates.add(builder.isNotNull(cartItemList.isNotNull()));
+                predicates.add(builder.isNotNull(cartItemList));
             }
                        
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
