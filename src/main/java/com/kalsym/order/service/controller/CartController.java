@@ -162,7 +162,7 @@ public class CartController {
         ExampleMatcher exampleCartMatcher = ExampleMatcher
                 .matchingAll()
                 .withIgnoreCase()
-                .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
+                .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);                
         Example<CartWithDetails> cartExample = Example.of(cartMatch, exampleCartMatcher);
         
         Specification cartSpec = CartSearchSpecs.getEmptyCart(includeEmptyCart, cartExample );

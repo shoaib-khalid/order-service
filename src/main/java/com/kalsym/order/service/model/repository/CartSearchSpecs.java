@@ -56,7 +56,7 @@ public class CartSearchSpecs {
             }
                        
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
-
+            query.distinct(true);
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
