@@ -1,10 +1,13 @@
 package com.kalsym.order.service.model;
 
+import com.kalsym.order.service.enums.CartStage;
 import com.kalsym.order.service.model.object.ItemDiscount;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -84,4 +87,7 @@ public class Cart implements Serializable {
         storeId = cart.getStoreId();
         isOpen = cart.getIsOpen();
     }
+    
+    @Enumerated(EnumType.STRING)
+    private CartStage stage;
 }

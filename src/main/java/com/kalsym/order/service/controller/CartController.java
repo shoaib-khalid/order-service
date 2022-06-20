@@ -1,6 +1,7 @@
 package com.kalsym.order.service.controller;
 
 import com.kalsym.order.service.OrderServiceApplication;
+import com.kalsym.order.service.enums.CartStage;
 import com.kalsym.order.service.enums.DeliveryType;
 import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.model.repository.CartWithDetailsRepository;
@@ -261,6 +262,7 @@ public class CartController {
         Cart savedCart = null;
         try {
             bodyCart.setIsOpen(Boolean.TRUE);
+            bodyCart.setStage(CartStage.CREATED);
             savedCart = cartRepository.save(bodyCart);
             response.setSuccessStatus(HttpStatus.CREATED);
         } catch (Exception exp) {
@@ -449,7 +451,14 @@ public class CartController {
         try {
         
             List<CartItem> cartItems = cartItemRepository.findByCartId(id);
-
+            
+            Optional<Cart> cartOpt = cartRepository.findById(id);
+            if (cartOpt.isPresent()) {
+                Cart cart  = cartOpt.get();
+                cart.setStage(CartStage.DELIVERY_CALCULATED);
+                cartRepository.save(cart);
+            }
+            
             double totalWeight = 0;
             VehicleType vehicleType = VehicleType.MOTORCYCLE;
             int vehicleSize=1;
@@ -579,6 +588,10 @@ public class CartController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         
+        Cart cart  = cartOptional.get();
+        cart.setStage(CartStage.CHARGES_CALCULATED);
+        cartRepository.save(cart);        
+        
         //check platform voucher code if provided
         CustomerVoucher customerPlatformVoucher = null;
         if (voucherCode!=null && customerId!=null) {
@@ -590,7 +603,6 @@ public class CartController {
             } 
         }  
         
-        Cart cart = cartOptional.get();
         String storeId = cart.getStoreId();
         
         //check store voucher code if provided

@@ -3,6 +3,10 @@
 ##################################################
 Bug fix for get cart groupdiscount
 Change response error HTTP 409 CONFLICT to HTTP 417 EXPECTATION_FAILED in cart & order controller
+Add stage in cart
+
+##DB Changes
+ALTER TABLE cart ADD stage VARCHAR(50);
 
 
 ##################################################
