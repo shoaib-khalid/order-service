@@ -763,8 +763,8 @@ public class CartController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store commission: " + storeCommission);
             
             List<CartItem> selectedCartItem = new ArrayList<>();
-            for (int x=0;x<cartList[i].getCartItem().size();x++) {
-                String itemId = cartList[i].getCartItem().get(x).getId();
+            for (int x=0;x<cartList[i].getSelectedItemId().size();x++) {
+                String itemId = cartList[i].getSelectedItemId().get(x);
                 Optional<CartItem> cartItemOpt = cartItemRepository.findById(itemId);
                 if (cartItemOpt.isPresent()) {
                     selectedCartItem.add(cartItemOpt.get());

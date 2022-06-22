@@ -15,7 +15,7 @@ import java.util.List;
 public class CartWithItem {    
 
     String cartId;
-    List<CartItem> selectedItem;
+    List<String> selectedItemId;
 
     public CartWithItem() {
     }
@@ -28,12 +28,12 @@ public class CartWithItem {
         this.cartId = cartId;
     }
 
-    public List<CartItem> getCartItem() {
-        return selectedItem;
+    public List<String> getSelectedItemId() {
+        return selectedItemId;
     }
 
-    public void setCartItem(List<CartItem> selectedItem) {
-        this.selectedItem = selectedItem;
+    public void setSelectedItemId(List<String> selectedItemId) {
+        this.selectedItemId = selectedItemId;
     }
 
 
