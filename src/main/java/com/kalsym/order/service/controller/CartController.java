@@ -121,6 +121,7 @@ public class CartController {
     public ResponseEntity<HttpResponse> getCarts(HttpServletRequest request,
             @RequestParam(required = false) String customerId,
             @RequestParam(required = false) String storeId,
+            @RequestParam(required = false) String cartId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
         String logprefix = request.getRequestURI() + " ";
@@ -131,7 +132,8 @@ public class CartController {
         Cart cartMatch = new Cart();
         cartMatch.setCustomerId(customerId);
         cartMatch.setStoreId(storeId);
-
+        cartMatch.setId(cartId);
+        
         ExampleMatcher exampleCartMatcher = ExampleMatcher
                 .matchingAll()
                 .withIgnoreCase()
