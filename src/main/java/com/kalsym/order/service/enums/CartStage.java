@@ -8,5 +8,6 @@ package com.kalsym.order.service.enums;
 public enum CartStage {
     CREATED,
     DELIVERY_CALCULATED,
-    CHARGES_CALCULATED
+    CHARGES_CALCULATED,
+    ORDER_PLACED
 }

@@ -11,6 +11,7 @@ import com.kalsym.order.service.enums.DiscountType;
 import com.kalsym.order.service.enums.RefundType;
 import com.kalsym.order.service.enums.RefundStatus;
 import com.kalsym.order.service.enums.VehicleType;
+import com.kalsym.order.service.enums.CartStage;
 import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.OrderPaymentDetail;
 import com.kalsym.order.service.model.object.CustomPageable;
@@ -679,6 +680,11 @@ public class OrderController {
             return ResponseEntity.status(response.getStatus()).body(response);
         }
         
+        //update cart status
+        Cart cart = optCart.get();
+        cart.setStage(CartStage.ORDER_PLACED);
+        cartRepository.save(cart);
+        
         // get cart items 
         List<CartItem> cartItems = cartItemRepository.findByCartId(cartId);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got cartItems of cartId: " + cartId + ", items: " + cartItems.toString());
@@ -869,6 +875,11 @@ public class OrderController {
                 response.setMessage("Cart with id " + cartId + " not found");
                 return ResponseEntity.status(response.getStatus()).body(response);
             }
+            
+            //update cart status
+            Cart cart = optCart.get();
+            cart.setStage(CartStage.ORDER_PLACED);
+            cartRepository.save(cart);
 
             // get cart items based on selected item
             List<CartItem> cartItems = cod.getCartItems();
