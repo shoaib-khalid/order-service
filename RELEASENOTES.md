@@ -1,9 +1,28 @@
 ##################################################
 # order-service-3.8.2-SNAPSHOT |20-June-2022
 ##################################################
-Bug fix for get cart groupdiscount
-Change response error HTTP 409 CONFLICT to HTTP 417 EXPECTATION_FAILED in cart & order controller
-Add stage in cart
+1. Bug fix for get cart groupdiscount
+
+2. Change response error HTTP 409 CONFLICT to HTTP 417 EXPECTATION_FAILED in cart & order controller:
+	Cart :
+		-calculate order got error in getDiscountOfCart() : 
+			-discount not valid
+			-discount not reach minimum spend
+	Order :
+		-in placeGroupOrder()
+			cart empty
+		-in reviseOrderItems()
+			item already revise
+			try to increase quantity item
+		-in placeOrder && placeGroupOrder
+			out of stock
+			discount no more valid
+			Conflict in prices
+			calculate order total got error 
+			discount not valid
+			discount not reach minimum spend
+			
+3. Add stage in cart
 
 ##DB Changes
 ALTER TABLE cart ADD stage VARCHAR(50);
