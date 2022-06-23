@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kalsym.order.service.model.repository.ProductInventoryRepository;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.utility.Logger;
+import java.util.List;
 
 /**
  *
@@ -428,6 +429,71 @@ public class CartItemController {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem deleted with id: " + id);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    
+    @PostMapping(path = {"/updateprice/{itemCode}"}, name = "cart-items-updateprice-by-itemcode")
+    @PreAuthorize("hasAnyAuthority('cart-items-updateprice-by-itemcode', 'all')")
+    public ResponseEntity<HttpResponse> updateItemPrice(HttpServletRequest request,
+            @PathVariable(required = true) String itemCode
+            ) throws Exception {
+        String logprefix = request.getRequestURI() + " ";
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-updateprice-by-itemcode, itemCode: " + itemCode);
+        
+        //find itemCode
+        ProductInventory productInventoryDB = productInventoryRepository.findByItemCode(itemCode);
+            
+        if (productInventoryDB==null) {
+            //itemCode not found
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item code not found");
+            response.setMessage("Item code not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } 
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventoryDB.toString());
+        
+        //query product-service
+        ProductInventory productInventory = productService.getProductInventoryById(productInventoryDB.getProduct().getStoreId(), productInventoryDB.getProduct().getId(), itemCode);
+        
+        //check for discount
+        double itemPrice = 0.00;
+        String itemDiscountLabel=null;
+        String itemDiscountId=null;
+        double itemNormalPrice=0.00;
+        double itemProductPrice=0.00;
+        if (productInventory.getItemDiscount()!=null) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item got discount. DiscountId:"+productInventory.getItemDiscount().discountId);
+            //got discount
+            ItemDiscount discountDetails = productInventory.getItemDiscount();
+            itemPrice = discountDetails.discountedPrice;
+            itemDiscountId = discountDetails.discountId;
+            itemNormalPrice = discountDetails.normalPrice;
+            itemDiscountLabel = discountDetails.discountLabel;
+        } else {
+            //no dicount for this item code
+            itemPrice = productInventory.getPrice();
+        }
+        itemProductPrice = itemPrice;
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "itemPrice:"+itemPrice);
+
+        //find itemcode in cart item, update price
+        List<CartItem> itemList = cartItemRepository.findByItemCode(itemCode);
+        for (int i=0;i<itemList.size();i++) {
+            CartItem cartItem = itemList.get(i);            
+            cartItem.setProductPrice((float)itemProductPrice);
+            cartItem.setPrice((float)(cartItem.getQuantity() * itemProductPrice));
+            if (itemDiscountId!=null) {
+                cartItem.setNormalPrice((float)itemNormalPrice);
+                cartItem.setDiscountLabel(itemDiscountLabel);
+            } else {
+                cartItem.setNormalPrice(null);
+                cartItem.setDiscountLabel(null);
+            }
+            cartItemRepository.save(cartItem);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem price updated with for cartItemId: " + cartItem.getId());
+        }
+        
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     

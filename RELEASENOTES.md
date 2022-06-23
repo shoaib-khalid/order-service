@@ -1,5 +1,5 @@
 ##################################################
-# order-service-3.8.2-SNAPSHOT |20-June-2022
+# order-service-3.8.2-SNAPSHOT |23-June-2022
 ##################################################
 1. Bug fix for get cart groupdiscount
 
@@ -23,6 +23,8 @@
 			discount not reach minimum spend
 			
 3. Add stage in cart
+
+4. new API POST /updateprice/{itemCode} -> used to update price in cart item if product changed the price
 
 ##DB Changes
 ALTER TABLE cart ADD stage VARCHAR(50);
