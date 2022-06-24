@@ -153,12 +153,10 @@ public class WhatsappService {
                 String[] temp=parameterTypeList[x].split("=");
                 if (temp[0].equalsIgnoreCase("body")) {
                     String[] parameterList = temp[1].split(",");
-                    template.setParameters(parameterList);
-                    request.setTemplate(template);
+                    template.setParameters(parameterList);                    
                 } else if (temp[0].equalsIgnoreCase("button")) {
                     String[] parameterList = temp[1].split(",");
-                    template.setParametersButton(parameterList);
-                    request.setTemplateButton(template);
+                    template.setParametersButton(parameterList);                    
                 }
             }
             request.setTemplate(template);
