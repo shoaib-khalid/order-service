@@ -733,9 +733,9 @@ public class CartController {
             String cartId = cartList[i].getCartId();
             Optional<Cart> cartOptional = cartRepository.findById(cartId);
             Cart cart = cartOptional.get();
-            String deliveryQuotationId = cart.getDeliveryQuotationId();
-            String deliveryType = cart.getDeliveryType();
-            String storeVoucherCode = cart.getStoreVoucherCode();
+            String deliveryQuotationId = cartList[i].getDeliveryQuotationId();
+            String deliveryType = cartList[i].getDeliveryType();
+            String storeVoucherCode = cartList[i].getStoreVoucherCode();
              
             //get delivery charges from delivery-service
             double deliveryCharge=0;

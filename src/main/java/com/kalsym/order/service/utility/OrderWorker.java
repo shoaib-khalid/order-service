@@ -59,6 +59,7 @@ import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.EmailService;
 import com.kalsym.order.service.service.FCMService;
 import com.kalsym.order.service.service.CustomerService;
+import com.kalsym.order.service.service.WhatsappService;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -106,7 +107,8 @@ public class OrderWorker {
             FCMService fcmService,
             EmailService emailService,
             DeliveryService deliveryService,
-            CustomerService customerService) {
+            CustomerService customerService,
+            WhatsappService whatsappService) {
 
         HttpResponse response = new HttpResponse(requestUri);
         // create order object
@@ -580,6 +582,30 @@ public class OrderWorker {
                         String pushNotificationContent = orderCompletionStatusConfig.getStorePushNotificationContent();
                         try {
                             fcmService.sendPushNotification(order, storeWithDetials.getId(), storeWithDetials.getName(), pushNotificationTitle, pushNotificationContent, OrderStatus.RECEIVED_AT_STORE, storeWithDetials.getRegionVertical().getDomain());
+                        } catch (Exception e) {
+                            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
+                        }
+
+                    }
+                    
+                    //send push notification to WA alert to admin
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getPushWAToAdmin to store: " + orderCompletionStatusConfig.getPushWAToAdmin());
+                    if (orderCompletionStatusConfig.getPushWAToAdmin()) {
+                        try {
+                            //String storeName, String invoiceNo, String orderId, String merchantToken
+                            whatsappService.sendAdminAlert(OrderStatus.RECEIVED_AT_STORE.name(), storeWithDetials.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp());
+                        } catch (Exception e) {
+                            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
+                        }
+
+                    }
+                
+                    //send push notification to WA alert to customer
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getPushWAToCustomer to store: " + orderCompletionStatusConfig.getPushWAToCustomer());
+                    if (orderCompletionStatusConfig.getPushWAToCustomer()) {
+                        try {
+                            //String storeName, String invoiceNo, String orderId, String merchantToken
+                            whatsappService.sendCustomerAlert(OrderStatus.RECEIVED_AT_STORE.name(), storeWithDetials.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp(), orderCompletionStatusConfig.getPushWAToCustomerTemplateName(), orderCompletionStatusConfig.getPushWAToCustomerTemplateFormat());
                         } catch (Exception e) {
                             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
                         }

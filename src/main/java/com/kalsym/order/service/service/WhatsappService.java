@@ -124,4 +124,45 @@ public class WhatsappService {
         }
 
     }
+        
+    public boolean sendCustomerAlert(String status, String storeName, String invoiceNo, String orderId, String updatedTime, String customerTemplateName, String WATemplateFormat) throws Exception {
+        //alert format : %invoiceNo%,%storeName%,%orderStatus%,%timestamp%
+        String logprefix = "sendCustomerAlert";
+        String[] recipientList = adminMsisdn.split(",");    
+        
+        ResponseEntity<String> res = null;
+        for (int i=0;i<recipientList.length;i++) {
+            RestTemplate restTemplate = new RestTemplate();        
+            HttpHeaders headers = new HttpHeaders();
+            WhatsappMessage request = new WhatsappMessage();
+            request.setGuest(false);
+            String[] recipients = {recipientList[i]};
+            request.setRecipientIds(recipients);
+            request.setRefId(recipients[0]);
+            request.setReferenceId(adminAlertRefId);
+            request.setOrderId(orderId);
+            Template template = new Template();
+            template.setName(customerTemplateName);
+            WATemplateFormat = WATemplateFormat.replaceAll("%invoiceNo%", invoiceNo);
+            WATemplateFormat = WATemplateFormat.replaceAll("%storeName%", storeName);
+            WATemplateFormat = WATemplateFormat.replaceAll("%orderStatus%", status);
+            WATemplateFormat = WATemplateFormat.replaceAll("%timestamp%", updatedTime);
+            String[] parameterList = WATemplateFormat.split(",");            
+            template.setParameters(parameterList);
+            request.setTemplate(template);
+            HttpEntity<WhatsappMessage> httpEntity = new HttpEntity<>(request, headers);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
+            res = restTemplate.postForEntity(whatsappServiceUrl, httpEntity, String.class);
+        }
+        
+        if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
+            return true;
+        } else {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendCustomerAlert res: " + res, "");
+            return false;
+        }
+
+    }
 }

@@ -95,6 +95,7 @@ import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.FCMService;
 import com.kalsym.order.service.service.OrderPostService;
 import com.kalsym.order.service.service.ProductService;
+import com.kalsym.order.service.service.WhatsappService;
 import com.kalsym.order.service.utility.Logger;
 import com.kalsym.order.service.utility.MessageGenerator;
 import com.kalsym.order.service.utility.OrderCalculation;
@@ -164,6 +165,9 @@ public class OrderController {
     FCMService fcmService;
     
     @Autowired
+    WhatsappService whatsappService;
+    
+    @Autowired
     ProductRepository productRepository;
 
     @Autowired
@@ -229,8 +233,7 @@ public class OrderController {
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
     
-    //@PreAuthorize("hasAnyAuthority('orders-get', 'all') and (@customOwnerVerifier.VerifyStore(#storeId) or @customOwnerVerifier.VerifyCustomer(#customerId))")
-    
+    //@PreAuthorize("hasAnyAuthority('orders-get', 'all') and (@customOwnerVerifier.VerifyStore(#storeId) or @customOwnerVerifier.VerifyCustomer(#customerId))")    
     @GetMapping(path = {""}, name = "orders-get", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-get', 'all')")
     public ResponseEntity<HttpResponse> getOrders(HttpServletRequest request,
@@ -775,7 +778,7 @@ public class OrderController {
                 regionCountriesRepository, customerRepository, 
                 orderCompletionStatusConfigRepository, 
                 productService, orderPostService, fcmService, 
-                emailService, deliveryService, customerService);  
+                emailService, deliveryService, customerService, whatsappService);  
         
         if (response.getStatus()==HttpStatus.CREATED.value()) {
             Order orderCreated = (Order)response.getData();  
@@ -969,7 +972,7 @@ public class OrderController {
                     regionCountriesRepository, customerRepository, 
                     orderCompletionStatusConfigRepository, 
                     productService, orderPostService, fcmService, 
-                    emailService, deliveryService, customerService);  
+                    emailService, deliveryService, customerService, whatsappService);  
             Order orderCreated = (Order)orderResponse.getData();
             sumCartSubTotal = sumCartSubTotal + orderCreated.getSubTotal();
             sumDeliveryCharges = sumDeliveryCharges + orderCreated.getDeliveryCharges();

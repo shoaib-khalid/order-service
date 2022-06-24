@@ -15,6 +15,9 @@ import java.util.List;
 public class CartWithItem {    
 
     String cartId;
+    String deliveryQuotationId;
+    String deliveryType;
+    String storeVoucherCode;
     List<String> selectedItemId;
 
     public CartWithItem() {
@@ -26,6 +29,30 @@ public class CartWithItem {
 
     public void setCartId(String cartId) {
         this.cartId = cartId;
+    }
+    
+    public String getDeliveryQuotationId() {
+        return deliveryQuotationId;
+    }
+
+    public void setDeliveryQuotationId(String deliveryQuotationId) {
+        this.deliveryQuotationId = deliveryQuotationId;
+    }
+    
+    public String getDeliveryType() {
+        return deliveryType;
+    }
+
+    public void setDeliveryType(String deliveryType) {
+        this.deliveryType = deliveryType;
+    }
+    
+    public String getStoreVoucherCode() {
+        return storeVoucherCode;
+    }
+
+    public void setStoreVoucherCode(String storeVoucherCode) {
+        this.storeVoucherCode = storeVoucherCode;
     }
 
     public List<String> getSelectedItemId() {

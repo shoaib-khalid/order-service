@@ -660,6 +660,18 @@ public class OrderProcessWorker {
                     }
 
                 }
+                
+                //send push notification to WA alert to customer
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getPushWAToCustomer to store: " + orderCompletionStatusConfig.getPushWAToCustomer());
+                if (orderCompletionStatusConfig.getPushWAToCustomer()) {
+                    try {
+                        //String storeName, String invoiceNo, String orderId, String merchantToken
+                        whatsappService.sendCustomerAlert(status.name(), storeWithDetails.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp(), orderCompletionStatusConfig.getPushWAToCustomerTemplateName(), orderCompletionStatusConfig.getPushWAToCustomerTemplateFormat());
+                    } catch (Exception e) {
+                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
+                    }
+
+                }
             } else {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Not done with RequestDelivery");
             }
