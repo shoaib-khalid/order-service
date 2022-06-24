@@ -28,6 +28,7 @@ public class WhatsappMessage {
     private String urlType;
     private String menuItems;
     private Template template;
+    private Template templateButton;
     private String refId;
     private String referenceId;
     private Boolean guest;

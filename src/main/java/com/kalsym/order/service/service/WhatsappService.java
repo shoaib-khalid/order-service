@@ -147,8 +147,20 @@ public class WhatsappService {
             WATemplateFormat = WATemplateFormat.replaceAll("%storeName%", storeName);
             WATemplateFormat = WATemplateFormat.replaceAll("%orderStatus%", status);
             WATemplateFormat = WATemplateFormat.replaceAll("%timestamp%", updatedTime);
-            String[] parameterList = WATemplateFormat.split(",");            
-            template.setParameters(parameterList);
+            WATemplateFormat = WATemplateFormat.replaceAll("%orderId%", orderId);
+            String[] parameterTypeList = WATemplateFormat.split(";"); 
+            for (int x=0;x<parameterTypeList.length;x++) {
+                String[] temp=parameterTypeList[x].split("=");
+                if (temp[0].equalsIgnoreCase("body")) {
+                    String[] parameterList = temp[1].split(",");
+                    template.setParameters(parameterList);
+                    request.setTemplate(template);
+                } else if (temp[0].equalsIgnoreCase("button")) {
+                    String[] parameterList = temp[1].split(",");
+                    template.setParametersButton(parameterList);
+                    request.setTemplateButton(template);
+                }
+            }
             request.setTemplate(template);
             HttpEntity<WhatsappMessage> httpEntity = new HttpEntity<>(request, headers);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
