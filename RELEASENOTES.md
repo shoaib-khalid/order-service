@@ -28,6 +28,9 @@
 
 ##DB Changes
 ALTER TABLE cart ADD stage VARCHAR(50);
+ALTER TABLE `order_completion_status_config` ADD pushWAToCustomer TINYINT(1) DEFAULT 0;
+ALTER TABLE `order_completion_status_config` ADD pushWAToCustomerTemplateName VARCHAR(100);
+ALTER TABLE `order_completion_status_config` ADD pushWAToCustomerTemplateFormat  VARCHAR(200);
 
 
 ##################################################
