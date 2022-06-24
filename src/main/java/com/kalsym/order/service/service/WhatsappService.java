@@ -125,7 +125,7 @@ public class WhatsappService {
 
     }
         
-    public boolean sendCustomerAlert(String status, String storeName, String invoiceNo, String orderId, String updatedTime, String customerTemplateName, String WATemplateFormat) throws Exception {
+    public boolean sendCustomerAlert(String status, String storeName, String invoiceNo, String orderId, String updatedTime, String customerTemplateName, String WATemplateFormat, String storeCity) throws Exception {
         //alert format : %invoiceNo%,%storeName%,%orderStatus%,%timestamp%
         String logprefix = "sendCustomerAlert";
         String[] recipientList = adminMsisdn.split(",");    
@@ -148,6 +148,7 @@ public class WhatsappService {
             WATemplateFormat = WATemplateFormat.replaceAll("%orderStatus%", status);
             WATemplateFormat = WATemplateFormat.replaceAll("%timestamp%", updatedTime);
             WATemplateFormat = WATemplateFormat.replaceAll("%orderId%", orderId);
+            WATemplateFormat = WATemplateFormat.replaceAll("%storeCity%", storeCity);
             String[] parameterTypeList = WATemplateFormat.split(";"); 
             for (int x=0;x<parameterTypeList.length;x++) {
                 String[] temp=parameterTypeList[x].split("=");

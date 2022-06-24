@@ -605,7 +605,7 @@ public class OrderWorker {
                     if (orderCompletionStatusConfig.getPushWAToCustomer()) {
                         try {
                             //String storeName, String invoiceNo, String orderId, String merchantToken
-                            whatsappService.sendCustomerAlert(OrderStatus.RECEIVED_AT_STORE.name(), storeWithDetials.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp(), orderCompletionStatusConfig.getPushWAToCustomerTemplateName(), orderCompletionStatusConfig.getPushWAToCustomerTemplateFormat());
+                            whatsappService.sendCustomerAlert(OrderStatus.RECEIVED_AT_STORE.name(), storeWithDetials.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp(), orderCompletionStatusConfig.getPushWAToCustomerTemplateName(), orderCompletionStatusConfig.getPushWAToCustomerTemplateFormat(), storeWithDetials.getCity());
                         } catch (Exception e) {
                             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
                         }
