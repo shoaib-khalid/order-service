@@ -124,6 +124,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.http.MediaType;
+import org.springframework.core.io.InputStreamResource;
+import java.io.ByteArrayInputStream;
+import org.springframework.http.HttpHeaders;
 
 /**
  *
@@ -232,6 +236,10 @@ public class OrderController {
     
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
+    
+    @Value("${order.invoice.base.URL:https://api.symplified.it/orders/pdf/}")
+    private String orderInvoiceBaseUrl;
+
     
     //@PreAuthorize("hasAnyAuthority('orders-get', 'all') and (@customOwnerVerifier.VerifyStore(#storeId) or @customOwnerVerifier.VerifyCustomer(#customerId))")    
     @GetMapping(path = {""}, name = "orders-get", produces = "application/json")
@@ -769,7 +777,7 @@ public class OrderController {
                 request.getRequestURI(), optCart.get(), cartItems, 
                 cod, storeWithDetials, storeDeliveryDetail,
                 customerStoreVoucher,
-                saveCustomerInformation, onboardingOrderLink, logprefix, 
+                saveCustomerInformation, onboardingOrderLink, orderInvoiceBaseUrl, logprefix, 
                 cartRepository, cartItemRepository, customerVoucherRepository, 
                 storeDetailsRepository, storeDeliveryDetailRepository, 
                 productInventoryRepository, storeDiscountRepository, storeDiscountTierRepository, 
@@ -963,7 +971,7 @@ public class OrderController {
                     request.getRequestURI(), optCart.get(), selectedCartItem, cod, optStore.get(), optStoreDeliveryDetail.get(),
                     customerStoreVoucher,
                     saveCustomerInformation,             
-                    onboardingOrderLink, logprefix, 
+                    onboardingOrderLink, orderInvoiceBaseUrl, logprefix, 
                     cartRepository, cartItemRepository, customerVoucherRepository, 
                     storeDetailsRepository, storeDeliveryDetailRepository, 
                     productInventoryRepository, storeDiscountRepository, storeDiscountTierRepository, 
@@ -1657,6 +1665,41 @@ public class OrderController {
             response.setMessage("Order not allow to revise");
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }               
+    }
+    
+    @GetMapping(path = {"/pdf/{orderId}"}, name = "orders-get-pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<InputStreamResource> getPdf(HttpServletRequest request,
+           @PathVariable String orderId) {
+        
+        String logprefix = request.getRequestURI() + "getPdf()";
+        Optional<Order> optOrder = orderRepository.findById(orderId);
+        
+        if (!optOrder.isPresent()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order not found with orderId: " + orderId);
+            
+            HttpHeaders responseHeaders = new HttpHeaders();
+            responseHeaders.add("Content-Disposition", "inline; filename="+orderId+".pdf");
+        
+            return ResponseEntity
+                    .ok()
+                    .headers(responseHeaders)
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(null);
+        }
+        
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order found with orderId: " + orderId);
+        Order order = optOrder.get();
+        
+        ByteArrayInputStream bis = com.kalsym.order.service.utility.GeneratePdfReport.citiesReport(order);
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add("Content-Disposition", "inline; filename="+orderId+".pdf");
+
+        return ResponseEntity
+                .ok()
+                .headers(responseHeaders)
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(new InputStreamResource(bis));
     }
     
     

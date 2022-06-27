@@ -127,7 +127,10 @@ public class OrderPaymentStatusUpdateController {
     
     @Value("${finance.email.sender.name:Deliver In Orders}")
     private String financeEmailSenderName;
-
+    
+    @Value("${order.invoice.base.URL:https://api.symplified.it/orders/pdf/}")
+    private String orderInvoiceBaseUrl;
+     
     @PutMapping(path = {""}, name = "order-completion-status-updates-put-by-order-id")
     @PreAuthorize("hasAnyAuthority('order-completion-status-updates-put-by-order-id', 'all')")
     public ResponseEntity<HttpResponse> putOrderCompletionStatusUpdatesConfirm(HttpServletRequest request,
@@ -142,7 +145,8 @@ public class OrderPaymentStatusUpdateController {
             financeEmailSenderName,
             bodyOrderCompletionStatusUpdate,
             onboardingOrderLink,
-            
+            orderInvoiceBaseUrl,
+                
             orderRepository,
             storeDetailsRepository,
             orderItemRepository,

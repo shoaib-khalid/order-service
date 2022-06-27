@@ -23,5 +23,6 @@ import lombok.ToString;
 public class Template { 
     private String[] parameters;
     private String[] parametersButton;
+    private String parametersDocument;
     private String name;   
 }

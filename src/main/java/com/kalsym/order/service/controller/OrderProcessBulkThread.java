@@ -65,6 +65,7 @@ public class OrderProcessBulkThread extends Thread {
     private final String financeEmailSenderName;
     private OrderCompletionStatusUpdate[] bodyOrderCompletionStatusUpdateList;
     private String onboardingOrderLink;
+    private String orderInvoiceBaseUrl;
     
     private OrderRepository orderRepository;
     private StoreDetailsRepository storeDetailsRepository;
@@ -101,6 +102,7 @@ public class OrderProcessBulkThread extends Thread {
             String financeEmailSenderName,
             OrderCompletionStatusUpdate[] bodyOrderCompletionStatusUpdateList,            
             String onboardingOrderLink,
+            String orderInvoiceBaseUrl,
             
             OrderRepository orderRepository,
             StoreDetailsRepository storeDetailsRepository,
@@ -134,7 +136,8 @@ public class OrderProcessBulkThread extends Thread {
             this.financeEmailSenderName = financeEmailSenderName;
             this.bodyOrderCompletionStatusUpdateList = bodyOrderCompletionStatusUpdateList;
             this.onboardingOrderLink = onboardingOrderLink;
-
+            this.orderInvoiceBaseUrl = orderInvoiceBaseUrl;
+            
             this.orderRepository = orderRepository;
             this.storeDetailsRepository = storeDetailsRepository;
             this.orderItemRepository = orderItemRepository;
@@ -179,6 +182,7 @@ public class OrderProcessBulkThread extends Thread {
                         financeEmailSenderName,
                         bodyOrderCompletionStatusUpdate,
                         onboardingOrderLink,
+                        orderInvoiceBaseUrl,
                         orderRepository,
                         storeDetailsRepository,
                         orderItemRepository,

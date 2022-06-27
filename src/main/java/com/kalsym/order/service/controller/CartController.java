@@ -152,6 +152,7 @@ public class CartController {
             @RequestParam(required = false) String customerId,
             @RequestParam(required = false) String storeId,
             @RequestParam(required = false) Boolean includeEmptyCart,
+            @RequestParam(required = false) List<String> cartIdList,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
         String logprefix = request.getRequestURI() + " ";
@@ -161,14 +162,14 @@ public class CartController {
 
         CartWithDetails cartMatch = new CartWithDetails();
         cartMatch.setCustomerId(customerId);
-        cartMatch.setStoreId(storeId);        
+        cartMatch.setStoreId(storeId);         
         ExampleMatcher exampleCartMatcher = ExampleMatcher
                 .matchingAll()
                 .withIgnoreCase()
                 .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);                
         Example<CartWithDetails> cartExample = Example.of(cartMatch, exampleCartMatcher);
         
-        Specification cartSpec = CartSearchSpecs.getEmptyCart(includeEmptyCart, cartExample );
+        Specification cartSpec = CartSearchSpecs.getEmptyCart(includeEmptyCart, cartExample, cartIdList );
         Pageable pageable = PageRequest.of(page, pageSize);
         Page<CartWithDetails> cartWithPage = cartWithDetailsRepository.findAll(cartSpec, pageable);
         response.setData(cartWithPage);

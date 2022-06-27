@@ -29,6 +29,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.ListJoin;
 import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Expression;
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.convert.QueryByExamplePredicateBuilder;
@@ -42,17 +43,24 @@ public class CartSearchSpecs {
      *
      * @param includeEmptyCart     
      * @param example
+     * @param cartIdList
      * @return
      */
     public static Specification<CartWithDetails> getEmptyCart(
             Boolean includeEmptyCart,
-            Example<CartWithDetails> example) {
+            Example<CartWithDetails> example,
+            List<String> cartIdList) {
 
         return (Specification<CartWithDetails>) (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
             if (includeEmptyCart!=null && !includeEmptyCart) {
                 ListJoin<CartWithDetails, CartItem> cartItemList = root.joinList("cartItems", JoinType.LEFT);            
                 predicates.add(builder.isNotNull(cartItemList));
+            }
+            if (cartIdList.size()>0) { 
+                Expression<String> parentExpression = root.get("id");
+                Predicate parentPredicate = parentExpression.in(cartIdList);
+                query.where(parentPredicate);
             }
                        
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));

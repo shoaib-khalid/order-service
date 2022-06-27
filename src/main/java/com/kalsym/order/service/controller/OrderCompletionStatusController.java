@@ -154,6 +154,9 @@ public class OrderCompletionStatusController {
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
     
+    @Value("${order.invoice.base.URL:https://api.symplified.it/orders/pdf/}")
+    private String orderInvoiceBaseUrl;
+    
     @Value("${finance.email.address:orders@deliverin.my}")
     private String financeEmailAddress;
     
@@ -288,6 +291,8 @@ public class OrderCompletionStatusController {
               bodyOrderCompletionStatusUpdateList,
 
               onboardingOrderLink,
+              orderInvoiceBaseUrl,
+                
               orderRepository,
               storeDetailsRepository,
               orderItemRepository,

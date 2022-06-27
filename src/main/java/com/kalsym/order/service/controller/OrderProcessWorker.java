@@ -62,6 +62,7 @@ public class OrderProcessWorker {
     private final String financeEmailSenderName;
     private OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate;
     private String onboardingOrderLink;
+    private String invoiceBaseUrl;
     
     private OrderRepository orderRepository;
     private StoreDetailsRepository storeDetailsRepository;
@@ -95,6 +96,7 @@ public class OrderProcessWorker {
             String financeEmailSenderName,
             OrderCompletionStatusUpdate bodyOrderCompletionStatusUpdate,
             String onboardingOrderLink,
+            String invoiceBaseUrl,
             
             OrderRepository orderRepository,
             StoreDetailsRepository storeDetailsRepository,
@@ -127,7 +129,8 @@ public class OrderProcessWorker {
         this.financeEmailSenderName = financeEmailSenderName;
         this.bodyOrderCompletionStatusUpdate = bodyOrderCompletionStatusUpdate;
         this.onboardingOrderLink = onboardingOrderLink;
-                
+        this.invoiceBaseUrl = invoiceBaseUrl;
+        
         this.orderRepository = orderRepository;
         this.storeDetailsRepository = storeDetailsRepository;
         this.orderItemRepository = orderItemRepository;
@@ -673,7 +676,7 @@ public class OrderProcessWorker {
                             Customer customer = customerOpt.get();
                             customerMsisdn = customer.getPhoneNumber();
                         }
-                        whatsappService.sendCustomerAlert(customerMsisdn, status.name(), storeWithDetails.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp(), orderCompletionStatusConfig.getPushWAToCustomerTemplateName(), orderCompletionStatusConfig.getPushWAToCustomerTemplateFormat(), storeWithDetails.getCity());
+                        whatsappService.sendCustomerAlert(customerMsisdn, status.name(), storeWithDetails.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp(), orderCompletionStatusConfig.getPushWAToCustomerTemplateName(), orderCompletionStatusConfig.getPushWAToCustomerTemplateFormat(), storeWithDetails.getCity(), invoiceBaseUrl);
                     } catch (Exception e) {
                         Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
                     }

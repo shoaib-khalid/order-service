@@ -83,6 +83,7 @@ public class OrderWorker {
             CustomerVoucher customerStoreVoucher,
             Boolean saveCustomerInformation,            
             String onboardingOrderLink,
+            String invoiceBaseUrl,
             String logprefix,
             CartRepository cartRepository,
             CartItemRepository cartItemRepository,
@@ -612,7 +613,8 @@ public class OrderWorker {
                                 customerMsisdn = customer.getPhoneNumber();
                             }
                             //String storeName, String invoiceNo, String orderId, String merchantToken
-                            whatsappService.sendCustomerAlert(customerMsisdn, OrderStatus.RECEIVED_AT_STORE.name(), storeWithDetials.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp(), orderCompletionStatusConfig.getPushWAToCustomerTemplateName(), orderCompletionStatusConfig.getPushWAToCustomerTemplateFormat(), storeWithDetials.getCity());
+                            String invoiceUrl = invoiceBaseUrl + "/" + order.getId();
+                            whatsappService.sendCustomerAlert(customerMsisdn, OrderStatus.RECEIVED_AT_STORE.name(), storeWithDetials.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp(), orderCompletionStatusConfig.getPushWAToCustomerTemplateName(), orderCompletionStatusConfig.getPushWAToCustomerTemplateFormat(), storeWithDetials.getCity(), invoiceUrl);
                         } catch (Exception e) {
                             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
                         }
