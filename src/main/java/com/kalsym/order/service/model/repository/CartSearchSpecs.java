@@ -59,8 +59,8 @@ public class CartSearchSpecs {
             }
             if (cartIdList.size()>0) { 
                 Expression<String> parentExpression = root.get("id");
-                Predicate parentPredicate = parentExpression.in(cartIdList);
-                query.where(parentPredicate);
+                Predicate parentPredicate = parentExpression.in(cartIdList);                
+                predicates.add(parentPredicate);
             }
                        
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));

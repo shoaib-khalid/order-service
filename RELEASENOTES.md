@@ -2,6 +2,7 @@
 # order-service-3.9.0-SNAPSHOT |27-June-2022
 ##################################################
 Send invoice pdf in whatsapp message to customer
+search by multiple ids in getCartWithDetails()
 
 
 ##################################################
