@@ -57,7 +57,7 @@ public class CartSearchSpecs {
                 ListJoin<CartWithDetails, CartItem> cartItemList = root.joinList("cartItems", JoinType.LEFT);            
                 predicates.add(builder.isNotNull(cartItemList));
             }
-            if (cartIdList.size()>0) { 
+            if (cartIdList!=null && cartIdList.size()>0) { 
                 Expression<String> parentExpression = root.get("id");
                 Predicate parentPredicate = parentExpression.in(cartIdList);                
                 predicates.add(parentPredicate);
