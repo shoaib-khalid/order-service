@@ -49,4 +49,11 @@ public class DateTimeUtil {
           .atZone(timezone)
           .toLocalDateTime();
     }
+    
+    public static String formatDateTime(String strDt) {
+        String[] d = strDt.split(" ");
+        String dateStr = d[0];
+        String timeStr = d[1];
+        return dateStr+" "+timeStr.substring(0, 5);
+    }
 }

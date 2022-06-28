@@ -32,6 +32,7 @@ import com.kalsym.order.service.model.StoreAssets;
 import com.kalsym.order.service.model.Customer;
 import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.StoreWithDetails;
+import java.text.SimpleDateFormat;
 
 public class GeneratePdfReport {
 
@@ -88,9 +89,12 @@ public class GeneratePdfReport {
             fontSmall.setSize(9);
             
             Font fontNormal = FontFactory.getFont(FontFactory.HELVETICA);
-            fontNormal.setSize(10);            
+            fontNormal.setSize(10); 
             
-            Font fontBig = FontFactory.getFont(FontFactory.HELVETICA);
+            Font fontNormalBold = FontFactory.getFont(FontFactory.HELVETICA_BOLD);
+            fontNormalBold.setSize(10);
+            
+            Font fontBig = FontFactory.getFont(FontFactory.HELVETICA_BOLD);
             fontBig.setSize(12);            
             
             PdfPCell col1;
@@ -103,14 +107,29 @@ public class GeneratePdfReport {
             PdfPCell sellerImgCol = new PdfPCell();
             try {
                 Image image = Image.getInstance(storeLogo);
+                float preferredImageHeight = 80;
+                float widthScale = image.getScaledHeight() / preferredImageHeight;
+                image.scaleAbsolute(image.getScaledWidth() / widthScale, preferredImageHeight);                
                 sellerImgCol.addElement(image);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-            sellerImgCol.setPaddingBottom(50);
+            sellerImgCol.setPaddingBottom(20);
+            sellerImgCol.setBorder(0);
             sellerTable.addCell(sellerImgCol);
-            sellerTable.addCell(new Paragraph(storeName+"\n"+storeAddress+"\n"+storePostcode+" "+storeCity+"\n"+storeState, fontNormal)); 
+            PdfPCell sellerAdressCell = new PdfPCell();
+            sellerAdressCell.addElement(new Paragraph(storeName+"\n"+storeAddress+"\n"+storePostcode+" "+storeCity+"\n"+storeState, fontNormal));             
+            sellerAdressCell.setBorder(0);
+            sellerTable.addCell(sellerAdressCell);
             col1.addElement(sellerTable);
+            
+            PdfPTable spacerTable = new PdfPTable(1);
+            PdfPCell spacerCell = new PdfPCell();
+            spacerCell.setPaddingBottom(10);
+            spacerCell.setBorder(0);
+            spacerCell.addElement(new Paragraph(" "));
+            spacerTable.addCell(spacerCell);
+            col1.addElement(spacerTable);
             
             PdfPTable buyerTable = new PdfPTable(2);
             buyerTable.setWidths(new int[]{1,2});
@@ -118,12 +137,16 @@ public class GeneratePdfReport {
             PdfPCell buyerImgCol = new PdfPCell();
             buyerImgCol.addElement(new Paragraph("Bill To"));
             buyerImgCol.setPaddingBottom(50);
+            buyerImgCol.setBorder(0);
             buyerTable.addCell(buyerImgCol);
-            buyerTable.addCell(new Paragraph(customerName+"\n"+deliveryAddress+"\n"+deliveryPostcode+"\n"+deliveryCity+"\n"+deliveryState, fontNormal));
+            PdfPCell buyerAdressCell = new PdfPCell();
+            buyerAdressCell.addElement(new Paragraph(customerName+"\n"+deliveryAddress+"\n"+deliveryPostcode+"\n"+deliveryCity+"\n"+deliveryState, fontNormal));
+            buyerAdressCell.setBorder(0);
+            buyerTable.addCell(buyerAdressCell);
             col1.addElement(buyerTable);
-            col1.setBorder(1);
+            col1.setBorder(0);
             col1.setPaddingBottom(100);
-            col1.setPaddingTop(50);                        
+            col1.setPaddingTop(20);                        
             table.addCell(col1);
             
             PdfPCell col2;
@@ -132,12 +155,12 @@ public class GeneratePdfReport {
             
             PdfPTable invInfoTable = new PdfPTable(1);
             invInfoTable.setWidthPercentage(100);
-            invInfoTable.addCell(new Paragraph("INVOICE "+ order.getInvoiceId(), fontBig));
-            invInfoTable.addCell(new Paragraph("CREATED DATE "+order.getCreated(), fontSmall));
-            invInfoTable.addCell(new Paragraph("UPDATED DATE "+order.getUpdated(), fontSmall));
+            invInfoTable.addCell(setCellNoBorder("INVOICE NO : "+ order.getInvoiceId(), fontBig, Element.ALIGN_LEFT));
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/YYYY HH:mm");
+            invInfoTable.addCell(setCellNoBorder("ORDER DATE : "+dateFormat.format(order.getCreated()), fontSmall, Element.ALIGN_LEFT));            
             col2.addElement(invInfoTable);
-            col2.setBorder(1);
-            col2.setPaddingTop(50);
+            col2.setBorder(0);
+            col2.setPaddingTop(20);
             table.addCell(col2);
             
             //invoice item
@@ -145,27 +168,25 @@ public class GeneratePdfReport {
             itemTable.setWidthPercentage(100);
             PdfPCell itemCol = new PdfPCell();
             
-            PdfPTable itemSubTable = new PdfPTable(5);
+            PdfPTable itemSubTable = new PdfPTable(4);
             itemSubTable.setWidthPercentage(100);
-            itemSubTable.setWidths(new int[]{3, 1, 1, 1, 1});
-            itemSubTable.addCell(new Paragraph("ITEMS", fontNormal));
-            itemSubTable.addCell(new Paragraph("PRICE", fontNormal));
-            itemSubTable.addCell(new Paragraph("ORIGINAL QUANTITY", fontNormal));
-            itemSubTable.addCell(new Paragraph("QUANTITY", fontNormal));
-            itemSubTable.addCell(new Paragraph("TOTAL", fontNormal));
+            itemSubTable.setWidths(new int[]{3, 1, 1, 1});
+            itemSubTable.addCell(setCellNoBorder("ITEMS", fontNormalBold, Element.ALIGN_LEFT));
+            itemSubTable.addCell(setCellNoBorder("PRICE", fontNormalBold, Element.ALIGN_RIGHT));           
+            itemSubTable.addCell(setCellNoBorder("QUANTITY", fontNormalBold, Element.ALIGN_RIGHT));
+            itemSubTable.addCell(setCellNoBorder("TOTAL", fontNormalBold, Element.ALIGN_RIGHT));
             itemCol.addElement(itemSubTable);
             
-            PdfPTable itemSubTable2 = new PdfPTable(5);
+            PdfPTable itemSubTable2 = new PdfPTable(4);
             itemSubTable2.setWidthPercentage(100);
-            itemSubTable2.setWidths(new int[]{3, 1, 1, 1, 1});
+            itemSubTable2.setWidths(new int[]{3, 1, 1, 1});
             
             for (int x=0;x<orderItemList.size();x++) {
-                OrderItem item = orderItemList.get(x);
-                itemSubTable2.addCell(new Paragraph(item.getProductName(), fontNormal));
-                itemSubTable2.addCell(new Paragraph(String.valueOf(item.getProductPrice()), fontNormal));
-                itemSubTable2.addCell(new Paragraph(String.valueOf(item.getOriginalQuantity()), fontNormal));
-                itemSubTable2.addCell(new Paragraph(String.valueOf(item.getQuantity()), fontNormal));
-                itemSubTable2.addCell(new Paragraph(String.valueOf(item.getPrice()), fontNormal));
+                OrderItem item = orderItemList.get(x);                
+                itemSubTable2.addCell(setStringCellValue(item.getProductName(), fontSmall, 1));                
+                itemSubTable2.addCell(setNumberCellValue(String.format("%.2f",item.getProductPrice()),fontSmall, 1));                
+                itemSubTable2.addCell(setIntegerCellValue(String.valueOf(item.getQuantity()), fontSmall, 1));
+                itemSubTable2.addCell(setNumberCellValue(String.format("%.2f",item.getPrice()), fontSmall, 1));
             }
             
             itemCol.addElement(itemSubTable2);
@@ -177,7 +198,7 @@ public class GeneratePdfReport {
             PdfPTable notesSubTable = new PdfPTable(1);
             notesSubTable.setWidthPercentage(100);
             PdfPCell notesCol = new PdfPCell();
-            notesSubTable.addCell(new Paragraph("CUSTOMER NOTES : " +order.getCustomerNotes(), fontNormal));
+            notesSubTable.addCell(setCellNoBorder("CUSTOMER NOTES : " +order.getCustomerNotes(), fontNormal, Element.ALIGN_LEFT));
             notesCol.addElement(notesSubTable);
             notesCol.setPaddingBottom(50);
             PdfPTable notesTable = new PdfPTable(1);
@@ -191,18 +212,24 @@ public class GeneratePdfReport {
             PdfPTable subtotalSubTable = new PdfPTable(2);
             subtotalSubTable.setWidthPercentage(100);
             subtotalSubTable.setWidths(new int[]{5, 1});
-            subtotalSubTable.addCell(new Paragraph("SUBTOTAL", fontNormal));
-            subtotalSubTable.addCell(new Paragraph(String.valueOf(order.getSubTotal()), fontNormal));
-            subtotalSubTable.addCell(new Paragraph("ORDER DISCOUNT", fontNormal));
-            subtotalSubTable.addCell(new Paragraph(String.valueOf(order.getAppliedDiscount()), fontNormal));
-            subtotalSubTable.addCell(new Paragraph("DELIVERY CHARGE", fontNormal));
-            subtotalSubTable.addCell(new Paragraph(String.valueOf(order.getDeliveryCharges()), fontNormal));
-            subtotalSubTable.addCell(new Paragraph("DELIVERY DISCOUNT", fontNormal));
-            subtotalSubTable.addCell(new Paragraph(String.valueOf(order.getDeliveryDiscount()), fontNormal));
-            subtotalSubTable.addCell(new Paragraph("PLATFORM VOUCHER", fontNormal));
-            subtotalSubTable.addCell(new Paragraph(String.valueOf(order.getVoucherDiscount()), fontNormal));
-            subtotalSubTable.addCell(new Paragraph("TOTAL", fontNormal));
-            subtotalSubTable.addCell(new Paragraph(String.valueOf(order.getTotal()), fontNormal));
+            
+            subtotalSubTable.addCell(setStringCellValue("SUBTOTAL", fontNormal, 0));
+            subtotalSubTable.addCell(setNumberCellValue(String.format("%.2f",order.getSubTotal()), fontNormal, 0));
+            
+            subtotalSubTable.addCell(setStringCellValue("ORDER DISCOUNT", fontNormal, 0));
+            subtotalSubTable.addCell(setNumberCellValue("-" +String.format("%.2f",convertNullToZero(order.getAppliedDiscount())), fontNormal, 0));
+            
+            subtotalSubTable.addCell(setStringCellValue("DELIVERY CHARGE", fontNormal, 0));
+            subtotalSubTable.addCell(setNumberCellValue(String.format("%.2f",convertNullToZero(order.getDeliveryCharges())), fontNormal, 0));
+            
+            subtotalSubTable.addCell(setStringCellValue("DELIVERY DISCOUNT", fontNormal, 0));
+            subtotalSubTable.addCell(setNumberCellValue("-" +String.format("%.2f",convertNullToZero(order.getDeliveryDiscount())), fontNormal, 0));
+            
+            subtotalSubTable.addCell(setStringCellValue("PLATFORM VOUCHER", fontNormal, 0));
+            subtotalSubTable.addCell(setNumberCellValue("-" +String.format("%.2f",convertNullToZero(order.getVoucherDiscount())), fontNormal, 0));
+            
+            subtotalSubTable.addCell(setStringCellValue("TOTAL", fontNormalBold, 0));            
+            subtotalSubTable.addCell(setNumberCellValue(String.format("%.2f",order.getTotal()), fontNormalBold, 0));
             subTotalCol.addElement(subtotalSubTable);
             subTotalCol.setPaddingBottom(50);
             subtotalTable.addCell(subTotalCol);
@@ -213,9 +240,9 @@ public class GeneratePdfReport {
             PdfPCell footerCol = new PdfPCell();
             PdfPTable footerSubTable = new PdfPTable(1);
             footerSubTable.setWidthPercentage(100);
-            footerSubTable.addCell(new Paragraph("This invoice is computer generated. Thank you for your business.", fontXSmall));
+            footerSubTable.addCell(setCellNoBorder("This invoice is computer generated. Thank you for your purchase.", fontXSmall, Element.ALIGN_LEFT));
             footerCol.addElement(footerSubTable);
-            footerCol.setPaddingBottom(100);
+            footerCol.setPaddingBottom(10);
             footerTable.addCell(footerCol);
             
             PdfWriter.getInstance(document, out);
@@ -235,4 +262,68 @@ public class GeneratePdfReport {
 
         return new ByteArrayInputStream(out.toByteArray());
     }
+    
+    private static double convertNullToZero(Double dblVal) {
+        if (dblVal==null) {
+            return 0.00;
+        } else {
+            return dblVal;
+        }
+    }
+    
+    private static PdfPCell setNumberCellValue(String value, Font font, int border) {
+       PdfPCell pcell = new PdfPCell();
+       if (value!=null && !value.equals("nu") && !value.equals("null") ) {
+           Paragraph p = new Paragraph(value, font);
+           p.setAlignment(Element.ALIGN_RIGHT);
+           pcell.addElement(p);
+       } else {
+           Paragraph p = new Paragraph("0.00", font);
+           p.setAlignment(Element.ALIGN_RIGHT);
+           pcell.addElement(p);           
+       }
+       pcell.setBorder(border);
+       return pcell;
+    }
+    
+    private static PdfPCell setStringCellValue(String value, Font font, int border) {
+       PdfPCell pcell = new PdfPCell();
+       if (value!=null && !value.equals("nu") && !value.equals("null")) {
+           Paragraph p = new Paragraph(value, font);
+           p.setAlignment(Element.ALIGN_LEFT);
+           pcell.addElement(p);
+       } else {
+           Paragraph p = new Paragraph("", font);
+           p.setAlignment(Element.ALIGN_LEFT);
+           pcell.addElement(p);           
+       }
+       pcell.setBorder(border);
+       return pcell;
+    }
+    
+    private static PdfPCell setIntegerCellValue(String value, Font font, int border) {
+       PdfPCell pcell = new PdfPCell();
+       if (value!=null && !value.equals("nu") && !value.equals("null") ) {
+           Paragraph p = new Paragraph(value, font);
+           p.setAlignment(Element.ALIGN_RIGHT);
+           pcell.addElement(p);
+       } else {
+           Paragraph p = new Paragraph("0", font);
+           p.setAlignment(Element.ALIGN_RIGHT);
+           pcell.addElement(p);           
+       }
+       pcell.setBorder(border);
+       return pcell;
+    }
+    
+    private static PdfPCell setCellNoBorder(String value, Font font, int alignment) {
+        PdfPCell pCell = new PdfPCell();
+        Paragraph p = new Paragraph(value, font);
+        p.setAlignment(alignment);
+        pCell.addElement(p);
+        pCell.setBorder(0);
+        return pCell;
+    }
+   
+  
 }
