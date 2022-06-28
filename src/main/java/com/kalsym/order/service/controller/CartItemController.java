@@ -476,22 +476,28 @@ public class CartItemController {
         }
         itemProductPrice = itemPrice;
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "itemPrice:"+itemPrice);
-
+                
         //find itemcode in cart item, update price
         List<CartItem> itemList = cartItemRepository.findByItemCode(itemCode);
         for (int i=0;i<itemList.size();i++) {
-            CartItem cartItem = itemList.get(i);            
-            cartItem.setProductPrice((float)itemProductPrice);
-            cartItem.setPrice((float)(cartItem.getQuantity() * itemProductPrice));
-            if (itemDiscountId!=null) {
-                cartItem.setNormalPrice((float)itemNormalPrice);
-                cartItem.setDiscountLabel(itemDiscountLabel);
-            } else {
-                cartItem.setNormalPrice(null);
-                cartItem.setDiscountLabel(null);
-            }
-            cartItemRepository.save(cartItem);
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem price updated with for cartItemId: " + cartItem.getId());
+            CartItem cartItem = itemList.get(i); 
+            //check if cart is open
+            Optional<Cart> cart = cartRepository.findById(cartItem.getCartId());
+            if (cart.isPresent()) {
+                if (cart.get().getIsOpen()) {
+                    cartItem.setProductPrice((float)itemProductPrice);
+                    cartItem.setPrice((float)(cartItem.getQuantity() * itemProductPrice));
+                    if (itemDiscountId!=null) {
+                        cartItem.setNormalPrice((float)itemNormalPrice);
+                        cartItem.setDiscountLabel(itemDiscountLabel);
+                    } else {
+                        cartItem.setNormalPrice(null);
+                        cartItem.setDiscountLabel(null);
+                    }
+                    cartItemRepository.save(cartItem);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem price updated with for cartItemId: " + cartItem.getId());
+                }
+            }            
         }
         
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -522,9 +528,15 @@ public class CartItemController {
         //find itemcode in cart item, remove item
         List<CartItem> itemList = cartItemRepository.findByItemCode(itemCode);
         for (int i=0;i<itemList.size();i++) {
-            CartItem cartItem = itemList.get(i);                        
-            cartItemRepository.delete(cartItem);
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem removed with for cartItemId: " + cartItem.getId());
+            CartItem cartItem = itemList.get(i); 
+            //check if cart is open
+            Optional<Cart> cart = cartRepository.findById(cartItem.getCartId());
+            if (cart.isPresent()) {
+                if (cart.get().getIsOpen()) {
+                    cartItemRepository.delete(cartItem);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem removed with for cartItemId: " + cartItem.getId());
+                }
+            }
         }
         
         return ResponseEntity.status(HttpStatus.OK).body(response);
