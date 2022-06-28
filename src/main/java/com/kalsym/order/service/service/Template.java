@@ -24,5 +24,6 @@ public class Template {
     private String[] parameters;
     private String[] parametersButton;
     private String parametersDocument;
+    private String parametersDocumentFileName;
     private String name;   
 }

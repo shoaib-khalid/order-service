@@ -160,6 +160,7 @@ public class WhatsappService {
             } else if (temp[0].equalsIgnoreCase("document")) {
                 String parameterDoc = temp[1];
                 template.setParametersDocument(parameterDoc); 
+                template.setParametersDocumentFileName(invoiceNo+".pdf");
             }
         }
         request.setTemplate(template);
