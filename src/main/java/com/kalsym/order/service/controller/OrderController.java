@@ -1018,8 +1018,11 @@ public class OrderController {
             orderRepository.UpdateOrderGroupId(orderCreatedList.get(x).getId(), orderGroup.getId());
         }
         
+        response.setStatus(HttpStatus.CREATED.value());
         response.setData(orderGroup);
         
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "placeGroupOrder completed");
+         
         return ResponseEntity.status(response.getStatus()).body(response);
     }    
 
