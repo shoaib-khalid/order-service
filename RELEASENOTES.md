@@ -1,8 +1,11 @@
 ##################################################
-# order-service-3.9.0-SNAPSHOT |27-June-2022
+# order-service-3.9.0-SNAPSHOT |28-June-2022
 ##################################################
-Send invoice pdf in whatsapp message to customer
-search by multiple ids in getCartWithDetails()
+1. Send invoice pdf in whatsapp message to customer
+
+2. search by multiple ids in getCartWithDetails()
+
+3. New API to deleteitem from cart when merchant delete the item
 
 
 ##################################################

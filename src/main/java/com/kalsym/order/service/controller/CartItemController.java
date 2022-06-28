@@ -437,7 +437,7 @@ public class CartItemController {
     public ResponseEntity<HttpResponse> updateItemPrice(HttpServletRequest request,
             @PathVariable(required = true) String itemCode
             ) throws Exception {
-        String logprefix = request.getRequestURI() + " ";
+        String logprefix = request.getRequestURI() + " updateItemPrice()";
         HttpResponse response = new HttpResponse(request.getRequestURI());
         
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-updateprice-by-itemcode, itemCode: " + itemCode);
@@ -492,6 +492,39 @@ public class CartItemController {
             }
             cartItemRepository.save(cartItem);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem price updated with for cartItemId: " + cartItem.getId());
+        }
+        
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    
+    
+    @PostMapping(path = {"/deleteitem/{itemCode}"}, name = "cart-items-deleteitem-by-itemcode")
+    @PreAuthorize("hasAnyAuthority('cart-items-deleteitem-by-itemcode', 'all')")
+    public ResponseEntity<HttpResponse> deleteItem(HttpServletRequest request,
+            @PathVariable(required = true) String itemCode
+            ) throws Exception {
+        String logprefix = request.getRequestURI() + " deleteItem()";
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-deleteitem-by-itemcode, itemCode: " + itemCode);
+        
+        //find itemCode
+        ProductInventory productInventoryDB = productInventoryRepository.findByItemCode(itemCode);
+            
+        if (productInventoryDB==null) {
+            //itemCode not found
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item code not found");
+            response.setMessage("Item code not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } 
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventoryDB.toString());
+               
+        //find itemcode in cart item, remove item
+        List<CartItem> itemList = cartItemRepository.findByItemCode(itemCode);
+        for (int i=0;i<itemList.size();i++) {
+            CartItem cartItem = itemList.get(i);                        
+            cartItemRepository.delete(cartItem);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem removed with for cartItemId: " + cartItem.getId());
         }
         
         return ResponseEntity.status(HttpStatus.OK).body(response);

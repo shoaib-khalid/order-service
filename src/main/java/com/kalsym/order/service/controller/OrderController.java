@@ -104,6 +104,7 @@ import com.kalsym.order.service.utility.OrderWorker;
 import com.kalsym.order.service.utility.StoreDiscountCalculation;
 import com.kalsym.order.service.utility.TxIdUtil;
 import com.kalsym.order.service.utility.Utilities;
+import com.kalsym.order.service.utility.GeneratePdfReport;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -237,7 +238,7 @@ public class OrderController {
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
     
-    @Value("${order.invoice.base.URL:https://api.symplified.it/orders/pdf/}")
+    @Value("${order.invoice.base.URL:https://api.symplified.it/order-service/v1/orders/pdf/}")
     private String orderInvoiceBaseUrl;
 
     
@@ -1689,8 +1690,11 @@ public class OrderController {
         
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order found with orderId: " + orderId);
         Order order = optOrder.get();
-        
-        ByteArrayInputStream bis = com.kalsym.order.service.utility.GeneratePdfReport.citiesReport(order);
+        List<OrderItem> orderItemList = orderItemRepository.findByOrderId(order.getId());
+        OrderShipmentDetail orderShipmentDetail = orderShipmentDetailRepository.findByOrderId(order.getId());
+        Optional<StoreWithDetails> storeWithDetails = storeDetailsRepository.findById(order.getStoreId());
+                
+        ByteArrayInputStream bis = GeneratePdfReport.orderInvoice(order, orderItemList, storeWithDetails.get(), orderShipmentDetail);
 
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add("Content-Disposition", "inline; filename="+orderId+".pdf");
