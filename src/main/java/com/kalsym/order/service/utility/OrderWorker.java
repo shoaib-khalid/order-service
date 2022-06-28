@@ -318,6 +318,9 @@ public class OrderWorker {
                     return response;
                 }
                 
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order platform voucherId:"+orderTotalObject.getVoucherId());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order platform voucherDiscount:"+orderTotalObject.getVoucherDiscount());
+                
                 order.setSubTotal(orderTotalObject.getSubTotal());
                 order.setAppliedDiscount(orderTotalObject.getAppliedDiscount());
                 order.setAppliedDiscountDescription(orderTotalObject.getAppliedDiscountDescription());

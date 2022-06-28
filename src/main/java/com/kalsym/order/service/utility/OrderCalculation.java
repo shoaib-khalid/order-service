@@ -128,9 +128,9 @@ public class OrderCalculation {
         double storeVoucherDiscountAmount = 0.00;
         if (customerStoreVoucher!=null) {
             
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher minimum spend: " + customerStoreVoucher.getVoucher().getMinimumSpend());
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher allowDoubleDiscount: " + customerStoreVoucher.getVoucher().getAllowDoubleDiscount());
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher verticalList: " + customerStoreVoucher.getVoucher().getVoucherVerticalList().toString());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store voucher minimum spend: " + customerStoreVoucher.getVoucher().getMinimumSpend());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store voucher allowDoubleDiscount: " + customerStoreVoucher.getVoucher().getAllowDoubleDiscount());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store voucher verticalList: " + customerStoreVoucher.getVoucher().getVoucherVerticalList().toString());
             
             //check voucher minimum spend
             if (Utilities.convertToDouble(discount.getCartSubTotal()) < customerStoreVoucher.getVoucher().getMinimumSpend()) {
