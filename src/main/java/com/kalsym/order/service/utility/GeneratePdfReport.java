@@ -16,10 +16,8 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.Image;
+import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.enums.StoreAssetType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -36,8 +34,7 @@ import java.text.SimpleDateFormat;
 
 public class GeneratePdfReport {
 
-    private static final Logger logger = LoggerFactory.getLogger(GeneratePdfReport.class);
-
+    
     public static ByteArrayInputStream orderInvoice(Order order, 
             List<OrderItem> orderItemList, 
             StoreWithDetails storeWithDetails, 
@@ -45,8 +42,12 @@ public class GeneratePdfReport {
 
         Document document = new Document();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-
+        String logprefix="GeneratePdfReport()";
+        
         try {
+            
+            
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Generating pdf for orderId:"+order.getId());          
             
             //get store logo
             String storeLogo=null;             
@@ -55,6 +56,8 @@ public class GeneratePdfReport {
             } else {
                 storeLogo = storeWithDetails.getRegionVertical().getDefaultLogoUrl();                            
             }
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "storeLogo url:"+storeLogo);          
+            
             //seller details
             Store store = order.getStore();
             String storeName = store.getName();
@@ -112,7 +115,7 @@ public class GeneratePdfReport {
                 image.scaleAbsolute(image.getScaledWidth() / widthScale, preferredImageHeight);                
                 sellerImgCol.addElement(image);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Exception load store logo:"+ex.getMessage(), ex);          
             }
             sellerImgCol.setPaddingBottom(20);
             sellerImgCol.setBorder(0);
@@ -257,7 +260,7 @@ public class GeneratePdfReport {
 
         } catch (DocumentException ex) {
 
-            logger.error("Error occurred: {0}", ex);
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Exception generating pdf:"+ex.getMessage(), ex);          
         }
 
         return new ByteArrayInputStream(out.toByteArray());
