@@ -9,6 +9,7 @@
 
 5. New API to update status by group order id (used by payment-service to update PAYMENT_CONFIRMED)
 
+6. New API to get order group by id
 
 ##################################################
 # order-service-3.8.2-SNAPSHOT |24-June-2022
