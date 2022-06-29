@@ -1004,19 +1004,30 @@ public class OrderController {
         } else {
             sumTotal = orderTotal;
         }
+        
+        //get shipment details from one of order created
+        OrderShipmentDetail orderShipmentDetail = orderCreatedList.get(0).getOrderShipmentDetail();
+        
         orderGroup.setCustomerId(customerId);
         orderGroup.setDeliveryCharges(sumDeliveryCharges);        
         orderGroup.setSubTotal(sumCartSubTotal);
         orderGroup.setTotal(sumTotal);
         orderGroup.setAppliedDiscount(sumAppliedDiscount);
         orderGroup.setDeliveryDiscount(sumDeliveryDiscount);
+        orderGroup.setShipmentEmail(orderShipmentDetail.getEmail());
+        orderGroup.setShipmentName(orderShipmentDetail.getReceiverName());
+        orderGroup.setShipmentPhoneNumber(orderShipmentDetail.getPhoneNumber());
+        orderGroupRepository.save(orderGroup);
+        
+        //append prefix to differnetiate between single & multiple
+        orderGroup.setId("G"+orderGroup.getId());
         orderGroupRepository.save(orderGroup);
         
         //update orderGroupId for each order
         for (int x=0;x<orderCreatedList.size();x++) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update OrderGroupId="+orderGroup.getId()+" for OrderId:"+orderCreatedList.get(x).getId());
             orderRepository.UpdateOrderGroupId(orderCreatedList.get(x).getId(), orderGroup.getId());
-        }
+        }                
         
         response.setStatus(HttpStatus.CREATED.value());
         response.setData(orderGroup);

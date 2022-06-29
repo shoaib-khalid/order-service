@@ -33,6 +33,7 @@ import com.kalsym.order.service.model.repository.OrderPaymentDetailRepository;
 import com.kalsym.order.service.model.repository.OrderPaymentStatusUpdateRepository;
 import com.kalsym.order.service.model.repository.OrderRefundRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
+import com.kalsym.order.service.model.repository.OrderGroupRepository;
 import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
 import com.kalsym.order.service.model.repository.PaymentOrderRepository;
 import com.kalsym.order.service.model.repository.ProductInventoryRepository;
@@ -84,6 +85,9 @@ public class OrderCompletionStatusController {
 
     @Autowired
     OrderRepository orderRepository;
+    
+    @Autowired
+    OrderGroupRepository orderGroupRepository;
 
     @Autowired
     OrderCompletionStatusRepository orderCompletionStatusRepository;
@@ -294,6 +298,7 @@ public class OrderCompletionStatusController {
               orderInvoiceBaseUrl,
                 
               orderRepository,
+              orderGroupRepository,
               storeDetailsRepository,
               orderItemRepository,
               orderCompletionStatusConfigRepository,

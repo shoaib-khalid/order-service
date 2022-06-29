@@ -58,7 +58,10 @@ public class OrderPaymentStatusUpdateController {
 
     @Autowired
     OrderRepository orderRepository;
-
+    
+    @Autowired
+    OrderGroupRepository orderGroupRepository;
+    
     @Autowired
     DeliveryService deliveryService;
 
@@ -148,6 +151,7 @@ public class OrderPaymentStatusUpdateController {
             orderInvoiceBaseUrl,
                 
             orderRepository,
+            orderGroupRepository,
             storeDetailsRepository,
             orderItemRepository,
             orderCompletionStatusConfigRepository,
@@ -175,7 +179,7 @@ public class OrderPaymentStatusUpdateController {
         response.setSuccessStatus(result.httpStatus);
         response.setMessage(result.errorMsg);
         return ResponseEntity.status(result.httpStatus).body(response);
-    }
+    }    
     
     @PutMapping(path = {"/request-delivery"}, name = "order-completion-status-updates-put-by-order-id-by-merchant")
     @PreAuthorize("hasAnyAuthority('order-completion-status-updates-put-by-order-id-by-merchant', 'all')")

@@ -7,6 +7,8 @@
 
 3. New API to deleteitem from cart when merchant delete the item
 
+5. New API to update status by group order id (used by payment-service to update PAYMENT_CONFIRMED)
+
 
 ##################################################
 # order-service-3.8.2-SNAPSHOT |24-June-2022

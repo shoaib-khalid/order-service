@@ -22,6 +22,7 @@ import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.OrderPaymentStatusUpdateRepository;
 import com.kalsym.order.service.model.repository.OrderRefundRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
+import com.kalsym.order.service.model.repository.OrderGroupRepository;
 import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
 import com.kalsym.order.service.model.repository.PaymentOrderRepository;
 import com.kalsym.order.service.model.repository.ProductInventoryRepository;
@@ -68,6 +69,7 @@ public class OrderProcessBulkThread extends Thread {
     private String orderInvoiceBaseUrl;
     
     private OrderRepository orderRepository;
+    private OrderGroupRepository orderGroupRepository;
     private StoreDetailsRepository storeDetailsRepository;
     private OrderItemRepository orderItemRepository;
     private OrderCompletionStatusConfigRepository orderCompletionStatusConfigRepository;
@@ -105,6 +107,7 @@ public class OrderProcessBulkThread extends Thread {
             String orderInvoiceBaseUrl,
             
             OrderRepository orderRepository,
+            OrderGroupRepository orderGroupRepository,
             StoreDetailsRepository storeDetailsRepository,
             OrderItemRepository orderItemRepository,
             OrderCompletionStatusConfigRepository orderCompletionStatusConfigRepository,
@@ -139,6 +142,7 @@ public class OrderProcessBulkThread extends Thread {
             this.orderInvoiceBaseUrl = orderInvoiceBaseUrl;
             
             this.orderRepository = orderRepository;
+            this.orderGroupRepository = orderGroupRepository;
             this.storeDetailsRepository = storeDetailsRepository;
             this.orderItemRepository = orderItemRepository;
             this.orderCompletionStatusConfigRepository = orderCompletionStatusConfigRepository;
@@ -184,6 +188,7 @@ public class OrderProcessBulkThread extends Thread {
                         onboardingOrderLink,
                         orderInvoiceBaseUrl,
                         orderRepository,
+                        orderGroupRepository,
                         storeDetailsRepository,
                         orderItemRepository,
                         orderCompletionStatusConfigRepository,

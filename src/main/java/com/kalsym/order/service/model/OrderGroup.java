@@ -20,6 +20,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -50,8 +51,8 @@ public class OrderGroup implements Serializable {
     private Double total;
     private String customerId;
     private Double appliedDiscount;
-    private Double deliveryDiscount;
-    
+    private Double deliveryDiscount;    
+            
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -74,5 +75,14 @@ public class OrderGroup implements Serializable {
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "orderGroupId", insertable = false, updatable = false, nullable = true)
     private List<Order> orderList;
+    
+    @Transient
+    private String shipmentPhoneNumber;
+    
+    @Transient
+    private String shipmentEmail;
+    
+    @Transient
+    private String shipmentName;
    
 }

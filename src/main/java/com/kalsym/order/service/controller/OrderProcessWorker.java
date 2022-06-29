@@ -17,6 +17,7 @@ import com.kalsym.order.service.model.DeliveryOrder;
 import com.kalsym.order.service.model.DeliveryResponse;
 import com.kalsym.order.service.model.Email;
 import com.kalsym.order.service.model.Order;
+import com.kalsym.order.service.model.OrderGroup;
 import com.kalsym.order.service.model.OrderCompletionStatusConfig;
 import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.OrderPaymentStatusUpdate;
@@ -65,6 +66,7 @@ public class OrderProcessWorker {
     private String invoiceBaseUrl;
     
     private OrderRepository orderRepository;
+    private OrderGroupRepository orderGroupRepository;
     private StoreDetailsRepository storeDetailsRepository;
     private OrderItemRepository orderItemRepository;
     private OrderCompletionStatusConfigRepository orderCompletionStatusConfigRepository;
@@ -99,6 +101,7 @@ public class OrderProcessWorker {
             String invoiceBaseUrl,
             
             OrderRepository orderRepository,
+            OrderGroupRepository orderGroupRepository,
             StoreDetailsRepository storeDetailsRepository,
             OrderItemRepository orderItemRepository,
             OrderCompletionStatusConfigRepository orderCompletionStatusConfigRepository,
@@ -335,6 +338,21 @@ public class OrderProcessWorker {
                         customerVoucherRepository.save(customerVoucher);
                     } 
                 }
+                
+                //check platform voucher in group order
+                if (order.getOrderGroupId()!=null) {
+                    //deduct platform voucher
+                    Optional<OrderGroup> orderGroup = orderGroupRepository.findById(order.getOrderGroupId());
+                    if (orderGroup.isPresent()) {
+                        voucherRepository.deductVoucherBalance(orderGroup.get().getPlatformVoucherId());                                        
+                        CustomerVoucher customerVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(order.getCustomerId(), orderGroup.get().getPlatformVoucherId());
+                        if (customerVoucher!=null) {
+                            customerVoucher.setIsUsed(true);
+                            customerVoucherRepository.save(customerVoucher);
+                        } 
+                    }
+                }
+                
                 //update status
                 bodyOrderCompletionStatusUpdate.setStatus(OrderStatus.PAYMENT_CONFIRMED);
                 order.setPaymentStatus(PaymentStatus.PAID);

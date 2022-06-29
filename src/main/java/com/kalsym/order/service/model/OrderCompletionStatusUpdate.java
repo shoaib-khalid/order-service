@@ -39,7 +39,7 @@ public class OrderCompletionStatusUpdate {
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
-    private String orderId;
+    private String orderId;    
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
     @CreationTimestamp
@@ -54,7 +54,7 @@ public class OrderCompletionStatusUpdate {
     private String date;
     @Transient
     private String time;
-    
+      
     public void update(OrderCompletionStatusUpdate orderCompletionStatusUpdate) {
         orderId = orderCompletionStatusUpdate.getOrderId();
         status = orderCompletionStatusUpdate.getStatus();
