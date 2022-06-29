@@ -1018,16 +1018,15 @@ public class OrderController {
         orderGroup.setShipmentName(orderShipmentDetail.getReceiverName());
         orderGroup.setShipmentPhoneNumber(orderShipmentDetail.getPhoneNumber());
         orderGroupRepository.save(orderGroup);
-        
-        //append prefix to differnetiate between single & multiple
-        orderGroup.setId("G"+orderGroup.getId());
-        orderGroupRepository.save(orderGroup);
-        
+               
         //update orderGroupId for each order
         for (int x=0;x<orderCreatedList.size();x++) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update OrderGroupId="+orderGroup.getId()+" for OrderId:"+orderCreatedList.get(x).getId());
             orderRepository.UpdateOrderGroupId(orderCreatedList.get(x).getId(), orderGroup.getId());
         }                
+        
+        //append prefix to differnetiate between single & multiple
+        orderGroup.setId("G"+orderGroup.getId());
         
         response.setStatus(HttpStatus.CREATED.value());
         response.setData(orderGroup);
