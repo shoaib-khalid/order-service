@@ -91,14 +91,14 @@ public interface CustomerVoucherRepository extends PagingAndSortingRepository<Cu
     CustomerVoucher findByCustomerIdAndVoucherId(@Param("customerId") String customerId, @Param("voucherId") String voucherId);
     
     @Query("SELECT m FROM Voucher m "
-            + "WHERE m.voucher.status='ACTIVE' "
-            + "AND m.voucher.voucherType='PLATFORM' "
-            + "AND m.voucher.startDate < :currentDate AND m.voucher.endDate > :currentDate "
-            + "AND m.voucher.voucherCode = :queryVoucherCode "
+            + "WHERE m.status='ACTIVE' "
+            + "AND m.voucherType='PLATFORM' "
+            + "AND m.startDate < :currentDate AND m.endDate > :currentDate "
+            + "AND m.voucherCode = :queryVoucherCode "
             + "AND m.requireToClaim = false "
             + "AND ("
-                + "(m.voucher.totalRedeem < m.voucher.totalQuantity AND m.voucher.checkTotalRedeem=true) OR "
-                + "(m.voucher.checkTotalRedeem=false) "
+                + "(m.totalRedeem < m.totalQuantity AND m.checkTotalRedeem=true) OR "
+                + "(m.checkTotalRedeem=false) "
             + ")")           
     Voucher findGuestPlatformVoucherByCode(            
             @Param("queryVoucherCode") String queryVoucherCode,
