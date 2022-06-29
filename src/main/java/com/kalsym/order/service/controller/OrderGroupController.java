@@ -54,7 +54,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  * @author 7cu
  */
 @RestController()
-@RequestMapping("/ordergrous")
+@RequestMapping("/ordergroups")
 public class OrderGroupController {
 
     @Autowired
@@ -63,7 +63,7 @@ public class OrderGroupController {
     @Autowired
     OrderGroupRepository orderGroupRepository;
     
-    @GetMapping(path = {"/{id}"}, name = "orders-group-get-by-id", produces = "application/json")
+    @GetMapping(path = {"/{orderGroupId}"}, name = "orders-group-get-by-id", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-group-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> getOrderGroupsById(HttpServletRequest request,
             @PathVariable(required = true) String orderGroupId) {

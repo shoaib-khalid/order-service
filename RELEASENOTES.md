@@ -52,6 +52,8 @@ ALTER TABLE `order_completion_status_config` ADD pushWAToCustomer TINYINT(1) DEF
 ALTER TABLE `order_completion_status_config` ADD pushWAToCustomerTemplateName VARCHAR(100);
 ALTER TABLE `order_completion_status_config` ADD pushWAToCustomerTemplateFormat  VARCHAR(200);
 
+populate data for field pushWAToCustomerTemplateName & pushWAToCustomerTemplateFormat, take value from staging
+
 
 ##################################################
 # order-service-3.8.1-SNAPSHOT |13-June-2022
