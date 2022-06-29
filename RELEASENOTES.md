@@ -11,6 +11,13 @@
 
 6. New API to get order group by id
 
+7. New feature to enable guest redeem voucher
+
+##DB Changes
+ALTER TABLE voucher ADD requireToClaim TINYINT(1) NOT NULL DEFAULT 1;
+ALTER TABLE customer_voucher ADD guestEmail VARCHAR(100);
+
+
 ##################################################
 # order-service-3.8.2-SNAPSHOT |24-June-2022
 ##################################################

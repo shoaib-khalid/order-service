@@ -576,7 +576,8 @@ public class CartController {
             @RequestParam(required = false) String deliveryType,
             @RequestParam(required = false) String voucherCode,  
             @RequestParam(required = false) String storeVoucherCode,  
-            @RequestParam(required = false) String customerId
+            @RequestParam(required = false) String customerId,
+            @RequestParam(required = false) String email
             ) {
         String logprefix = request.getRequestURI() + " ";
 
@@ -597,11 +598,34 @@ public class CartController {
         //check platform voucher code if provided
         CustomerVoucher customerPlatformVoucher = null;
         if (voucherCode!=null && customerId!=null) {
+            //check voucher
             customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(customerId, voucherCode, new Date());
             if (customerPlatformVoucher==null) {
-                response.setStatus(HttpStatus.NOT_FOUND.value());
-                response.setMessage("Voucher code " + voucherCode + " not found");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                //find guest voucher
+                Voucher guestVoucher = customerVoucherRepository.findGuestPlatformVoucherByCode(voucherCode, new Date());
+                if (guestVoucher!=null) {
+                    //check if already redeem
+                    CustomerVoucher usedVoucher = customerVoucherRepository.findByGuestEmailAndVoucherId(email, guestVoucher.getId());
+                    if (usedVoucher!=null) {                        
+                        if (usedVoucher.getIsUsed()) {
+                            //already used
+                            response.setStatus(HttpStatus.NOT_FOUND.value());
+                            response.setMessage("Voucher code " + voucherCode + " not found");
+                            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                        }
+                    } else {
+                        customerPlatformVoucher = new CustomerVoucher();
+                        customerPlatformVoucher.setGuestEmail(email);
+                        customerPlatformVoucher.setIsUsed(false);
+                        customerPlatformVoucher.setVoucherId(guestVoucher.getId());
+                        customerPlatformVoucher.setCreated(new Date());
+                        customerVoucherRepository.save(customerPlatformVoucher);
+                    }
+                } else {
+                    response.setStatus(HttpStatus.NOT_FOUND.value());
+                    response.setMessage("Voucher code " + voucherCode + " not found");
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                }
             } 
         }  
         
@@ -697,7 +721,8 @@ public class CartController {
     public ResponseEntity<HttpResponse> getDiscountOfCartGroup(HttpServletRequest request,
                 @Valid @RequestBody CartWithItem[] cartList,
                 @RequestParam(required = false) String platformVoucherCode,
-                @RequestParam(required = false) String customerId
+                @RequestParam(required = false) String customerId,
+                @RequestParam(required = false) String email
             ) throws Exception {
                           
         String logprefix = request.getRequestURI() + " ";        
@@ -713,18 +738,41 @@ public class CartController {
                 response.setErrorStatus(HttpStatus.NOT_FOUND);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
-        }
+        }        
         
-        //check voucher code if provided
+        //check platform voucher code if provided
         CustomerVoucher customerPlatformVoucher = null;
         if (platformVoucherCode!=null && customerId!=null) {
+            //check voucher
             customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(customerId, platformVoucherCode, new Date());
             if (customerPlatformVoucher==null) {
-                response.setStatus(HttpStatus.NOT_FOUND.value());
-                response.setMessage("Voucher code " + platformVoucherCode + " not found");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                //find guest voucher
+                Voucher guestVoucher = customerVoucherRepository.findGuestPlatformVoucherByCode(platformVoucherCode, new Date());
+                if (guestVoucher!=null) {
+                    //check if already redeem
+                    CustomerVoucher usedVoucher = customerVoucherRepository.findByGuestEmailAndVoucherId(email, guestVoucher.getId());
+                    if (usedVoucher!=null) {                        
+                        if (usedVoucher.getIsUsed()) {
+                            //already used
+                            response.setStatus(HttpStatus.NOT_FOUND.value());
+                            response.setMessage("Voucher code " + platformVoucherCode + " not found");
+                            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                        }
+                    } else {
+                        customerPlatformVoucher = new CustomerVoucher();
+                        customerPlatformVoucher.setGuestEmail(email);
+                        customerPlatformVoucher.setIsUsed(false);
+                        customerPlatformVoucher.setVoucherId(guestVoucher.getId());
+                        customerPlatformVoucher.setCreated(new Date());
+                        customerVoucherRepository.save(customerPlatformVoucher);
+                    }
+                } else {
+                    response.setStatus(HttpStatus.NOT_FOUND.value());
+                    response.setMessage("Voucher code " + platformVoucherCode + " not found");
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                }
             } 
-        }
+        }  
         
         double groupDeliveryCharge=0;
         double groupCartSubTotal=0;

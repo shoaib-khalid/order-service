@@ -714,9 +714,13 @@ public class OrderController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "PlatformVoucherCode provided : "+platformVoucherCode);
             customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(cod.getCustomerId(), platformVoucherCode, new Date());
             if (customerPlatformVoucher==null) {
-                response.setStatus(HttpStatus.NOT_FOUND.value());
-                response.setMessage("Voucher code " + platformVoucherCode + " not found");
-                return ResponseEntity.status(response.getStatus()).body(response);
+                //check guest voucher code
+                customerPlatformVoucher = customerVoucherRepository.findGuestPlatformVoucherByCode(cod.getOrderShipmentDetails().getEmail(), platformVoucherCode, new Date());
+                if (customerPlatformVoucher==null) {
+                    response.setStatus(HttpStatus.NOT_FOUND.value());
+                    response.setMessage("Voucher code " + platformVoucherCode + " not found");
+                    return ResponseEntity.status(response.getStatus()).body(response);
+                }
             } else {
                 //check minimum amount
                 //check vertical code
@@ -856,8 +860,10 @@ public class OrderController {
         
         //get customer id from one of COD
         String customerId = null;
+        String customerEmail = null;
         if (codList.length>0) {
             customerId = codList[0].getCustomerId();
+            customerEmail = codList[0].getOrderShipmentDetails().getEmail();
         }
         
         //check platform voucher code if provided
@@ -865,9 +871,13 @@ public class OrderController {
         if (platformVoucherCode!=null && !"".equals(platformVoucherCode)) {
             customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(customerId, platformVoucherCode, new Date());
             if (customerPlatformVoucher==null) {
-                response.setStatus(HttpStatus.NOT_FOUND.value());
-                response.setMessage("Voucher code " + platformVoucherCode + " not found");
-                return ResponseEntity.status(response.getStatus()).body(response);
+                //check guest voucher code
+                customerPlatformVoucher = customerVoucherRepository.findGuestPlatformVoucherByCode(customerEmail, platformVoucherCode, new Date());
+                if (customerPlatformVoucher==null) {
+                    response.setStatus(HttpStatus.NOT_FOUND.value());
+                    response.setMessage("Voucher code " + platformVoucherCode + " not found");
+                    return ResponseEntity.status(response.getStatus()).body(response);
+                }
             } else {
                 //check minimum amount
                 //check vertical code

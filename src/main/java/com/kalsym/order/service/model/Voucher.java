@@ -59,6 +59,7 @@ public class Voucher implements Serializable {
     private Boolean checkTotalRedeem;
     private Double minimumSpend;
     private Boolean allowDoubleDiscount;
+    private Boolean requireToClaim;
     
     @Enumerated(EnumType.STRING)
     private VoucherStatus status;

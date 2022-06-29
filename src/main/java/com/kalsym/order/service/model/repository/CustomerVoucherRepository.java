@@ -1,6 +1,7 @@
 package com.kalsym.order.service.model.repository;
 
 import com.kalsym.order.service.model.CustomerVoucher;
+import com.kalsym.order.service.model.Voucher;
 import java.util.List;
 import java.util.Date;
 import org.springframework.data.domain.Page;
@@ -53,6 +54,22 @@ public interface CustomerVoucherRepository extends PagingAndSortingRepository<Cu
             );
     
     @Query("SELECT m FROM CustomerVoucher m "
+            + "WHERE m.guestEmail = :guestEmail AND m.isUsed=0 "
+            + "AND m.voucher.status='ACTIVE' "
+            + "AND m.voucher.voucherType='PLATFORM' "
+            + "AND m.voucher.startDate < :currentDate AND m.voucher.endDate > :currentDate "
+            + "AND m.voucher.voucherCode = :queryVoucherCode "
+            + "AND ("
+                + "(m.voucher.totalRedeem < m.voucher.totalQuantity AND m.voucher.checkTotalRedeem=true) OR "
+                + "(m.voucher.checkTotalRedeem=false) "
+            + ")")           
+    CustomerVoucher findGuestPlatformVoucherByCode(
+            @Param("guestEmail") String guestEmail,
+            @Param("queryVoucherCode") String queryVoucherCode,
+            @Param("currentDate") Date currentDate
+            );
+    
+    @Query("SELECT m FROM CustomerVoucher m "
             + "WHERE m.customerId = :queryCustomerId AND m.isUsed=0 "
             + "AND m.voucher.status='ACTIVE' "
             + "AND m.voucher.voucherType='STORE' "
@@ -73,4 +90,25 @@ public interface CustomerVoucherRepository extends PagingAndSortingRepository<Cu
     
     CustomerVoucher findByCustomerIdAndVoucherId(@Param("customerId") String customerId, @Param("voucherId") String voucherId);
     
+    @Query("SELECT m FROM Voucher m "
+            + "WHERE m.voucher.status='ACTIVE' "
+            + "AND m.voucher.voucherType='PLATFORM' "
+            + "AND m.voucher.startDate < :currentDate AND m.voucher.endDate > :currentDate "
+            + "AND m.voucher.voucherCode = :queryVoucherCode "
+            + "AND m.requireToClaim = false "
+            + "AND ("
+                + "(m.voucher.totalRedeem < m.voucher.totalQuantity AND m.voucher.checkTotalRedeem=true) OR "
+                + "(m.voucher.checkTotalRedeem=false) "
+            + ")")           
+    Voucher findGuestPlatformVoucherByCode(            
+            @Param("queryVoucherCode") String queryVoucherCode,
+            @Param("currentDate") Date currentDate
+            );
+    
+    @Query("SELECT m FROM CustomerVoucher m "
+            + "WHERE m.guestEmail = :guestEmail AND m.voucherId = :voucherId")           
+    CustomerVoucher findByGuestEmailAndVoucherId(
+            @Param("guestEmail") String guestEmail,
+            @Param("voucherId") String voucherId
+            );
 }
