@@ -142,6 +142,9 @@ public class OrderGroupStatusUpdateController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
         
+        //remove prefix G
+        orderGroupId = orderGroupId.substring(1);
+        
         Optional<OrderGroup> orderGroupOpt = orderGroupRepository.findById(orderGroupId);
         if (!orderGroupOpt.isPresent()) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderGroup not found with orderGroupId: " + orderGroupId);
