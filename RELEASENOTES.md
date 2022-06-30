@@ -16,7 +16,6 @@
 ##DB Changes
 ALTER TABLE voucher ADD requireToClaim TINYINT(1) NOT NULL DEFAULT 1;
 ALTER TABLE customer_voucher ADD guestEmail VARCHAR(100);
-ALTER TABLE order_group ADD groupInvoiceId VARCHAR(50);
 
 
 ##################################################

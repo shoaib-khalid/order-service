@@ -337,6 +337,7 @@ public class OrderProcessWorker {
                     if (customerVoucher!=null) {
                         customerVoucher.setIsUsed(true);
                         customerVoucherRepository.save(customerVoucher);
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Removed customer voucherId: " + order.getVoucherId());
                     } 
                 }
                 
@@ -345,11 +346,12 @@ public class OrderProcessWorker {
                     //deduct platform voucher
                     Optional<OrderGroup> orderGroup = orderGroupRepository.findById(order.getOrderGroupId());
                     if (orderGroup.isPresent()) {
-                        voucherRepository.deductVoucherBalance(orderGroup.get().getPlatformVoucherId());                                        
                         CustomerVoucher customerVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(order.getCustomerId(), orderGroup.get().getPlatformVoucherId());
-                        if (customerVoucher!=null) {
+                        if (customerVoucher!=null && customerVoucher.getIsUsed()==false) {
                             customerVoucher.setIsUsed(true);
                             customerVoucherRepository.save(customerVoucher);
+                            voucherRepository.deductVoucherBalance(orderGroup.get().getPlatformVoucherId());                                                                
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Removed customer group voucherId: " + orderGroup.get().getPlatformVoucherId());
                         } 
                     }
                 }
