@@ -135,6 +135,7 @@ public class OrderProcessWorker {
         this.invoiceBaseUrl = invoiceBaseUrl;
         
         this.orderRepository = orderRepository;
+        this.orderGroupRepository = orderGroupRepository;
         this.storeDetailsRepository = storeDetailsRepository;
         this.orderItemRepository = orderItemRepository;
         this.orderCompletionStatusConfigRepository = orderCompletionStatusConfigRepository;
