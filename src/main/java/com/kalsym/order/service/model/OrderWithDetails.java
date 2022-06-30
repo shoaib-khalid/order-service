@@ -3,6 +3,7 @@ package com.kalsym.order.service.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
+import com.kalsym.order.service.model.object.OrderObject;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -20,6 +21,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -111,7 +113,12 @@ public class OrderWithDetails implements Serializable {
     private Boolean isRevised;
     
     private String voucherId;
-            
+    
+    private String orderGroupId;
+    
+    @Transient
+    private OrderObject totalDataObject;
+    
     /*
     @OneToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="orderId", insertable = false, updatable = false)

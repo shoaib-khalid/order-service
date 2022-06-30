@@ -637,8 +637,22 @@ public class OrderController {
             response.setMessage("order with id " + id + " not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
+        
+        //get order group details
+        OrderWithDetails order = optOrder.get();
+        Optional<OrderGroup> orderGroupOpt = orderGroupRepository.findById(order.getOrderGroupId());
+        if (orderGroupOpt.isPresent()) {
+            OrderObject orderGroup = new OrderObject();
+            orderGroup.setTotal(orderGroupOpt.get().getTotal());    
+            orderGroup.setVoucherId(orderGroupOpt.get().getPlatformVoucherId());
+            orderGroup.setVoucherDiscount(orderGroupOpt.get().getPlatformVoucherDiscount());
+            orderGroup.setDeliveryCharge(orderGroupOpt.get().getDeliveryCharges());
+            orderGroup.setDeliveryDiscount(orderGroupOpt.get().getDeliveryDiscount());
+            order.setTotalDataObject(orderGroup);
+        }
+        
         response.setSuccessStatus(HttpStatus.OK);
-        response.setData(optOrder.get());
+        response.setData(order);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
@@ -827,11 +841,8 @@ public class OrderController {
             orderGroup.setDeliveryDiscount(orderCreated.getDeliveryDiscount());
             orderGroupRepository.save(orderGroup);
             
-            orderRepository.UpdateOrderGroupId(orderCreated.getId(), orderGroup.getId());
-            
-            //set order id = group order id, this is temporary solution (will be remove soon)
-            orderCreated.setId("G"+orderGroup.getId());
-            //--------------------------------//                         
+            orderRepository.UpdateOrderGroupId(orderCreated.getId(), orderGroup.getId());            
+            orderCreated.setId(orderCreated.getId());
             
             orderCreated.setOrderGroupId("G"+orderGroup.getId());
             response.setData(orderCreated);
