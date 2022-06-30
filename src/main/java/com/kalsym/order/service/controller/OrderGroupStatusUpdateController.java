@@ -195,7 +195,7 @@ public class OrderGroupStatusUpdateController {
                 true) ;
             OrderProcessResult result = worker.startProcessOrder();        
         }
-        
+                
         response.setStatus(HttpStatus.OK.value());        
         return ResponseEntity.status(response.getStatus()).body(response);
     }

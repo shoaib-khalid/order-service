@@ -96,6 +96,7 @@ import com.kalsym.order.service.service.FCMService;
 import com.kalsym.order.service.service.OrderPostService;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.service.WhatsappService;
+import com.kalsym.order.service.utility.DateTimeUtil;
 import com.kalsym.order.service.utility.Logger;
 import com.kalsym.order.service.utility.MessageGenerator;
 import com.kalsym.order.service.utility.OrderCalculation;
@@ -666,6 +667,7 @@ public class OrderController {
      * @param cartId     
      * @param saveCustomerInformation
      * @param platformVoucherCode
+     * @param sendReceiptToReceiver
      * @param cod
      * @return
      * @throws Exception
@@ -676,6 +678,7 @@ public class OrderController {
             @RequestParam(required = true) String cartId, 
             @RequestParam(required = false) Boolean saveCustomerInformation,
             @RequestParam(required = false) String platformVoucherCode,
+            @RequestParam(required = false) Boolean sendReceiptToReceiver,
             @RequestBody COD cod) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         
@@ -782,7 +785,9 @@ public class OrderController {
                 request.getRequestURI(), optCart.get(), cartItems, 
                 cod, storeWithDetials, storeDeliveryDetail,
                 customerStoreVoucher,
-                saveCustomerInformation, onboardingOrderLink, orderInvoiceBaseUrl, logprefix, 
+                saveCustomerInformation, 
+                sendReceiptToReceiver,
+                onboardingOrderLink, orderInvoiceBaseUrl, logprefix, 
                 cartRepository, cartItemRepository, customerVoucherRepository, 
                 storeDetailsRepository, storeDeliveryDetailRepository, 
                 productInventoryRepository, storeDiscountRepository, storeDiscountTierRepository, 
@@ -821,11 +826,7 @@ public class OrderController {
             orderGroupRepository.save(orderGroup);
             
             orderRepository.UpdateOrderGroupId(orderCreated.getId(), orderGroup.getId());
-            
-            //set order total same as group (need to remove soon)
-            orderRepository.UpdateOrderTotal(orderCreated.getId(), orderTotal);
-            //--------------------------------//
-            
+             
             orderCreated.setOrderGroupId(orderGroup.getId());
             response.setData(orderCreated);
         }
@@ -840,6 +841,7 @@ public class OrderController {
      * @param request
      * @param saveCustomerInformation
      * @param platformVoucherCode
+     * @param sendReceiptToReceiver
      * @param codList
      * @return
      * @throws Exception
@@ -849,6 +851,7 @@ public class OrderController {
     public ResponseEntity<HttpResponse> placeGroupOrder(HttpServletRequest request,
             @RequestParam(required = false) Boolean saveCustomerInformation,
             @RequestParam(required = false) String platformVoucherCode,
+            @RequestParam(required = false) Boolean sendReceiptToReceiver,
             @RequestBody COD[] codList) throws Exception {
         String logprefix = request.getRequestURI() + " ";
        
@@ -981,7 +984,8 @@ public class OrderController {
             HttpResponse orderResponse = OrderWorker.placeOrder(
                     request.getRequestURI(), optCart.get(), selectedCartItem, cod, optStore.get(), optStoreDeliveryDetail.get(),
                     customerStoreVoucher,
-                    saveCustomerInformation,             
+                    saveCustomerInformation, 
+                    sendReceiptToReceiver,
                     onboardingOrderLink, orderInvoiceBaseUrl, logprefix, 
                     cartRepository, cartItemRepository, customerVoucherRepository, 
                     storeDetailsRepository, storeDeliveryDetailRepository, 

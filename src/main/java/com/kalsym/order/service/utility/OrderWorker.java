@@ -81,7 +81,8 @@ public class OrderWorker {
             StoreWithDetails storeWithDetials,
             StoreDeliveryDetail storeDeliveryDetail,
             CustomerVoucher customerStoreVoucher,
-            Boolean saveCustomerInformation,            
+            Boolean saveCustomerInformation,
+            Boolean sendReceiptToReceiver,            
             String onboardingOrderLink,
             String invoiceBaseUrl,
             String logprefix,
@@ -509,17 +510,27 @@ public class OrderWorker {
                                 if (t.isPresent()) {
                                     regionCountry = t.get();
                                 }
+                                
+                                String customerEmail=null;
+                                boolean sendActivationLink=false;
+                                
                                 //get customer info
                                 Optional<Customer> customerOpt = customerRepository.findById(order.getCustomerId());
-                                Customer customer = null;
-                                boolean sendActivationLink=false;
-                                String customerEmail=null;
+                                Customer customer = null;                                    
                                 if (customerOpt.isPresent()) {
                                     customer = customerOpt.get();
                                     if (customer.getIsActivated()==false)
                                         sendActivationLink = true;
                                     customerEmail = customer.getEmail();
                                 }
+
+                                if (sendReceiptToReceiver) {
+                                   //get receiver info
+                                   if (order.getOrderShipmentDetail()!=null) {
+                                       customerEmail = order.getOrderShipmentDetail().getEmail();
+                                   } 
+                                } 
+                                
                                 emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, order.getOrderShipmentDetail(), null, regionCountry, sendActivationLink, storeWithDetials.getRegionVertical().getCustomerActivationNotice(), customerEmail);
                                 Email email = new Email();
                                 ArrayList<String> tos = new ArrayList<>();
@@ -615,6 +626,14 @@ public class OrderWorker {
                                 Customer customer = customerOpt.get();
                                 customerMsisdn = customer.getPhoneNumber();
                             }
+                            
+                            if (sendReceiptToReceiver) {
+                                //get receiver info
+                                if (order.getOrderShipmentDetail()!=null) {
+                                    customerMsisdn = order.getOrderShipmentDetail().getPhoneNumber();
+                                } 
+                            }
+                            
                             //String storeName, String invoiceNo, String orderId, String merchantToken
                             String invoiceUrl = invoiceBaseUrl + "/" + order.getId();
                             whatsappService.sendCustomerAlert(customerMsisdn, OrderStatus.RECEIVED_AT_STORE.name(), storeWithDetials.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp(), orderCompletionStatusConfig.getPushWAToCustomerTemplateName(), orderCompletionStatusConfig.getPushWAToCustomerTemplateFormat(), storeWithDetials.getCity(), invoiceUrl);

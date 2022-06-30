@@ -1,5 +1,5 @@
 ##################################################
-# order-service-3.9.0-SNAPSHOT |29-June-2022
+# order-service-3.9.0-SNAPSHOT |30-June-2022
 ##################################################
 1. Send invoice pdf in whatsapp message to customer
 
@@ -16,6 +16,7 @@
 ##DB Changes
 ALTER TABLE voucher ADD requireToClaim TINYINT(1) NOT NULL DEFAULT 1;
 ALTER TABLE customer_voucher ADD guestEmail VARCHAR(100);
+ALTER TABLE order_group ADD groupInvoiceId VARCHAR(50);
 
 
 ##################################################

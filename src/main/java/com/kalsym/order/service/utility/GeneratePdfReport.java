@@ -227,10 +227,7 @@ public class GeneratePdfReport {
             
             subtotalSubTable.addCell(setStringCellValue("DELIVERY DISCOUNT", fontNormal, 0));
             subtotalSubTable.addCell(setNumberCellValue("-" +String.format("%.2f",convertNullToZero(order.getDeliveryDiscount())), fontNormal, 0));
-            
-            subtotalSubTable.addCell(setStringCellValue("PLATFORM VOUCHER", fontNormal, 0));
-            subtotalSubTable.addCell(setNumberCellValue("-" +String.format("%.2f",convertNullToZero(order.getVoucherDiscount())), fontNormal, 0));
-            
+                        
             subtotalSubTable.addCell(setStringCellValue("TOTAL", fontNormalBold, 0));            
             subtotalSubTable.addCell(setNumberCellValue(String.format("%.2f",order.getTotal()), fontNormalBold, 0));
             subTotalCol.addElement(subtotalSubTable);
