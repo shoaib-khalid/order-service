@@ -65,6 +65,7 @@ import com.kalsym.order.service.model.object.Discount;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.object.OrderDetails;
 import com.kalsym.order.service.model.object.ItemDiscount;
+import com.kalsym.order.service.model.object.OrderGroupObject;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.OrderSubItemRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
@@ -642,13 +643,11 @@ public class OrderController {
         OrderWithDetails order = optOrder.get();
         Optional<OrderGroup> orderGroupOpt = orderGroupRepository.findById(order.getOrderGroupId());
         if (orderGroupOpt.isPresent()) {
-            OrderObject orderGroup = new OrderObject();
+            OrderGroupObject orderGroup = new OrderGroupObject();
             orderGroup.setTotal(orderGroupOpt.get().getTotal());    
-            orderGroup.setVoucherId(orderGroupOpt.get().getPlatformVoucherId());
-            orderGroup.setVoucherDiscount(orderGroupOpt.get().getPlatformVoucherDiscount());
-            orderGroup.setDeliveryCharge(orderGroupOpt.get().getDeliveryCharges());
-            orderGroup.setDeliveryDiscount(orderGroupOpt.get().getDeliveryDiscount());
-            order.setTotalDataObject(orderGroup);
+            orderGroup.setPlatformVoucherId(orderGroupOpt.get().getPlatformVoucherId());
+            orderGroup.setPlatformVoucherDiscount(orderGroupOpt.get().getPlatformVoucherDiscount());
+            order.setOrderGroupDetails(orderGroup);
         }
         
         response.setSuccessStatus(HttpStatus.OK);

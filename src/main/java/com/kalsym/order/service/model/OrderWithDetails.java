@@ -3,6 +3,7 @@ package com.kalsym.order.service.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
+import com.kalsym.order.service.model.object.OrderGroupObject;
 import com.kalsym.order.service.model.object.OrderObject;
 import java.io.Serializable;
 import java.util.Date;
@@ -117,7 +118,7 @@ public class OrderWithDetails implements Serializable {
     private String orderGroupId;
     
     @Transient
-    private OrderObject totalDataObject;
+    private OrderGroupObject orderGroupDetails;
     
     /*
     @OneToOne(fetch=FetchType.LAZY)
