@@ -830,7 +830,7 @@ public class OrderController {
             //set order total same as group (need to remove soon)
             //orderRepository.UpdateOrderTotal(orderCreated.getId(), orderTotal);
             //set order id = group order id
-            orderCreated.setId(orderGroup.getId());
+            orderCreated.setId("G"+orderGroup.getId());
             //--------------------------------//                         
             
             orderCreated.setOrderGroupId(orderGroup.getId());
