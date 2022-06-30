@@ -344,9 +344,12 @@ public class OrderProcessWorker {
                 //check platform voucher in group order
                 if (order.getOrderGroupId()!=null) {
                     //deduct platform voucher
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find order groupId:"+order.getOrderGroupId());
                     Optional<OrderGroup> orderGroup = orderGroupRepository.findById(order.getOrderGroupId());
                     if (orderGroup.isPresent()) {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Group found:"+orderGroup.get().getId());
                         CustomerVoucher customerVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(order.getCustomerId(), orderGroup.get().getPlatformVoucherId());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Group found:"+orderGroup.get().getId());
                         if (customerVoucher!=null && customerVoucher.getIsUsed()==false) {
                             customerVoucher.setIsUsed(true);
                             customerVoucherRepository.save(customerVoucher);

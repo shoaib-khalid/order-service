@@ -725,6 +725,7 @@ public class OrderController {
                     return ResponseEntity.status(response.getStatus()).body(response);
                 }
             } else {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform Voucher found : "+customerPlatformVoucher.getId());
                 //check minimum amount
                 //check vertical code
                 //check double discount allowed
@@ -738,6 +739,7 @@ public class OrderController {
                     response.setMessage("Voucher code " + cod.getVoucherCode() + " not found");
                     return ResponseEntity.status(response.getStatus()).body(response);
                 } else {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform Voucher found : "+customerPlatformVoucher.getId());
                     //check minimum amount
                     //check vertical code
                     //check double discount allowed
