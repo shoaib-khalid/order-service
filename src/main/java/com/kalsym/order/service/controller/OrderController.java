@@ -826,7 +826,13 @@ public class OrderController {
             orderGroupRepository.save(orderGroup);
             
             orderRepository.UpdateOrderGroupId(orderCreated.getId(), orderGroup.getId());
-             
+            
+            //set order total same as group (need to remove soon)
+            //orderRepository.UpdateOrderTotal(orderCreated.getId(), orderTotal);
+            //set order id = group order id
+            orderCreated.setId(orderGroup.getId());
+            //--------------------------------//                         
+            
             orderCreated.setOrderGroupId(orderGroup.getId());
             response.setData(orderCreated);
         }
