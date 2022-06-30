@@ -815,7 +815,7 @@ public class OrderController {
             if (groupTotal.getVoucherId()!=null) {
                 double platformVoucherDiscountAmt = groupTotal.getVoucherDiscount();
                 orderGroup.setPlatformVoucherDiscount(platformVoucherDiscountAmt);
-                orderGroup.setPlatformVoucherId(customerPlatformVoucher.getId());
+                orderGroup.setPlatformVoucherId(customerPlatformVoucher.getVoucherId());
                 orderTotal = totalDataObject.getTotal() - platformVoucherDiscountAmt;                
             } else {
                 orderTotal = totalDataObject.getTotal();
