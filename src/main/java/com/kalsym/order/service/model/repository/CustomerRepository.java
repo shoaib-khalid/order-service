@@ -5,9 +5,12 @@
  */
 package com.kalsym.order.service.model.repository;
 
+import com.kalsym.order.service.model.Cart;
 import com.kalsym.order.service.model.Customer;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -16,5 +19,6 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface CustomerRepository extends PagingAndSortingRepository<Customer, String>, JpaRepository<Customer, String> {
-    
+        
+    List<Customer> findByEmail(@Param("email") String email);
 }

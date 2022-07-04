@@ -461,28 +461,39 @@ public class OrderWorker {
                         customerVoucherRepository.save(customerStoreVoucher);
                     }
                 }
+                
+                //check if email already registered
+                List<Customer> existingCustomer = customerRepository.findByEmail(cod.getOrderShipmentDetails().getEmail());
+                if (existingCustomer.size()==0) {
+                    if (saveCustomerInformation != null && saveCustomerInformation == true) {
+                        if (order.getCustomerId() == null || "undefined".equalsIgnoreCase(order.getCustomerId())) {
+                            String customerId = customerService.addCustomer(cod.getOrderShipmentDetails(), order.getStoreId());
 
-                if (saveCustomerInformation != null && saveCustomerInformation == true) {
-                    if (order.getCustomerId() == null || "undefined".equalsIgnoreCase(order.getCustomerId())) {
-                        String customerId = customerService.addCustomer(cod.getOrderShipmentDetails(), order.getStoreId());
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerId: " + customerId);
 
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerId: " + customerId);
+                            if (customerId != null) {
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer created with id: " + customerId);
+                                order.setCustomerId(customerId);
+                                orderRepository.save(order);
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added customerId: " + customerId + " to order: " + order.getId());
 
-                        if (customerId != null) {
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer created with id: " + customerId);
-                            order.setCustomerId(customerId);
-                            orderRepository.save(order);
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added customerId: " + customerId + " to order: " + order.getId());
+                            }
+                        } else {
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer already created with id: " + order.getCustomerId());
+                            String customerId = customerService.updateCustomer(cod.getOrderShipmentDetails(), order.getStoreId(), order.getCustomerId());
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "updated customer information for id: " + customerId);
 
                         }
                     } else {
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer already created with id: " + order.getCustomerId());
-                        String customerId = customerService.updateCustomer(cod.getOrderShipmentDetails(), order.getStoreId(), order.getCustomerId());
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "updated customer information for id: " + customerId);
-
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "user information not saved");
                     }
                 } else {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "user information not saved");
+                    //email already registered
+                    String customerId = existingCustomer.get(0).getId();
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Existing customer with id: " + customerId);
+                    order.setCustomerId(customerId);
+                    orderRepository.save(order);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "updated customerId: " + customerId + " to order: " + order.getId());
                 }
                     
                 //get order completion config
