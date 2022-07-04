@@ -1,6 +1,7 @@
 package com.kalsym.order.service.model;
 
 import com.kalsym.order.service.model.object.ItemDiscount;
+import com.kalsym.order.service.model.object.StoreSnooze;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -56,6 +57,9 @@ public class CartWithDetails implements Serializable {
     
     @Transient
     private String deliveryType;
+    
+    @Transient
+    private StoreSnooze storeSnooze;
         
     @CreationTimestamp
     private Date created;

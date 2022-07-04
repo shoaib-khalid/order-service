@@ -1,9 +1,11 @@
 package com.kalsym.order.service.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.kalsym.order.service.enums.StorePaymentType;
 import com.kalsym.order.service.enums.StoreAssetType;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -16,6 +18,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -72,6 +75,16 @@ public class StoreWithDetails implements Serializable {
     
 //    @Enumerated(EnumType.STRING)
     private String paymentType;
+    
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date snoozeStartTime;
+    
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date snoozeEndTime;
+    
+    private String snoozeReason;
 
     @OneToOne(cascade = CascadeType.ALL,
             fetch = FetchType.EAGER)

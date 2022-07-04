@@ -61,13 +61,20 @@ import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.model.Voucher;
+import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.repository.VoucherSearchSpecs;
+import com.kalsym.order.service.model.repository.RegionCountriesRepository;
 import com.kalsym.order.service.model.object.CartWithItem;
+import com.kalsym.order.service.model.object.StoreSnooze;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.utility.OrderCalculation;
 import static com.kalsym.order.service.utility.OrderCalculation.calculateStoreServiceCharges;
 import com.kalsym.order.service.utility.Utilities;
+import com.kalsym.order.service.utility.DateTimeUtil;
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Calendar;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -108,6 +115,9 @@ public class CartController {
     
     @Autowired
     ProductRepository productRepository;
+    
+    @Autowired
+    RegionCountriesRepository regionCountriesRepository;
      
     @Autowired
     DeliveryService deliveryService;
@@ -172,8 +182,41 @@ public class CartController {
         Specification cartSpec = CartSearchSpecs.getEmptyCart(includeEmptyCart, cartExample, cartIdList );
         Pageable pageable = PageRequest.of(page, pageSize);
         Page<CartWithDetails> cartWithPage = cartWithDetailsRepository.findAll(cartSpec, pageable);
-        response.setData(cartWithPage);
         
+        List<CartWithDetails> cartList = cartWithPage.getContent();
+        for (int i=0;i<cartList.size();i++) {
+            CartWithDetails cartWithDetails = cartList.get(i);
+            StoreSnooze storeSnooze=new StoreSnooze();
+            StoreWithDetails store = cartWithDetails.getStore();
+            if (store.getSnoozeStartTime()!=null && store.getSnoozeEndTime()!=null) {
+                int result = store.getSnoozeEndTime().compareTo(Calendar.getInstance().getTime());
+                if (result < 0) {
+                    //snooze already expired
+                    storeSnooze.isSnooze=false;
+                } else {
+                    storeSnooze.isSnooze=true;
+                    storeSnooze.snoozeReason=store.getSnoozeReason();
+
+                    //convert time to merchant timezone
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Snooze End Time:"+store.getSnoozeEndTime().toString());
+                    Optional<RegionCountry> t = regionCountriesRepository.findById(store.getRegionCountryId());
+                    if (t.isPresent()) {
+                        RegionCountry regionCountry = t.get(); 
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store timezone:"+regionCountry.getTimezone());
+                        LocalDateTime startTime = DateTimeUtil.convertToLocalDateTimeViaInstant(store.getSnoozeStartTime(), ZoneId.of(regionCountry.getTimezone()));
+                        LocalDateTime endTime = DateTimeUtil.convertToLocalDateTimeViaInstant(store.getSnoozeEndTime(), ZoneId.of(regionCountry.getTimezone()));
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Snooze End Time in store timezone:"+endTime);
+                        storeSnooze.snoozeStartTime = startTime; 
+                        storeSnooze.snoozeEndTime = endTime;
+                    }
+                }
+            } else {
+                storeSnooze.isSnooze=false;
+            }
+            cartWithDetails.setStoreSnooze(storeSnooze);
+        }
+        
+        response.setData(cartWithPage);
         response.setSuccessStatus(HttpStatus.OK);        
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
