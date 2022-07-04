@@ -824,6 +824,10 @@ public class CartController {
                             response.setMessage("Voucher code " + platformVoucherCode + " not found");
                             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                         }
+                        customerPlatformVoucher = new CustomerVoucher();
+                        customerPlatformVoucher.setGuestEmail(email);
+                        customerPlatformVoucher.setIsUsed(false);
+                        customerPlatformVoucher.setVoucherId(guestVoucher.getId());                        
                     } else {
                         customerPlatformVoucher = new CustomerVoucher();
                         customerPlatformVoucher.setGuestEmail(email);

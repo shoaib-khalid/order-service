@@ -11,9 +11,12 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -167,5 +170,43 @@ public class OrderShipmentDetailController {
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(orderShipmentDetailRepository.save(bodyOrderShipmentDetail));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
+        
+    @GetMapping(path = {"/track"}, name = "order-shipment-details-get")
+    @PreAuthorize("hasAnyAuthority('order-shipment-details-get', 'all')")
+    public ResponseEntity<HttpResponse> getTrackingUrl(HttpServletRequest request,
+            @PathVariable(required = true) String orderId) throws Exception {
+        String logprefix = request.getRequestURI() + " ";
+
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-shipment-details-get, orderId: {}", orderId);
+
+        Optional<Order> order = orderRepository.findById(orderId);
+
+        if (!order.isPresent()) {
+            response.setErrorStatus(HttpStatus.NOT_FOUND);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-shipment-details-get, orderId, not found. orderId: {}", orderId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
+        OrderShipmentDetail orderShipment = orderShipmentDetailRepository.findByOrderId(orderId);        
+        
+        if (orderShipment!=null && orderShipment.getTrackingUrl()!=null) {            
+            HttpHeaders responseHeaders = new HttpHeaders();
+            responseHeaders.add("Location", orderShipment.getTrackingUrl());
+            
+            return ResponseEntity
+                .ok()
+                .headers(responseHeaders)
+                .body(null);
+        } else {
+            response.setErrorStatus(HttpStatus.NOT_FOUND);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Tracking url not found", orderId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
+       
+        
     }
 }
