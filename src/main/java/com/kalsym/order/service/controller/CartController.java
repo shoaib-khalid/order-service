@@ -808,7 +808,7 @@ public class CartController {
         
         //check platform voucher code if provided
         CustomerVoucher customerPlatformVoucher = null;
-        if (platformVoucherCode!=null && customerId!=null) {
+        if (platformVoucherCode!=null && (customerId!=null || email!=null)) {
             //check voucher
             customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(customerId, platformVoucherCode, new Date());
             if (customerPlatformVoucher==null) {
