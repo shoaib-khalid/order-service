@@ -827,7 +827,8 @@ public class CartController {
                         customerPlatformVoucher = new CustomerVoucher();
                         customerPlatformVoucher.setGuestEmail(email);
                         customerPlatformVoucher.setIsUsed(false);
-                        customerPlatformVoucher.setVoucherId(guestVoucher.getId());                        
+                        customerPlatformVoucher.setVoucherId(guestVoucher.getId());
+                        customerPlatformVoucher.setVoucher(guestVoucher);
                     } else {
                         customerPlatformVoucher = new CustomerVoucher();
                         customerPlatformVoucher.setGuestEmail(email);
