@@ -1,0 +1,285 @@
+affinity: {}
+applicationProdProperties:
+  configmap:
+    application-prod.properties: >
+      server.port=7001
+        
+      server.servlet.context-path=/order-service/v1
+
+      logging.config=logback.xml
+
+      spring.jpa.hibernate.ddl-auto=none
+
+      spring.datasource.url=jdbc:mysql://my-release-mysql-primary.default.svc.cluster.local:3306/symplified
+
+      spring.datasource.username=root
+
+      spring.datasource.password=kalsym@123
+
+
+      deliveryService.submitOrder.URL=https://api.symplified.it/delivery-service/v1/orders/submitorder
+
+
+      deliveryService.get.quotation.URL=https://api.symplified.it/delivery-service/v1/orders/getQuotation
+
+      deliveryService.bulk.confirm.URL=https://api.symplified.it/delivery-service/v1/orders/bulkConfirm
+
+
+      deliveryService.confirmation.URL=https://api.symplified.it/delivery-service/v1/orders/confirmDelivery/
+
+      user.service.temp.token.URL=https://api.symplified.it/user-service/v1/clients/generateTempToken
+
+      finance.email.address=orders@deliverin.my
+
+      finance.email.sender.name=Deliver In Orders
+
+
+      spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+
+      spring.output.ansi.enabled=ALWAYS
+
+
+      liveChat.sendMessage.URL=https://live.symplified.it/api/v1/chat.postMessage
+
+      liveChat.token=kkJ4G-gEqu5nL-VY9YWBo25otESh_zlQu8ckpic49ne
+
+      livechat.userid=JEdxZxgW4R5Z53xq2
+
+
+      liveChat.login.url=https://live.symplified.it/api/v1/login
+
+
+      liveChat.login.password=sarosh@1234
+
+
+      liveChatlogin.username=order
+
+
+
+
+      product-service.URL=https://api.symplified.it/product-service/v1/
+
+      product-service.token=Bearer accessToken
+
+
+      onboarding.order.URL=https://symplified.it/merchant/orders/order-details?orderId=
+
+      user.service.customer.registration.URL=https://api.symplified.it/user-service/v1/stores/$%storeId$%/customers/register
+
+      user.service.customer.address.URL=https://api.symplified.it/user-service/v1/customer/$%customerId$%/address
+
+      user.service.customer.udate.URL=https://api.symplified.it/user-service/v1/stores/$%storeId$%/customers/$%customerId$%
+
+      services.user-service.bulk_authorities.url=https://api.symplified.it/user-service/v1/authorities/bulk
+
+      services.user-service.session_details=https://api.symplified.it/user-service/v1/sessions/details
+
+      get.store.commission.URL:https://api.symplified.it/product-service/v1/stores/%STOREID%//commission
+
+      product.reduce.quantity.URL=https://api.symplified.it/product-service/v1/stores/%STOREID%/products/%PRODUCTID%/inventory/%ITEMCODE%?quantity=
+
+
+      get.product.by.id.URL=https://api.symplified.it/product-service/v1/stores/%STOREID%/products/%PRODUCTID%
+
+
+
+      change.product.status.URL=https://api.symplified.it/product-service/v1/stores/%STOREID%/products/%PRODUCTID%/inventory/%ITEMCODE%/productStatus?status=
+
+
+
+      get.store.by.id.URL=https://api.symplified.it/product-service/v1/stores/%STOREID%
+
+
+
+      get.store.delivery.details.URL=https://api.symplified.it/product-service/v1/stores/%STOREID%/deliverydetails
+
+
+
+      get.product.inventory.URL=https://api.symplified.it/product-service/v1/stores/%STOREID%/products/%PRODUCTID%/inventory/%ITEMCODE%
+
+
+      get.store.commission.URL=https://api.symplified.it/product-service/v1/stores/%STOREID%/commission
+
+
+      order.reminder.enabled=true
+
+      order.reminder.vertical=FNB,E-Commerce,ECommerce_PK,FnB_PK
+
+      whatsapp.service.push.url=https://api.symplified.it/whatsapp-java-service/v1/templatemessage/push
+
+      whatsapp.service.order.reminder.templatename=symplified_new_order_notification
+
+
+      whatsapp.service.order.reminder.refid=60133429331
+
+      whatsapp.service.admin.alert.templatename=symplified_admin_alert
+
+      whatsapp.service.admin.alert.refid=60133429331
+
+      whatsapp.service.admin.msisdn=60133429331,60133731869
+
+
+      order.item.price.update=true
+
+      emailService.sendEmail.URL=https://api.symplified.it/email-service/v1/email/no-reply/orders-completion-status
+
+      fcm.url=https://fcm.googleapis.com/fcm/send
+
+      fcm.token.deliverin=key=AAAAj5hNRLI:APA91bEBW0gxueP0sjTtvixEb41IK7mZvDxyiSMDalS6ombzXoidlwGmvsagaF520jTxZxxLd1qsX4H-8iSs2qsgqY-rpdLvpTJFOYq0EGj7Mssjno0A7Xwd7nV8pt29HmewypxfaQ65
+
+      fcm.token.easydukan=key=AAAAj5hNRLI:APA91bEBW0gxueP0sjTtvixEb41IK7mZvDxyiSMDalS6ombzXoidlwGmvsagaF520jTxZxxLd1qsX4H-8iSs2qsgqY-rpdLvpTJFOYq0EGj7Mssjno0A7Xwd7nV8pt29HmewypxfaQ65
+
+
+      fcm.token=key=AAAAj5hNRLI:APA91bEBW0gxueP0sjTtvixEb41IK7mZvDxyiSMDalS6ombzXoidlwGmvsagaF520jTxZxxLd1qsX4H-8iSs2qsgqY-rpdLvpTJFOYq0EGj7Mssjno0A7Xwd7nV8pt29HmewypxfaQ65
+
+      fcm.title=New Order
+
+      fcm.body=You have new order at $%storeName$%
+
+      order.invoice.base.URL=https://api.symplified.it/order-service/v1/orders/pdf
+  volumeMount:
+    - mountPath: /home/docker/Software/application-prod.properties
+      name: order-service-approd-vol
+      subPath: application-prod.properties
+  volumes:
+    - configMap:
+        name: order-service-approd-cm
+      name: order-service-approd-vol
+applicationProperties:
+  configmap:
+    application.properties: >
+      # Default config (refrain from editting this config, please add in
+      application-prod.properties below)
+
+      spring.profiles.active=prod
+
+      proj.name=order-service
+  volumeMount:
+    - mountPath: /home/docker/Software/application.properties
+      name: order-service-ap-vol
+      subPath: application.properties
+  volumes:
+    - configMap:
+        name: order-service-ap-cm
+      name: order-service-ap-vol
+autoscaling:
+  enabled: false
+  maxReplicas: 100
+  minReplicas: 1
+  targetCPUUtilizationPercentage: 80
+fullnameOverride: ''
+image:
+  pullPolicy: Always
+  repository: kalsym/order-service
+  tag: 3.9.0-SNAPSHOT
+imagePullSecrets:
+  - name: kalsym-docker-hub
+ingress:
+  annotations: {}
+  className: ''
+  enabled: true
+  hosts:
+    - host: api.symplified.it
+      paths:
+        - path: /order-service/v1
+          pathType: ImplementationSpecific
+  tls:
+    - hosts:
+        - api.symplified.it
+      secretName: secret-tls-it
+logback:
+  configmap:
+    logback.xml: |-
+      <?xml version="1.0" encoding="UTF-8"?>
+      <configuration>
+
+          <property name="LOGS" value="/home/docker/Software/logs/symplified" />
+          <property name="CDRS" value="/home/docker/Software/logs" />
+
+          <property resource="application.properties" />
+
+          <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+              <layout class="ch.qos.logback.classic.PatternLayout">
+                  <Pattern>
+                      %black(%d{ISO8601}) %highlight(%-5level) %yellow(%C{1.}): %msg%n%throwable
+                  </Pattern>
+              </layout>
+          </appender>
+
+          <appender name="APPLICATION" class="ch.qos.logback.core.rolling.RollingFileAppender">
+              <file>${LOGS}/order-service/order-service.log</file>
+              <append>true</append>
+              <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                  <!-- rollover daily and when the file reaches 10 MegaBytes -->
+                  <fileNamePattern>${LOGS}/order-service/archived/order-service-%d{yyyy-MM-dd}.%i.log
+                  </fileNamePattern>
+                  <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                      <maxFileSize>10MB</maxFileSize>
+                  </timeBasedFileNamingAndTriggeringPolicy>
+              </rollingPolicy>
+              <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+                  <charset>UTF-8</charset>
+                  <layout class="ch.qos.logback.classic.PatternLayout">
+                      <Pattern>%d %p %M %L [%t] - %m%n</Pattern>
+                  </layout>
+              </encoder>
+          </appender>
+
+          <appender name="CDR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+              <file>${CDRS}/order-service-cdr.csv</file>
+              <append>true</append>
+              <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                  <!-- rollover daily and when the file reaches 10 MegaBytes -->
+                  <fileNamePattern>${CDRS}/order-service/cdrs/cdr-%d{yyyy-MM-dd}.%i.csv
+                  </fileNamePattern>
+                  <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                      <maxFileSize>10MB</maxFileSize>
+                  </timeBasedFileNamingAndTriggeringPolicy>
+              </rollingPolicy>
+              <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+                  <charset>UTF-8</charset>
+                  <layout class="ch.qos.logback.classic.PatternLayout">
+                      <Pattern>%date{dd:MMM:yyyy;HH:mm:ss.SSS},%m%n</Pattern>
+                  </layout>
+              </encoder>
+          </appender>
+
+          <!-- LOG everything at INFO level -->
+          <root level="INFO">
+              <appender-ref ref="APPLICATION" />
+          </root>
+
+          <logger name="cdr" level="DEBUG" additivity="false">
+              <appender-ref ref="CDR" />
+          </logger>
+
+          <!-- LOG "com.baeldung*" at TRACE level -->
+          <!-- <logger name="application" level="DEBUG" additivity="true">
+              <appender-ref ref="APPLICATION" />
+          </logger> -->
+
+      </configuration>
+  volumeMount:
+    - mountPath: /home/docker/Software/logback.xml
+      name: order-service-lgb-vol
+      subPath: logback.xml
+  volumes:
+    - configMap:
+        name: order-service-lgb-cm
+      name: order-service-lgb-vol
+nameOverride: ''
+nodeSelector: {}
+podAnnotations: {}
+podSecurityContext: {}
+replicaCount: 1
+resources: {}
+securityContext: {}
+service:
+  port: 7001
+  type: ClusterIP
+serviceAccount:
+  annotations: {}
+  create: false
+  name: ''
+tolerations: []
