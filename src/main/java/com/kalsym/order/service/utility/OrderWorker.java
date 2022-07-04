@@ -464,7 +464,7 @@ public class OrderWorker {
                 
                 //check if email already registered
                 List<Customer> existingCustomer = customerRepository.findByEmail(cod.getOrderShipmentDetails().getEmail());
-                if (existingCustomer.size()==0) {
+                if (existingCustomer.size()==0 && cod.getCustomerId()==null) {
                     if (saveCustomerInformation != null && saveCustomerInformation == true) {
                         if (order.getCustomerId() == null || "undefined".equalsIgnoreCase(order.getCustomerId())) {
                             String customerId = customerService.addCustomer(cod.getOrderShipmentDetails(), order.getStoreId());
@@ -487,7 +487,7 @@ public class OrderWorker {
                     } else {
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "user information not saved");
                     }
-                } else {
+                } else if (cod.getCustomerId()==null) {
                     //email already registered
                     String customerId = existingCustomer.get(0).getId();
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Existing customer with id: " + customerId);
