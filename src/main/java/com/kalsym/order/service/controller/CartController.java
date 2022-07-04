@@ -13,6 +13,7 @@ import com.kalsym.order.service.model.repository.ProductRepository;
 import com.kalsym.order.service.model.repository.StoreDeliveryDetailRepository;
 import com.kalsym.order.service.model.repository.CustomerVoucherRepository;
 import com.kalsym.order.service.model.repository.CartSearchSpecs;
+import com.kalsym.order.service.model.repository.VoucherRepository;
 import com.kalsym.order.service.utility.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -119,6 +120,9 @@ public class CartController {
     
     @Autowired
     RegionCountriesRepository regionCountriesRepository;
+    
+    @Autowired
+    VoucherRepository voucherRepository;
      
     @Autowired
     DeliveryService deliveryService;
@@ -950,6 +954,11 @@ public class CartController {
             groupDiscount.setPlatformVoucherDiscountMaxAmount(groupOrderTotalObject.getVoucherDiscountMaxAmount());
             groupDiscount.setPlatformVoucherDiscountCalculationType(groupOrderTotalObject.getVoucherDiscountCalculationType());
             groupDiscount.setPlatformVoucherDiscountCalculationValue(groupOrderTotalObject.getVoucherDiscountCalculationValue());
+            groupDiscount.setPlatformVoucherId(groupOrderTotalObject.getVoucherId());
+            Optional<Voucher> voucherOpt = voucherRepository.findById(groupOrderTotalObject.getVoucherId());
+            if (voucherOpt.isPresent()) {
+                groupDiscount.setPlatformVoucherName(voucherOpt.get().getName());
+            }
         }
         
         response.setSuccessStatus(HttpStatus.OK);

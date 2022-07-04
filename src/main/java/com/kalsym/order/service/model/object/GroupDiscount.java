@@ -38,5 +38,6 @@ public class GroupDiscount {
     String platformVoucherDiscountCalculationType;
     Double platformVoucherDiscountCalculationValue;
     Double platformVoucherDiscountMaxAmount;
-    
+    String platformVoucherId;
+    String platformVoucherName;
 }
