@@ -885,6 +885,8 @@ public class OrderController {
             customerEmail = codList[0].getOrderShipmentDetails().getEmail();
         }
         
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "CustomerId:"+customerId);
+        
         //check platform voucher code if provided
         CustomerVoucher customerPlatformVoucher = null;
         if (platformVoucherCode!=null && !"".equals(platformVoucherCode)) {
