@@ -65,6 +65,7 @@ import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.repository.VoucherSearchSpecs;
 import com.kalsym.order.service.model.repository.RegionCountriesRepository;
 import com.kalsym.order.service.model.object.CartWithItem;
+import com.kalsym.order.service.model.object.CustomPageable;
 import com.kalsym.order.service.model.object.StoreSnooze;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.utility.OrderCalculation;
@@ -184,6 +185,8 @@ public class CartController {
         Page<CartWithDetails> cartWithPage = cartWithDetailsRepository.findAll(cartSpec, pageable);
         
         List<CartWithDetails> cartList = cartWithPage.getContent();
+        CartWithDetails[] cartDetailsList = new CartWithDetails[cartList.size()];
+        
         for (int i=0;i<cartList.size();i++) {
             CartWithDetails cartWithDetails = cartList.get(i);
             StoreSnooze storeSnooze=new StoreSnooze();
@@ -214,9 +217,25 @@ public class CartController {
                 storeSnooze.isSnooze=false;
             }
             cartWithDetails.setStoreSnooze(storeSnooze);
+            
+            cartDetailsList[i] = cartWithDetails; 
         }
         
-        response.setData(cartWithPage);
+         //create custom pageable object with modified content
+        CustomPageable customPageable = new CustomPageable();
+        customPageable.content = cartDetailsList;
+        customPageable.pageable = cartWithPage.getPageable();
+        customPageable.totalPages = cartWithPage.getTotalPages();
+        customPageable.totalElements = cartWithPage.getTotalElements();
+        customPageable.last = cartWithPage.isLast();
+        customPageable.size = cartWithPage.getSize();
+        customPageable.number = cartWithPage.getNumber();
+        customPageable.sort = cartWithPage.getSort();        
+        customPageable.numberOfElements = cartWithPage.getNumberOfElements();
+        customPageable.first  = cartWithPage.isFirst();
+        customPageable.empty = cartWithPage.isEmpty();
+        response.setData(customPageable);
+        
         response.setSuccessStatus(HttpStatus.OK);        
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
