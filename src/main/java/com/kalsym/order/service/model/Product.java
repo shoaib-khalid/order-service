@@ -13,6 +13,7 @@ import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 
 import com.kalsym.order.service.enums.VehicleType;
+import com.kalsym.order.service.OrderServiceApplication;
 
 /**
  *
@@ -64,5 +65,9 @@ public class Product {
     
     @Enumerated(EnumType.STRING)
     private VehicleType vehicleType;
+    
+    public String getThumbnailUrl() {
+        return OrderServiceApplication.ASSET_BASE_URL + thumbnailUrl;
+    }
    
 }

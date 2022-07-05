@@ -361,9 +361,10 @@ public class OrderProcessWorker {
                         } 
                         
                         //update for guest                        
-                        CustomerVoucher guestVoucher = customerVoucherRepository.findByGuestEmailAndVoucherId(order.getOrderShipmentDetail().getEmail(), orderGroup.get().getPlatformVoucherId());
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Guest voucher found:"+guestVoucher);
-                        if (guestVoucher!=null && guestVoucher.getIsUsed()==false) {
+                        List<CustomerVoucher> guestVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(order.getOrderShipmentDetail().getEmail(), orderGroup.get().getPlatformVoucherId());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Guest voucher found:"+guestVoucherList.size());
+                        if (guestVoucherList.size()>0 && guestVoucherList.get(0).getIsUsed()==false) {
+                            CustomerVoucher guestVoucher = guestVoucherList.get(0);
                             guestVoucher.setIsUsed(true);
                             customerVoucherRepository.save(guestVoucher);
                             voucherRepository.deductVoucherBalance(orderGroup.get().getPlatformVoucherId());                                                                

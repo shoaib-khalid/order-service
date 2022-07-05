@@ -671,8 +671,9 @@ public class CartController {
                 Voucher guestVoucher = customerVoucherRepository.findGuestPlatformVoucherByCode(voucherCode, new Date());
                 if (guestVoucher!=null) {
                     //check if already redeem
-                    CustomerVoucher usedVoucher = customerVoucherRepository.findByGuestEmailAndVoucherId(email, guestVoucher.getId());
-                    if (usedVoucher!=null) {                        
+                    List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(email, guestVoucher.getId());
+                    if (usedVoucherList.size()>0) {                        
+                        CustomerVoucher usedVoucher = usedVoucherList.get(0);
                         if (usedVoucher.getIsUsed()) {
                             //already used
                             response.setStatus(HttpStatus.NOT_FOUND.value());
@@ -816,8 +817,9 @@ public class CartController {
                 Voucher guestVoucher = customerVoucherRepository.findGuestPlatformVoucherByCode(platformVoucherCode, new Date());
                 if (guestVoucher!=null) {
                     //check if already redeem
-                    CustomerVoucher usedVoucher = customerVoucherRepository.findByGuestEmailAndVoucherId(email, guestVoucher.getId());
-                    if (usedVoucher!=null) {                        
+                    List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(email, guestVoucher.getId());
+                    if (usedVoucherList.size()>0) {  
+                        CustomerVoucher usedVoucher = usedVoucherList.get(0);
                         if (usedVoucher.getIsUsed()) {
                             //already used
                             response.setStatus(HttpStatus.NOT_FOUND.value());
