@@ -1757,6 +1757,43 @@ public class OrderController {
                 .body(new InputStreamResource(bis));
     }
     
+    @GetMapping(path = {"/track/{orderId}"}, name = "order-shipment-details-get")    
+    public ResponseEntity<HttpResponse> getTrackingUrl(HttpServletRequest request,
+            @PathVariable(required = true) String orderId) throws Exception {
+        String logprefix = request.getRequestURI() + " ";
+
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-shipment-details-get, orderId: {}", orderId);
+
+        Optional<Order> order = orderRepository.findById(orderId);
+
+        if (!order.isPresent()) {
+            response.setErrorStatus(HttpStatus.NOT_FOUND);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-shipment-details-get, orderId, not found. orderId: {}", orderId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
+        OrderShipmentDetail orderShipment = orderShipmentDetailRepository.findByOrderId(orderId);        
+        
+        if (orderShipment!=null && orderShipment.getTrackingUrl()!=null) {            
+            HttpHeaders responseHeaders = new HttpHeaders();
+            responseHeaders.add("Location", orderShipment.getTrackingUrl());
+            
+            return ResponseEntity
+                .status(HttpStatus.MOVED_PERMANENTLY)
+                .headers(responseHeaders)
+                .body(null);
+        } else {
+            response.setErrorStatus(HttpStatus.NOT_FOUND);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Tracking url not found", orderId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
+       
+        
+    }
+    
     
     /**
      *
