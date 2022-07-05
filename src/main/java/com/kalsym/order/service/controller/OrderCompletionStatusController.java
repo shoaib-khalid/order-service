@@ -173,6 +173,9 @@ public class OrderCompletionStatusController {
     @Value("${deliverin.orders.email.address:orders@deliverin.my}")
     private String deliverinOrdersEmailAddress;
     
+    @Value("${asset.service.URL:https://assets.symplified.it}")
+    private String assetServiceBaseUrl;
+    
     @GetMapping(path = {""}, name = "order-completion-statuses-get")
     @PreAuthorize("hasAnyAuthority('order-completion-statuses-get', 'all')")
     public ResponseEntity<HttpResponse> getOrderCompletionStatuses(HttpServletRequest request,
@@ -322,7 +325,8 @@ public class OrderCompletionStatusController {
               deliveryService,
               orderPostService,
               easydukanOrdersEmailAddress,
-              deliverinOrdersEmailAddress) ;
+              deliverinOrdersEmailAddress,
+              assetServiceBaseUrl) ;
         processThread.start();
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderProcessThread started");

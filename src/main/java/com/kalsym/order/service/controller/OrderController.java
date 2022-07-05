@@ -242,7 +242,9 @@ public class OrderController {
     
     @Value("${order.invoice.base.URL:https://api.symplified.it/order-service/v1/orders/pdf/}")
     private String orderInvoiceBaseUrl;
-
+    
+    @Value("${asset.service.URL:https://assets.symplified.it}")
+    private String assetServiceBaseUrl;
     
     //@PreAuthorize("hasAnyAuthority('orders-get', 'all') and (@customOwnerVerifier.VerifyStore(#storeId) or @customOwnerVerifier.VerifyCustomer(#customerId))")    
     @GetMapping(path = {""}, name = "orders-get", produces = "application/json")
@@ -811,7 +813,7 @@ public class OrderController {
                 regionCountriesRepository, customerRepository, 
                 orderCompletionStatusConfigRepository, 
                 productService, orderPostService, fcmService, 
-                emailService, deliveryService, customerService, whatsappService);  
+                emailService, deliveryService, customerService, whatsappService, assetServiceBaseUrl);  
         
         if (response.getStatus()==HttpStatus.CREATED.value()) {
             Order orderCreated = (Order)response.getData();  
@@ -1013,7 +1015,7 @@ public class OrderController {
                     regionCountriesRepository, customerRepository, 
                     orderCompletionStatusConfigRepository, 
                     productService, orderPostService, fcmService, 
-                    emailService, deliveryService, customerService, whatsappService);  
+                    emailService, deliveryService, customerService, whatsappService, assetServiceBaseUrl);  
             Order orderCreated = (Order)orderResponse.getData();
             sumCartSubTotal = sumCartSubTotal + orderCreated.getSubTotal();
             sumDeliveryCharges = sumDeliveryCharges + orderCreated.getDeliveryCharges();
@@ -1691,7 +1693,7 @@ public class OrderController {
                         if (optPaymentDetails.isPresent()) {
                             paymentDetails = optPaymentDetails.get();
                         }
-                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null);
+                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null, assetServiceBaseUrl);
                         email.setRawBody(emailContent);
                         emailService.sendEmail(email);
                     } catch (Exception ex) {
@@ -1738,8 +1740,12 @@ public class OrderController {
         List<OrderItem> orderItemList = orderItemRepository.findByOrderId(order.getId());
         OrderShipmentDetail orderShipmentDetail = orderShipmentDetailRepository.findByOrderId(order.getId());
         Optional<StoreWithDetails> storeWithDetails = storeDetailsRepository.findById(order.getStoreId());
-                
-        ByteArrayInputStream bis = GeneratePdfReport.orderInvoice(order, orderItemList, storeWithDetails.get(), orderShipmentDetail);
+        RegionCountry regionCountry = null;
+        Optional<RegionCountry> t = regionCountriesRepository.findById(storeWithDetails.get().getRegionCountryId());
+        if (t.isPresent()) {
+            regionCountry = t.get();
+        }
+        ByteArrayInputStream bis = GeneratePdfReport.orderInvoice(order, orderItemList, storeWithDetails.get(), orderShipmentDetail, regionCountry, assetServiceBaseUrl);
 
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add("Content-Disposition", "inline; filename="+orderId+".pdf");

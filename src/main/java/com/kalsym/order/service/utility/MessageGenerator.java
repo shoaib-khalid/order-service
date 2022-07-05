@@ -26,11 +26,12 @@ public class MessageGenerator {
             RegionCountry regionCountry,
             boolean sendActivationLink,
             String customerActivationNotice,
-            String customerEmail) {
+            String customerEmail, 
+            String assetServiceBaseUrl) {
         
         if (emailContent != null) {
             if ( storeWithDetails.getStoreLogoUrl()!=null) {
-                emailContent = emailContent.replace("{{store-logo}}", storeWithDetails.getStoreLogoUrl());                            
+                emailContent = emailContent.replace("{{store-logo}}", assetServiceBaseUrl+ "/" +storeWithDetails.getStoreLogoUrl());                            
             } else {
                 emailContent = emailContent.replace("{{store-logo}}", storeWithDetails.getRegionVertical().getDefaultLogoUrl());                            
             }

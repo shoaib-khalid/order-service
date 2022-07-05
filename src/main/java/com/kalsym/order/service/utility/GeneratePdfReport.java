@@ -30,7 +30,11 @@ import com.kalsym.order.service.model.StoreAssets;
 import com.kalsym.order.service.model.Customer;
 import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.StoreWithDetails;
+import com.kalsym.order.service.model.RegionCountry;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 public class GeneratePdfReport {
 
@@ -38,7 +42,9 @@ public class GeneratePdfReport {
     public static ByteArrayInputStream orderInvoice(Order order, 
             List<OrderItem> orderItemList, 
             StoreWithDetails storeWithDetails, 
-            OrderShipmentDetail deliveryDetails) {
+            OrderShipmentDetail deliveryDetails,
+            RegionCountry regionCountry,
+            String assetServiceBaseUrl) {
 
         Document document = new Document();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -52,7 +58,7 @@ public class GeneratePdfReport {
             //get store logo
             String storeLogo=null;             
             if ( storeWithDetails.getStoreLogoUrl()!=null) {
-                storeLogo = storeWithDetails.getStoreLogoUrl();                            
+                storeLogo = assetServiceBaseUrl + "/" +storeWithDetails.getStoreLogoUrl();                            
             } else {
                 storeLogo = storeWithDetails.getRegionVertical().getDefaultLogoUrl();                            
             }
@@ -160,7 +166,11 @@ public class GeneratePdfReport {
             invInfoTable.setWidthPercentage(100);
             invInfoTable.addCell(setCellNoBorder("INVOICE NO : "+ order.getInvoiceId(), fontBig, Element.ALIGN_LEFT));
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/YYYY HH:mm");
-            invInfoTable.addCell(setCellNoBorder("ORDER DATE : "+dateFormat.format(order.getCreated()), fontSmall, Element.ALIGN_LEFT));            
+            //convert time to merchant timezone
+            LocalDateTime startLocalTime = DateTimeUtil.convertToLocalDateTimeViaInstant(order.getCreated(), ZoneId.of(regionCountry.getTimezone()) );                
+            DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("dd-MM-yyyy h:mm a");
+            
+            invInfoTable.addCell(setCellNoBorder("ORDER DATE : "+formatter1.format(startLocalTime), fontSmall, Element.ALIGN_LEFT));            
             col2.addElement(invInfoTable);
             col2.setBorder(0);
             col2.setPaddingTop(20);

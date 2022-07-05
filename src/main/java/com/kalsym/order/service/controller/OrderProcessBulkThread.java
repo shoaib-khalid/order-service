@@ -97,6 +97,7 @@ public class OrderProcessBulkThread extends Thread {
     private String deliverinOrdersEmailAddress;
      private String easydukanOrdersSenderName;
     private String deliverinOrdersSenderName;
+    private String assetServiceBaseUrl;
     
     public OrderProcessBulkThread(
             String logprefix, 
@@ -131,7 +132,8 @@ public class OrderProcessBulkThread extends Thread {
             DeliveryService deliveryService,
             OrderPostService orderPostService,
             String easydukanOrdersEmailAddress,
-            String deliverinOrdersEmailAddress
+            String deliverinOrdersEmailAddress,
+            String assetServiceBaseUrl
             ) {
         
             this.logprefix = logprefix;
@@ -167,6 +169,7 @@ public class OrderProcessBulkThread extends Thread {
             this.orderPostService = orderPostService;
             this.easydukanOrdersEmailAddress = easydukanOrdersEmailAddress;
             this.deliverinOrdersEmailAddress = deliverinOrdersEmailAddress;
+            this.assetServiceBaseUrl = assetServiceBaseUrl;
     }
         
     public void run(){
@@ -210,7 +213,8 @@ public class OrderProcessBulkThread extends Thread {
                         fcmService,
                         deliveryService,
                         orderPostService,
-                        false
+                        false,
+                        assetServiceBaseUrl
                         ) ;
                 OrderProcessResult result = worker.startProcessOrder();
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "result processOrder orderId:"+bodyOrderCompletionStatusUpdate.getOrderId()+" httpStatus:"+result.httpStatus+" message:"+result.errorMsg+" pendingRequestDelivery:"+result.pendingRequestDelivery);
@@ -343,7 +347,7 @@ public class OrderProcessBulkThread extends Thread {
                                     }
                                     customerEmail = customer.getEmail();
                                 }
-                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, sendActivationLink, storeWithDetails.getRegionVertical().getCustomerActivationNotice(), customerEmail);
+                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, sendActivationLink, storeWithDetails.getRegionVertical().getCustomerActivationNotice(), customerEmail, assetServiceBaseUrl);
                                 email.setRawBody(emailContent);
                                 emailService.sendEmail(email);
                             } catch (Exception ex) {
@@ -370,7 +374,7 @@ public class OrderProcessBulkThread extends Thread {
                                 String[] emailAddress = {financeEmailAddress};
                                 email.setFrom(null);
                                 email.setTo(emailAddress);
-                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null);
+                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null, assetServiceBaseUrl);
                                 email.setRawBody(emailContent);
                                 emailService.sendEmail(email);
                             } catch (Exception ex) {

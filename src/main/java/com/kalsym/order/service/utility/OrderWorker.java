@@ -110,7 +110,8 @@ public class OrderWorker {
             EmailService emailService,
             DeliveryService deliveryService,
             CustomerService customerService,
-            WhatsappService whatsappService) {
+            WhatsappService whatsappService,
+            String assetServiceBaseUrl) {
 
         HttpResponse response = new HttpResponse(requestUri);
         // create order object
@@ -536,7 +537,7 @@ public class OrderWorker {
                                    } 
                                 } 
                                 
-                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, order.getOrderShipmentDetail(), null, regionCountry, sendActivationLink, storeWithDetials.getRegionVertical().getCustomerActivationNotice(), customerEmail);
+                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, order.getOrderShipmentDetail(), null, regionCountry, sendActivationLink, storeWithDetials.getRegionVertical().getCustomerActivationNotice(), customerEmail, assetServiceBaseUrl);
                                 Email email = new Email();
                                 ArrayList<String> tos = new ArrayList<>();
                                 tos.add(order.getOrderShipmentDetail().getEmail());

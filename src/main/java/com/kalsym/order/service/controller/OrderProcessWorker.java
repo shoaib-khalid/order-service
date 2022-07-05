@@ -90,6 +90,7 @@ public class OrderProcessWorker {
     private OrderPostService orderPostService;    
     
     private boolean proceedRequestDelivery;
+    private String assetServiceBaseUrl;
     
     public OrderProcessWorker(
             String logprefix, 
@@ -123,7 +124,8 @@ public class OrderProcessWorker {
             FCMService fcmService,
             DeliveryService deliveryService,
             OrderPostService orderPostService,
-            boolean proceedRequestDelivery
+            boolean proceedRequestDelivery,
+            String assetServiceBaseUrl
             ) {
         
         this.logprefix = logprefix;
@@ -158,6 +160,7 @@ public class OrderProcessWorker {
         this.deliveryService = deliveryService;
         this.orderPostService = orderPostService;
         this.proceedRequestDelivery = proceedRequestDelivery;
+        this.assetServiceBaseUrl = assetServiceBaseUrl;
     }
     
     public OrderProcessResult startProcessOrder() {
@@ -613,7 +616,7 @@ public class OrderProcessWorker {
                                 }
                                 customerEmail = customer.getEmail();
                             }
-                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, sendActivationLink, storeWithDetails.getRegionVertical().getCustomerActivationNotice(), customerEmail);
+                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, sendActivationLink, storeWithDetails.getRegionVertical().getCustomerActivationNotice(), customerEmail, assetServiceBaseUrl);
                             email.setRawBody(emailContent);
                             emailService.sendEmail(email);
                         } catch (Exception ex) {
@@ -641,7 +644,7 @@ public class OrderProcessWorker {
                             email.setFrom(null);
                             email.setFromName(financeEmailSenderName);
                             email.setTo(emailAddress);
-                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null);
+                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null, assetServiceBaseUrl);
                             email.setRawBody(emailContent);
                             emailService.sendEmail(email);
                         } catch (Exception ex) {

@@ -134,6 +134,9 @@ public class OrderGroupStatusUpdateController {
     @Value("${order.invoice.base.URL:https://api.symplified.it/orders/pdf/}")
     private String orderInvoiceBaseUrl;
     
+    @Value("${asset.service.URL:https://assets.symplified.it}")
+    private String assetServiceBaseUrl;
+    
     @PutMapping(path = {""}, name = "order-completion-status-updates-put-by-order-group-id")
     @PreAuthorize("hasAnyAuthority('order-completion-status-updates-put-by-order-group-id', 'all')")
     public ResponseEntity<HttpResponse> putOrderGroupCompletionStatusUpdate(HttpServletRequest request,
@@ -192,7 +195,8 @@ public class OrderGroupStatusUpdateController {
                 fcmService,
                 deliveryService,
                 orderPostService,
-                true) ;
+                true,
+                assetServiceBaseUrl) ;
             OrderProcessResult result = worker.startProcessOrder();        
         }
                 

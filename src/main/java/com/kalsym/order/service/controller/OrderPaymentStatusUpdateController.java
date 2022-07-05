@@ -133,7 +133,10 @@ public class OrderPaymentStatusUpdateController {
     
     @Value("${order.invoice.base.URL:https://api.symplified.it/orders/pdf/}")
     private String orderInvoiceBaseUrl;
-     
+
+    @Value("${asset.service.URL:https://assets.symplified.it}")
+    private String assetServiceBaseUrl;
+    
     @PutMapping(path = {""}, name = "order-completion-status-updates-put-by-order-id")
     @PreAuthorize("hasAnyAuthority('order-completion-status-updates-put-by-order-id', 'all')")
     public ResponseEntity<HttpResponse> putOrderCompletionStatusUpdatesConfirm(HttpServletRequest request,
@@ -173,7 +176,8 @@ public class OrderPaymentStatusUpdateController {
             fcmService,
             deliveryService,
             orderPostService,
-            true) ;
+            true,
+            assetServiceBaseUrl) ;
         OrderProcessResult result = worker.startProcessOrder();
         response.setData(result.data);
         response.setSuccessStatus(result.httpStatus);
