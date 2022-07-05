@@ -168,20 +168,29 @@ public class OrderWorker {
                     if (cartItems.get(i).getDiscountId()!=null) {
                         //check if discount still valid
                         ItemDiscount discountDetails = productInventory.getItemDiscount();
-                        double discountPrice = Utilities.Round2DecimalPoint(discountDetails.discountedPrice);
-                        double cartItemPrice = Utilities.Round2DecimalPoint(cartItems.get(i).getProductPrice().doubleValue());
-                        
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "productInventory discountId:["+discountDetails.discountId+"] discountedPrice:"+discountPrice);
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem discountId:["+cartItems.get(i).getDiscountId()+"] price:"+cartItemPrice);
-                        
-                        if (discountDetails.discountId.equals(cartItems.get(i).getDiscountId()) &&
-                                discountPrice==cartItemPrice) {
-                            //dicount still valid
-                            subTotal += cartItems.get(i).getPrice() ;
-                            itemPrice = discountPrice;
+                        if (discountDetails!=null) {
+                            double discountPrice = Utilities.Round2DecimalPoint(discountDetails.discountedPrice);
+                            double cartItemPrice = Utilities.Round2DecimalPoint(cartItems.get(i).getProductPrice().doubleValue());
+
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "productInventory discountId:["+discountDetails.discountId+"] discountedPrice:"+discountPrice);
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem discountId:["+cartItems.get(i).getDiscountId()+"] price:"+cartItemPrice);
+
+                            if (discountDetails.discountId.equals(cartItems.get(i).getDiscountId()) &&
+                                    discountPrice==cartItemPrice) {
+                                //dicount still valid
+                                subTotal += cartItems.get(i).getPrice() ;
+                                itemPrice = discountPrice;
+                            } else {
+                                //discount no more valid
+                                // should return warning if prices are not same
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Discount not valid");
+                                response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+                                response.setMessage("Discount not valid");
+                                response.setData(cartItems.get(i));
+                                return response;
+                            }
                         } else {
                             //discount no more valid
-                            // should return warning if prices are not same
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Discount not valid");
                             response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
                             response.setMessage("Discount not valid");

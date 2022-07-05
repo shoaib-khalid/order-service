@@ -1,5 +1,5 @@
 ##################################################
-# order-service-3.9.0-SNAPSHOT |04-July-2022
+# order-service-3.9.0-SNAPSHOT |05-July-2022
 ##################################################
 1. Send invoice pdf in whatsapp message to customer
 
@@ -12,6 +12,10 @@
 6. New API to get order group by id
 
 7. New feature to enable guest redeem voucher
+
+8. Send alert on whatsapp to customer for every order status update
+
+9. New API for orders tracking url GET /orders/track/{orderId}
 
 ##DB Changes
 ALTER TABLE voucher ADD requireToClaim TINYINT(1) NOT NULL DEFAULT 1;
