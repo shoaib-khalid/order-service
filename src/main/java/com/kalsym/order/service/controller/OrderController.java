@@ -1776,9 +1776,9 @@ public class OrderController {
         
         OrderShipmentDetail orderShipment = orderShipmentDetailRepository.findByOrderId(orderId);        
         
-        if (orderShipment!=null && orderShipment.getTrackingUrl()!=null) {            
+        if (orderShipment!=null && orderShipment.getCustomerTrackingUrl()!=null) {            
             HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.add("Location", orderShipment.getTrackingUrl());
+            responseHeaders.add("Location", orderShipment.getCustomerTrackingUrl());
             
             return ResponseEntity
                 .status(HttpStatus.MOVED_PERMANENTLY)
