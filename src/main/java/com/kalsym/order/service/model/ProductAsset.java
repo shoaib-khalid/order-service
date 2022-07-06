@@ -42,6 +42,13 @@ public class ProductAsset implements Serializable {
     private String name;
     private String url;
     private String productId;
-    private Boolean isThumbnail;           
+    private Boolean isThumbnail; 
+    
+    public String getUrl() {
+        if (url==null)
+            return null;
+        else
+            return OrderServiceApplication.ASSETURL + "/" + url;
+    }
 
 }

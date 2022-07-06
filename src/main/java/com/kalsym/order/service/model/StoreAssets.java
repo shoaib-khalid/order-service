@@ -5,6 +5,7 @@
  */
 package com.kalsym.order.service.model;
 
+import com.kalsym.order.service.OrderServiceApplication;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -64,5 +65,11 @@ public class StoreAssets implements Serializable {
     @Transient 
     private MultipartFile assetFile;
     
+    public String getAssetUrl() {
+        if (assetUrl==null)
+            return null;
+        else
+            return OrderServiceApplication.ASSETURL + "/" + assetUrl;
+    }
 }
 

@@ -33,6 +33,7 @@ public class OrderServiceApplication implements CommandLineRunner {
     }
 
     public static String VERSION;
+    public static String ASSETURL ;
     
     @Autowired
     private Environment env;
@@ -46,13 +47,14 @@ public class OrderServiceApplication implements CommandLineRunner {
     String version;
     
     @Value("${asset.service.URL:https://assets.symplified.it}")
-    public static String ASSET_BASE_URL ;
+    String assetServiceUrl ;
 
     @Bean
     CommandLineRunner lookup(ApplicationContext context) {
         return args -> {
             VERSION = version;
-
+            ASSETURL = assetServiceUrl;
+            
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "lookup", "[v{}][{}] {}", VERSION, "", "\n"
                     + "               _                                      _          \n"
                     + "              | |                                    (_)         \n"

@@ -67,7 +67,10 @@ public class Product {
     private VehicleType vehicleType;
     
     public String getThumbnailUrl() {
-        return OrderServiceApplication.ASSET_BASE_URL + thumbnailUrl;
+        if (thumbnailUrl==null)
+            return null;
+        else
+            return OrderServiceApplication.ASSETURL + "/" + thumbnailUrl;
     }
    
 }
