@@ -858,7 +858,7 @@ public class OrderController {
             }
             
             //save customer voucher in account
-            if (customerPlatformVoucher.getGuestVoucher()!=null && customerPlatformVoucher.getGuestVoucher()) {
+            if (customerPlatformVoucher !=null && customerPlatformVoucher.getGuestVoucher()!=null && customerPlatformVoucher.getGuestVoucher()) {
                 if (orderCreated.getPaymentType().equals(StorePaymentType.COD.name())) {
                     customerPlatformVoucher.setIsUsed(true);
                     voucherRepository.deductVoucherBalance(customerPlatformVoucher.getVoucherId());
@@ -1112,7 +1112,7 @@ public class OrderController {
         }                
         
         //save customer voucher in account
-        if (customerPlatformVoucher.getGuestVoucher()!=null && customerPlatformVoucher.getGuestVoucher()) {
+        if (customerPlatformVoucher!=null && customerPlatformVoucher.getGuestVoucher()!=null && customerPlatformVoucher.getGuestVoucher()) {
             if (orderCreatedList.get(0).getPaymentType().equals(StorePaymentType.COD.name())) {
                 customerPlatformVoucher.setIsUsed(true);
                 voucherRepository.deductVoucherBalance(customerPlatformVoucher.getVoucherId());
