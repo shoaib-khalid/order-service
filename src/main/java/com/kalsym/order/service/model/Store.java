@@ -41,6 +41,7 @@ public class Store implements Serializable {
     private String email;
     private String verticalCode;
     private String regionCountryId;
+    private String regionCountryStateId;
     private Double serviceChargesPercentage;
 
     private String paymentType;

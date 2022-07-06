@@ -70,7 +70,7 @@ public class GeneratePdfReport {
             String storeAddress = store.getAddress();
             String storeCity = store.getCity();
             String storePostcode = store.getPostcode();
-            String storeState = store.getState();
+            String storeState = store.getRegionCountryStateId();
             
             //buyer details
             Customer customer = order.getCustomer();
