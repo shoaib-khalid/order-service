@@ -20,7 +20,7 @@
 ##DB Changes
 ALTER TABLE voucher ADD requireToClaim TINYINT(1) NOT NULL DEFAULT 1;
 ALTER TABLE customer_voucher ADD guestEmail VARCHAR(100);
-
+ALTER TABLE customer_voucher ADD guestVoucher TINYINT(1) NOT NULL DEFAULT 0;
 
 ##################################################
 # order-service-3.8.2-SNAPSHOT |24-June-2022

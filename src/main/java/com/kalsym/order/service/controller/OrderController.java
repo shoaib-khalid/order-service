@@ -731,13 +731,31 @@ public class OrderController {
         if (platformVoucherCode!=null && !"".equals(platformVoucherCode)) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "PlatformVoucherCode provided : "+platformVoucherCode);
             customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(cod.getCustomerId(), platformVoucherCode, new Date());
-            if (customerPlatformVoucher==null) {
-                //check guest voucher code
-                customerPlatformVoucher = customerVoucherRepository.findGuestPlatformVoucherByCode(cod.getOrderShipmentDetails().getEmail(), platformVoucherCode, new Date());
-                if (customerPlatformVoucher==null) {
+            if (customerPlatformVoucher==null) {                
+                //find guest voucher
+                Voucher guestVoucher = customerVoucherRepository.findGuestPlatformVoucherByCode(platformVoucherCode, new Date());
+                if (guestVoucher!=null) {
+                    //check if already redeem
+                    List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(cod.getOrderShipmentDetails().getEmail(), guestVoucher.getId());
+                    if (usedVoucherList.size()>0) {  
+                        CustomerVoucher usedVoucher = usedVoucherList.get(0);
+                        if (usedVoucher.getIsUsed()) {
+                            //already used
+                            response.setStatus(HttpStatus.NOT_FOUND.value());
+                            response.setMessage("Voucher code " + platformVoucherCode + " already used");
+                            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                        }                        
+                    } 
+                    customerPlatformVoucher = new CustomerVoucher();
+                    customerPlatformVoucher.setGuestEmail(cod.getOrderShipmentDetails().getEmail());
+                    customerPlatformVoucher.setIsUsed(false);
+                    customerPlatformVoucher.setVoucherId(guestVoucher.getId());
+                    customerPlatformVoucher.setVoucher(guestVoucher);
+                    customerPlatformVoucher.setGuestVoucher(true);
+                } else {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
                     response.setMessage("Voucher code " + platformVoucherCode + " not found");
-                    return ResponseEntity.status(response.getStatus()).body(response);
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                 }
             } else {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform Voucher found : "+customerPlatformVoucher.getId());
@@ -836,6 +854,15 @@ public class OrderController {
                 orderTotal = totalDataObject.getTotal();
             }
             
+            //save customer voucher in account
+            if (customerPlatformVoucher.getGuestVoucher()!=null && customerPlatformVoucher.getGuestVoucher()) {
+                if (orderCreated.getPaymentType().equals(StorePaymentType.COD.name())) {
+                    customerPlatformVoucher.setIsUsed(true);
+                    voucherRepository.deductVoucherBalance(customerPlatformVoucher.getVoucherId());
+                }
+                customerVoucherRepository.save(customerPlatformVoucher);
+            }
+            
             orderGroup.setSubTotal(totalDataObject.getSubTotal());
             orderGroup.setTotal(orderTotal);
             orderGroup.setAppliedDiscount(orderCreated.getAppliedDiscount());
@@ -894,12 +921,30 @@ public class OrderController {
         if (platformVoucherCode!=null && !"".equals(platformVoucherCode)) {
             customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(customerId, platformVoucherCode, new Date());
             if (customerPlatformVoucher==null) {
-                //check guest voucher code
-                customerPlatformVoucher = customerVoucherRepository.findGuestPlatformVoucherByCode(customerEmail, platformVoucherCode, new Date());
-                if (customerPlatformVoucher==null) {
+                //find guest voucher
+                Voucher guestVoucher = customerVoucherRepository.findGuestPlatformVoucherByCode(platformVoucherCode, new Date());
+                if (guestVoucher!=null) {
+                    //check if already redeem
+                    List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(customerEmail, guestVoucher.getId());
+                    if (usedVoucherList.size()>0) {  
+                        CustomerVoucher usedVoucher = usedVoucherList.get(0);
+                        if (usedVoucher.getIsUsed()) {
+                            //already used
+                            response.setStatus(HttpStatus.NOT_FOUND.value());
+                            response.setMessage("Voucher code " + platformVoucherCode + " already used");
+                            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                        }                        
+                    } 
+                    customerPlatformVoucher = new CustomerVoucher();
+                    customerPlatformVoucher.setGuestEmail(customerEmail);
+                    customerPlatformVoucher.setIsUsed(false);
+                    customerPlatformVoucher.setVoucherId(guestVoucher.getId());
+                    customerPlatformVoucher.setVoucher(guestVoucher);
+                    customerPlatformVoucher.setGuestVoucher(true);
+                } else {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
                     response.setMessage("Voucher code " + platformVoucherCode + " not found");
-                    return ResponseEntity.status(response.getStatus()).body(response);
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                 }
             } else {
                 //check minimum amount
@@ -1059,6 +1104,15 @@ public class OrderController {
             orderRepository.UpdateOrderGroupId(orderCreatedList.get(x).getId(), orderGroup.getId());
         }                
         
+        //save customer voucher in account
+        if (customerPlatformVoucher.getGuestVoucher()!=null && customerPlatformVoucher.getGuestVoucher()) {
+            if (orderCreatedList.get(0).getPaymentType().equals(StorePaymentType.COD.name())) {
+                customerPlatformVoucher.setIsUsed(true);
+                voucherRepository.deductVoucherBalance(customerPlatformVoucher.getVoucherId());
+            }            
+            customerVoucherRepository.save(customerPlatformVoucher);
+        }
+            
         //append prefix to differnetiate between single & multiple
         orderGroup.setId("G"+orderGroup.getId());
         

@@ -10,6 +10,7 @@ import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.enums.RefundStatus;
 import com.kalsym.order.service.enums.RefundType;
+import com.kalsym.order.service.enums.StorePaymentType;
 import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.Customer;
 import com.kalsym.order.service.model.CustomerVoucher;
@@ -345,7 +346,7 @@ public class OrderProcessWorker {
                 }
                 
                 //check platform voucher in group order
-                if (order.getOrderGroupId()!=null) {
+                if (order.getOrderGroupId()!=null && order.getPaymentType().equals(StorePaymentType.COD.name())) {
                     //deduct platform voucher
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find order groupId:"+order.getOrderGroupId());
                     Optional<OrderGroup> orderGroup = orderGroupRepository.findById(order.getOrderGroupId());

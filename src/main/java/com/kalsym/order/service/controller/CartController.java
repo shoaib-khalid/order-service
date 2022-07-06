@@ -810,7 +810,7 @@ public class CartController {
         //check platform voucher code if provided
         CustomerVoucher customerPlatformVoucher = null;
         if (platformVoucherCode!=null && (customerId!=null || email!=null)) {
-            //check voucher
+            //check voucher in customer account
             customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(customerId, platformVoucherCode, new Date());
             if (customerPlatformVoucher==null) {
                 //find guest voucher
@@ -825,21 +825,14 @@ public class CartController {
                             response.setStatus(HttpStatus.NOT_FOUND.value());
                             response.setMessage("Voucher code " + platformVoucherCode + " not found");
                             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-                        }
-                        customerPlatformVoucher = new CustomerVoucher();
-                        customerPlatformVoucher.setGuestEmail(email);
-                        customerPlatformVoucher.setIsUsed(false);
-                        customerPlatformVoucher.setVoucherId(guestVoucher.getId());
-                        customerPlatformVoucher.setVoucher(guestVoucher);
-                    } else {
-                        customerPlatformVoucher = new CustomerVoucher();
-                        customerPlatformVoucher.setGuestEmail(email);
-                        customerPlatformVoucher.setIsUsed(false);
-                        customerPlatformVoucher.setVoucherId(guestVoucher.getId());
-                        customerPlatformVoucher.setCreated(new Date());
-                        customerPlatformVoucher.setVoucher(guestVoucher);
-                        customerVoucherRepository.save(customerPlatformVoucher);
-                    }
+                        }                        
+                    } 
+                    customerPlatformVoucher = new CustomerVoucher();
+                    customerPlatformVoucher.setGuestEmail(email);
+                    customerPlatformVoucher.setIsUsed(false);
+                    customerPlatformVoucher.setVoucherId(guestVoucher.getId());
+                    customerPlatformVoucher.setVoucher(guestVoucher);
+                    customerPlatformVoucher.setGuestVoucher(true);
                 } else {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
                     response.setMessage("Voucher code " + platformVoucherCode + " not found");

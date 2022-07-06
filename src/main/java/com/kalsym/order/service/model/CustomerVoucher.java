@@ -50,6 +50,7 @@ public class CustomerVoucher implements Serializable {
     private String voucherId;    
     private Boolean isUsed;
     private String guestEmail;
+    private Boolean guestVoucher;
     
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")

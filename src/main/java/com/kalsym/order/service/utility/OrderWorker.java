@@ -469,7 +469,8 @@ public class OrderWorker {
                         voucherRepository.deductVoucherBalance(customerStoreVoucher.getVoucherId());
                         customerStoreVoucher.setIsUsed(true);
                         customerVoucherRepository.save(customerStoreVoucher);
-                    }
+                    }                    
+                    
                 }
                 
                 //register user if not registered
