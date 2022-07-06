@@ -677,7 +677,7 @@ public class CartController {
                         if (usedVoucher.getIsUsed()) {
                             //already used
                             response.setStatus(HttpStatus.NOT_FOUND.value());
-                            response.setMessage("Voucher code " + voucherCode + " not found");
+                            response.setMessage("Voucher code " + voucherCode + " already used");
                             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                         }
                     } else {
@@ -823,7 +823,7 @@ public class CartController {
                         if (usedVoucher.getIsUsed()) {
                             //already used
                             response.setStatus(HttpStatus.NOT_FOUND.value());
-                            response.setMessage("Voucher code " + platformVoucherCode + " not found");
+                            response.setMessage("Voucher code " + platformVoucherCode + " already used");
                             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                         }                        
                     } 
