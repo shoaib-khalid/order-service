@@ -58,7 +58,7 @@ public class GeneratePdfReport {
             //get store logo
             String storeLogo=null;             
             if ( storeWithDetails.getStoreLogoUrl()!=null) {
-                storeLogo = assetServiceBaseUrl + "/" +storeWithDetails.getStoreLogoUrl();                            
+                storeLogo = storeWithDetails.getStoreLogoUrl();                            
             } else {
                 storeLogo = storeWithDetails.getRegionVertical().getDefaultLogoUrl();                            
             }

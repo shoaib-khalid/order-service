@@ -31,7 +31,7 @@ public class MessageGenerator {
         
         if (emailContent != null) {
             if ( storeWithDetails.getStoreLogoUrl()!=null) {
-                emailContent = emailContent.replace("{{store-logo}}", assetServiceBaseUrl+ "/" +storeWithDetails.getStoreLogoUrl());                            
+                emailContent = emailContent.replace("{{store-logo}}", storeWithDetails.getStoreLogoUrl());                            
             } else {
                 emailContent = emailContent.replace("{{store-logo}}", storeWithDetails.getRegionVertical().getDefaultLogoUrl());                            
             }
