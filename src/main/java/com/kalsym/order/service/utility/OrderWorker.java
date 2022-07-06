@@ -232,7 +232,7 @@ public class OrderWorker {
                         orderItem.setDiscountCalculationType(cartItems.get(i).getDiscountCalculationType());
                         orderItem.setDiscountCalculationValue(cartItems.get(i).getDiscountCalculationValue());                        
                     }
-                    orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
+                    //orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
 
 
                     //add cart subitem if any

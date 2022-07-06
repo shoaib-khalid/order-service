@@ -835,7 +835,7 @@ public class OrderController {
         
         if (response.getStatus()==HttpStatus.CREATED.value()) {
             Order orderCreated = (Order)response.getData();  
-            String customerId = optCart.get().getCustomerId();
+            String customerId = orderCreated.getCustomerId();
 
             //create order group
             OrderGroup orderGroup = new OrderGroup();
@@ -1078,7 +1078,7 @@ public class OrderController {
         if (groupTotal.getVoucherId()!=null) {
             double platformVoucherDiscountAmt = groupTotal.getVoucherDiscount();
             orderGroup.setPlatformVoucherDiscount(platformVoucherDiscountAmt);
-            orderGroup.setPlatformVoucherId(customerPlatformVoucher.getId());
+            orderGroup.setPlatformVoucherId(groupTotal.getVoucherId());
             sumTotal = orderTotal - platformVoucherDiscountAmt;           
         } else {
             sumTotal = orderTotal;
@@ -1086,6 +1086,7 @@ public class OrderController {
         
         //get shipment details from one of order created
         OrderShipmentDetail orderShipmentDetail = orderCreatedList.get(0).getOrderShipmentDetail();
+        customerId = orderCreatedList.get(0).getCustomerId();
         
         orderGroup.setCustomerId(customerId);
         orderGroup.setDeliveryCharges(sumDeliveryCharges);        
