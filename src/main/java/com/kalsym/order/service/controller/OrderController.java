@@ -745,8 +745,9 @@ public class OrderController {
                             response.setMessage("Voucher code " + platformVoucherCode + " already used");
                             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                         }                        
-                    } 
-                    customerPlatformVoucher = new CustomerVoucher();
+                    } else {
+                        customerPlatformVoucher = new CustomerVoucher();
+                    }
                     customerPlatformVoucher.setGuestEmail(cod.getOrderShipmentDetails().getEmail());
                     customerPlatformVoucher.setIsUsed(false);
                     customerPlatformVoucher.setVoucherId(guestVoucher.getId());
@@ -934,8 +935,9 @@ public class OrderController {
                             response.setMessage("Voucher code " + platformVoucherCode + " already used");
                             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                         }                        
+                    } else {
+                        customerPlatformVoucher = new CustomerVoucher();                    
                     } 
-                    customerPlatformVoucher = new CustomerVoucher();
                     customerPlatformVoucher.setGuestEmail(customerEmail);
                     customerPlatformVoucher.setIsUsed(false);
                     customerPlatformVoucher.setVoucherId(guestVoucher.getId());

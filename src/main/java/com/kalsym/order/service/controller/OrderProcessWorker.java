@@ -346,7 +346,7 @@ public class OrderProcessWorker {
                 }
                 
                 //check platform voucher in group order
-                if (order.getOrderGroupId()!=null && order.getPaymentType().equals(StorePaymentType.COD.name())) {
+                if (order.getOrderGroupId()!=null && order.getPaymentType().equals(StorePaymentType.ONLINEPAYMENT.name())) {
                     //deduct platform voucher
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find order groupId:"+order.getOrderGroupId());
                     Optional<OrderGroup> orderGroup = orderGroupRepository.findById(order.getOrderGroupId());
