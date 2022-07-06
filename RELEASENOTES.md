@@ -1,5 +1,5 @@
 ##################################################
-# order-service-3.9.0-SNAPSHOT |05-July-2022
+# order-service-3.9.0-SNAPSHOT |06-July-2022
 ##################################################
 1. Send invoice pdf in whatsapp message to customer
 
@@ -17,7 +17,7 @@
 
 9. New API for orders tracking url GET /orders/track/{orderId}
 
-10. Remove https:// for image url in product, product_assets, store_assets
+10. Remove https:// for image url in product, product_assets, store_assets in db. the base url will read from config : asset.service.URL 
 
 ##DB Changes
 ALTER TABLE voucher ADD requireToClaim TINYINT(1) NOT NULL DEFAULT 1;
