@@ -643,13 +643,15 @@ public class OrderController {
         
         //get order group details
         OrderWithDetails order = optOrder.get();
-        Optional<OrderGroup> orderGroupOpt = orderGroupRepository.findById(order.getOrderGroupId());
-        if (orderGroupOpt.isPresent()) {
-            OrderGroupObject orderGroup = new OrderGroupObject();
-            orderGroup.setTotal(orderGroupOpt.get().getTotal());    
-            orderGroup.setPlatformVoucherId(orderGroupOpt.get().getPlatformVoucherId());
-            orderGroup.setPlatformVoucherDiscount(orderGroupOpt.get().getPlatformVoucherDiscount());
-            order.setOrderGroupDetails(orderGroup);
+        if (order.getOrderGroupId()!=null) {
+            Optional<OrderGroup> orderGroupOpt = orderGroupRepository.findById(order.getOrderGroupId());
+            if (orderGroupOpt.isPresent()) {
+                OrderGroupObject orderGroup = new OrderGroupObject();
+                orderGroup.setTotal(orderGroupOpt.get().getTotal());    
+                orderGroup.setPlatformVoucherId(orderGroupOpt.get().getPlatformVoucherId());
+                orderGroup.setPlatformVoucherDiscount(orderGroupOpt.get().getPlatformVoucherDiscount());
+                order.setOrderGroupDetails(orderGroup);
+            }
         }
         
         response.setSuccessStatus(HttpStatus.OK);

@@ -46,6 +46,7 @@ public class Product {
 //    private String deliveryType;
 //    private String itemType;
     private String seoUrl;
+    private String seoName;
     private boolean trackQuantity;
     private boolean allowOutOfStockPurchases;
     private int minQuantityForAlarm;
