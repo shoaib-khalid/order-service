@@ -686,6 +686,7 @@ public class CartController {
                         customerPlatformVoucher.setIsUsed(false);
                         customerPlatformVoucher.setVoucherId(guestVoucher.getId());
                         customerPlatformVoucher.setCreated(new Date());
+                        customerPlatformVoucher.setGuestVoucher(true);
                         customerVoucherRepository.save(customerPlatformVoucher);
                     }
                 } else {
