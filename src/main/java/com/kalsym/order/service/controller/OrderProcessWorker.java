@@ -709,14 +709,14 @@ public class OrderProcessWorker {
                     try {
                         //String storeName, String invoiceNo, String orderId, String merchantToken
                         //get customer info
-                        Optional<Customer> customerOpt = customerRepository.findById(order.getCustomerId());
-                        String customerMsisdn = null;
-                        if (customerOpt.isPresent()) {
-                            Customer customer = customerOpt.get();
-                            customerMsisdn = customer.getPhoneNumber();
+                        OrderShipmentDetail orderShipmentDetails = orderShipmentDetailRepository.findByOrderId(orderId);
+                        if (orderShipmentDetails!=null) {                            
+                            String customerMsisdn = orderShipmentDetails.getPhoneNumber();                        
+                            String invoicePdf = invoiceBaseUrl+"/"+order.getId();
+                            whatsappService.sendCustomerAlert(customerMsisdn, status.name(), storeWithDetails.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp(), orderCompletionStatusConfig.getPushWAToCustomerTemplateName(), orderCompletionStatusConfig.getPushWAToCustomerTemplateFormat(), storeWithDetails.getCity(), invoicePdf);
+                        } else {
+                            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order shipment details not found");
                         }
-                        String invoicePdf = invoiceBaseUrl+"/"+order.getId();
-                        whatsappService.sendCustomerAlert(customerMsisdn, status.name(), storeWithDetails.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp(), orderCompletionStatusConfig.getPushWAToCustomerTemplateName(), orderCompletionStatusConfig.getPushWAToCustomerTemplateFormat(), storeWithDetails.getCity(), invoicePdf);
                     } catch (Exception e) {
                         Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
                     }

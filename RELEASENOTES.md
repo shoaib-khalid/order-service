@@ -2,6 +2,7 @@
 # order-service-3.9.4-SNAPSHOT |07-July-2022
 ##################################################
 Bug fix for getOrderGroupsById
+Bug fix for send WA alert, use phone number from shipment details
 
 
 ##################################################

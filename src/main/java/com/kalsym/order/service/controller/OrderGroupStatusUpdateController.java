@@ -146,7 +146,9 @@ public class OrderGroupStatusUpdateController {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         
         //remove prefix G
-        orderGroupId = orderGroupId.substring(1);
+        if (orderGroupId.startsWith("G")) {
+            orderGroupId = orderGroupId.substring(1);
+        }
         
         Optional<OrderGroup> orderGroupOpt = orderGroupRepository.findById(orderGroupId);
         if (!orderGroupOpt.isPresent()) {
