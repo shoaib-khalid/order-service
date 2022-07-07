@@ -847,7 +847,7 @@ public class OrderController {
             OrderObject totalDataObject = orderCreated.getTotalDataObject();
             
             double orderTotal=0.00;
-            OrderObject groupTotal = OrderCalculation.CalculateGroupOrderTotal(orderCreated.getSubTotal(), orderCreated.getDeliveryCharges(), customerPlatformVoucher, logprefix);            
+            OrderObject groupTotal = OrderCalculation.CalculateGroupOrderTotal(orderCreated.getSubTotal(), orderCreated.getDeliveryCharges(), customerPlatformVoucher, orderCreated.getStoreServiceCharges(), logprefix);            
             if (groupTotal.getVoucherId()!=null) {
                 double platformVoucherDiscountAmt = groupTotal.getVoucherDiscount();
                 orderGroup.setPlatformVoucherDiscount(platformVoucherDiscountAmt);
@@ -1036,6 +1036,7 @@ public class OrderController {
         double orderTotal=0.00;
         double sumAppliedDiscount=0.00;
         double sumDeliveryDiscount=0.00;
+        double sumStoreServiceCharges=0.00;
         
         for (int i=0;i<codList.length;i++) {
             COD cod = codList[i];
@@ -1072,6 +1073,7 @@ public class OrderController {
             Order orderCreated = (Order)orderResponse.getData();
             sumCartSubTotal = sumCartSubTotal + orderCreated.getSubTotal();
             sumDeliveryCharges = sumDeliveryCharges + orderCreated.getDeliveryCharges();
+            sumStoreServiceCharges = sumStoreServiceCharges + orderCreated.getStoreServiceCharges();
             orderTotal = orderTotal + orderCreated.getTotal();
             if (orderCreated.getAppliedDiscount()!=null) {
                 sumAppliedDiscount = sumAppliedDiscount + orderCreated.getAppliedDiscount();
@@ -1080,13 +1082,15 @@ public class OrderController {
                 sumDeliveryDiscount = sumDeliveryDiscount + orderCreated.getDeliveryDiscount();
             }
             orderCreatedList.add(orderCreated);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Created SubTotal:"+orderCreated.getSubTotal()+" deliverFee:"+orderCreated.getDeliveryCharges()+" svcCharge:"+orderCreated.getStoreServiceCharges()+" Total:"+orderCreated.getTotal());
         }
                 
-        OrderObject groupTotal = OrderCalculation.CalculateGroupOrderTotal(sumCartSubTotal, sumDeliveryCharges, customerPlatformVoucher, logprefix);
+        OrderObject groupTotal = OrderCalculation.CalculateGroupOrderTotal(sumCartSubTotal, sumDeliveryCharges, customerPlatformVoucher, sumStoreServiceCharges, logprefix);
         if (groupTotal.getVoucherId()!=null) {
             double platformVoucherDiscountAmt = groupTotal.getVoucherDiscount();
             orderGroup.setPlatformVoucherDiscount(platformVoucherDiscountAmt);
             orderGroup.setPlatformVoucherId(groupTotal.getVoucherId());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Group platformVoucherDiscountAmt:"+platformVoucherDiscountAmt);
             sumTotal = orderTotal - platformVoucherDiscountAmt;           
         } else {
             sumTotal = orderTotal;
@@ -1097,7 +1101,8 @@ public class OrderController {
         customerId = orderCreatedList.get(0).getCustomerId();
         
         orderGroup.setCustomerId(customerId);
-        orderGroup.setDeliveryCharges(sumDeliveryCharges);        
+        orderGroup.setDeliveryCharges(sumDeliveryCharges);  
+        orderGroup.setServiceCharges(sumStoreServiceCharges);
         orderGroup.setSubTotal(sumCartSubTotal);
         orderGroup.setTotal(sumTotal);
         orderGroup.setAppliedDiscount(sumAppliedDiscount);

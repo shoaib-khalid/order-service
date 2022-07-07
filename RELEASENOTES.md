@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.9.3-SNAPSHOT |07-July-2022
+##################################################
+Bug fix for placeGroupOrder
+
+
+##################################################
 # order-service-3.9.2-SNAPSHOT |07-July-2022
 ##################################################
 Save payment status in order_group
@@ -7,6 +13,7 @@ Save payment status in order_group
 ALTER TABLE order_group ADD paymentStatus enum('PENDING','PAID','REFUND');
 ALTER TABLE order_group ADD paidAmount DECIMAL(10,2);
 ALTER TABLE order_group ADD refundAmount DECIMAL(10,2);
+ALTER TABLE order_group ADD serviceCharges DECIMAL(10,2);
 
 
 ##################################################

@@ -48,6 +48,7 @@ public class OrderGroup implements Serializable {
 
     private Double subTotal;
     private Double deliveryCharges;
+    private Double serviceCharges;
     private Double total;
     private String customerId;
     private Double appliedDiscount;

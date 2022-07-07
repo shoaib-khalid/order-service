@@ -230,7 +230,7 @@ public class OrderCalculation {
     
     
     public static OrderObject CalculateGroupOrderTotal(Double sumCartSubTotal,  
-            Double sumDeliveryCharge, CustomerVoucher platformVoucher, 
+            Double sumDeliveryCharge, CustomerVoucher platformVoucher, Double sumServiceCharge,
             String logprefix) {
         
         OrderObject orderTotal = new OrderObject();
@@ -279,7 +279,7 @@ public class OrderCalculation {
         
        
         //calculate grand total
-        orderTotal.setTotal(sumCartSubTotal + sumDeliveryCharge - voucherDiscountAmount);
+        orderTotal.setTotal(sumCartSubTotal + sumDeliveryCharge - voucherDiscountAmount + sumServiceCharge);
         
         return orderTotal;
     }

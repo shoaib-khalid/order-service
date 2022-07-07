@@ -24,7 +24,8 @@ public class GroupDiscount {
     
     BigDecimal sumSubTotalDiscount;
     BigDecimal sumDeliveryDiscount;
-    BigDecimal sumCartSubTotal;     
+    BigDecimal sumCartSubTotal;  
+    BigDecimal sumServiceCharge;  
     BigDecimal sumCartDeliveryCharge;
     BigDecimal sumCartGrandTotal;
    
