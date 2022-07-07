@@ -66,7 +66,15 @@ public class OrderGroup implements Serializable {
     private Double platformVoucherDiscount;    
       
     private String platformVoucherId;
-       
+
+    private String paymentStatus;
+    
+    @Column(nullable = true)
+    private Double paidAmount;
+    
+    @Column(nullable = true)
+    private Double refundAmount; 
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     @JoinColumn(name = "customerId", insertable = false, updatable = false)

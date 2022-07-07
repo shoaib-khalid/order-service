@@ -870,6 +870,8 @@ public class OrderController {
             orderGroup.setTotal(orderTotal);
             orderGroup.setAppliedDiscount(orderCreated.getAppliedDiscount());
             orderGroup.setDeliveryDiscount(orderCreated.getDeliveryDiscount());
+            orderGroup.setPaymentStatus("PENDING");
+            orderGroup.setPaidAmount(0.00);
             orderGroupRepository.save(orderGroup);
             
             orderRepository.UpdateOrderGroupId(orderCreated.getId(), orderGroup.getId());            
@@ -1103,6 +1105,8 @@ public class OrderController {
         orderGroup.setShipmentEmail(orderShipmentDetail.getEmail());
         orderGroup.setShipmentName(orderShipmentDetail.getReceiverName());
         orderGroup.setShipmentPhoneNumber(orderShipmentDetail.getPhoneNumber());
+        orderGroup.setPaymentStatus("PENDING");
+        orderGroup.setPaidAmount(0.00);
         orderGroupRepository.save(orderGroup);
                
         //update orderGroupId for each order

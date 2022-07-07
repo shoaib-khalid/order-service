@@ -199,7 +199,16 @@ public class OrderGroupStatusUpdateController {
                 assetServiceBaseUrl) ;
             OrderProcessResult result = worker.startProcessOrder();        
         }
-                
+        
+        OrderStatus status = bodyOrderCompletionStatusUpdate.getStatus();
+        if (status==OrderStatus.PAYMENT_CONFIRMED) {
+            //update payment status for order group 
+            orderGroup.setPaymentStatus("PAID");
+            orderGroup.setPaidAmount(orderGroup.getTotal());
+            orderGroupRepository.save(orderGroup);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Group paymentStatus updated to PAID for groupId:"+orderGroup.getId());
+        }
+              
         response.setStatus(HttpStatus.OK.value());        
         return ResponseEntity.status(response.getStatus()).body(response);
     }
