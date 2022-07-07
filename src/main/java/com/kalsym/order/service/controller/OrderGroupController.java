@@ -71,7 +71,9 @@ public class OrderGroupController {
         HttpResponse response = new HttpResponse(request.getRequestURI());
         
         //remove prefix G
-        orderGroupId = orderGroupId.substring(1);
+        if (orderGroupId.startsWith("G")) {
+            orderGroupId = orderGroupId.substring(1);
+        }
         
         Optional<OrderGroup> optOrderGroup = orderGroupRepository.findById(orderGroupId);
         if (!optOrderGroup.isPresent()) {
