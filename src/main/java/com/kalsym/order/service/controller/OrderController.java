@@ -1073,6 +1073,9 @@ public class OrderController {
                     productService, orderPostService, fcmService, 
                     emailService, deliveryService, customerService, whatsappService, assetServiceBaseUrl);  
             Order orderCreated = (Order)orderResponse.getData();
+            if (orderCreated==null) {                
+                return ResponseEntity.status(orderResponse.getStatus()).body(orderResponse);
+            }
             sumCartSubTotal = sumCartSubTotal + orderCreated.getSubTotal();
             sumDeliveryCharges = sumDeliveryCharges + orderCreated.getDeliveryCharges();
             sumStoreServiceCharges = sumStoreServiceCharges + orderCreated.getStoreServiceCharges();
