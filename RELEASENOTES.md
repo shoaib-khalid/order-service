@@ -2,6 +2,7 @@
 # order-service-3.9.5-SNAPSHOT |08-July-2022
 ##################################################
 Bug fix for placeGroupOrder
+New API to search orderGroup
 
 
 ##################################################

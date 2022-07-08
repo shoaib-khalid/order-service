@@ -48,7 +48,18 @@ import com.kalsym.order.service.model.object.OrderProcessResult;
 import com.kalsym.order.service.service.FCMService;
 import com.kalsym.order.service.utility.Logger;
 import java.util.Date;
+import javax.persistence.criteria.Predicate;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.convert.QueryByExamplePredicateBuilder;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * @author 7cu
@@ -93,4 +104,70 @@ public class OrderGroupController {
     }
     
 
+     @GetMapping(path = {""}, name = "orders-group-get-by-id", produces = "application/json")
+    @PreAuthorize("hasAnyAuthority('orders-group-get-by-id', 'all')")
+    public ResponseEntity<HttpResponse> getOrderGroups(HttpServletRequest request,
+            @RequestParam(required = false) String orderGroupId,
+            @RequestParam(required = false) String customerId,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize) {
+
+        String logprefix = "getOrderGroups()";
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "ordersGroup-get request " + request.getRequestURL());
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        OrderGroup orderMatch = new OrderGroup();
+        if (orderGroupId != null && !orderGroupId.isEmpty()) {
+            orderMatch.setId(orderGroupId);
+        }
+        if (customerId != null && !customerId.isEmpty()) {
+            orderMatch.setCustomerId(customerId);
+        }
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "groupOrderMatch: " + orderMatch);
+        
+        ExampleMatcher matcher = ExampleMatcher
+                .matchingAll()
+                .withIgnoreCase()
+                .withIgnoreNullValues()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        Example<OrderGroup> orderExample = Example.of(orderMatch, matcher);
+
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
+
+        Page<OrderGroup> orderWithPage = orderGroupRepository.findAll(getSpecWithDatesBetween(from, to, orderExample), pageable);
+          
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(orderWithPage);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    
+    /**
+     * Accept two dates and example matcher
+     *
+     * @param from
+     * @param to
+     * @param example
+     * @return
+     */
+    public Specification<OrderGroup> getSpecWithDatesBetween(
+            Date from, Date to, Example<OrderGroup> example) {
+
+        return (Specification<OrderGroup>) (root, query, builder) -> {
+            final List<Predicate> predicates = new ArrayList<>();
+
+            if (from != null && to != null) {
+                to.setDate(to.getDate() + 1);
+                predicates.add(builder.greaterThanOrEqualTo(root.get("created"), from));
+                predicates.add(builder.lessThanOrEqualTo(root.get("created"), to));
+            }
+           
+            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+
+            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
+    
 }
