@@ -320,6 +320,7 @@ public class VoucherController {
         customerVoucher.setIsUsed(Boolean.FALSE);
         customerVoucher.setVoucherId(selectedVoucher.getId());
         customerVoucher.setCreated(new Date());
+        customerVoucher.setGuestVoucher(false);
         CustomerVoucher savedVoucher = customerVoucherRepository.save(customerVoucher);
         
         //refresh and retrieve back the data
