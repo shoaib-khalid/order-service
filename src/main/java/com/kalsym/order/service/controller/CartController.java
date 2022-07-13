@@ -847,6 +847,7 @@ public class CartController {
         double groupCartSubTotal=0;
         double groupServiceCharge=0;
         double groupDeliveryDiscount=0;
+        double groupSubTotalDiscount=0;
         
         List<Discount> storeDiscountList = new ArrayList();
         for (int i=0;i<cartList.length;i++) {            
@@ -929,8 +930,10 @@ public class CartController {
             groupCartSubTotal = groupCartSubTotal + Utilities.convertToDouble(discount.getCartSubTotal());
             groupServiceCharge = groupServiceCharge + Utilities.convertToDouble(discount.getStoreServiceCharge());
             groupDeliveryDiscount = groupDeliveryDiscount + Utilities.convertToDouble(discount.getDeliveryDiscount());            
+            groupSubTotalDiscount = groupSubTotalDiscount + Utilities.convertToDouble(discount.getSubTotalDiscount());
         }
         groupDeliveryCharge = groupDeliveryCharge - groupDeliveryDiscount;
+        groupCartSubTotal = groupCartSubTotal - groupSubTotalDiscount;
         
         GroupDiscount groupDiscount = new GroupDiscount();
         groupDiscount.setStoreDiscountList(storeDiscountList);
@@ -955,6 +958,7 @@ public class CartController {
         groupDiscount.setSumCartDeliveryCharge(Utilities.roundDouble(groupDeliveryCharge,2));
         groupDiscount.setSumServiceCharge(Utilities.roundDouble(groupServiceCharge,2));
         groupDiscount.setSumDeliveryDiscount(Utilities.roundDouble(groupDeliveryDiscount,2));
+        groupDiscount.setSumSubTotalDiscount(Utilities.roundDouble(groupSubTotalDiscount, 2));
         
         if (customerPlatformVoucher!=null) {
             groupDiscount.setPlatformVoucherSubTotalDiscount(groupOrderTotalObject.getVoucherSubTotalDiscount());
