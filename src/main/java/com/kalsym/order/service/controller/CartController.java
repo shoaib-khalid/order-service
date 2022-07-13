@@ -928,8 +928,9 @@ public class CartController {
             
             groupCartSubTotal = groupCartSubTotal + Utilities.convertToDouble(discount.getCartSubTotal());
             groupServiceCharge = groupServiceCharge + Utilities.convertToDouble(discount.getStoreServiceCharge());
-            groupDeliveryDiscount = groupDeliveryDiscount + Utilities.convertToDouble(discount.getDeliveryDiscount());
+            groupDeliveryDiscount = groupDeliveryDiscount + Utilities.convertToDouble(discount.getDeliveryDiscount());            
         }
+        groupDeliveryCharge = groupDeliveryCharge - groupDeliveryDiscount;
         
         GroupDiscount groupDiscount = new GroupDiscount();
         groupDiscount.setStoreDiscountList(storeDiscountList);
