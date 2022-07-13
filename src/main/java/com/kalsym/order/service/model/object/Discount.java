@@ -20,6 +20,7 @@ import lombok.ToString;
 @ToString
 public class Discount {
     
+    String cartId;
     BigDecimal subTotalDiscount;
     BigDecimal deliveryDiscount;
     String subTotalDiscountDescription;

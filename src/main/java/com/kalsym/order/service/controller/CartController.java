@@ -908,7 +908,8 @@ public class CartController {
                 response.setMessage(orderTotalObject.getErrorMessage());
                 return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
             }
-
+            
+            discount.setCartId(cartId);
             discount.setCartGrandTotal(Utilities.roundDouble(orderTotalObject.getTotal(),2));
             discount.setCartDeliveryCharge(Utilities.roundDouble(deliveryCharge,2));
             discount.setStoreServiceCharge(Utilities.roundDouble(orderTotalObject.getStoreServiceCharge(),2));
