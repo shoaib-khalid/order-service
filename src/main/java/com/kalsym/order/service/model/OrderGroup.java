@@ -83,7 +83,7 @@ public class OrderGroup implements Serializable {
     
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "orderGroupId", insertable = false, updatable = false, nullable = true)
-    private List<Order> orderList;
+    private List<OrderWithDetails> orderList;
     
     @Transient
     private String shipmentPhoneNumber;
