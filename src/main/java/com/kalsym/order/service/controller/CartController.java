@@ -932,15 +932,15 @@ public class CartController {
             groupDeliveryDiscount = groupDeliveryDiscount + Utilities.convertToDouble(discount.getDeliveryDiscount());            
             groupSubTotalDiscount = groupSubTotalDiscount + Utilities.convertToDouble(discount.getSubTotalDiscount());
         }
-        groupDeliveryCharge = groupDeliveryCharge - groupDeliveryDiscount;
-        groupCartSubTotal = groupCartSubTotal - groupSubTotalDiscount;
-        
+       
         GroupDiscount groupDiscount = new GroupDiscount();
         groupDiscount.setStoreDiscountList(storeDiscountList);
         
         OrderObject groupOrderTotalObject = OrderCalculation.CalculateGroupOrderTotal(
-                        groupCartSubTotal, 
+                        groupCartSubTotal,
+                        groupSubTotalDiscount,
                         groupDeliveryCharge,
+                        groupDeliveryDiscount,
                         customerPlatformVoucher, 
                         groupServiceCharge,
                         logprefix);                
