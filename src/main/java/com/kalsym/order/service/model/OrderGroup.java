@@ -96,5 +96,12 @@ public class OrderGroup implements Serializable {
     
     @Transient
     private String regionCountryId;
+    
+    @Transient
+    private Double totalOrderAmount;
+    
+    public Double getTotalOrderAmount() {
+        return subTotal + deliveryCharges + serviceCharges;
+    }
    
 }
