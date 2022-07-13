@@ -74,6 +74,7 @@ import static com.kalsym.order.service.utility.OrderCalculation.calculateStoreSe
 import com.kalsym.order.service.utility.Utilities;
 import com.kalsym.order.service.utility.DateTimeUtil;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Calendar;
@@ -845,6 +846,8 @@ public class CartController {
         double groupDeliveryCharge=0;
         double groupCartSubTotal=0;
         double groupServiceCharge=0;
+        double groupDeliveryDiscount=0;
+        
         List<Discount> storeDiscountList = new ArrayList();
         for (int i=0;i<cartList.length;i++) {            
             String cartId = cartList[i].getCartId();
@@ -925,6 +928,7 @@ public class CartController {
             
             groupCartSubTotal = groupCartSubTotal + Utilities.convertToDouble(discount.getCartSubTotal());
             groupServiceCharge = groupServiceCharge + Utilities.convertToDouble(discount.getStoreServiceCharge());
+            groupDeliveryDiscount = groupDeliveryDiscount + Utilities.convertToDouble(discount.getDeliveryDiscount());
         }
         
         GroupDiscount groupDiscount = new GroupDiscount();
@@ -949,6 +953,7 @@ public class CartController {
         groupDiscount.setSumCartGrandTotal(Utilities.roundDouble(groupOrderTotalObject.getTotal(),2));
         groupDiscount.setSumCartDeliveryCharge(Utilities.roundDouble(groupDeliveryCharge,2));
         groupDiscount.setSumServiceCharge(Utilities.roundDouble(groupServiceCharge,2));
+        groupDiscount.setSumDeliveryDiscount(Utilities.roundDouble(groupDeliveryDiscount,2));
         
         if (customerPlatformVoucher!=null) {
             groupDiscount.setPlatformVoucherSubTotalDiscount(groupOrderTotalObject.getVoucherSubTotalDiscount());
