@@ -99,13 +99,9 @@ public class OrderGroup implements Serializable {
     
     @Transient
     private Double totalOrderAmount;
-    
-    public void setTotalOrderAmount() {
-        totalOrderAmount = subTotal + deliveryCharges + serviceCharges;
-    }
-    
+        
     public Double getTotalOrderAmount() {
-        return totalOrderAmount;
+        return subTotal + deliveryCharges + serviceCharges;
     }
    
 }
