@@ -253,7 +253,15 @@ public class OrderCalculation {
                 orderTotal.setGotError(Boolean.TRUE);
                 orderTotal.setErrorMessage("Your order did not meet the minimum spend required of the voucher.");
                 return orderTotal;
-            }                                  
+            }
+            
+            //check voucher double discount
+            if (platformVoucher.getVoucher().getAllowDoubleDiscount()==false && sumCartSubTotalDiscount>0) {
+                //error, not allow double discount
+                orderTotal.setGotError(Boolean.TRUE);                
+                orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");                
+                return orderTotal;
+            }
             
             DiscountVoucher discountVoucher = VoucherDiscountCalculation.CalculateVoucherDiscount( sumDeliveryCharge, sumCartSubTotal, platformVoucher, logprefix);                
             double subTotalDiscount=0.00;
