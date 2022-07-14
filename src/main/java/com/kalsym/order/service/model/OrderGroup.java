@@ -101,7 +101,7 @@ public class OrderGroup implements Serializable {
     private Double totalOrderAmount;
         
     public Double getTotalOrderAmount() {
-        return convertToZero(subTotal) + convertToZero(deliveryCharges) - convertToZero(deliveryDiscount) + convertToZero(serviceCharges);
+        return convertToZero(subTotal) - convertToZero(appliedDiscount) + convertToZero(deliveryCharges) - convertToZero(deliveryDiscount) + convertToZero(serviceCharges);
     }
     
     private double convertToZero(Double d) {
