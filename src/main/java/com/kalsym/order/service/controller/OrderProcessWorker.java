@@ -372,6 +372,13 @@ public class OrderProcessWorker {
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Removed guest group voucherId: " + orderGroup.get().getPlatformVoucherId());
                         } 
                     }
+                    
+                    //update payment status for order group 
+                    OrderGroup orderGroupData = orderGroup.get();
+                    orderGroupData.setPaymentStatus("PAID");
+                    orderGroupData.setPaidAmount(orderGroupData.getTotal());
+                    orderGroupRepository.save(orderGroupData);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Group paymentStatus updated to PAID for groupId:"+orderGroupData.getId());
                 }
                 
                 //update status

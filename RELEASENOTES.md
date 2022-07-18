@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.9.7-SNAPSHOT |18-July-2022
+##################################################
+Bug fix for update order-group paymentStatus=PAID for order made in SF when receive payment_confirmed
+
+
+##################################################
 # order-service-3.9.6-SNAPSHOT |14-July-2022
 ##################################################
 Bug fix for getDiscountOfCartGroup

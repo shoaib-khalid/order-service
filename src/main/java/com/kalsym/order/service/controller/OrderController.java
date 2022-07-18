@@ -872,8 +872,14 @@ public class OrderController {
             orderGroup.setTotal(orderTotal);
             orderGroup.setAppliedDiscount(orderCreated.getAppliedDiscount());
             orderGroup.setDeliveryDiscount(orderCreated.getDeliveryDiscount());
-            orderGroup.setPaymentStatus("PENDING");
-            orderGroup.setPaidAmount(0.00);
+            if (orderCreated.getPaymentType().equals(StorePaymentType.COD.name())) {
+                orderGroup.setPaymentStatus("PAID");
+                orderGroup.setPaidAmount(orderTotal);
+            } else {
+                orderGroup.setPaymentStatus("PENDING");
+                orderGroup.setPaidAmount(0.00);
+            }
+            
             orderGroupRepository.save(orderGroup);
             
             orderRepository.UpdateOrderGroupId(orderCreated.getId(), orderGroup.getId());            
@@ -1039,6 +1045,7 @@ public class OrderController {
         double sumAppliedDiscount=0.00;
         double sumDeliveryDiscount=0.00;
         double sumStoreServiceCharges=0.00;
+        String paymentType=StorePaymentType.ONLINEPAYMENT.name();
         
         for (int i=0;i<codList.length;i++) {
             COD cod = codList[i];
@@ -1087,6 +1094,7 @@ public class OrderController {
                 sumDeliveryDiscount = sumDeliveryDiscount + orderCreated.getDeliveryDiscount();
             }
             orderCreatedList.add(orderCreated);
+            paymentType = orderCreated.getPaymentType();
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Created SubTotal:"+orderCreated.getSubTotal()+" deliverFee:"+orderCreated.getDeliveryCharges()+" svcCharge:"+orderCreated.getStoreServiceCharges()+" Total:"+orderCreated.getTotal());
         }
                 
@@ -1115,8 +1123,13 @@ public class OrderController {
         orderGroup.setShipmentEmail(orderShipmentDetail.getEmail());
         orderGroup.setShipmentName(orderShipmentDetail.getReceiverName());
         orderGroup.setShipmentPhoneNumber(orderShipmentDetail.getPhoneNumber());
-        orderGroup.setPaymentStatus("PENDING");
-        orderGroup.setPaidAmount(0.00);
+        if (paymentType.equals(StorePaymentType.COD.name())) {
+            orderGroup.setPaymentStatus("PAID");
+            orderGroup.setPaidAmount(sumTotal);
+        } else {
+            orderGroup.setPaymentStatus("PENDING");
+            orderGroup.setPaidAmount(0.00);
+        }
         orderGroupRepository.save(orderGroup);
                
         //update orderGroupId for each order
