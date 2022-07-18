@@ -35,6 +35,7 @@ import com.kalsym.order.service.model.repository.ProductInventoryRepository;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.utility.Logger;
 import java.util.List;
+import java.util.Date;
 
 /**
  *
@@ -229,6 +230,10 @@ public class CartItemController {
         cartItemRepository.refresh(cartItem);
         Optional<CartItem> cartItemData = cartItemRepository.findById(cartItem.getId());
         
+        //update updated field for cart
+        savedCart.get().setUpdated(new Date());
+        cartRepository.save(savedCart.get());
+        
         response.setData(cartItemData.get());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -261,6 +266,10 @@ public class CartItemController {
         } 
         
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-delete-by-id, Item found! Proceed to delete");
+        
+        //update updated field for cart
+        savedCart.get().setUpdated(new Date());
+        cartRepository.save(savedCart.get());
         
         try {
             cartItemRepository.delete(savedItem.get());
@@ -350,6 +359,10 @@ public class CartItemController {
             //find product invertory against itemcode to set sku
             cartItem.update(bodyCartItem, (float)itemPrice);
         }
+        
+        //update updated field for cart
+        savedCart.get().setUpdated(new Date());
+        cartRepository.save(savedCart.get());
                 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem updated for cartItemId: " + id);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
@@ -420,6 +433,11 @@ public class CartItemController {
             response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
+        
+        //update updated field for cart
+        savedCart.get().setUpdated(new Date());
+        cartRepository.save(savedCart.get());
+        
         try {
             cartItemRepository.deleteById(id);
             response.setSuccessStatus(HttpStatus.OK);
@@ -428,6 +446,7 @@ public class CartItemController {
             response.setMessage(exp.getMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
+        
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem deleted with id: " + id);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -524,7 +543,7 @@ public class CartItemController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventoryDB.toString());
-               
+       
         //find itemcode in cart item, remove item
         List<CartItem> itemList = cartItemRepository.findByItemCode(itemCode);
         for (int i=0;i<itemList.size();i++) {

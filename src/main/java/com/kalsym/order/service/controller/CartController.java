@@ -79,6 +79,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Calendar;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 /**
@@ -169,6 +170,8 @@ public class CartController {
             @RequestParam(required = false) String storeId,
             @RequestParam(required = false) Boolean includeEmptyCart,
             @RequestParam(required = false) List<String> cartIdList,
+            @RequestParam(required = false, defaultValue = "updated") String sortByCol,
+            @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortingOrder,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
         String logprefix = request.getRequestURI() + " ";
@@ -186,7 +189,13 @@ public class CartController {
         Example<CartWithDetails> cartExample = Example.of(cartMatch, exampleCartMatcher);
         
         Specification cartSpec = CartSearchSpecs.getEmptyCart(includeEmptyCart, cartExample, cartIdList );
-        Pageable pageable = PageRequest.of(page, pageSize);
+        
+        Pageable pageable = null;        
+        if (sortingOrder==Sort.Direction.ASC)
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortByCol).ascending());
+        else if (sortingOrder==Sort.Direction.DESC)
+            pageable = PageRequest.of(page, pageSize, Sort.by(sortByCol).descending());
+        
         Page<CartWithDetails> cartWithPage = cartWithDetailsRepository.findAll(cartSpec, pageable);
         
         List<CartWithDetails> cartList = cartWithPage.getContent();
