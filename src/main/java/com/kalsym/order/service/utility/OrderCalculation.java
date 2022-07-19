@@ -69,6 +69,7 @@ public class OrderCalculation {
                 break;
             }
         }
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Got item dicount:"+gotItemDiscount);
                 
         //calculate platform voucher code discount
         double platformVoucherDiscountAmount = 0.00;
@@ -77,6 +78,7 @@ public class OrderCalculation {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher minimum spend: " + customerPlatformVoucher.getVoucher().getMinimumSpend());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher allowDoubleDiscount: " + customerPlatformVoucher.getVoucher().getAllowDoubleDiscount());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher verticalList: " + customerPlatformVoucher.getVoucher().getVoucherVerticalList().toString());
+            
             
             //check voucher minimum spend
             if (Utilities.convertToDouble(discount.getCartSubTotal()) < customerPlatformVoucher.getVoucher().getMinimumSpend()) {
