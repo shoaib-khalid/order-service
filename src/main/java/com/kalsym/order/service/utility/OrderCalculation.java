@@ -63,6 +63,7 @@ public class OrderCalculation {
         //check if got item discount inside cart
         for (int x=0;x<selectedCartItemList.size();x++) {
             CartItem cartItem = selectedCartItemList.get(x);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "CartItem discount:"+cartItem.getDiscountId());
             if (cartItem.getDiscountId()!=null) {
                 gotItemDiscount=true;
                 break;
