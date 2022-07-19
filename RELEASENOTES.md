@@ -1,8 +1,9 @@
 ##################################################
-# order-service-3.9.7-SNAPSHOT |18-July-2022
+# order-service-3.9.7-SNAPSHOT |19-July-2022
 ##################################################
-Bug fix for update order-group paymentStatus=PAID for order made in SF when receive payment_confirmed
+Bug fix for update paymentStatus=PAID in order-group for order made in SF when receive payment_confirmed
 add new parameter for sort function in getCartsWithDetails
+Bug fix for double discount for item-discount
 
 
 ##################################################

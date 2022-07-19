@@ -59,6 +59,16 @@ public class OrderCalculation {
         orderTotal.setDiscountMaxAmount(Utilities.convertToDouble(discount.getDiscountMaxAmount()));
         orderTotal.setDeliveryDiscountMaxAmount(Utilities.convertToDouble(discount.getDeliveryDiscountMaxAmount()));
         
+        boolean gotItemDiscount=false;
+        //check if got item discount inside cart
+        for (int x=0;x<selectedCartItemList.size();x++) {
+            CartItem cartItem = selectedCartItemList.get(x);
+            if (cartItem.getDiscountId()!=null) {
+                gotItemDiscount=true;
+                break;
+            }
+        }
+                
         //calculate platform voucher code discount
         double platformVoucherDiscountAmount = 0.00;
         if (customerPlatformVoucher!=null) {
@@ -81,7 +91,15 @@ public class OrderCalculation {
                 orderTotal.setGotError(Boolean.TRUE);
                 orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");
                 return orderTotal;
-            }            
+            }  
+            
+            //check voucher double discount for item discount
+            if (gotItemDiscount && customerPlatformVoucher.getVoucher().getAllowDoubleDiscount()==false) {
+                //error, not allow double discount
+                orderTotal.setGotError(Boolean.TRUE);
+                orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");
+                return orderTotal;
+            }   
             
             //check vertical code
             boolean verticalValid=false;
@@ -146,7 +164,15 @@ public class OrderCalculation {
                 orderTotal.setGotError(Boolean.TRUE);
                 orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");
                 return orderTotal;
-            }            
+            }  
+            
+            //check voucher double discount for item discount
+            if (gotItemDiscount && customerStoreVoucher.getVoucher().getAllowDoubleDiscount()==false) {
+                //error, not allow double discount
+                orderTotal.setGotError(Boolean.TRUE);
+                orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");
+                return orderTotal;
+            } 
             
             //check vertical code
             boolean verticalValid=false;

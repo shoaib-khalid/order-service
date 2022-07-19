@@ -740,9 +740,11 @@ public class CartController {
             Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, null);        
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:"+id+" deliveryCharge:"+deliveryCharge+" totalSubTotalDiscount:"+discount.getSubTotalDiscount()+" totalShipmentDiscount:"+discount.getDeliveryDiscount());
             
+            List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
+            
             OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission,  
                             deliveryCharge, deliveryType, customerPlatformVoucher, customerStoreVoucher, storeWithDetials.getVerticalCode(),
-                            cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, null);                
+                            cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, cartItems);                
             
             if (orderTotalObject.getGotError()) {
                 // should return warning if got error
