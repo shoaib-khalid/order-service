@@ -284,8 +284,16 @@ public class OrderCalculation {
                 return orderTotal;
             }
             
-            //check voucher double discount
+            //check voucher double discount (sub total)
             if (platformVoucher.getVoucher().getAllowDoubleDiscount()==false && sumCartSubTotalDiscount>0) {
+                //error, not allow double discount
+                orderTotal.setGotError(Boolean.TRUE);                
+                orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");                
+                return orderTotal;
+            }
+            
+             //check voucher double discount (delivery discount)
+            if (platformVoucher.getVoucher().getAllowDoubleDiscount()==false && sumDeliveryChargeDiscount>0) {
                 //error, not allow double discount
                 orderTotal.setGotError(Boolean.TRUE);                
                 orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");                
