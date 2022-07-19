@@ -849,7 +849,22 @@ public class OrderController {
             OrderObject totalDataObject = orderCreated.getTotalDataObject();
             
             double orderTotal=0.00;
-            OrderObject groupTotal = OrderCalculation.CalculateGroupOrderTotal(orderCreated.getSubTotal(), orderCreated.getAppliedDiscount(), orderCreated.getDeliveryCharges(), orderCreated.getDeliveryDiscount(), customerPlatformVoucher, orderCreated.getStoreServiceCharges(), logprefix);            
+            boolean gotItemDiscount=false;
+            for (int z=0;z<cartItems.size();z++) {
+                CartItem cartItem = cartItems.get(z);
+                if (cartItem.getDiscountId()!=null) {
+                    gotItemDiscount=true;
+                }
+            }
+            OrderObject groupTotal = OrderCalculation.CalculateGroupOrderTotal(orderCreated.getSubTotal(), orderCreated.getAppliedDiscount(), orderCreated.getDeliveryCharges(), orderCreated.getDeliveryDiscount(), customerPlatformVoucher, orderCreated.getStoreServiceCharges(), logprefix, gotItemDiscount);            
+            if (groupTotal.getGotError()) {
+                // should return warning if got error
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while calculating discount:"+groupTotal.getErrorMessage());
+                response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
+                response.setMessage(groupTotal.getErrorMessage());
+                return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
+            }
+            
             if (groupTotal.getVoucherId()!=null) {
                 double platformVoucherDiscountAmt = groupTotal.getVoucherDiscount();
                 orderGroup.setPlatformVoucherDiscount(platformVoucherDiscountAmt);
@@ -1046,6 +1061,7 @@ public class OrderController {
         double sumDeliveryDiscount=0.00;
         double sumStoreServiceCharges=0.00;
         String paymentType=StorePaymentType.ONLINEPAYMENT.name();
+        boolean gotCartItemDiscount=false;
         
         for (int i=0;i<codList.length;i++) {
             COD cod = codList[i];
@@ -1061,6 +1077,9 @@ public class OrderController {
                 Optional<CartItem> cartItemOpt = cartItemRepository.findById(itemId);
                 if (cartItemOpt.isPresent()) {
                     selectedCartItem.add(cartItemOpt.get());
+                    if (cartItemOpt.get().getDiscountId()!=null) {
+                        gotCartItemDiscount=true;
+                    }
                 }
             }
             
@@ -1098,7 +1117,15 @@ public class OrderController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Created SubTotal:"+orderCreated.getSubTotal()+" deliverFee:"+orderCreated.getDeliveryCharges()+" svcCharge:"+orderCreated.getStoreServiceCharges()+" Total:"+orderCreated.getTotal());
         }
                 
-        OrderObject groupTotal = OrderCalculation.CalculateGroupOrderTotal(sumCartSubTotal, sumAppliedDiscount, sumDeliveryCharges, sumDeliveryDiscount, customerPlatformVoucher, sumStoreServiceCharges, logprefix);
+        OrderObject groupTotal = OrderCalculation.CalculateGroupOrderTotal(sumCartSubTotal, sumAppliedDiscount, sumDeliveryCharges, sumDeliveryDiscount, customerPlatformVoucher, sumStoreServiceCharges, logprefix, gotCartItemDiscount);
+        if (groupTotal.getGotError()) {
+            // should return warning if got error
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while calculating discount:"+groupTotal.getErrorMessage());
+            response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
+            response.setMessage(groupTotal.getErrorMessage());
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
+        }
+        
         if (groupTotal.getVoucherId()!=null) {
             double platformVoucherDiscountAmt = groupTotal.getVoucherDiscount();
             orderGroup.setPlatformVoucherDiscount(platformVoucherDiscountAmt);

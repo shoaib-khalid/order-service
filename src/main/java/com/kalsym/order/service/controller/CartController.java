@@ -859,6 +859,7 @@ public class CartController {
         double groupServiceCharge=0;
         double groupDeliveryDiscount=0;
         double groupSubTotalDiscount=0;
+        boolean gotCartItemDiscount=false;
         
         List<Discount> storeDiscountList = new ArrayList();
         for (int i=0;i<cartList.length;i++) {            
@@ -902,6 +903,9 @@ public class CartController {
                 Optional<CartItem> cartItemOpt = cartItemRepository.findById(itemId);
                 if (cartItemOpt.isPresent()) {
                     selectedCartItem.add(cartItemOpt.get());
+                    if (cartItemOpt.get().getDiscountId()!=null) {
+                        gotCartItemDiscount=true;
+                    }
                 }
             }
             
@@ -955,7 +959,7 @@ public class CartController {
                         groupDeliveryDiscount,
                         customerPlatformVoucher, 
                         groupServiceCharge,
-                        logprefix);                
+                        logprefix, gotCartItemDiscount);                
 
         if (groupOrderTotalObject.getGotError()) {
             // should return warning if got error

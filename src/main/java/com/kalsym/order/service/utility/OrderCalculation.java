@@ -262,7 +262,7 @@ public class OrderCalculation {
             Double sumCartSubTotal, Double sumCartSubTotalDiscount,
             Double sumDeliveryCharge, Double sumDeliveryChargeDiscount,
             CustomerVoucher platformVoucher, Double sumServiceCharge,
-            String logprefix) {
+            String logprefix, boolean gotItemDiscount) {
         
         OrderObject orderTotal = new OrderObject();
         orderTotal.setGotError(Boolean.FALSE);
@@ -291,6 +291,14 @@ public class OrderCalculation {
                 orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");                
                 return orderTotal;
             }
+            
+             //check voucher double discount for item discount
+            if (gotItemDiscount && platformVoucher.getVoucher().getAllowDoubleDiscount()==false) {
+                //error, not allow double discount
+                orderTotal.setGotError(Boolean.TRUE);
+                orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");
+                return orderTotal;
+            }   
             
             DiscountVoucher discountVoucher = VoucherDiscountCalculation.CalculateVoucherDiscount( sumDeliveryCharge, sumCartSubTotal, platformVoucher, logprefix);                
             double subTotalDiscount=0.00;
