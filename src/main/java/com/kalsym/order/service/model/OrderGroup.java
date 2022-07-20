@@ -119,9 +119,13 @@ public class OrderGroup implements Serializable {
     private String orderTimeConverted;
     
     public String getOrderTimeConverted() {
-        LocalDateTime datetime = DateTimeUtil.convertToLocalDateTimeViaInstant(created, ZoneId.of("Asia/Kuala_Lumpur"));
-        DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        return formatter1.format(datetime);                                                
+        if (created!=null) {
+            LocalDateTime datetime = DateTimeUtil.convertToLocalDateTimeViaInstant(created, ZoneId.of("Asia/Kuala_Lumpur"));
+            DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            return formatter1.format(datetime);                                                
+        } else {
+            return null;
+        }
     }
    
 }
