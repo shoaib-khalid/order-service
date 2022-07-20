@@ -3,7 +3,11 @@ package com.kalsym.order.service.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
+import com.kalsym.order.service.utility.DateTimeUtil;
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Column;
@@ -109,6 +113,15 @@ public class OrderGroup implements Serializable {
             return 0;
         else
             return d;
+    }
+    
+    @Transient
+    private String orderTimeConverted;
+    
+    public String getOrderTimeConverted() {
+        LocalDateTime datetime = DateTimeUtil.convertToLocalDateTimeViaInstant(created, ZoneId.of("Asia/Kuala_Lumpur"));
+        DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return formatter1.format(datetime);                                                
     }
    
 }

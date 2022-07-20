@@ -4,7 +4,11 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.model.object.OrderObject;
+import com.kalsym.order.service.utility.DateTimeUtil;
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Column;
@@ -169,5 +173,14 @@ public class Order implements Serializable {
         cartId = order.getCartId();
         //created = order.getCreated();
         //updated = order.getUpdated();
+    }
+    
+    @Transient
+    private String orderTimeConverted;
+    
+    public String getOrderTimeConverted() {
+        LocalDateTime datetime = DateTimeUtil.convertToLocalDateTimeViaInstant(created, ZoneId.of(store.getRegionCountry().getTimezone()));
+        DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return formatter1.format(datetime);                                                
     }
 }
