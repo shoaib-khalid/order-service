@@ -125,6 +125,7 @@ public class OrderGroupController {
         if (customerId != null && !customerId.isEmpty()) {
             orderMatch.setCustomerId(customerId);
         }
+        orderMatch.setPaymentStatus("PAID");
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "groupOrderMatch: " + orderMatch);
         

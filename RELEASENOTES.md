@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.9.8-SNAPSHOT |20-July-2022
+##################################################
+Bug fix for getOrderGroups() to filter paymentStatus=PAID only
+
+
+##################################################
 # order-service-3.9.7-SNAPSHOT |19-July-2022
 ##################################################
 Bug fix for update paymentStatus=PAID in order-group for order made in SF when receive payment_confirmed
