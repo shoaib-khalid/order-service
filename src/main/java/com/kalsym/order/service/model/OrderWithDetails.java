@@ -181,7 +181,8 @@ public class OrderWithDetails implements Serializable {
     private String orderTimeConverted;
     
     public String getOrderTimeConverted() {
-        LocalDateTime datetime = DateTimeUtil.convertToLocalDateTimeViaInstant(created, ZoneId.of(store.getRegionCountry().getTimezone()));
+        //LocalDateTime datetime = DateTimeUtil.convertToLocalDateTimeViaInstant(created, ZoneId.of(store.getRegionCountry().getTimezone()));
+        LocalDateTime datetime = DateTimeUtil.convertToLocalDateTimeViaInstant(created, ZoneId.of("Asia/Kuala_Lumpur"));
         DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         return formatter1.format(datetime);                                                
     }
