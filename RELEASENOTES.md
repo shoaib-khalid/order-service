@@ -1,4 +1,11 @@
 ##################################################
+# order-service-3.9.11-SNAPSHOT |21-July-2022
+##################################################
+Add order group details in putOrderGroupCompletionStatusUpdate()
+Add allowsStorePickup in storeDeliveryDetails
+
+
+##################################################
 # order-service-3.9.10-SNAPSHOT |20-July-2022
 ##################################################
 Add new field in order : orderTimeConverted

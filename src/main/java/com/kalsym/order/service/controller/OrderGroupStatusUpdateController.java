@@ -210,7 +210,8 @@ public class OrderGroupStatusUpdateController {
             orderGroupRepository.save(orderGroup);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Group paymentStatus updated to PAID for groupId:"+orderGroup.getId());
         }
-              
+        
+        response.setData(orderGroup);
         response.setStatus(HttpStatus.OK.value());        
         return ResponseEntity.status(response.getStatus()).body(response);
     }

@@ -29,16 +29,13 @@ public class StoreDeliveryDetail implements Serializable {
 //    @Enumerated(EnumType.STRING)
     private String type;
     private String itemType;
-
-  
-
     private Integer maxOrderQuantityForBike;
-
+    private Boolean allowsStorePickup;
+    
     public void update(StoreDeliveryDetail storeDeliveryDetail) {
         if (storeDeliveryDetail.getType() != null) {
             type = storeDeliveryDetail.getType();
         }
-
        
         if (storeDeliveryDetail.getItemType() != null) {
             itemType = storeDeliveryDetail.getItemType();
