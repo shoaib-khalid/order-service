@@ -308,6 +308,12 @@ public class OrderProcessWorker {
             List<OrderCompletionStatusConfig> prevOrderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, previousStatus.name(), storePickup, storeDeliveryType, order.getPaymentType());
             if (prevOrderCompletionStatusConfigs == null || prevOrderCompletionStatusConfigs.isEmpty()) {
                 Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prevOrderCompletionStatusConfigs not found!");
+                if (status==OrderStatus.PAYMENT_CONFIRMED) {
+                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Not correct sequence");                    
+                    orderProcessResult.httpStatus = HttpStatus.NOT_ACCEPTABLE;
+                    orderProcessResult.errorMsg = "Wrong status sent: " + newStatus;
+                    return orderProcessResult;
+                }
             } else {
                 prevOrderCompletionStatusConfig = prevOrderCompletionStatusConfigs.get(0);
                 int prevSequence = prevOrderCompletionStatusConfig.getStatusSequence();
