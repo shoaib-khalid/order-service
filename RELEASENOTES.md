@@ -3,6 +3,11 @@
 ##################################################
 New API : mergeCartMultiple -> to merge multiple carts from guest to customer
 
+##Db Changes:
+ALTER TABLE cart_item ADD discountCheckTimestamp datetime;
+
+##Config changes:
+productdiscount.scheduler.enabled=true
 
 ##################################################
 # order-service-3.9.11-SNAPSHOT |21-July-2022

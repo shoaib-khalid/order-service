@@ -39,4 +39,11 @@ public interface CartItemRepository extends PagingAndSortingRepository<CartItem,
     public void clearCartItem(
             @Param("queryCartId") String queryCartId
     );
+    
+    
+    @Query(value = "SELECT A.id, itemCode, storeId FROM cart_item A INNER JOIN cart B ON A.cartId=B.id WHERE"
+            + " isOpen=1 AND discountId IS NOT NULL "
+            + "AND (DATE_ADD(discountCheckTimestamp, INTERVAL 1 HOUR) < NOW() OR discountCheckTimestamp IS NULL)", nativeQuery = true)
+    List<Object[]> getCartItemWithDiscount();
+    
 }

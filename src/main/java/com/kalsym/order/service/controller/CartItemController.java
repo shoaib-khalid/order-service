@@ -507,6 +507,7 @@ public class CartItemController {
                     cartItem.setProductPrice((float)itemProductPrice);
                     cartItem.setPrice((float)(cartItem.getQuantity() * itemProductPrice));
                     if (itemDiscountId!=null) {
+                        cartItem.setDiscountId(itemDiscountId);
                         cartItem.setNormalPrice((float)itemNormalPrice);
                         cartItem.setDiscountLabel(itemDiscountLabel);
                     } else {

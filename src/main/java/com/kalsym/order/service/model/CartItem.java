@@ -17,6 +17,9 @@ import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 import com.kalsym.order.service.enums.DiscountCalculationType;
 import java.io.Serializable;
+import java.util.Date;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -51,6 +54,8 @@ public class CartItem implements Serializable {
     private String discountLabel;
     private DiscountCalculationType discountCalculationType;
     private Float discountCalculationValue;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date discountCheckTimestamp;
     
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "cartItemId", insertable = false, updatable = false, nullable = true)
