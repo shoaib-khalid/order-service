@@ -102,7 +102,7 @@ public class ProductDiscountScheduler {
                     cartItem.setDiscountCheckTimestamp(new Date());
                     cartItemRepository.save(cartItem);
                     
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "");
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Discounted item updated item:"+itemCode+" discountId:"+discountDetails.discountId);
                 } else {
                     //update original price                      
                     Optional<CartItem> cartItemOpt = cartItemRepository.findById(itemId);
@@ -114,6 +114,8 @@ public class ProductDiscountScheduler {
                     cartItem.setNormalPrice(null);
                     cartItem.setDiscountLabel(null);
                     cartItemRepository.save(cartItem);
+                    
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Discounted item removed item:"+itemCode);
                 }
                                                
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "item:"+itemCode+" updated");
