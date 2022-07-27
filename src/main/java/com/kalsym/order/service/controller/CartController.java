@@ -474,6 +474,64 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
     
+    /**
+     *
+     * @param request
+     * @param customerId
+     * @param guestCartIdList
+     * @return
+     */
+    @PutMapping(path = {"/merge/{customerId}"}, name = "merge-cart")
+    @PreAuthorize("hasAnyAuthority('carts-put-by-id', 'all')")
+    public ResponseEntity<HttpResponse> mergeCartMultiple(HttpServletRequest request, 
+            @PathVariable String customerId,            
+            @RequestParam(required = false) List<String> guestCartIdList) {
+        String logprefix = "mergeCartMultiple()";
+        String location = Thread.currentThread().getStackTrace()[1].getMethodName();
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "", "customerId:"+customerId+" guestCartIdList:"+guestCartIdList.size());
+        
+        for (int i=0;i<guestCartIdList.size();i++) {
+            Optional<Cart> optCart = cartRepository.findById(guestCartIdList.get(i));
+
+            if (optCart.isPresent()) {
+                           
+                //find customer cart
+                Cart guestCart = optCart.get();
+                String storeId = guestCart.getStoreId();
+                Cart customerCart = null;
+                List<Cart> customerCartList = cartRepository.findByCustomerIdAndStoreId(customerId, storeId);
+                if (customerCartList.size()>0) {
+                    customerCart = customerCartList.get(0);                                
+                } else {
+                    //create new cart
+                    customerCart = new Cart();
+                    customerCart.setCustomerId(customerId);
+                    customerCart.setStoreId(storeId);
+                    customerCart.setIsOpen(Boolean.TRUE);
+                    customerCart.setStage(CartStage.CREATED);
+                    customerCart = cartRepository.save(customerCart);
+                }
+            
+                //copy all item from guest cart
+                List<CartItem> cartItemList = cartItemRepository.findByCartId(guestCart.getId());
+                for (int x=0;x<cartItemList.size();x++) {
+                    CartItem cartItem = cartItemList.get(x);
+                    cartItem.setCartId(customerCart.getId());
+                    cartItemRepository.save(cartItem);
+                }
+
+                //remove guest cart
+                cartRepository.delete(guestCart);
+            }
+        }
+        
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Customer cart updated for customerId: " + customerId);
+        response.setSuccessStatus(HttpStatus.ACCEPTED);        
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
+    
 
     /**
      * TODO: create endpoint to empty the cart by deleting all the cart-items in

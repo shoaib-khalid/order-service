@@ -21,5 +21,7 @@ public interface CartRepository extends PagingAndSortingRepository<Cart, String>
     @Query(value = "SELECT A.id FROM `cart` A WHERE DATE_ADD(A.created, INTERVAL 24 HOUR) < NOW() " +
         "AND id NOT IN (SELECT cartId FROM cart_item);", nativeQuery = true)
     List<Object[]> findEmptyCart();
+    
+    List<Cart> findByCustomerIdAndStoreId(@Param("customerId") String customerId, @Param("storeId") String storeId);
 
 }

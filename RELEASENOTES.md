@@ -1,8 +1,15 @@
 ##################################################
+# order-service-3.10.0-SNAPSHOT |27-July-2022
+##################################################
+New API : mergeCartMultiple -> to merge multiple carts from guest to customer
+
+
+##################################################
 # order-service-3.9.11-SNAPSHOT |21-July-2022
 ##################################################
 Add order group details in putOrderGroupCompletionStatusUpdate()
 Add allowsStorePickup in storeDeliveryDetails
+Bug fix : ignore if payment_confirmed received multiple times
 
 
 ##################################################
