@@ -451,7 +451,7 @@ public class CartItemController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
-    @PostMapping(path = {"/updateprice/{itemCode}"}, name = "cart-items-updateprice-by-itemcode")
+    @PostMapping(path = {"/updateprice"}, name = "cart-items-updateprice-by-itemcode")
     @PreAuthorize("hasAnyAuthority('cart-items-updateprice-by-itemcode', 'all')")
     public ResponseEntity<HttpResponse> updateItemPrice(HttpServletRequest request,
             @Valid @RequestBody List<String> itemCodeList 
