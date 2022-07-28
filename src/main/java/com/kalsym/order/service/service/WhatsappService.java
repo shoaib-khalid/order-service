@@ -125,7 +125,11 @@ public class WhatsappService {
 
     }
         
-    public boolean sendCustomerAlert(String customerMsisdn, String status, String storeName, String invoiceNo, String orderId, String updatedTime, String customerTemplateName, String WATemplateFormat, String storeCity, String invoicePdf) throws Exception {
+    public boolean sendCustomerAlert(
+            String customerMsisdn, String status, String storeName, 
+            String invoiceNo, String orderId, String updatedTime,
+            String customerTemplateName, String WATemplateFormat, String storeCity, 
+            String invoicePdf, boolean isRegisteredUser) throws Exception {
         //alert format : %invoiceNo%,%storeName%,%orderStatus%,%timestamp%
         String logprefix = "sendCustomerAlert";
         
@@ -139,8 +143,25 @@ public class WhatsappService {
         request.setRefId(recipients[0]);
         request.setReferenceId(adminAlertRefId);
         request.setOrderId(orderId);
+        
+        
         Template template = new Template();
-        template.setName(customerTemplateName);
+        String templateNameGuest = customerTemplateName;
+        String templateNameUser = customerTemplateName;
+        String[] templateNameList = customerTemplateName.split(";"); 
+        for (int z=0;z<templateNameList.length;z++) {
+            String[] temp=templateNameList[z].split("=");
+            if (temp[0].equalsIgnoreCase("guest")) {
+                templateNameGuest = temp[1];
+            } else if (temp[0].equalsIgnoreCase("user")) {
+                templateNameUser = temp[1];
+            }
+        }
+        if (isRegisteredUser)
+            template.setName(templateNameUser);
+        else
+            template.setName(templateNameGuest);
+        
         WATemplateFormat = WATemplateFormat.replaceAll("%invoiceNo%", invoiceNo);
         WATemplateFormat = WATemplateFormat.replaceAll("%storeName%", storeName);
         WATemplateFormat = WATemplateFormat.replaceAll("%orderStatus%", status);

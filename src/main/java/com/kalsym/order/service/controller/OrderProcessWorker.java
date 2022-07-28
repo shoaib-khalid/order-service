@@ -726,7 +726,16 @@ public class OrderProcessWorker {
                         if (orderShipmentDetails!=null) {                            
                             String customerMsisdn = orderShipmentDetails.getPhoneNumber();                        
                             String invoicePdf = invoiceBaseUrl+"/"+order.getId();
-                            whatsappService.sendCustomerAlert(customerMsisdn, status.name(), storeWithDetails.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp(), orderCompletionStatusConfig.getPushWAToCustomerTemplateName(), orderCompletionStatusConfig.getPushWAToCustomerTemplateFormat(), storeWithDetails.getCity(), invoicePdf);
+                            //get customer info
+                            Optional<Customer> customerOpt = customerRepository.findById(order.getCustomerId());
+                            boolean isRegisteredUser = false;
+                            if (customerOpt.isPresent()) {
+                                Customer customer = customerOpt.get();
+                                if (customer.getIsActivated()) {
+                                    isRegisteredUser=true;
+                                }
+                            }
+                            whatsappService.sendCustomerAlert(customerMsisdn, status.name(), storeWithDetails.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp(), orderCompletionStatusConfig.getPushWAToCustomerTemplateName(), orderCompletionStatusConfig.getPushWAToCustomerTemplateFormat(), storeWithDetails.getCity(), invoicePdf, isRegisteredUser);
                         } else {
                             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order shipment details not found");
                         }

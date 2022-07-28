@@ -3,6 +3,7 @@
 ##################################################
 New API : mergeCartMultiple -> to merge multiple carts from guest to customer
 Bug fix for cartitem/updateprice -> delete by multiple itemcode
+Differentiate whatsapp template for guest during receive new order (whastapp alert to customer)
 
 ##Db Changes:
 ALTER TABLE cart_item ADD discountCheckTimestamp datetime;
