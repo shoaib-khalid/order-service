@@ -86,11 +86,13 @@ public class ProductDiscountScheduler {
                     StoreDiscountProduct discountItem = discountItemList.get(z);
                     String itemCode = discountItem.getItemCode();
                     ProductInventory productInventory = productInventoryRepository.findByItemCode(itemCode);
-                    List<CartItem> itemList = cartItemRepository.findByItemCode(itemCode);
+                    List<Object[]> itemList = cartItemRepository.getNotUpdatedCartItem(itemCode);
                     //update price for every item
                     for (int y=0;y<itemList.size();y++) {
                         //check current price
-                        String itemId = itemList.get(y).getId();
+                        Object[] item = itemList.get(y);    
+                        String itemId = (String)item[0];
+                        
                         ItemDiscount discountDetails = ProductDiscount.getItemDiscount(storeDiscountRepository, storeId, itemCode);
                         if (discountDetails != null) {                    
                             double discountedPrice = productInventory.getPrice();

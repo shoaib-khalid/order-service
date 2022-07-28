@@ -46,4 +46,9 @@ public interface CartItemRepository extends PagingAndSortingRepository<CartItem,
             + "AND (DATE_ADD(discountCheckTimestamp, INTERVAL 1 HOUR) < NOW() OR discountCheckTimestamp IS NULL)", nativeQuery = true)
     List<Object[]> getCartItemWithDiscount();
     
+    @Query(value = "SELECT id FROM cart_item WHERE"
+            + " itemCode =:queryItemCode "
+            + "AND (DATE_ADD(discountCheckTimestamp, INTERVAL 1 HOUR) < NOW() OR discountCheckTimestamp IS NULL)", nativeQuery = true)
+    List<Object[]> getNotUpdatedCartItem(@Param("queryItemCode") String queryItemCode );
+    
 }
