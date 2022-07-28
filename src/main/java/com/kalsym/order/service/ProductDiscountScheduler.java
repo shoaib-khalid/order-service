@@ -19,11 +19,14 @@ package com.kalsym.order.service;
 import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountRepository;
+import com.kalsym.order.service.model.repository.StoreDiscountProductRepository;
 import com.kalsym.order.service.model.repository.ProductInventoryRepository;
 import com.kalsym.order.service.utility.Logger;
 import com.kalsym.order.service.model.ProductInventory;
 import com.kalsym.order.service.model.CartItem;
 import com.kalsym.order.service.model.object.ItemDiscount;
+import com.kalsym.order.service.model.StoreDiscount;
+import com.kalsym.order.service.model.StoreDiscountProduct;
 import com.kalsym.order.service.enums.DiscountCalculationType;
 import com.kalsym.order.service.utility.ProductDiscount;
 
@@ -57,6 +60,9 @@ public class ProductDiscountScheduler {
     StoreDiscountRepository storeDiscountRepository;
     
     @Autowired
+    StoreDiscountProductRepository storeDiscountProductRepository;
+    
+    @Autowired
     ProductInventoryRepository productInventoryRepository;
    
     @Value("${productdiscount.scheduler.enabled:false}")
@@ -66,6 +72,58 @@ public class ProductDiscountScheduler {
     public void checkCartItem() throws Exception {
         if (isEnabled) {
             String logprefix = "ProductDiscount-Scheduler"; 
+            
+            //check active item discount
+            List<StoreDiscount> discountList = storeDiscountRepository.findActiveDiscount(new Date());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Start checking active discount. Discount Count:"+discountList.size());        
+            for (int x=0;x<discountList.size();x++) {
+                //check item in the discount
+                StoreDiscount storeDiscount = discountList.get(x); 
+                String discountId = storeDiscount.getId();
+                String storeId =  storeDiscount.getStoreId();
+                List<StoreDiscountProduct> discountItemList = storeDiscountProductRepository.findByStoreDiscountId(discountId);
+                for (int z=0;z<discountItemList.size();z++) {
+                    StoreDiscountProduct discountItem = discountItemList.get(z);
+                    String itemCode = discountItem.getItemCode();
+                    ProductInventory productInventory = productInventoryRepository.findByItemCode(itemCode);
+                    List<CartItem> itemList = cartItemRepository.findByItemCode(itemCode);
+                    //update price for every item
+                    for (int y=0;y<itemList.size();y++) {
+                        //check current price
+                        String itemId = itemList.get(y).getId();
+                        ItemDiscount discountDetails = ProductDiscount.getItemDiscount(storeDiscountRepository, storeId, itemCode);
+                        if (discountDetails != null) {                    
+                            double discountedPrice = productInventory.getPrice();
+                            if (discountDetails.calculationType.equals(DiscountCalculationType.FIX)) {
+                                discountedPrice = productInventory.getPrice() - discountDetails.discountAmount;
+                            } else if (discountDetails.calculationType.equals(DiscountCalculationType.PERCENT)) {
+                                discountedPrice = productInventory.getPrice() - (discountDetails.discountAmount / 100 * productInventory.getPrice());
+                            }
+                            discountDetails.discountedPrice = discountedPrice;
+                            discountDetails.normalPrice = productInventory.getPrice();                    
+                            productInventory.setItemDiscount(discountDetails); 
+
+                            double itemProductPrice = productInventory.getPrice();
+
+                            //update price
+                            Optional<CartItem> cartItemOpt = cartItemRepository.findById(itemId);
+                            CartItem cartItem = cartItemOpt.get();
+                            cartItem.setProductPrice((float)discountDetails.discountedPrice);
+                            cartItem.setPrice((float)(cartItem.getQuantity() * discountDetails.discountedPrice));
+                            cartItem.setDiscountId(discountDetails.discountId);
+                            cartItem.setNormalPrice((float)discountDetails.normalPrice);
+                            cartItem.setDiscountLabel(discountDetails.discountLabel);
+                            cartItem.setDiscountCheckTimestamp(new Date());
+                            cartItemRepository.save(cartItem);
+
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Discounted item updated item:"+itemCode+" discountId:"+discountDetails.discountId);
+                        } 
+                    }
+                    
+                }
+            }
+            
+            //check cart item
             List<Object[]> itemList = cartItemRepository.getCartItemWithDiscount();
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Start checking cart item with discount. Item Count:"+itemList.size());        
             for (int i=0;i<itemList.size();i++) {
@@ -120,6 +178,7 @@ public class ProductDiscountScheduler {
                                                
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "item:"+itemCode+" updated");
             }
+
         }
     }
 }

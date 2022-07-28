@@ -22,6 +22,11 @@ public interface StoreDiscountRepository extends PagingAndSortingRepository<Stor
             @Param("currentDate") Date currentDate
             );
     
+    @Query("SELECT m FROM StoreDiscount m WHERE m.isActive=true AND m.startDate < :currentDate AND m.endDate > :currentDate") 
+    List<StoreDiscount> findActiveDiscount(            
+            @Param("currentDate") Date currentDate
+            );
+    
     @Query(value = "CALL getItemDiscount(:itemCode, :storeId);", nativeQuery = true)
     List<Object[]> getItemDiscount(@Param("itemCode") String itemCode, @Param("storeId") String storeId);
     

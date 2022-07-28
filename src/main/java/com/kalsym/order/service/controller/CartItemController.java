@@ -454,70 +454,74 @@ public class CartItemController {
     @PostMapping(path = {"/updateprice/{itemCode}"}, name = "cart-items-updateprice-by-itemcode")
     @PreAuthorize("hasAnyAuthority('cart-items-updateprice-by-itemcode', 'all')")
     public ResponseEntity<HttpResponse> updateItemPrice(HttpServletRequest request,
-            @PathVariable(required = true) String itemCode
+            @Valid @RequestBody List<String> itemCodeList 
             ) throws Exception {
+        
         String logprefix = request.getRequestURI() + " updateItemPrice()";
         HttpResponse response = new HttpResponse(request.getRequestURI());
         
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-updateprice-by-itemcode, itemCode: " + itemCode);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-updateprice-by-itemcode, itemCodeList: " + itemCodeList.size());
         
-        //find itemCode
-        ProductInventory productInventoryDB = productInventoryRepository.findByItemCode(itemCode);
+        for (int z=0;z<itemCodeList.size();z++) {
             
-        if (productInventoryDB==null) {
-            //itemCode not found
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item code not found");
-            response.setMessage("Item code not found");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        } 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventoryDB.toString());
-        
-        //query product-service
-        ProductInventory productInventory = productService.getProductInventoryById(productInventoryDB.getProduct().getStoreId(), productInventoryDB.getProduct().getId(), itemCode);
-        
-        //check for discount
-        double itemPrice = 0.00;
-        String itemDiscountLabel=null;
-        String itemDiscountId=null;
-        double itemNormalPrice=0.00;
-        double itemProductPrice=0.00;
-        if (productInventory.getItemDiscount()!=null) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item got discount. DiscountId:"+productInventory.getItemDiscount().discountId);
-            //got discount
-            ItemDiscount discountDetails = productInventory.getItemDiscount();
-            itemPrice = discountDetails.discountedPrice;
-            itemDiscountId = discountDetails.discountId;
-            itemNormalPrice = discountDetails.normalPrice;
-            itemDiscountLabel = discountDetails.discountLabel;
-        } else {
-            //no dicount for this item code
-            itemPrice = productInventory.getPrice();
-        }
-        itemProductPrice = itemPrice;
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "itemPrice:"+itemPrice);
-                
-        //find itemcode in cart item, update price
-        List<CartItem> itemList = cartItemRepository.findByItemCode(itemCode);
-        for (int i=0;i<itemList.size();i++) {
-            CartItem cartItem = itemList.get(i); 
-            //check if cart is open
-            Optional<Cart> cart = cartRepository.findById(cartItem.getCartId());
-            if (cart.isPresent()) {
-                if (cart.get().getIsOpen()) {
-                    cartItem.setProductPrice((float)itemProductPrice);
-                    cartItem.setPrice((float)(cartItem.getQuantity() * itemProductPrice));
-                    if (itemDiscountId!=null) {
-                        cartItem.setDiscountId(itemDiscountId);
-                        cartItem.setNormalPrice((float)itemNormalPrice);
-                        cartItem.setDiscountLabel(itemDiscountLabel);
-                    } else {
-                        cartItem.setNormalPrice(null);
-                        cartItem.setDiscountLabel(null);
-                    }
-                    cartItemRepository.save(cartItem);
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem price updated with for cartItemId: " + cartItem.getId());
+            //find itemCode
+            String itemCode = itemCodeList.get(z);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-updateprice-by-itemcode, itemCode: " + itemCode);
+       
+            ProductInventory productInventoryDB = productInventoryRepository.findByItemCode(itemCode);
+
+            if (productInventoryDB!=null) {
+
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventoryDB.toString());
+
+                //query product-service
+                ProductInventory productInventory = productService.getProductInventoryById(productInventoryDB.getProduct().getStoreId(), productInventoryDB.getProduct().getId(), itemCode);
+
+                //check for discount
+                double itemPrice = 0.00;
+                String itemDiscountLabel=null;
+                String itemDiscountId=null;
+                double itemNormalPrice=0.00;
+                double itemProductPrice=0.00;
+                if (productInventory.getItemDiscount()!=null) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item got discount. DiscountId:"+productInventory.getItemDiscount().discountId);
+                    //got discount
+                    ItemDiscount discountDetails = productInventory.getItemDiscount();
+                    itemPrice = discountDetails.discountedPrice;
+                    itemDiscountId = discountDetails.discountId;
+                    itemNormalPrice = discountDetails.normalPrice;
+                    itemDiscountLabel = discountDetails.discountLabel;
+                } else {
+                    //no dicount for this item code
+                    itemPrice = productInventory.getPrice();
                 }
-            }            
+                itemProductPrice = itemPrice;
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "itemPrice:"+itemPrice);
+
+                //find itemcode in cart item, update price
+                List<CartItem> itemList = cartItemRepository.findByItemCode(itemCode);
+                for (int i=0;i<itemList.size();i++) {
+                    CartItem cartItem = itemList.get(i); 
+                    //check if cart is open
+                    Optional<Cart> cart = cartRepository.findById(cartItem.getCartId());
+                    if (cart.isPresent()) {
+                        if (cart.get().getIsOpen()) {
+                            cartItem.setProductPrice((float)itemProductPrice);
+                            cartItem.setPrice((float)(cartItem.getQuantity() * itemProductPrice));
+                            if (itemDiscountId!=null) {
+                                cartItem.setDiscountId(itemDiscountId);
+                                cartItem.setNormalPrice((float)itemNormalPrice);
+                                cartItem.setDiscountLabel(itemDiscountLabel);
+                            } else {
+                                cartItem.setNormalPrice(null);
+                                cartItem.setDiscountLabel(null);
+                            }
+                            cartItemRepository.save(cartItem);
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem price updated with for cartItemId: " + cartItem.getId());
+                        }
+                    }            
+                }
+            }
         }
         
         return ResponseEntity.status(HttpStatus.OK).body(response);

@@ -1,13 +1,15 @@
 ##################################################
-# order-service-3.10.0-SNAPSHOT |27-July-2022
+# order-service-3.10.0-SNAPSHOT |28-July-2022
 ##################################################
 New API : mergeCartMultiple -> to merge multiple carts from guest to customer
+Bug fix for cartitem/updateprice -> delete by multiple itemcode
 
 ##Db Changes:
 ALTER TABLE cart_item ADD discountCheckTimestamp datetime;
 
 ##Config changes:
 productdiscount.scheduler.enabled=true
+
 
 ##################################################
 # order-service-3.9.11-SNAPSHOT |21-July-2022
