@@ -525,8 +525,7 @@ public class CartItemController {
         }
         
         return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
-    
+    }        
     
     @PostMapping(path = {"/deleteitem/{itemCode}"}, name = "cart-items-deleteitem-by-itemcode")
     @PreAuthorize("hasAnyAuthority('cart-items-deleteitem-by-itemcode', 'all')")
