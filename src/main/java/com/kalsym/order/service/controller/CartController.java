@@ -773,7 +773,7 @@ public class CartController {
             customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(customerId, storeVoucherCode, new Date(), storeId);
             if (customerStoreVoucher==null) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
-                response.setMessage("Voucher code " + voucherCode + " not found");
+                response.setMessage("Voucher code " + storeVoucherCode + " not found");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             } 
         }   
