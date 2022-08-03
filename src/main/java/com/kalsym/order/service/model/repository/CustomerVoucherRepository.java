@@ -53,6 +53,26 @@ public interface CustomerVoucherRepository extends PagingAndSortingRepository<Cu
             @Param("currentDate") Date currentDate
             );
     
+    
+    @Query("SELECT m FROM CustomerVoucher m "
+            + "WHERE m.customerId = :queryCustomerId "
+            + "AND m.voucher.storeId = :queryStoreId "
+            + "AND m.isUsed=0 "
+            + "AND m.voucher.status='ACTIVE' "
+            + "AND m.voucher.voucherType='STORE' "
+            + "AND m.voucher.startDate < :currentDate AND m.voucher.endDate > :currentDate "
+            + "AND m.voucher.voucherCode = :queryVoucherCode "
+            + "AND ("
+                + "(m.voucher.totalRedeem < m.voucher.totalQuantity AND m.voucher.checkTotalRedeem=true) OR "
+                + "(m.voucher.checkTotalRedeem=false) "
+            + ")")           
+    CustomerVoucher findCustomerStoreVoucherByCode(
+            @Param("queryCustomerId") String queryCustomerId,
+            @Param("queryStoreId") String queryStoreId,
+            @Param("queryVoucherCode") String queryVoucherCode,
+            @Param("currentDate") Date currentDate
+            );
+    
     @Query("SELECT m FROM CustomerVoucher m "
             + "WHERE m.guestEmail = :guestEmail AND m.isUsed=0 "
             + "AND m.voucher.status='ACTIVE' "

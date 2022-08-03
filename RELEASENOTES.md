@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.10.1-SNAPSHOT |3-Aug-2022
+##################################################
+Bug fix for cart/discount for storeVoucherCode
+
+
+##################################################
 # order-service-3.10.0-SNAPSHOT |28-July-2022
 ##################################################
 New API : mergeCartMultiple -> to merge multiple carts from guest to customer
