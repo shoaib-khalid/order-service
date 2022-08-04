@@ -2,6 +2,7 @@
 # order-service-3.11.0-SNAPSHOT |4-Aug-2022
 ##################################################
 Build new feature : allow combined shipping from same store location
+Bug fix for mergeCartMultiple
 
 ALTER TABLE order_payment_detail ADD isCombinedDelivery TINYINT(1) NOT NULL DEFAULT 0;
 

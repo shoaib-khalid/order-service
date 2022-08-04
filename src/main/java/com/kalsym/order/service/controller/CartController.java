@@ -486,8 +486,9 @@ public class CartController {
     @PutMapping(path = {"/merge/{customerId}"}, name = "merge-cart")
     @PreAuthorize("hasAnyAuthority('carts-put-by-id', 'all')")
     public ResponseEntity<HttpResponse> mergeCartMultiple(HttpServletRequest request, 
-            @PathVariable String customerId,            
-            @RequestParam(required = false) List<String> guestCartIdList) {
+            @PathVariable String customerId,
+            @Valid @RequestBody List<String> guestCartIdList
+        ) {
         String logprefix = "mergeCartMultiple()";
         String location = Thread.currentThread().getStackTrace()[1].getMethodName();
         HttpResponse response = new HttpResponse(request.getRequestURI());
