@@ -30,4 +30,5 @@ public class DeliveryQuotation {
     Double amount; 
     VehicleType vehicleType;
     String fulfillmentType;
+    Boolean isCombinedDelivery;
 }

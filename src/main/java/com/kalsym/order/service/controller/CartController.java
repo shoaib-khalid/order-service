@@ -78,6 +78,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -920,6 +922,7 @@ public class CartController {
         boolean gotCartItemDiscount=false;
         
         List<Discount> storeDiscountList = new ArrayList();
+        Map<String, Double> combinedDeliveryFeeMap = new HashMap<String, Double>();
         for (int i=0;i<cartList.length;i++) {            
             String cartId = cartList[i].getCartId();
             Optional<Cart> cartOptional = cartRepository.findById(cartId);
@@ -933,7 +936,11 @@ public class CartController {
             if (deliveryQuotationId!=null) {
                 DeliveryQuotation deliveryQuotation = deliveryService.getDeliveryQuotation(deliveryQuotationId);
                 deliveryCharge = deliveryQuotation.getAmount();
-                groupDeliveryCharge = groupDeliveryCharge + deliveryCharge;
+                if (deliveryQuotation.getIsCombinedDelivery()!=null && deliveryQuotation.getIsCombinedDelivery()) {
+                   combinedDeliveryFeeMap.put(deliveryQuotationId, deliveryCharge); 
+                } else {
+                    groupDeliveryCharge = groupDeliveryCharge + deliveryCharge;
+                }
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliveryCharge from delivery-service:"+deliveryCharge);
             }            
             
@@ -1005,6 +1012,12 @@ public class CartController {
             groupServiceCharge = groupServiceCharge + Utilities.convertToDouble(discount.getStoreServiceCharge());
             groupDeliveryDiscount = groupDeliveryDiscount + Utilities.convertToDouble(discount.getDeliveryDiscount());            
             groupSubTotalDiscount = groupSubTotalDiscount + Utilities.convertToDouble(discount.getSubTotalDiscount());
+        }
+        
+        for (Map.Entry<String, Double> combinedDelivery :
+            combinedDeliveryFeeMap.entrySet()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliveryQuotationId:"+combinedDelivery.getKey()+" Amount:"+combinedDelivery.getValue());
+            groupDeliveryCharge = groupDeliveryCharge + combinedDelivery.getValue();
         }
        
         GroupDiscount groupDiscount = new GroupDiscount();

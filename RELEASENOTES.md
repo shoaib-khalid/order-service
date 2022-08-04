@@ -1,4 +1,12 @@
 ##################################################
+# order-service-3.11.0-SNAPSHOT |4-Aug-2022
+##################################################
+Build new feature : allow combined shipping from same store location
+
+ALTER TABLE order_payment_detail ADD isCombinedDelivery TINYINT(1) NOT NULL DEFAULT 0;
+
+
+##################################################
 # order-service-3.10.1-SNAPSHOT |3-Aug-2022
 ##################################################
 Bug fix for cart/discount for storeVoucherCode

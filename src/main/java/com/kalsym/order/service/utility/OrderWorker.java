@@ -293,6 +293,11 @@ public class OrderWorker {
                     VehicleType vehicleType = deliveryQuotation.getVehicleType();
                     String fulfillmentType = deliveryQuotation.getFulfillmentType();
                     cod.getOrderPaymentDetails().setDeliveryQuotationAmount(deliveryCharge);
+                    if (deliveryQuotation.getIsCombinedDelivery()!=null) {
+                        cod.getOrderPaymentDetails().setIsCombinedDelivery(deliveryQuotation.getIsCombinedDelivery());                    
+                    } else {
+                        cod.getOrderPaymentDetails().setIsCombinedDelivery(false);                    
+                    }
                     cod.getOrderShipmentDetails().setVehicleType(vehicleType.name());
                     cod.getOrderShipmentDetails().setFulfilmentType(fulfillmentType);
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliveryCharge from delivery-service:"+deliveryCharge+" vehicleType:"+vehicleType);

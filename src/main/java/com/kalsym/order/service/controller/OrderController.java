@@ -112,6 +112,8 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import javax.validation.Valid;
 import java.util.Optional;
 import javax.persistence.criteria.Predicate;
@@ -820,7 +822,10 @@ public class OrderController {
             response.setMessage("store delivery detail not found");
             return ResponseEntity.status(response.getStatus()).body(response);
         }
-            
+
+        //set isCombinedDelivery=false for single order
+        cod.getOrderPaymentDetails().setIsCombinedDelivery(false);
+        
         response = OrderWorker.placeOrder(
                 request.getRequestURI(), optCart.get(), cartItems, 
                 cod, storeWithDetials, storeDeliveryDetail,
@@ -1062,6 +1067,7 @@ public class OrderController {
         double sumStoreServiceCharges=0.00;
         String paymentType=StorePaymentType.ONLINEPAYMENT.name();
         boolean gotCartItemDiscount=false;
+        Map<String, Double> combinedDeliveryFeeMap = new HashMap<String, Double>();
         
         for (int i=0;i<codList.length;i++) {
             COD cod = codList[i];
@@ -1103,7 +1109,11 @@ public class OrderController {
                 return ResponseEntity.status(orderResponse.getStatus()).body(orderResponse);
             }
             sumCartSubTotal = sumCartSubTotal + orderCreated.getSubTotal();
-            sumDeliveryCharges = sumDeliveryCharges + orderCreated.getDeliveryCharges();
+            if (orderCreated.getOrderPaymentDetail().getIsCombinedDelivery()) {
+                combinedDeliveryFeeMap.put(orderCreated.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), orderCreated.getDeliveryCharges());
+            } else {
+                sumDeliveryCharges = sumDeliveryCharges + orderCreated.getDeliveryCharges();
+            }
             sumStoreServiceCharges = sumStoreServiceCharges + orderCreated.getStoreServiceCharges();
             orderTotal = orderTotal + orderCreated.getTotal();
             if (orderCreated.getAppliedDiscount()!=null) {
@@ -1115,6 +1125,11 @@ public class OrderController {
             orderCreatedList.add(orderCreated);
             paymentType = orderCreated.getPaymentType();
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Created SubTotal:"+orderCreated.getSubTotal()+" deliverFee:"+orderCreated.getDeliveryCharges()+" svcCharge:"+orderCreated.getStoreServiceCharges()+" Total:"+orderCreated.getTotal());
+        }       
+        for (Map.Entry<String, Double> combinedDelivery :
+            combinedDeliveryFeeMap.entrySet()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliveryQuotationId:"+combinedDelivery.getKey()+" Amount:"+combinedDelivery.getValue());
+            sumDeliveryCharges = sumDeliveryCharges + combinedDelivery.getValue();
         }
                 
         OrderObject groupTotal = OrderCalculation.CalculateGroupOrderTotal(sumCartSubTotal, sumAppliedDiscount, sumDeliveryCharges, sumDeliveryDiscount, customerPlatformVoucher, sumStoreServiceCharges, logprefix, gotCartItemDiscount);
