@@ -277,7 +277,7 @@ public class OrderProcessWorker {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "ASSIGNING_DRIVER");
             status = OrderStatus.AWAITING_PICKUP;
             email.getBody().setOrderStatus(status);
-            List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStoreDeliveryType(verticalId, OrderStatus.AWAITING_PICKUP.name(), storeDeliveryType);            
+            List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStoreDeliveryTypeAndStorePickup(verticalId, OrderStatus.AWAITING_PICKUP.name(), storeDeliveryType, storePickup);            
             if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
                 Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: AWAITING_PICKUP" + newStatus);                
             } else {        
