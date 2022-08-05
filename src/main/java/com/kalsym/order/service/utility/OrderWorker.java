@@ -303,6 +303,7 @@ public class OrderWorker {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliveryCharge from delivery-service:"+deliveryCharge+" vehicleType:"+vehicleType);
                 } else {
                     cod.getOrderPaymentDetails().setDeliveryQuotationAmount(0.00);
+                    cod.getOrderPaymentDetails().setIsCombinedDelivery(false);  
                 }               
                 
                 order.setCartId(cartId);                    

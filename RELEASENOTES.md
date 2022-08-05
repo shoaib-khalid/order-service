@@ -5,15 +5,24 @@ Build new feature : allow combined shipping from same store location
 Bug fix for mergeCartMultiple
 Allow multiple store for store_voucher
 
+
+##DB Changes:
+
 ALTER TABLE order_payment_detail ADD isCombinedDelivery TINYINT(1) NOT NULL DEFAULT 0;
 
-CREATE TABLE voucher_store (
-id VARCHAR(50) PRIMARY KEY,
-voucherId VARCHAR(50),
-storeId VARCHAR(50),
-created_at DATETIME,
-updated_at DATETIME
-);
+CREATE TABLE `voucher_store` (
+  `id` VARCHAR(50) NOT NULL,
+  `voucherId` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+  `storeId` VARCHAR(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  `created_at` DATETIME DEFAULT NULL,
+  `updated_at` DATETIME DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `voucherId` (`voucherId`),
+  KEY `storeId` (`storeId`),
+  CONSTRAINT `voucher_store_ibfk_1` FOREIGN KEY (`voucherId`) REFERENCES `voucher` (`id`),
+  CONSTRAINT `voucher_store_ibfk_2` FOREIGN KEY (`storeId`) REFERENCES `store` (`id`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
+
 
 
 ##################################################
