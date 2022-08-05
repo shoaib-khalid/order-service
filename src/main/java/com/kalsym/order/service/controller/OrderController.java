@@ -61,6 +61,7 @@ import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.PaymentOrder;
 import com.kalsym.order.service.model.StoreDiscount;
 import com.kalsym.order.service.model.Voucher;
+import com.kalsym.order.service.model.VoucherStore;
 import com.kalsym.order.service.model.object.Discount;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.object.OrderDetails;
@@ -778,11 +779,6 @@ public class OrderController {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
                     response.setMessage("Voucher code " + cod.getVoucherCode() + " not found");
                     return ResponseEntity.status(response.getStatus()).body(response);
-                } else {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform Voucher found : "+customerPlatformVoucher.getId());
-                    //check minimum amount
-                    //check vertical code
-                    //check double discount allowed
                 }
             }
         }
@@ -790,16 +786,12 @@ public class OrderController {
         //check store voucher code if provided
         CustomerVoucher customerStoreVoucher = null;
         if (cod.getStoreVoucherCode()!=null && !"".equals(cod.getStoreVoucherCode())) {
-            customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(cod.getCustomerId(), cod.getStoreVoucherCode(), new Date(), optCart.get().getStoreId());
+            customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(cod.getCustomerId(), cod.getStoreVoucherCode(), new Date());
             if (customerStoreVoucher==null) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
                 response.setMessage("Voucher code " + cod.getStoreVoucherCode() + " not found");
                 return ResponseEntity.status(response.getStatus()).body(response);
-            } else {
-                //check minimum amount
-                //check vertical code
-                //check double discount allowed
-            }
+            } 
         }
         
         StoreWithDetails storeWithDetials = null;
@@ -1021,15 +1013,25 @@ public class OrderController {
             //check store voucher code if provided
             CustomerVoucher customerStoreVoucher = null;
             if (cod.getStoreVoucherCode()!=null && !"".equals(cod.getStoreVoucherCode())) {
-                customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(cod.getCustomerId(), cod.getStoreVoucherCode(), new Date(), optCart.get().getStoreId());
+                customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(cod.getCustomerId(), cod.getStoreVoucherCode(), new Date());
                 if (customerStoreVoucher==null) {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
                     response.setMessage("Voucher code " + cod.getStoreVoucherCode() + " not found");
                     return ResponseEntity.status(response.getStatus()).body(response);
                 } else {
-                    //check minimum amount
-                    //check vertical code
-                    //check double discount allowed
+                    //check store            
+                    boolean storeValid=false;
+                    for (int i=0;i<customerStoreVoucher.getVoucher().getVoucherStoreList().size();i++) {
+                        VoucherStore voucherStore = customerStoreVoucher.getVoucher().getVoucherStoreList().get(i);
+                        if (voucherStore.getStoreId().equals(cart.getStoreId())) {
+                            storeValid=true;
+                        }
+                    }
+                    if (!storeValid) {
+                        //error, not allow for this store
+                        response.setMessage("Voucher code " + cod.getStoreVoucherCode() + " cannot be used for this store");
+                        return ResponseEntity.status(response.getStatus()).body(response);
+                    }     
                 }
             }
 
@@ -1075,7 +1077,7 @@ public class OrderController {
             Optional<Cart> optCart = cartRepository.findById(cartId);            
             Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(optCart.get().getStoreId());
             Optional<StoreDeliveryDetail> optStoreDeliveryDetail = storeDeliveryDetailRepository.findByStoreId(optCart.get().getStoreId());        
-            CustomerVoucher customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(cod.getCustomerId(), cod.getStoreVoucherCode(), new Date(), optCart.get().getStoreId());
+            CustomerVoucher customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(cod.getCustomerId(), cod.getStoreVoucherCode(), new Date());
             
             List<CartItem> selectedCartItem = new ArrayList<>();
             for (int x=0;x<cod.getCartItems().size();x++) {

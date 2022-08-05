@@ -767,13 +767,11 @@ public class CartController {
                 }
             } 
         }  
-        
-        String storeId = cart.getStoreId();
-        
+         
         //check store voucher code if provided
         CustomerVoucher customerStoreVoucher = null;
         if (storeVoucherCode!=null && customerId!=null) {
-            customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(customerId, storeVoucherCode, new Date(), storeId);
+            customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(customerId, storeVoucherCode, new Date());
             if (customerStoreVoucher==null) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
                 response.setMessage("Voucher code " + storeVoucherCode + " not found");
@@ -948,7 +946,7 @@ public class CartController {
             //check store voucher if provided
             CustomerVoucher customerStoreVoucher = null;
             if (storeVoucherCode!=null && customerId!=null) {
-                customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(customerId, storeVoucherCode, new Date(), cart.getStoreId());
+                customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(customerId, storeVoucherCode, new Date());
                 if (customerStoreVoucher==null) {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
                     response.setMessage("Voucher code " + storeVoucherCode + " not found");

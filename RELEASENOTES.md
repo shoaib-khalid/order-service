@@ -1,10 +1,19 @@
 ##################################################
-# order-service-3.11.0-SNAPSHOT |4-Aug-2022
+# order-service-3.11.0-SNAPSHOT |5-Aug-2022
 ##################################################
 Build new feature : allow combined shipping from same store location
 Bug fix for mergeCartMultiple
+Allow multiple store for store_voucher
 
 ALTER TABLE order_payment_detail ADD isCombinedDelivery TINYINT(1) NOT NULL DEFAULT 0;
+
+CREATE TABLE voucher_store (
+id VARCHAR(50) PRIMARY KEY,
+voucherId VARCHAR(50),
+storeId VARCHAR(50),
+created_at DATETIME,
+updated_at DATETIME
+);
 
 
 ##################################################

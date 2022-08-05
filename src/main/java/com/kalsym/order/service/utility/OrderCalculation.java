@@ -14,6 +14,7 @@ import com.kalsym.order.service.model.Store;
 import com.kalsym.order.service.model.StoreCommission;
 import com.kalsym.order.service.model.CustomerVoucher;
 import com.kalsym.order.service.model.VoucherVertical;
+import com.kalsym.order.service.model.VoucherStore;
 import com.kalsym.order.service.model.object.Discount;
 import com.kalsym.order.service.model.object.DiscountVoucher;
 import com.kalsym.order.service.model.object.OrderObject;
@@ -117,7 +118,7 @@ public class OrderCalculation {
                 orderTotal.setGotError(Boolean.TRUE);
                 orderTotal.setErrorMessage("Voucher cannot be used for this store.");
                 return orderTotal;
-            }
+            }                        
             
             DiscountVoucher discountVoucher = VoucherDiscountCalculation.CalculateVoucherDiscount( deliveryCharge, orderTotal.getSubTotal(), customerPlatformVoucher, logprefix);                
             double subTotalDiscount=0.00;
@@ -192,13 +193,20 @@ public class OrderCalculation {
                 return orderTotal;
             }
             
-            //check store
-            if (!customerStoreVoucher.getVoucher().getStoreId().equals(cart.getStoreId())) {
-                //error, wrong store Id
+            //check store            
+            boolean storeValid=false;
+            for (int i=0;i<customerStoreVoucher.getVoucher().getVoucherStoreList().size();i++) {
+                VoucherStore voucherStore = customerStoreVoucher.getVoucher().getVoucherStoreList().get(i);
+                if (voucherStore.getStoreId().equals(cart.getStoreId())) {
+                    storeValid=true;
+                }
+            }
+            if (!storeValid) {
+                //error, not allow for this store
                 orderTotal.setGotError(Boolean.TRUE);
                 orderTotal.setErrorMessage("Voucher cannot be used for this store.");
                 return orderTotal;
-            }
+            }           
             
             DiscountVoucher discountVoucher = VoucherDiscountCalculation.CalculateVoucherDiscount(deliveryCharge, orderTotal.getSubTotal(), customerStoreVoucher, logprefix);                
             double subTotalDiscount=0.00;

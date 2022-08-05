@@ -47,8 +47,7 @@ public class Voucher implements Serializable {
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
     
-    private String name;       
-    private String storeId;    
+    private String name;           
     private Double discountValue;
     private Double maxDiscountAmount;
     private String voucherCode;
@@ -88,4 +87,9 @@ public class Voucher implements Serializable {
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "voucherId", insertable = false, updatable = false, nullable = true)
     private List<VoucherVertical> voucherVerticalList;
+    
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "voucherId", insertable = false, updatable = false, nullable = true)
+    private List<VoucherStore> voucherStoreList;
+
 }
