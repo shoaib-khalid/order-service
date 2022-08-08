@@ -197,7 +197,6 @@ public class GeneratePdfReport {
             
             for (int x=0;x<orderItemList.size();x++) {
                 OrderItem item = orderItemList.get(x);                
-                itemSubTable2.addCell(setStringCellValue(item.getProductName(), fontSmall, 1));  
                 
                 if (item.getProductVariant()!=null && !"".equals(item.getProductVariant()) && !"null".equals(item.getProductVariant())) {
                     itemSubTable2.addCell(setStringCellValue(item.getProductName() + "|" + item.getProductVariant(), fontSmall, 1)); 
