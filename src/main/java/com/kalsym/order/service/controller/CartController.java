@@ -581,7 +581,9 @@ public class CartController {
     @GetMapping(path = {"/{id}/weight"}, name = "carts-weight-by-id", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('carts-weight-by-id', 'all')")
     public ResponseEntity<HttpResponse> getWeightOfCart(HttpServletRequest request,
-            @PathVariable String id) {
+            @PathVariable String id,
+            @RequestParam(required = false) Boolean isCombinedDelivery
+            ) {
         String logprefix = request.getRequestURI() + " ";
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getWeightOfCart request");
@@ -592,8 +594,9 @@ public class CartController {
             List<CartItem> cartItems = cartItemRepository.findByCartId(id);
             
             Optional<Cart> cartOpt = cartRepository.findById(id);
+            Cart cart  = null;
             if (cartOpt.isPresent()) {
-                Cart cart  = cartOpt.get();
+                cart  = cartOpt.get();
                 cart.setStage(CartStage.DELIVERY_CALCULATED);
                 cartRepository.save(cart);
             }
@@ -643,15 +646,21 @@ public class CartController {
 
             //check if item reach max for motorcycle
             if (vehicleType==VehicleType.MOTORCYCLE) {
-                Optional<Cart> cart = cartRepository.findById(id);
-                Optional<StoreDeliveryDetail> storeDelivery = storeDeliveryDetailRepository.findByStoreId(cart.get().getStoreId());
+                Optional<StoreDeliveryDetail> storeDelivery = storeDeliveryDetailRepository.findByStoreId(cart.getStoreId());
                 if (totalPcs > storeDelivery.get().getMaxOrderQuantityForBike()) {
                     //convert to car
                     vehicleType=VehicleType.CAR;
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "TotalPcs:"+totalPcs+" is more than max for bike:"+storeDelivery.get().getMaxOrderQuantityForBike()+". Upgrade Vehicle type to CAR");
+                } else {
+                    //check if cart is combined delivery, if more than 10, convert to car
+                    if (isCombinedDelivery!=null && isCombinedDelivery && totalPcs>10) {
+                        //convert to car
+                        vehicleType=VehicleType.CAR;
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "TotalPcs:"+totalPcs+" is than 10 for combined delivery. Upgrade Vehicle type to CAR");
+                    }
                 }
             }
-        
+           
             class Weight {
 
                 Double totalWeight;
