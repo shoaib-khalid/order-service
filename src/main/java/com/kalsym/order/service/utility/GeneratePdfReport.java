@@ -25,6 +25,7 @@ import java.util.List;
 
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderItem;
+import com.kalsym.order.service.model.OrderSubItem;
 import com.kalsym.order.service.model.Store;
 import com.kalsym.order.service.model.StoreAssets;
 import com.kalsym.order.service.model.Customer;
@@ -196,7 +197,28 @@ public class GeneratePdfReport {
             
             for (int x=0;x<orderItemList.size();x++) {
                 OrderItem item = orderItemList.get(x);                
-                itemSubTable2.addCell(setStringCellValue(item.getProductName(), fontSmall, 1));                
+                itemSubTable2.addCell(setStringCellValue(item.getProductName(), fontSmall, 1));  
+                
+                if (item.getProductVariant()!=null && !"".equals(item.getProductVariant()) && !"null".equals(item.getProductVariant())) {
+                    itemSubTable2.addCell(setStringCellValue(item.getProductName() + "|" + item.getProductVariant(), fontSmall, 1)); 
+                } else if (item.getOrderSubItem()!=null) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "", "Order subitem size:"+item.getOrderSubItem().size());
+                    String subItemList = "";
+                    for (OrderSubItem subItem : item.getOrderSubItem()) {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "", "subitem product:"+subItem.getProductName());                
+                        if (subItem.getProductName()!=null) {
+                            if (subItemList.equals("")) {
+                                subItemList = subItem.getProductName();
+                            } else {
+                                subItemList = subItemList +" | "+subItem.getProductName();
+                            }
+                        }
+                    }
+                    itemSubTable2.addCell(setStringCellValue(item.getProductName() + "|" + subItemList, fontSmall, 1)); 
+                } else{
+                    itemSubTable2.addCell(setStringCellValue(item.getProductName(), fontSmall, 1)); 
+                }
+                
                 itemSubTable2.addCell(setNumberCellValue(String.format("%.2f",item.getProductPrice()),fontSmall, 1));                
                 itemSubTable2.addCell(setIntegerCellValue(String.valueOf(item.getQuantity()), fontSmall, 1));
                 itemSubTable2.addCell(setNumberCellValue(String.format("%.2f",item.getPrice()), fontSmall, 1));

@@ -2,6 +2,7 @@
 # order-service-3.11.1-SNAPSHOT |8-Aug-2022
 ##################################################
 Normalize phone number in orderShipmentDetails in OrderWorker() : append country code if phone number start with 0	
+Bug fix for item variant / combo details not showing in invoice PDF sent to customer via whatsapp
 
 ##DB Changes:
 ALTER TABLE region_country ADD countryCode VARCHAR(3);
