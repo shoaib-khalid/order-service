@@ -1,4 +1,15 @@
 ##################################################
+# order-service-3.11.1-SNAPSHOT |8-Aug-2022
+##################################################
+Normalize phone number in orderShipmentDetails in OrderWorker() : append country code if phone number start with 0	
+
+##DB Changes:
+ALTER TABLE region_country ADD countryCode VARCHAR(3);
+update region_country SET countryCode='60' where id='MYS';
+update region_country SET countryCode='92' where id='PAK';
+	
+	
+##################################################
 # order-service-3.11.0-SNAPSHOT |5-Aug-2022
 ##################################################
 Build new feature : allow combined shipping from same store location

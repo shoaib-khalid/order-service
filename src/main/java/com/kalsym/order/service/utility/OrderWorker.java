@@ -393,9 +393,13 @@ public class OrderWorker {
                      }
                 }
                 cod.getOrderShipmentDetails().setOrderId(order.getId());
+                if (cod.getOrderShipmentDetails().getPhoneNumber().startsWith("0")) {
+                    String countryCode = cart.getStore().getRegionCountry().getCountryCode();
+                    String customerMsisdn = countryCode + cod.getOrderShipmentDetails().getPhoneNumber().substring(1);
+                    cod.getOrderShipmentDetails().setPhoneNumber(customerMsisdn);               
+                }
                 order.setOrderShipmentDetail(orderShipmentDetailRepository.save(cod.getOrderShipmentDetails()));
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order shipment details inserted successfully: " + order.getOrderShipmentDetail().toString());
-                
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order shipment details inserted successfully: " + order.getOrderShipmentDetail().toString());                
                 
                 // saving order delivery type
                 order = orderRepository.save(order);
