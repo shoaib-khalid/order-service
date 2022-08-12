@@ -2,6 +2,7 @@
 # order-service-3.11.2-SNAPSHOT |12-Aug-2022
 ##################################################
 Copy alert for order reminder to kalsym staff
+Save trackingNumber in order_shipment_detail table
 
 ##Config Changes:
 order.reminder.copy.msisdn=60123593299,601139343018,60133639668
