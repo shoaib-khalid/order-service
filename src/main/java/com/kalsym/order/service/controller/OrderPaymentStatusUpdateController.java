@@ -280,6 +280,7 @@ public class OrderPaymentStatusUpdateController {
             OrderShipmentDetail orderShipmentDetail = orderShipmentDetailRepository.findByOrderId(orderId);
             orderShipmentDetail.setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
             orderShipmentDetail.setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
+            orderShipmentDetail.setTrackingNumber(deliveryOrder.getSpOrderId());
             orderShipmentDetailRepository.save(orderShipmentDetail);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: {} awaiting for pickup", orderId);
 
