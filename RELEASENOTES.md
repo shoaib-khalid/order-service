@@ -1,4 +1,13 @@
 ##################################################
+# order-service-3.11.2-SNAPSHOT |12-Aug-2022
+##################################################
+Copy alert for order reminder to kalsym staff
+
+##Config Changes:
+order.reminder.copy.msisdn=60123593299,601139343018,60133639668
+
+
+##################################################
 # order-service-3.11.1-SNAPSHOT |8-Aug-2022
 ##################################################
 Normalize phone number in orderShipmentDetails in OrderWorker() : append country code if phone number start with 0	
@@ -20,7 +29,7 @@ Allow multiple store for store_voucher
 
 ##DB Changes:
 
-ALTER TABLE order_payment_detail ADD isCombinedDelivery TINYINT(1) NOT NULL DEFAULT 0;
+ALTER TABLE order_payment_detail ADD isCombinedDelivery TINYINT(1) DEFAULT 0;
 
 CREATE TABLE `voucher_store` (
   `id` VARCHAR(50) NOT NULL,

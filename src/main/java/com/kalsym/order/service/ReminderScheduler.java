@@ -75,6 +75,9 @@ public class ReminderScheduler {
     @Value("${order.reminder.vertical:FNB,E-Commerce}")
     private String verticalToSend;
     
+    @Value("${order.reminder.copy.msisdn:60123593299,601139343018,60133639668}")
+    private String copyMsisdn;
+    
     @Scheduled(fixedRate = 300000)
     public void checkNotProcessOrder() throws Exception {
         if (isEnabled) {
@@ -125,6 +128,12 @@ public class ReminderScheduler {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderId:"+orderId+" InvoiceNo:"+invoiceId+" StoreName:"+storeName+" Reminder result:"+res);
                     if (res) {
                         orderRepository.UpdateTotalReminderSent(orderId);
+                    }
+                    String[] recipientList = copyMsisdn.split(",");
+                    for (int x=0;x<recipientList.length;x++) {
+                        String[] receiver = {recipientList[i]};
+                        boolean res2 = whatsappService.sendOrderReminder(receiver, storeName, invoiceId, orderId, merchantToken, updated);
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Copy Reminder to "+receiver+" OrderId:"+orderId+" InvoiceNo:"+invoiceId+" StoreName:"+storeName+" Reminder result:"+res2);                    
                     }
                 } else {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderId:"+orderId+" InvoiceNo:"+invoiceId+" StoreName:"+storeName+" Fail to get temp token");
