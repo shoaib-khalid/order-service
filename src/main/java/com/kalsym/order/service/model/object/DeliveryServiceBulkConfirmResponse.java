@@ -19,5 +19,5 @@ public class DeliveryServiceBulkConfirmResponse {
     public int deliveryProviderId;
     public String message;
     public boolean success;
- 
+    public String spOrderId;
 }

@@ -316,6 +316,7 @@ public class OrderProcessBulkThread extends Thread {
 
                     orderShipmentDetail.setMerchantTrackingUrl(deliveryResponse.customerTrackingUrl);
                     orderShipmentDetail.setCustomerTrackingUrl(deliveryResponse.customerTrackingUrl);
+                    orderShipmentDetail.setTrackingNumber(deliveryResponse.spOrderId);
                     orderShipmentDetailRepository.save(orderShipmentDetail);
 
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added tracking urls to orderId:" + orderId);

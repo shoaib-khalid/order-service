@@ -548,6 +548,7 @@ public class OrderProcessWorker {
 
                             orderShipmentDetail.setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
                             orderShipmentDetail.setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
+                            orderShipmentDetail.setTrackingNumber(deliveryOrder.getSpOrderId());
                             orderShipmentDetailRepository.save(orderShipmentDetail);
 
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added tracking urls to orderId:" + orderId);
