@@ -126,12 +126,10 @@ public class ReminderScheduler {
                 if (merchantToken!=null) {
                     boolean res = whatsappService.sendOrderReminder(recipients, storeName, invoiceId, orderId, merchantToken, updated);
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderId:"+orderId+" InvoiceNo:"+invoiceId+" StoreName:"+storeName+" Reminder result:"+res);
-                    if (res) {
-                        orderRepository.UpdateTotalReminderSent(orderId);
-                    }
+                    orderRepository.UpdateTotalReminderSent(orderId);
                     String[] recipientList = copyMsisdn.split(",");
                     for (int x=0;x<recipientList.length;x++) {
-                        String[] receiver = {recipientList[i]};
+                        String[] receiver = {recipientList[x]};
                         boolean res2 = whatsappService.sendOrderReminder(receiver, storeName, invoiceId, orderId, merchantToken, updated);
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Copy Reminder to "+receiver+" OrderId:"+orderId+" InvoiceNo:"+invoiceId+" StoreName:"+storeName+" Reminder result:"+res2);                    
                     }
