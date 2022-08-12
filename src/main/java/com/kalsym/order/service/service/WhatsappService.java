@@ -55,7 +55,7 @@ public class WhatsappService {
     
     public boolean sendOrderReminder(String[] recipients, String storeName, String invoiceNo, String orderId, String merchantToken, String updatedTime) throws Exception {
         //alert format : You have new order for store:{{1}} with invoiceNo:{{2}} updated at {{3}}
-        String logprefix = "sendWhatsappMessage";
+        String logprefix = "sendOrderReminder";
         RestTemplate restTemplate = new RestTemplate();        
         HttpHeaders headers = new HttpHeaders();
         WhatsappMessage request = new WhatsappMessage();
@@ -73,14 +73,20 @@ public class WhatsappService {
         HttpEntity<WhatsappMessage> httpEntity = new HttpEntity<>(request, headers);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
+        
+        try {
+            ResponseEntity<String> res = restTemplate.postForEntity(whatsappServiceUrl, httpEntity, String.class);
 
-        ResponseEntity<String> res = restTemplate.postForEntity(whatsappServiceUrl, httpEntity, String.class);
-
-        if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
-            return true;
-        } else {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + res, "");
+            if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
+                return true;
+            } else {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + res, "");
+                return false;
+            }
+        
+        } catch (Exception ex) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + ex.getMessage(), "");
             return false;
         }
 
@@ -111,9 +117,16 @@ public class WhatsappService {
             HttpEntity<WhatsappMessage> httpEntity = new HttpEntity<>(request, headers);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
-
-            res = restTemplate.postForEntity(whatsappServiceUrl, httpEntity, String.class);
+            
+            try {
+                res = restTemplate.postForEntity(whatsappServiceUrl, httpEntity, String.class);
+            
+            } catch (Exception ex) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendAdminAlert res: " + ex.getMessage(), "");
+                
+            }
         }
+        
         
         if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
@@ -122,6 +135,8 @@ public class WhatsappService {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendAdminAlert res: " + res, "");
             return false;
         }
+        
+       
 
     }
         
@@ -188,13 +203,20 @@ public class WhatsappService {
         HttpEntity<WhatsappMessage> httpEntity = new HttpEntity<>(request, headers);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
-        res = restTemplate.postForEntity(whatsappServiceUrl, httpEntity, String.class);
         
-        if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
-            return true;
-        } else {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendCustomerAlert res: " + res, "");
+        try {
+            res = restTemplate.postForEntity(whatsappServiceUrl, httpEntity, String.class);        
+
+            if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
+                return true;
+            } else {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendCustomerAlert res: " + res, "");
+                return false;
+            }
+        
+        } catch (Exception ex) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendCustomerAlert res: " + ex.getMessage(), "");
             return false;
         }
 
