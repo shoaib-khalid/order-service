@@ -38,8 +38,11 @@ public class WhatsappService {
     @Value("${whatsapp.service.push.url:https://waw.symplified.it/360dialog/callback/templatemessage/push}")
     private String whatsappServiceUrl;
     
-    @Value("${whatsapp.service.order.reminder.templatename:symplified_order_notification}")
+    @Value("${whatsapp.service.order.reminder.templatename:deliverin_process_new_order}")
     private String orderReminderTemplateName;
+    
+    @Value("${whatsapp.service.copy.reminder.templatename:symplified_order_notification}")
+    private String copyOrderReminderTemplateName;
     
     @Value("${whatsapp.service.order.reminder.refid:60133429331}")
     private String orderReminderRefId;
@@ -53,7 +56,7 @@ public class WhatsappService {
     @Value("${whatsapp.service.admin.msisdn:60133429331,60133731869}")
     private String adminMsisdn;
     
-    public boolean sendOrderReminder(String[] recipients, String storeName, String invoiceNo, String orderId, String merchantToken, String updatedTime) throws Exception {
+    public boolean sendOrderReminderMerchant(String[] recipients, String storeName, String invoiceNo, String orderId, String merchantToken, String updatedTime) throws Exception {
         //alert format : You have new order for store:{{1}} with invoiceNo:{{2}} updated at {{3}}
         String logprefix = "sendOrderReminder";
         RestTemplate restTemplate = new RestTemplate();        
@@ -73,16 +76,56 @@ public class WhatsappService {
         ButtonParameter buttonParameter1 = new ButtonParameter();
         buttonParameter1.setIndex(0);
         buttonParameter1.setSub_type("quick_reply");
-        String[] params = {orderId};
+        String[] params = {"ORDER_VIEW,"+orderId};
         buttonParameter1.setParameters(params);
         buttonParameters[0] = buttonParameter1;
         ButtonParameter buttonParameter2 = new ButtonParameter();
         buttonParameter2.setIndex(1);
         buttonParameter2.setSub_type("quick_reply");
-        String[] params2 = {orderId};
+        String[] params2 = {"ORDER_REJECT,"+orderId};
         buttonParameter2.setParameters(params2);
         buttonParameters[1] = buttonParameter2;
         template.setButtonParameters(buttonParameters);
+        request.setTemplate(template);
+        HttpEntity<WhatsappMessage> httpEntity = new HttpEntity<>(request, headers);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
+        
+        try {
+            ResponseEntity<String> res = restTemplate.postForEntity(whatsappServiceUrl, httpEntity, String.class);
+
+            if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
+                return true;
+            } else {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + res, "");
+                return false;
+            }
+        
+        } catch (Exception ex) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + ex.getMessage(), "");
+            return false;
+        }
+
+    }
+    
+    
+    public boolean sendOrderReminderCopy(String[] recipients, String storeName, String invoiceNo, String orderId, String merchantToken, String updatedTime) throws Exception {
+        //alert format : You have new order for store:{{1}} with invoiceNo:{{2}} updated at {{3}}
+        String logprefix = "sendCopyOrderReminder";
+        RestTemplate restTemplate = new RestTemplate();        
+        HttpHeaders headers = new HttpHeaders();
+        WhatsappMessage request = new WhatsappMessage();
+        request.setGuest(false);
+        request.setRecipientIds(recipients);
+        request.setRefId(recipients[0]);
+        request.setReferenceId(orderReminderRefId);
+        request.setOrderId(orderId);
+        request.setMerchantToken(merchantToken);
+        Template template = new Template();
+        template.setName(copyOrderReminderTemplateName);
+        String[] message = {storeName, invoiceNo, updatedTime};
+        template.setParameters(message);
         request.setTemplate(template);
         HttpEntity<WhatsappMessage> httpEntity = new HttpEntity<>(request, headers);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
