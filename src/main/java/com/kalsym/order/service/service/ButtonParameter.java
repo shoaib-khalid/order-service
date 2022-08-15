@@ -6,6 +6,7 @@
 package com.kalsym.order.service.service;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.io.Serializable;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,18 +14,15 @@ import lombok.ToString;
 
 /**
  *
- * @author saros
+ * @author taufik
  */
 @Getter
 @Setter
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @ToString
-public class Template { 
-    private String[] parameters;
-    private String[] parametersButton;
-    private ButtonParameter[] buttonParameters; //new field, more customize   
-    private String parametersDocument;
-    private String parametersDocumentFileName;
-    private String name;   
+public class ButtonParameter implements Serializable { 
+    private String sub_type;
+    private Integer index;
+    private String[] parameters;    
 }
