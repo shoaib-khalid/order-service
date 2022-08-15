@@ -77,10 +77,10 @@ public class WhatsappService {
         buttonParameter1.setParameters(params);
         buttonParameters[0] = buttonParameter1;
         ButtonParameter buttonParameter2 = new ButtonParameter();
-        buttonParameter2.setIndex(0);
+        buttonParameter2.setIndex(1);
         buttonParameter2.setSub_type("quick_reply");
         String[] params2 = {orderId};
-        buttonParameter1.setParameters(params2);
+        buttonParameter2.setParameters(params2);
         buttonParameters[1] = buttonParameter2;
         template.setButtonParameters(buttonParameters);
         request.setTemplate(template);
