@@ -56,6 +56,9 @@ public class WhatsappService {
     @Value("${whatsapp.service.admin.msisdn:60133429331,60133731869}")
     private String adminMsisdn;
     
+    @Value("${whatsapp.service.order.reminder.prefix:STG}")
+    private String orderReminderPrefix;
+    
     public boolean sendOrderReminderMerchant(String[] recipients, String storeName, String invoiceNo, String orderId, String merchantToken, String updatedTime) throws Exception {
         //alert format : You have new order for store:{{1}} with invoiceNo:{{2}} updated at {{3}}
         String logprefix = "sendOrderReminder";
@@ -76,13 +79,13 @@ public class WhatsappService {
         ButtonParameter buttonParameter1 = new ButtonParameter();
         buttonParameter1.setIndex(0);
         buttonParameter1.setSub_type("quick_reply");
-        String[] params = {"ORDER_VIEW,"+orderId};
+        String[] params = {orderReminderPrefix+"_ORDER_VIEW,"+orderId};
         buttonParameter1.setParameters(params);
         buttonParameters[0] = buttonParameter1;
         ButtonParameter buttonParameter2 = new ButtonParameter();
         buttonParameter2.setIndex(1);
         buttonParameter2.setSub_type("quick_reply");
-        String[] params2 = {"ORDER_REJECT,"+orderId};
+        String[] params2 = {orderReminderPrefix+"_ORDER_REJECT,"+orderId};
         buttonParameter2.setParameters(params2);
         buttonParameters[1] = buttonParameter2;
         template.setButtonParameters(buttonParameters);
