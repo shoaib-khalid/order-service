@@ -743,9 +743,11 @@ public class CartController {
         
         //check platform voucher code if provided
         CustomerVoucher customerPlatformVoucher = null;
-        if (voucherCode!=null && customerId!=null) {
-            //check voucher
-            customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(customerId, voucherCode, new Date());
+        if (voucherCode!=null) {
+            //check claimed voucher
+            if (customerId!=null) {
+                customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(customerId, voucherCode, new Date());
+            }
             if (customerPlatformVoucher==null) {
                 //find guest voucher
                 Voucher guestVoucher = customerVoucherRepository.findGuestPlatformVoucherByCode(voucherCode, new Date());
@@ -779,12 +781,40 @@ public class CartController {
          
         //check store voucher code if provided
         CustomerVoucher customerStoreVoucher = null;
-        if (storeVoucherCode!=null && customerId!=null) {
-            customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(customerId, storeVoucherCode, new Date());
-            if (customerStoreVoucher==null) {
-                response.setStatus(HttpStatus.NOT_FOUND.value());
-                response.setMessage("Voucher code " + storeVoucherCode + " not found");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        if (storeVoucherCode!=null) {
+            //check claimed voucher
+            if (customerId!=null) {
+                customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(customerId, storeVoucherCode, new Date());
+            }            
+            if (customerStoreVoucher==null) {                
+                //find guest voucher
+                Voucher guestVoucher = customerVoucherRepository.findGuestStoreVoucherByCode(storeVoucherCode, new Date());
+                if (guestVoucher!=null) {
+                    //check if already redeem
+                    List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(email, guestVoucher.getId());
+                    if (usedVoucherList.size()>0) {                        
+                        CustomerVoucher usedVoucher = usedVoucherList.get(0);
+                        if (usedVoucher.getIsUsed()) {
+                            //already used
+                            response.setStatus(HttpStatus.NOT_FOUND.value());
+                            response.setMessage("Voucher code " + voucherCode + " already used");
+                            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                        }
+                    } else {
+                        customerStoreVoucher = new CustomerVoucher();
+                        customerStoreVoucher.setGuestEmail(email);
+                        customerStoreVoucher.setIsUsed(false);
+                        customerStoreVoucher.setVoucherId(guestVoucher.getId());
+                        customerStoreVoucher.setCreated(new Date());
+                        customerStoreVoucher.setGuestVoucher(true);
+                        customerVoucherRepository.save(customerStoreVoucher);
+                    }
+                } else {
+                    response.setStatus(HttpStatus.NOT_FOUND.value());
+                    response.setMessage("Voucher code " + voucherCode + " not found");
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                }
+                
             } 
         }   
         
