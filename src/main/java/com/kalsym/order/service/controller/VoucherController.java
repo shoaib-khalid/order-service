@@ -86,6 +86,7 @@ public class VoucherController {
     public ResponseEntity<HttpResponse> getAvailableVoucher(HttpServletRequest request,
             @RequestParam(required = false) VoucherType voucherType,
             @RequestParam(required = false) String verticalCode,
+            @RequestParam(required = false) String voucherCode,
             @RequestParam(required = false) String storeId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize
@@ -105,7 +106,7 @@ public class VoucherController {
                 .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
         Example<Voucher> example = Example.of(voucherMatch, matcher);
         
-        Specification voucherSpec = VoucherSearchSpecs.getSpecWithDatesBetween(new Date(), voucherType, storeId, verticalCode, example );
+        Specification voucherSpec = VoucherSearchSpecs.getSpecWithDatesBetween(new Date(), voucherType, storeId, verticalCode, voucherCode, example );
         Page<Voucher> voucherWithPage = voucherRepository.findAll(voucherSpec, pageable);
         
         response.setSuccessStatus(HttpStatus.OK);

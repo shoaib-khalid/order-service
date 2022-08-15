@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.11.3-SNAPSHOT |15-Aug-2022
+##################################################
+Add new request parameter in getAvailableVoucher : voucherCode
+
+
+##################################################
 # order-service-3.11.2-SNAPSHOT |12-Aug-2022
 ##################################################
 Copy alert for order reminder to kalsym staff

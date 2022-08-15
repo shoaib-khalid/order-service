@@ -46,6 +46,7 @@ public class VoucherSearchSpecs {
     public static Specification<Voucher> getSpecWithDatesBetween(
             Date currentDate, 
             VoucherType voucherType, String storeId, String verticalCode,
+            String voucherCode,
             Example<Voucher> example) {
 
         return (Specification<Voucher>) (root, query, builder) -> {
@@ -73,6 +74,10 @@ public class VoucherSearchSpecs {
             
             if (verticalCode!=null) {
                 predicates.add(builder.equal(voucherVertical.get("verticalCode"), verticalCode));
+            } 
+            
+            if (voucherCode!=null) {
+                predicates.add(builder.equal(root.get("voucherCode"), voucherCode));
             } 
             
             Predicate predicateForTotalRedeem = builder.lessThanOrEqualTo(root.get("totalRedeem"), root.get("totalQuantity"));
