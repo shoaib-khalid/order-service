@@ -754,23 +754,31 @@ public class CartController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform Guest Voucher:"+guestVoucher);
                 if (guestVoucher!=null) {
                     //check if already redeem
-                    List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(email, guestVoucher.getId());
-                    if (usedVoucherList.size()>0) {                        
-                        CustomerVoucher usedVoucher = usedVoucherList.get(0);
-                        if (usedVoucher.getIsUsed()) {
-                            //already used
-                            response.setStatus(HttpStatus.NOT_FOUND.value());
-                            response.setMessage("Voucher code " + voucherCode + " already used");
-                            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                    if (email!=null) {
+                        List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(email, guestVoucher.getId());
+                        if (usedVoucherList.size()>0) {                        
+                            CustomerVoucher usedVoucher = usedVoucherList.get(0);
+                            if (usedVoucher.getIsUsed()) {
+                                //already used
+                                response.setStatus(HttpStatus.NOT_FOUND.value());
+                                response.setMessage("Voucher code " + voucherCode + " already used");
+                                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                            } else {
+                                customerPlatformVoucher = usedVoucher;
+                            }
+                        } else {
+                            customerPlatformVoucher = new CustomerVoucher();
+                            customerPlatformVoucher.setGuestEmail(email);
+                            customerPlatformVoucher.setIsUsed(false);
+                            customerPlatformVoucher.setVoucherId(guestVoucher.getId());
+                            customerPlatformVoucher.setCreated(new Date());
+                            customerPlatformVoucher.setGuestVoucher(true);
+                            customerVoucherRepository.save(customerPlatformVoucher);
                         }
                     } else {
-                        customerPlatformVoucher = new CustomerVoucher();
-                        customerPlatformVoucher.setGuestEmail(email);
-                        customerPlatformVoucher.setIsUsed(false);
-                        customerPlatformVoucher.setVoucherId(guestVoucher.getId());
-                        customerPlatformVoucher.setCreated(new Date());
-                        customerPlatformVoucher.setGuestVoucher(true);
-                        customerVoucherRepository.save(customerPlatformVoucher);
+                        response.setStatus(HttpStatus.NOT_FOUND.value());
+                        response.setMessage("Please insert email");
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                     }
                 } else {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
@@ -794,23 +802,31 @@ public class CartController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store Guest Voucher:"+guestVoucher);
                 if (guestVoucher!=null) {
                     //check if already redeem
-                    List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(email, guestVoucher.getId());
-                    if (usedVoucherList.size()>0) {                        
-                        CustomerVoucher usedVoucher = usedVoucherList.get(0);
-                        if (usedVoucher.getIsUsed()) {
-                            //already used
-                            response.setStatus(HttpStatus.NOT_FOUND.value());
-                            response.setMessage("Voucher code " + voucherCode + " already used");
-                            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                    if (email!=null) {
+                        List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(email, guestVoucher.getId());
+                        if (usedVoucherList.size()>0) {                        
+                            CustomerVoucher usedVoucher = usedVoucherList.get(0);
+                            if (usedVoucher.getIsUsed()) {
+                                //already used
+                                response.setStatus(HttpStatus.NOT_FOUND.value());
+                                response.setMessage("Voucher code " + voucherCode + " already used");
+                                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                            } else {
+                                customerStoreVoucher = usedVoucher;
+                            }
+                        } else {
+                            customerStoreVoucher = new CustomerVoucher();
+                            customerStoreVoucher.setGuestEmail(email);
+                            customerStoreVoucher.setIsUsed(false);
+                            customerStoreVoucher.setVoucherId(guestVoucher.getId());
+                            customerStoreVoucher.setCreated(new Date());
+                            customerStoreVoucher.setGuestVoucher(true);
+                            customerVoucherRepository.save(customerStoreVoucher);
                         }
                     } else {
-                        customerStoreVoucher = new CustomerVoucher();
-                        customerStoreVoucher.setGuestEmail(email);
-                        customerStoreVoucher.setIsUsed(false);
-                        customerStoreVoucher.setVoucherId(guestVoucher.getId());
-                        customerStoreVoucher.setCreated(new Date());
-                        customerStoreVoucher.setGuestVoucher(true);
-                        customerVoucherRepository.save(customerStoreVoucher);
+                        response.setStatus(HttpStatus.NOT_FOUND.value());
+                        response.setMessage("Please insert email");
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                     }
                 } else {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
@@ -820,7 +836,7 @@ public class CartController {
                 
             } 
         }   
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store voucher:"+customerPlatformVoucher);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store voucher:"+customerStoreVoucher);
         
         //get delivery charges from delivery-service
         if (deliveryQuotationId!=null) {
