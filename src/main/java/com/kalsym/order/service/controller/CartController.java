@@ -778,6 +778,7 @@ public class CartController {
                 }
             } 
         }  
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher:"+customerPlatformVoucher.toString());
          
         //check store voucher code if provided
         CustomerVoucher customerStoreVoucher = null;
@@ -817,6 +818,7 @@ public class CartController {
                 
             } 
         }   
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store voucher:"+customerPlatformVoucher.toString());
         
         //get delivery charges from delivery-service
         if (deliveryQuotationId!=null) {
@@ -869,7 +871,7 @@ public class CartController {
                 discount.setVoucherDiscountCalculationValue(orderTotalObject.getVoucherDiscountCalculationValue());
             }
             
-             if (customerStoreVoucher!=null) {
+            if (customerStoreVoucher!=null) {
                 discount.setStoreVoucherSubTotalDiscount(orderTotalObject.getStoreVoucherSubTotalDiscount());
                 discount.setStoreVoucherSubTotalDiscountDescription(orderTotalObject.getStoreVoucherSubTotalDiscountDescription());
                 discount.setStoreVoucherDeliveryDiscount(orderTotalObject.getStoreVoucherDeliveryDiscount());
