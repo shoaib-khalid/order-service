@@ -751,6 +751,7 @@ public class CartController {
             if (customerPlatformVoucher==null) {
                 //find guest voucher
                 Voucher guestVoucher = customerVoucherRepository.findGuestPlatformVoucherByCode(voucherCode, new Date());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform Guest Voucher:"+guestVoucher);
                 if (guestVoucher!=null) {
                     //check if already redeem
                     List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(email, guestVoucher.getId());
@@ -773,12 +774,12 @@ public class CartController {
                     }
                 } else {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
-                    response.setMessage("Voucher code " + voucherCode + " not found");
+                    response.setMessage("Platform Voucher code " + voucherCode + " not found");
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                 }
             } 
         }  
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher:"+customerPlatformVoucher.toString());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher:"+customerPlatformVoucher);
          
         //check store voucher code if provided
         CustomerVoucher customerStoreVoucher = null;
@@ -790,6 +791,7 @@ public class CartController {
             if (customerStoreVoucher==null) {                
                 //find guest voucher
                 Voucher guestVoucher = customerVoucherRepository.findGuestStoreVoucherByCode(storeVoucherCode, new Date());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store Guest Voucher:"+guestVoucher);
                 if (guestVoucher!=null) {
                     //check if already redeem
                     List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(email, guestVoucher.getId());
@@ -812,13 +814,13 @@ public class CartController {
                     }
                 } else {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
-                    response.setMessage("Voucher code " + voucherCode + " not found");
+                    response.setMessage("Store Voucher code " + voucherCode + " not found");
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                 }
                 
             } 
         }   
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store voucher:"+customerPlatformVoucher.toString());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store voucher:"+customerPlatformVoucher);
         
         //get delivery charges from delivery-service
         if (deliveryQuotationId!=null) {
