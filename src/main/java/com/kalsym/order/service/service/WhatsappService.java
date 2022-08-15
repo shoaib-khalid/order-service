@@ -41,7 +41,7 @@ public class WhatsappService {
     @Value("${whatsapp.service.order.reminder.templatename:deliverin_process_new_order}")
     private String orderReminderTemplateName;
     
-    @Value("${whatsapp.service.copy.reminder.templatename:symplified_order_notification}")
+    @Value("${whatsapp.service.copy.reminder.templatename:symplified_new_order_notification}")
     private String copyOrderReminderTemplateName;
     
     @Value("${whatsapp.service.order.reminder.refid:60133429331}")
