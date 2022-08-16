@@ -1067,6 +1067,7 @@ public class OrderController {
         double sumAppliedDiscount=0.00;
         double sumDeliveryDiscount=0.00;
         double sumStoreServiceCharges=0.00;
+        double sumStoreVoucherDiscount=0.00;
         String paymentType=StorePaymentType.ONLINEPAYMENT.name();
         boolean gotCartItemDiscount=false;
         Map<String, Double> combinedDeliveryFeeMap = new HashMap<String, Double>();
@@ -1117,12 +1118,15 @@ public class OrderController {
                 sumDeliveryCharges = sumDeliveryCharges + orderCreated.getDeliveryCharges();
             }
             sumStoreServiceCharges = sumStoreServiceCharges + orderCreated.getStoreServiceCharges();
-            orderTotal = orderTotal + orderCreated.getTotal();
+            //move to below orderTotal = orderTotal + orderCreated.getTotal();
             if (orderCreated.getAppliedDiscount()!=null) {
                 sumAppliedDiscount = sumAppliedDiscount + orderCreated.getAppliedDiscount();
             }
             if (orderCreated.getDeliveryDiscount()!=null) {
                 sumDeliveryDiscount = sumDeliveryDiscount + orderCreated.getDeliveryDiscount();
+            }
+            if (orderCreated.getStoreVoucherDiscount()!=null) {
+                sumStoreVoucherDiscount = sumStoreVoucherDiscount + orderCreated.getStoreVoucherDiscount();
             }
             orderCreatedList.add(orderCreated);
             paymentType = orderCreated.getPaymentType();
@@ -1142,6 +1146,9 @@ public class OrderController {
             response.setMessage(groupTotal.getErrorMessage());
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
+        
+        //calculate grand total
+        orderTotal = sumCartSubTotal - sumAppliedDiscount + sumStoreServiceCharges + sumDeliveryCharges - sumDeliveryDiscount - sumStoreVoucherDiscount;
         
         if (groupTotal.getVoucherId()!=null) {
             double platformVoucherDiscountAmt = groupTotal.getVoucherDiscount();
