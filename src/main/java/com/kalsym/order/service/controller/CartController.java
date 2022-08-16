@@ -994,7 +994,7 @@ public class CartController {
             if (deliveryQuotationId!=null) {
                 DeliveryQuotation deliveryQuotation = deliveryService.getDeliveryQuotation(deliveryQuotationId);
                 deliveryCharge = deliveryQuotation.getAmount();
-                if (deliveryQuotation.getIsCombinedDelivery()!=null && deliveryQuotation.getIsCombinedDelivery()) {
+                if (deliveryQuotation.getCombinedDelivery()!=null && deliveryQuotation.getCombinedDelivery()) {
                    combinedDeliveryFeeMap.put(deliveryQuotationId, deliveryCharge); 
                 } else {
                     groupDeliveryCharge = groupDeliveryCharge + deliveryCharge;

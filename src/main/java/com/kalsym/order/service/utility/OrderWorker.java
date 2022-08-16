@@ -293,8 +293,8 @@ public class OrderWorker {
                     VehicleType vehicleType = deliveryQuotation.getVehicleType();
                     String fulfillmentType = deliveryQuotation.getFulfillmentType();
                     cod.getOrderPaymentDetails().setDeliveryQuotationAmount(deliveryCharge);
-                    if (deliveryQuotation.getIsCombinedDelivery()!=null) {
-                        cod.getOrderPaymentDetails().setIsCombinedDelivery(deliveryQuotation.getIsCombinedDelivery());                    
+                    if (deliveryQuotation.getCombinedDelivery()!=null) {
+                        cod.getOrderPaymentDetails().setIsCombinedDelivery(deliveryQuotation.getCombinedDelivery());                    
                     } else {
                         cod.getOrderPaymentDetails().setIsCombinedDelivery(false);                    
                     }
