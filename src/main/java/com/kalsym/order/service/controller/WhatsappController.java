@@ -154,6 +154,10 @@ public class WhatsappController {
                     replyId = listReply.get("id").getAsString();
                     replyTitle = listReply.get("title").getAsString();
                 }
+            } else if (type.equals("button")) {
+                JsonObject button = messages.get("button").getAsJsonObject();
+                replyId = button.get("payload").getAsString();
+                replyTitle = button.get("text").getAsString();
             }            
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Incoming message. Msisdn:"+phone+" UserReply: " + replyId+" -> "+replyTitle);        
         } else {
