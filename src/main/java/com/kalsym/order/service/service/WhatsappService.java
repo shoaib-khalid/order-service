@@ -46,8 +46,14 @@ import java.util.List;
 @Service
 public class WhatsappService {
         
-    @Value("${whatsapp.service.push.url:https://waw.symplified.it/360dialog/callback/templatemessage/push}")
+    @Value("${whatsapp.service.push.url:https://api.symplified.it/whatsapp-java-service/v1/templatemessage/push}")
     private String whatsappServiceUrl;
+    
+    @Value("${whatsapp.service.push.url:https://api.symplified.it/whatsapp-java-service/v1/interactive/push}")
+    private String whatsappServiceInteractiveUrl;
+    
+    @Value("${whatsapp.service.push.url:https://api.symplified.it/whatsapp-java-service/v1/interactive/notification}")
+    private String whatsappServiceNotificationUrl;
     
     @Value("${whatsapp.service.order.reminder.templatename:deliverin_process_new_order}")
     private String orderReminderTemplateName;
@@ -314,7 +320,7 @@ public class WhatsappService {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
         
         try {
-            ResponseEntity<String> res = restTemplate.postForEntity(whatsappServiceUrl, httpEntity, String.class);
+            ResponseEntity<String> res = restTemplate.postForEntity(whatsappServiceInteractiveUrl, httpEntity, String.class);
 
             if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
