@@ -16,7 +16,13 @@
  */
 package com.kalsym.order.service.service;
 
+import com.kalsym.order.service.service.whatsapp.WhatsappMessage;
 import com.kalsym.order.service.OrderServiceApplication;
+import com.kalsym.order.service.model.OrderItem;
+import com.kalsym.order.service.model.OrderSubItem;
+import com.kalsym.order.service.service.whatsapp.Action;
+import com.kalsym.order.service.service.whatsapp.Body;
+import com.kalsym.order.service.service.whatsapp.Button;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -26,6 +32,11 @@ import org.springframework.web.client.RestTemplate;
 import com.kalsym.order.service.utility.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.kalsym.order.service.service.whatsapp.WhatsappInteractiveMessage;
+import com.kalsym.order.service.service.whatsapp.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -56,8 +67,8 @@ public class WhatsappService {
     @Value("${whatsapp.service.admin.msisdn:60133429331,60133731869}")
     private String adminMsisdn;
     
-    @Value("${whatsapp.service.order.reminder.prefix:STG}")
-    private String orderReminderPrefix;
+    @Value("${whatsapp.button.reply.prefix:STG}")
+    private String orderButtonReplyPrefix;
     
     public boolean sendOrderReminderMerchant(String[] recipients, String storeName, String invoiceNo, String orderId, String merchantToken, String updatedTime) throws Exception {
         //alert format : You have new order for store:{{1}} with invoiceNo:{{2}} updated at {{3}}
@@ -79,13 +90,13 @@ public class WhatsappService {
         ButtonParameter buttonParameter1 = new ButtonParameter();
         buttonParameter1.setIndex(0);
         buttonParameter1.setSub_type("quick_reply");
-        String[] params = {orderReminderPrefix+"_ORDER_VIEW,"+orderId};
+        String[] params = {orderButtonReplyPrefix+"_ORDER_VIEW,"+orderId};
         buttonParameter1.setParameters(params);
         buttonParameters[0] = buttonParameter1;
         ButtonParameter buttonParameter2 = new ButtonParameter();
         buttonParameter2.setIndex(1);
         buttonParameter2.setSub_type("quick_reply");
-        String[] params2 = {orderReminderPrefix+"_ORDER_REJECT,"+orderId};
+        String[] params2 = {orderButtonReplyPrefix+"_ORDER_REJECT,"+orderId};
         buttonParameter2.setParameters(params2);
         buttonParameters[1] = buttonParameter2;
         template.setButtonParameters(buttonParameters);
@@ -280,5 +291,100 @@ public class WhatsappService {
             return false;
         }
 
+    }
+    
+    
+   public boolean sendViewOrderResponse(String[] recipients, String orderId, String invoiceNo, List<OrderItem> orderItems ) throws Exception {
+        String logprefix = "sendViewOrderResponse";
+        RestTemplate restTemplate = new RestTemplate();        
+        HttpHeaders headers = new HttpHeaders();
+        
+        WhatsappInteractiveMessage request = new WhatsappInteractiveMessage();
+        request.setGuest(false);
+        request.setRecipientIds(recipients);
+        request.setRefId(recipients[0]);
+        request.setReferenceId(orderId);
+        request.setOrderId(orderId);
+        
+        Interactive  interactiveMsg = GenerateViewOrderMessage(orderId, invoiceNo, orderItems);
+        request.setInteractive(interactiveMsg);
+        
+        HttpEntity<WhatsappInteractiveMessage> httpEntity = new HttpEntity<>(request, headers);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
+        
+        try {
+            ResponseEntity<String> res = restTemplate.postForEntity(whatsappServiceUrl, httpEntity, String.class);
+
+            if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
+                return true;
+            } else {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + res, "");
+                return false;
+            }
+        
+        } catch (Exception ex) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + ex.getMessage(), "");
+            return false;
+        }
+
+    }
+    
+    
+    public Interactive GenerateViewOrderMessage(String orderId, String invoiceNo, List<OrderItem> orderItems) {
+        
+        Interactive interactiveMsg = new Interactive();
+        
+        String headerText = invoiceNo;
+        Header header = new Header();
+        header.setType("text");
+        header.setText(headerText);
+                 
+        String bodyText = null;
+        String itemList = "";
+        for (OrderItem oi : orderItems) {
+            String itemName = "";
+            if (oi.getProductVariant()!=null && !"".equals(oi.getProductVariant()) && !"null".equals(oi.getProductVariant())) {
+                itemName = oi.getProductName()+" | "+oi.getProductVariant();
+            } else if (oi.getOrderSubItem()!=null) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "", "Order subitem size:"+oi.getOrderSubItem().size());
+                String subItemList = "";
+                for (OrderSubItem subItem : oi.getOrderSubItem()) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "", "subitem product:"+subItem.getProductName());                
+                    if (subItem.getProductName()!=null) {
+                        if (subItemList.equals("")) {
+                            subItemList = subItem.getProductName();
+                        } else {
+                            subItemList = subItemList +" | "+subItem.getProductName();
+                        }
+                    }
+                }
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "", "combo item product:"+oi.getProductName());                
+                itemName = oi.getProductName()+" | "+subItemList;
+            } else{
+                itemName = oi.getProductName();
+            }
+            int quantity = oi.getQuantity();            
+            itemList = itemList + itemName + " = " + quantity;
+        }
+        bodyText = itemList;       
+        Body body = new Body();        
+        body.setText(bodyText);
+        
+        List<Button> buttonList = new ArrayList<>();                         
+        Button button1 = new Button(new Reply(orderButtonReplyPrefix+"_ORDER_PROCESS,"+orderId, "Process Order"));
+        Button button2 = new Button(new Reply(orderButtonReplyPrefix+"_ORDER_CANCEL,"+orderId, "Cancel Order"));
+        buttonList.add(button1);
+        buttonList.add(button2);
+        Action action = new Action();
+        action.setButtons(buttonList);
+                      
+        interactiveMsg.setHeader(header);
+        interactiveMsg.setAction(action);
+        interactiveMsg.setType("button");
+        interactiveMsg.setBody(body);
+                
+        return interactiveMsg;
     }
 }

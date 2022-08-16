@@ -3,9 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.kalsym.order.service.service;
+package com.kalsym.order.service.service.whatsapp;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.kalsym.order.service.service.Template;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
