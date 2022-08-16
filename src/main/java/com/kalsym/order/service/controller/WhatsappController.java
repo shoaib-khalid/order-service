@@ -169,7 +169,7 @@ public class WhatsappController {
         }
         
         //route to whatsapp-java-service
-        if (type.equals("interactive")) {
+        if (replyId!=null && !replyId.equals("")) {
             String[] temp = replyId.split(",");
             String replyAction = temp[0];
             String orderId = temp[1];
