@@ -125,7 +125,7 @@ public class WhatsappController {
     RegionCountriesRepository regionCountriesRepository;
     
     @Value("${whatsapp.process.order.URL:https://api.symplified.it/order-service/v1/orders/%orderId%/completion-status-updates}")
-    private String processOrderUrl;
+    String processOrderUrl;
     
     @PostMapping(path = {"/receive"}, name = "webhook-post")
     public ResponseEntity<HttpResponse> webhook(HttpServletRequest request, @RequestBody String json) throws Exception {
@@ -302,12 +302,14 @@ public class WhatsappController {
         headers.add("Authorization", "Bearer accessToken");
          
         HttpEntity<OrderCompletionStatusUpdate> httpEntity = new HttpEntity<>(request, headers);
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + processOrderUrl, "");
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
         
         try {
-            processOrderUrl = processOrderUrl.replaceAll("%orderId%", orderId);
-            ResponseEntity<String> res = restTemplate.exchange(processOrderUrl, HttpMethod.PUT, httpEntity, String.class);
+            String url = processOrderUrl.replaceAll("%orderId%", orderId);
+        
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + processOrderUrl, "");
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
+        
+            ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.PUT, httpEntity, String.class);
 
             if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
