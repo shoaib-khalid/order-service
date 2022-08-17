@@ -488,6 +488,7 @@ public class WhatsappService {
         interactiveMsg.setAction(action);
         interactiveMsg.setType("button");
         interactiveMsg.setBody(body);
+        request.setInteractive(interactiveMsg);
         
         HttpEntity<WhatsappNotificationMessage> httpEntity = new HttpEntity<>(request, headers);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceInteractiveUrl, "");
@@ -599,6 +600,7 @@ public class WhatsappService {
         interactiveMsg.setAction(action);
         interactiveMsg.setType("button");
         interactiveMsg.setBody(body);
+        request.setInteractive(interactiveMsg);
         
         HttpEntity<WhatsappInteractiveMessage> httpEntity = new HttpEntity<>(request, headers);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceInteractiveUrl, "");
