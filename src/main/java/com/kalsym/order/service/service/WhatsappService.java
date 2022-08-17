@@ -390,10 +390,19 @@ public class WhatsappService {
             itemList = itemList + itemCount+". " + itemName + " : *[" + quantity + "]*\n";
             itemCount++;
         }
-        itemList = itemList + "\nTotal Order : *"+Utilities.Round2DecimalPoint(order.getTotal())+"*";  
+        String currency="RM";
+        if (order.getStore().getRegionCountryId().equals("MYS")) {
+            currency="RM";
+        } else {
+            currency="Rs";
+        }
+        itemList = itemList + "\nTotal Order : *"+currency+Utilities.Round2DecimalPoint(order.getTotal())+"*";  
         itemList = itemList + "\nOrder Date : *"+orderTime+"*";
         itemList = itemList + "\nDelivery Type : *"+ConvertDeliveryType(order)+"*";
         itemList = itemList + "\nCustomer : *"+ConvertCustomerInfo(order)+"*";
+        if (order.getCustomerNotes()!=null) {
+            itemList = itemList + "\nCustomerNotes : *"+ConvertCustomerNotes(order.getCustomerNotes())+"*";
+        }
         bodyText = itemList;
         Body body = new Body();        
         body.setText(bodyText);
@@ -698,5 +707,12 @@ public class WhatsappService {
             customerName = customerName.substring(0,10);
         }
         return customerName + "("+customerContact+")";
+    }
+    
+    private String ConvertCustomerNotes(String notes) {
+        if (notes.length()>20) {
+            notes = notes.substring(0,20);
+        }
+        return notes;
     }
 }
