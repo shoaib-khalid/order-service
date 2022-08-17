@@ -94,9 +94,6 @@ public class OrderGroupController {
         }
         
         OrderGroup orderGroup = optOrderGroup.get();
-        //get region country id from one of the order
-        String regionCountryId = orderGroup.getOrderList().get(0).getStore().getRegionCountryId();
-        orderGroup.setRegionCountryId(regionCountryId);
         
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(orderGroup);

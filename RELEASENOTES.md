@@ -1,7 +1,11 @@
 ##################################################
-# order-service-3.11.3-SNAPSHOT |15-Aug-2022
+# order-service-3.11.3-SNAPSHOT |17-Aug-2022
 ##################################################
 Add new request parameter in getAvailableVoucher : voucherCode
+Add new field regionCountryId in order_group
+
+##DB changes:
+ALTER TABLE order_group ADD regionCountryId varchar(3) default 'MYS';
 
 
 ##################################################

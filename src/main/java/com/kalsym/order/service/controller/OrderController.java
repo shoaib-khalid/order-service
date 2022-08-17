@@ -891,6 +891,7 @@ public class OrderController {
                 orderGroup.setPaymentStatus("PENDING");
                 orderGroup.setPaidAmount(0.00);
             }
+            orderGroup.setRegionCountryId(storeWithDetials.getRegionCountryId());
             
             orderGroupRepository.save(orderGroup);
             
@@ -1072,6 +1073,7 @@ public class OrderController {
         boolean gotCartItemDiscount=false;
         Map<String, Double> combinedDeliveryFeeMap = new HashMap<String, Double>();
         
+        String regionCountryId="MYS";
         for (int i=0;i<codList.length;i++) {
             COD cod = codList[i];
             String cartId = cod.getCartId();
@@ -1130,6 +1132,7 @@ public class OrderController {
             }
             orderCreatedList.add(orderCreated);
             paymentType = orderCreated.getPaymentType();
+            regionCountryId = optStore.get().getRegionCountryId();
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Created SubTotal:"+orderCreated.getSubTotal()+" deliverFee:"+orderCreated.getDeliveryCharges()+" svcCharge:"+orderCreated.getStoreServiceCharges()+" Total:"+orderCreated.getTotal());
         }       
         for (Map.Entry<String, Double> combinedDelivery :
@@ -1174,6 +1177,7 @@ public class OrderController {
         orderGroup.setShipmentEmail(orderShipmentDetail.getEmail());
         orderGroup.setShipmentName(orderShipmentDetail.getReceiverName());
         orderGroup.setShipmentPhoneNumber(orderShipmentDetail.getPhoneNumber());
+        orderGroup.setRegionCountryId(regionCountryId);
         if (paymentType.equals(StorePaymentType.COD.name())) {
             orderGroup.setPaymentStatus("PAID");
             orderGroup.setPaidAmount(sumTotal);
