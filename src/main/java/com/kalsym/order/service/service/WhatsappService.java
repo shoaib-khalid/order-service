@@ -318,7 +318,7 @@ public class WhatsappService {
         request.setInteractive(interactiveMsg);
         
         HttpEntity<WhatsappInteractiveMessage> httpEntity = new HttpEntity<>(request, headers);
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceInteractiveUrl, "");
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
         
         try {
@@ -382,6 +382,7 @@ public class WhatsappService {
         itemList = itemList + "\nOrder Date : *"+orderTime+"*";
         itemList = itemList + "\nDelivery Type : *"+ConvertDeliveryType(order)+"*";
         itemList = itemList + "\nCustomer : *"+ConvertCustomerInfo(order)+"*";
+        bodyText = itemList;
         Body body = new Body();        
         body.setText(bodyText);
         
@@ -428,7 +429,7 @@ public class WhatsappService {
         request.setInteractive(interactiveMsg);
         
         HttpEntity<WhatsappNotificationMessage> httpEntity = new HttpEntity<>(request, headers);
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceInteractiveUrl, "");
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
         
         try {
@@ -483,7 +484,7 @@ public class WhatsappService {
         interactiveMsg.setBody(body);
         
         HttpEntity<WhatsappNotificationMessage> httpEntity = new HttpEntity<>(request, headers);
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceInteractiveUrl, "");
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
         
         try {
@@ -538,7 +539,7 @@ public class WhatsappService {
         interactiveMsg.setBody(body);
         
         HttpEntity<WhatsappNotificationMessage> httpEntity = new HttpEntity<>(request, headers);
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceInteractiveUrl, "");
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
         
         try {
@@ -592,7 +593,7 @@ public class WhatsappService {
         interactiveMsg.setBody(body);
         
         HttpEntity<WhatsappInteractiveMessage> httpEntity = new HttpEntity<>(request, headers);
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceInteractiveUrl, "");
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
         
         try {
