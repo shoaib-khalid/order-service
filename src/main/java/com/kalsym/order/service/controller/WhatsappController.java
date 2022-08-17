@@ -27,6 +27,7 @@ import com.kalsym.order.service.model.VoucherVertical;
 import com.kalsym.order.service.enums.VoucherStatus;
 import com.kalsym.order.service.enums.VoucherType;
 import com.kalsym.order.service.model.Order;
+import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.OrderCompletionStatusUpdate;
 import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.RegionCountry;
@@ -38,6 +39,7 @@ import com.kalsym.order.service.model.repository.CustomerVoucherRepository;
 import com.kalsym.order.service.model.repository.CustomerVoucherSearchSpecs;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
+import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
 import com.kalsym.order.service.model.repository.StoreDetailsRepository;
 import com.kalsym.order.service.model.repository.RegionCountriesRepository;
 import com.kalsym.order.service.utility.HttpResponse;
@@ -111,6 +113,9 @@ public class WhatsappController {
      
     @Autowired
     OrderItemRepository orderItemRepository;
+    
+    @Autowired
+    OrderShipmentDetailRepository orderShipmentDetailRepository;
     
     @Autowired
     StoreDetailsRepository storeDetailsRepository;
@@ -227,7 +232,22 @@ public class WhatsappController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Merchant process the order. OrderId:"+orderId);        
                 boolean res = ProcessOrder(orderId, "PROCESS", logprefix);
                 if (res) {
-                    whatsappService.sendNotification(recipientList, order, "Order has been processed for :"+order.getInvoiceId());
+                    whatsappService.sendProcessOrderResponse(recipientList, order, "Order has been processed for :"+order.getInvoiceId()+". Click button below when ready for pickup");
+                } else {
+                    //fail to process, resend to process
+                    whatsappService.sendRetryProcess(recipientList, order, "Fail to process order for invoiceNo:"+order.getInvoiceId()+". Click button below to retry");
+                }
+            } else if (replyAction.contains("ORDER_PICKUP")) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Mercant ready for pickup. OrderId:"+orderId);        
+                boolean res = ProcessOrder(orderId, "PICKUP", logprefix);
+                if (res) {
+                    //get delivery link
+                    OrderShipmentDetail orderShipment = orderShipmentDetailRepository.findByOrderId(orderId);
+                    String deliveryLink = "";
+                    if (orderShipment!=null) {
+                        deliveryLink = orderShipment.getCustomerTrackingUrl();
+                    }
+                    whatsappService.sendNotification(recipientList, order, "Order has been updated for :"+order.getInvoiceId()+". Click this link to track delivery : "+deliveryLink);
                 } else {
                     //fail to process, resend to process
                     whatsappService.sendRetryProcess(recipientList, order, "Fail to process order for invoiceNo:"+order.getInvoiceId()+". Click button below to retry");
@@ -271,6 +291,8 @@ public class WhatsappController {
             request.setStatus(OrderStatus.CANCELED_BY_MERCHANT);
         } else if (action.equals("PROCESS")) {
             request.setStatus(OrderStatus.BEING_PREPARED);
+        } else if (action.equals("PICKUP")) {
+            request.setStatus(OrderStatus.AWAITING_PICKUP);
         }
         
         RestTemplate restTemplate = new RestTemplate();

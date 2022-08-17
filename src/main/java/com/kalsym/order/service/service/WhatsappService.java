@@ -380,7 +380,8 @@ public class WhatsappService {
         }
         itemList = itemList + "\nTotal Order : *"+Utilities.Round2DecimalPoint(order.getTotal())+"*";  
         itemList = itemList + "\nOrder Date : *"+orderTime+"*";
-        bodyText = itemList + "\nDelivery Type : *"+ConvertDeliveryType(order)+"*";
+        itemList = itemList + "\nDelivery Type : *"+ConvertDeliveryType(order)+"*";
+        itemList = itemList + "\nCustomer : *"+ConvertCustomerInfo(order)+"*";
         Body body = new Body();        
         body.setText(bodyText);
         
@@ -504,7 +505,7 @@ public class WhatsappService {
     }
     
     
-     public boolean sendRetryProcess(String[] recipients, Order order, String text) throws Exception {
+    public boolean sendRetryProcess(String[] recipients, Order order, String text) throws Exception {
         String logprefix = "sendRetryProcess";
         RestTemplate restTemplate = new RestTemplate();        
         HttpHeaders headers = new HttpHeaders();
@@ -557,6 +558,61 @@ public class WhatsappService {
         }
 
     }
+    
+    public boolean sendProcessOrderResponse(String[] recipients, Order order, String text ) throws Exception {
+        String logprefix = "sendProcessOrderResponse";
+        RestTemplate restTemplate = new RestTemplate();        
+        HttpHeaders headers = new HttpHeaders();
+        
+        WhatsappInteractiveMessage request = new WhatsappInteractiveMessage();
+        request.setGuest(false);
+        request.setRecipientIds(recipients);
+        request.setRefId(recipients[0]);
+        request.setReferenceId(order.getId());
+        request.setOrderId(order.getId());
+        
+        List<Button> buttonList = new ArrayList<>();                         
+        Button button2 = new Button(new Reply(orderButtonReplyPrefix+"_ORDER_PICKUP,"+order.getId(), "Ready for Pickup"));
+        buttonList.add(button2);
+        Action action = new Action();
+        action.setButtons(buttonList);
+        
+        String headerText = order.getInvoiceId();
+        Header header = new Header();
+        header.setType("text");
+        header.setText(headerText);
+        
+        Body body = new Body();        
+        body.setText(text);
+        
+        Interactive interactiveMsg = new Interactive();
+        interactiveMsg.setHeader(header);
+        interactiveMsg.setAction(action);
+        interactiveMsg.setType("button");
+        interactiveMsg.setBody(body);
+        
+        HttpEntity<WhatsappInteractiveMessage> httpEntity = new HttpEntity<>(request, headers);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
+        
+        try {
+            ResponseEntity<String> res = restTemplate.postForEntity(whatsappServiceInteractiveUrl, httpEntity, String.class);
+
+            if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
+                return true;
+            } else {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + res, "");
+                return false;
+            }
+        
+        } catch (Exception ex) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + ex.getMessage(), "");
+            return false;
+        }
+
+    }
+     
      
     private String ConvertDeliveryType(Order order) {
         if (order.getDeliveryType().equalsIgnoreCase("SELF")) {
@@ -569,5 +625,14 @@ public class WhatsappService {
             }
             return "DELIVERY";
         }
+    }
+    
+    private String ConvertCustomerInfo(Order order) {
+        String customerName = order.getOrderShipmentDetail().getReceiverName();
+        String customerContact = order.getOrderShipmentDetail().getPhoneNumber();
+        if (customerName.length()>10) {
+            customerName = customerName.substring(0,10);
+        }
+        return customerName + "("+customerContact+")";
     }
 }
