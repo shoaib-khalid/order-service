@@ -314,7 +314,7 @@ public class WhatsappService {
         request.setReferenceId(order.getId());
         request.setOrderId(order.getId());
         
-        Interactive  interactiveMsg = GenerateViewOrderMessage(order, orderItems);
+        Interactive  interactiveMsg = GenerateViewOrderMessage(order, orderItems, orderTime);
         request.setInteractive(interactiveMsg);
         
         HttpEntity<WhatsappInteractiveMessage> httpEntity = new HttpEntity<>(request, headers);
@@ -340,7 +340,7 @@ public class WhatsappService {
     }
     
     
-    public Interactive GenerateViewOrderMessage(Order order, List<OrderItem> orderItems) {
+    public Interactive GenerateViewOrderMessage(Order order, List<OrderItem> orderItems, String orderTime) {
         
         Interactive interactiveMsg = new Interactive();
         
@@ -375,17 +375,18 @@ public class WhatsappService {
                 itemName = oi.getProductName();
             }
             int quantity = oi.getQuantity();            
-            itemList = itemList + itemCount+". " + itemName + " : " + quantity + "\n";
+            itemList = itemList + itemCount+". " + itemName + " : *[" + quantity + "]*\n";
             itemCount++;
         }
-        itemList = itemList + "\nTotal Order : *"+Utilities.Round2DecimalPoint(order.getTotal())+"*\n";  
-        bodyText = itemList + "Order Date : *"+order.getTotal()+"*";  
+        itemList = itemList + "\nTotal Order : *"+Utilities.Round2DecimalPoint(order.getTotal())+"*";  
+        itemList = itemList + "\nOrder Date : *"+orderTime+"*";
+        bodyText = itemList + "\nDelivery Type : *"+ConvertDeliveryType(order)+"*";
         Body body = new Body();        
         body.setText(bodyText);
         
         List<Button> buttonList = new ArrayList<>();                         
         Button button1 = new Button(new Reply(orderButtonReplyPrefix+"_ORDER_PROCESS,"+order.getId(), "Process Order"));
-        Button button2 = new Button(new Reply(orderButtonReplyPrefix+"_ORDER_CANCEL,"+order.getId(), "Cancel Order"));
+        Button button2 = new Button(new Reply(orderButtonReplyPrefix+"_ORDER_REJECT,"+order.getId(), "Cancel Order"));
         buttonList.add(button1);
         buttonList.add(button2);
         Action action = new Action();
@@ -397,5 +398,176 @@ public class WhatsappService {
         interactiveMsg.setBody(body);
                 
         return interactiveMsg;
+    }
+    
+    public boolean sendNotification(String[] recipients, Order order, String text) throws Exception {
+        String logprefix = "sendNotification";
+        RestTemplate restTemplate = new RestTemplate();        
+        HttpHeaders headers = new HttpHeaders();
+        
+        WhatsappNotificationMessage request = new WhatsappNotificationMessage();
+        request.setGuest(false);
+        request.setRecipientIds(recipients);
+        request.setRefId(recipients[0]);
+        request.setReferenceId(order.getId());
+        request.setOrderId(order.getId());
+        
+        String headerText = order.getInvoiceId();
+        Header header = new Header();
+        header.setType("text");
+        header.setText(headerText);
+        
+        Body body = new Body();        
+        body.setText(text);
+        
+        Interactive interactiveMsg = new Interactive();
+        interactiveMsg.setHeader(header);
+        interactiveMsg.setType("button");
+        interactiveMsg.setBody(body);
+        request.setInteractive(interactiveMsg);
+        
+        HttpEntity<WhatsappNotificationMessage> httpEntity = new HttpEntity<>(request, headers);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
+        
+        try {
+            ResponseEntity<String> res = restTemplate.postForEntity(whatsappServiceInteractiveUrl, httpEntity, String.class);
+
+            if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
+                return true;
+            } else {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + res, "");
+                return false;
+            }
+        
+        } catch (Exception ex) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + ex.getMessage(), "");
+            return false;
+        }
+
+    }
+    
+    
+    public boolean sendRetryCancel(String[] recipients, Order order, String text) throws Exception {
+        String logprefix = "sendRetryCancel";
+        RestTemplate restTemplate = new RestTemplate();        
+        HttpHeaders headers = new HttpHeaders();
+        
+        WhatsappNotificationMessage request = new WhatsappNotificationMessage();
+        request.setGuest(false);
+        request.setRecipientIds(recipients);
+        request.setRefId(recipients[0]);
+        request.setReferenceId(order.getId());
+        request.setOrderId(order.getId());
+        
+        String headerText = order.getInvoiceId();
+        Header header = new Header();
+        header.setType("text");
+        header.setText(headerText);
+        
+        Body body = new Body();        
+        body.setText(text);
+        
+        List<Button> buttonList = new ArrayList<>();                         
+        Button button2 = new Button(new Reply(orderButtonReplyPrefix+"_ORDER_REJECT,"+order.getId(), "Cancel Order"));
+        buttonList.add(button2);
+        Action action = new Action();
+        action.setButtons(buttonList);
+        
+        Interactive interactiveMsg = new Interactive();
+        interactiveMsg.setHeader(header);
+        interactiveMsg.setAction(action);
+        interactiveMsg.setType("button");
+        interactiveMsg.setBody(body);
+        
+        HttpEntity<WhatsappNotificationMessage> httpEntity = new HttpEntity<>(request, headers);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
+        
+        try {
+            ResponseEntity<String> res = restTemplate.postForEntity(whatsappServiceInteractiveUrl, httpEntity, String.class);
+
+            if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
+                return true;
+            } else {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + res, "");
+                return false;
+            }
+        
+        } catch (Exception ex) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + ex.getMessage(), "");
+            return false;
+        }
+
+    }
+    
+    
+     public boolean sendRetryProcess(String[] recipients, Order order, String text) throws Exception {
+        String logprefix = "sendRetryProcess";
+        RestTemplate restTemplate = new RestTemplate();        
+        HttpHeaders headers = new HttpHeaders();
+        
+        WhatsappNotificationMessage request = new WhatsappNotificationMessage();
+        request.setGuest(false);
+        request.setRecipientIds(recipients);
+        request.setRefId(recipients[0]);
+        request.setReferenceId(order.getId());
+        request.setOrderId(order.getId());
+        
+        String headerText = order.getInvoiceId();
+        Header header = new Header();
+        header.setType("text");
+        header.setText(headerText);
+        
+        Body body = new Body();        
+        body.setText(text);
+        
+        List<Button> buttonList = new ArrayList<>();                         
+        Button button2 = new Button(new Reply(orderButtonReplyPrefix+"_ORDER_PROCESS,"+order.getId(), "Cancel Order"));
+        buttonList.add(button2);
+        Action action = new Action();
+        action.setButtons(buttonList);
+        
+        Interactive interactiveMsg = new Interactive();
+        interactiveMsg.setHeader(header);
+        interactiveMsg.setAction(action);
+        interactiveMsg.setType("button");
+        interactiveMsg.setBody(body);
+        
+        HttpEntity<WhatsappNotificationMessage> httpEntity = new HttpEntity<>(request, headers);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
+        
+        try {
+            ResponseEntity<String> res = restTemplate.postForEntity(whatsappServiceInteractiveUrl, httpEntity, String.class);
+
+            if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
+                return true;
+            } else {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + res, "");
+                return false;
+            }
+        
+        } catch (Exception ex) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + ex.getMessage(), "");
+            return false;
+        }
+
+    }
+     
+    private String ConvertDeliveryType(Order order) {
+        if (order.getDeliveryType().equalsIgnoreCase("SELF")) {
+            return "SELF-PICKUP";
+        } else {
+            try {
+                String providerName = order.getOrderShipmentDetail().getDeliveryServiceProvider().getName();
+                return providerName;
+            } catch (Exception ex) {                
+            }
+            return "DELIVERY";
+        }
     }
 }

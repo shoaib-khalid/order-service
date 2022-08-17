@@ -33,4 +33,5 @@ public class WhatsappNotificationMessage {
     private Boolean guest;
     private String orderId;
     private String merchantToken;
+    private Interactive interactive;
 }

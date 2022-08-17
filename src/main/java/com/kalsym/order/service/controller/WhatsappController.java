@@ -19,6 +19,7 @@ package com.kalsym.order.service.controller;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.kalsym.order.service.OrderServiceApplication;
+import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.model.Voucher;
 import com.kalsym.order.service.model.Customer;
 import com.kalsym.order.service.model.CustomerVoucher;
@@ -26,6 +27,7 @@ import com.kalsym.order.service.model.VoucherVertical;
 import com.kalsym.order.service.enums.VoucherStatus;
 import com.kalsym.order.service.enums.VoucherType;
 import com.kalsym.order.service.model.Order;
+import com.kalsym.order.service.model.OrderCompletionStatusUpdate;
 import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.StoreWithDetails;
@@ -80,6 +82,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.client.RestTemplate;
 
 /**
  *
@@ -112,6 +117,9 @@ public class WhatsappController {
     
     @Autowired
     RegionCountriesRepository regionCountriesRepository;
+    
+    @Value("${whatsapp.process.order.URL:https://api.symplified.it/order-service/v1/orders/%orderId%/completion-status-updates}")
+    private String processOrderUrl;
     
     @PostMapping(path = {"/receive"}, name = "webhook-post")
     public ResponseEntity<HttpResponse> webhook(HttpServletRequest request, @RequestBody String json) throws Exception {
@@ -187,20 +195,42 @@ public class WhatsappController {
             String replyAction = temp[0];
             String orderId = temp[1];
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Reply Action:"+replyAction+" OrderId:"+orderId);        
+            Optional<Order> orderOpt = orderRepository.findById(orderId);
+            if (!orderOpt.isPresent()) {  
+                //send error
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order not found");
+                Order dummyOrder = new Order();
+                dummyOrder.setId(orderId);
+                dummyOrder.setInvoiceId(orderId);
+                String[] recipientList = {phone};
+                whatsappService.sendNotification(recipientList, dummyOrder, "Order not found for orderId:"+orderId);
+                return ResponseEntity.status(HttpStatus.OK).body(response);
+            }
+            String[] recipientList = {phone};
+            Order order = orderOpt.get();
             if (replyAction.contains("ORDER_VIEW")) {
-                //view the order
-               Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "User view the order. OrderId:"+orderId);        
-               Optional<Order> orderOpt = orderRepository.findById(orderId);
-                if (orderOpt.isPresent()) {
-                    //convert time to merchant timezone
-                
-                    List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
-                    String[] recipientList = {phone};
-                    String orderTime = ConvertOrderTimeToStoreTimeZone(orderOpt.get().getStoreId(), orderOpt.get().getCreated(), logprefix);
-                    whatsappService.sendViewOrderResponse(recipientList, orderOpt.get(), orderItems, orderTime);
+               //view the order
+                List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);                
+                String orderTime = ConvertOrderTimeToStoreTimeZone(order.getStoreId(), orderOpt.get().getCreated(), logprefix);
+                whatsappService.sendViewOrderResponse(recipientList, order, orderItems, orderTime);
+            } else if (replyAction.contains("ORDER_REJECT")) {
+                //cancel order
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Merchant cancel the order. OrderId:"+orderId);        
+                boolean res = ProcessOrder(orderId, "CANCEL", logprefix);
+                if (res) {
+                    whatsappService.sendNotification(recipientList, order, "Order have been canceled for invoiceNo:"+orderId);
                 } else {
-                    //send error
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order not found");        
+                    //fail to cancel, resend to cancel
+                    whatsappService.sendRetryCancel(recipientList, order, "Fail to cancel order for invoiceNo:"+orderId+". Click button below to retry");
+                }
+            } else if (replyAction.contains("ORDER_PROCESS")) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Merchant process the order. OrderId:"+orderId);        
+                boolean res = ProcessOrder(orderId, "PROCESS", logprefix);
+                if (res) {
+                    whatsappService.sendNotification(recipientList, order, "Order have been canceled for invoiceNo:"+orderId);
+                } else {
+                    //fail to process, resend to process
+                    whatsappService.sendRetryProcess(recipientList, order, "Fail to process order for invoiceNo:"+orderId+". Click button below to retry");
                 }
             }
             
@@ -230,6 +260,43 @@ public class WhatsappController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "StoreWithDetails not found");
         }
         return orderTime;
+    }
+    
+    private boolean ProcessOrder(String orderId, String action, String logprefix) {
+        
+        OrderCompletionStatusUpdate request = new OrderCompletionStatusUpdate();
+        request.setOrderId(orderId);
+        
+        if (action.equals("CANCEL")) {
+            request.setStatus(OrderStatus.CANCELED_BY_MERCHANT);
+        } else if (action.equals("PROCESS")) {
+            request.setStatus(OrderStatus.BEING_PREPARED);
+        }
+        
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer accessToken");
+         
+        HttpEntity<OrderCompletionStatusUpdate> httpEntity = new HttpEntity<>(request, headers);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + processOrderUrl, "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
+        
+        try {
+            ResponseEntity<String> res = restTemplate.postForEntity(processOrderUrl, httpEntity, String.class);
+
+            if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
+                return true;
+            } else {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + res, "");
+                return false;
+            }
+        
+        } catch (Exception ex) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + ex.getMessage(), "");
+            return false;
+        }
     }
 
 }
