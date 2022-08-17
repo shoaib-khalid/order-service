@@ -63,6 +63,9 @@ public class WhatsappService {
     @Value("${whatsapp.service.order.awaiting.pickup.templatename:deliverin_process_awaiting_pickup}")
     private String orderAwaitingPickupTemplateName;
     
+    @Value("${whatsapp.service.order.awaiting.selfpickup.templatename:deliverin_process_awaiting_selfpickup}")
+    private String orderAwaitingSelfPickupTemplateName;
+    
     @Value("${whatsapp.service.copy.reminder.templatename:symplified_new_order_notification}")
     private String copyOrderReminderTemplateName;
     
@@ -640,7 +643,11 @@ public class WhatsappService {
         request.setOrderId(order.getId());
         
         Template template = new Template();
-        template.setName(orderAwaitingPickupTemplateName);
+        if (order.getDeliveryType().equalsIgnoreCase("SELF")) {
+            template.setName(orderAwaitingSelfPickupTemplateName);
+        } else {
+            template.setName(orderAwaitingPickupTemplateName);
+        }
         String[] message = {order.getInvoiceId(), deliveryLink};
         template.setParameters(message);
         
