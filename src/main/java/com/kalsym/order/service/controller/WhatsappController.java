@@ -218,19 +218,19 @@ public class WhatsappController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Merchant cancel the order. OrderId:"+orderId);        
                 boolean res = ProcessOrder(orderId, "CANCEL", logprefix);
                 if (res) {
-                    whatsappService.sendNotification(recipientList, order, "Order have been canceled for invoiceNo:"+orderId);
+                    whatsappService.sendNotification(recipientList, order, "Order have been canceled for invoiceNo:"+order.getInvoiceId());
                 } else {
                     //fail to cancel, resend to cancel
-                    whatsappService.sendRetryCancel(recipientList, order, "Fail to cancel order for invoiceNo:"+orderId+". Click button below to retry");
+                    whatsappService.sendRetryCancel(recipientList, order, "Fail to cancel order for invoiceNo:"+order.getInvoiceId()+". Click button below to retry");
                 }
             } else if (replyAction.contains("ORDER_PROCESS")) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Merchant process the order. OrderId:"+orderId);        
                 boolean res = ProcessOrder(orderId, "PROCESS", logprefix);
                 if (res) {
-                    whatsappService.sendNotification(recipientList, order, "Order have been canceled for invoiceNo:"+orderId);
+                    whatsappService.sendNotification(recipientList, order, "Order has been processed for :"+order.getInvoiceId());
                 } else {
                     //fail to process, resend to process
-                    whatsappService.sendRetryProcess(recipientList, order, "Fail to process order for invoiceNo:"+orderId+". Click button below to retry");
+                    whatsappService.sendRetryProcess(recipientList, order, "Fail to process order for invoiceNo:"+order.getInvoiceId()+". Click button below to retry");
                 }
             }
             
