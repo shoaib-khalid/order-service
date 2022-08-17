@@ -46,13 +46,13 @@ import java.util.List;
 @Service
 public class WhatsappService {
         
-    @Value("${whatsapp.service.push.url:https://api.symplified.it/whatsapp-java-service/v1/templatemessage/push}")
+    @Value("${whatsapp.service.template.url:https://api.symplified.it/whatsapp-java-service/v1/templatemessage/push}")
     private String whatsappServiceUrl;
     
-    @Value("${whatsapp.service.push.url:https://api.symplified.it/whatsapp-java-service/v1/interactive/push}")
+    @Value("${whatsapp.service.interactive.url:https://api.symplified.it/whatsapp-java-service/v1/interactive/push}")
     private String whatsappServiceInteractiveUrl;
     
-    @Value("${whatsapp.service.push.url:https://api.symplified.it/whatsapp-java-service/v1/interactive/notification}")
+    @Value("${whatsapp.service.notification.url:https://api.symplified.it/whatsapp-java-service/v1/interactive/notification}")
     private String whatsappServiceNotificationUrl;
     
     @Value("${whatsapp.service.order.reminder.templatename:deliverin_process_new_order}")
