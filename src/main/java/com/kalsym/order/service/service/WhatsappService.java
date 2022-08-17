@@ -18,6 +18,7 @@ package com.kalsym.order.service.service;
 
 import com.kalsym.order.service.service.whatsapp.WhatsappMessage;
 import com.kalsym.order.service.OrderServiceApplication;
+import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.OrderSubItem;
 import com.kalsym.order.service.service.whatsapp.Action;
@@ -30,6 +31,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import com.kalsym.order.service.utility.Logger;
+import com.kalsym.order.service.utility.Utilities;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -300,7 +302,7 @@ public class WhatsappService {
     }
     
     
-   public boolean sendViewOrderResponse(String[] recipients, String orderId, String invoiceNo, List<OrderItem> orderItems ) throws Exception {
+   public boolean sendViewOrderResponse(String[] recipients, Order order, List<OrderItem> orderItems, String orderTime ) throws Exception {
         String logprefix = "sendViewOrderResponse";
         RestTemplate restTemplate = new RestTemplate();        
         HttpHeaders headers = new HttpHeaders();
@@ -309,10 +311,10 @@ public class WhatsappService {
         request.setGuest(false);
         request.setRecipientIds(recipients);
         request.setRefId(recipients[0]);
-        request.setReferenceId(orderId);
-        request.setOrderId(orderId);
+        request.setReferenceId(order.getId());
+        request.setOrderId(order.getId());
         
-        Interactive  interactiveMsg = GenerateViewOrderMessage(orderId, invoiceNo, orderItems);
+        Interactive  interactiveMsg = GenerateViewOrderMessage(order, orderItems);
         request.setInteractive(interactiveMsg);
         
         HttpEntity<WhatsappInteractiveMessage> httpEntity = new HttpEntity<>(request, headers);
@@ -338,17 +340,18 @@ public class WhatsappService {
     }
     
     
-    public Interactive GenerateViewOrderMessage(String orderId, String invoiceNo, List<OrderItem> orderItems) {
+    public Interactive GenerateViewOrderMessage(Order order, List<OrderItem> orderItems) {
         
         Interactive interactiveMsg = new Interactive();
         
-        String headerText = invoiceNo;
+        String headerText = order.getInvoiceId();
         Header header = new Header();
         header.setType("text");
         header.setText(headerText);
                  
         String bodyText = null;
         String itemList = "";
+        int itemCount=1;
         for (OrderItem oi : orderItems) {
             String itemName = "";
             if (oi.getProductVariant()!=null && !"".equals(oi.getProductVariant()) && !"null".equals(oi.getProductVariant())) {
@@ -372,15 +375,17 @@ public class WhatsappService {
                 itemName = oi.getProductName();
             }
             int quantity = oi.getQuantity();            
-            itemList = itemList + itemName + " = " + quantity;
+            itemList = itemList + itemCount+". " + itemName + " : " + quantity + "\n";
+            itemCount++;
         }
-        bodyText = itemList;       
+        itemList = itemList + "\nTotal Order : *"+Utilities.Round2DecimalPoint(order.getTotal())+"*\n";  
+        bodyText = itemList + "Order Date : *"+order.getTotal()+"*";  
         Body body = new Body();        
         body.setText(bodyText);
         
         List<Button> buttonList = new ArrayList<>();                         
-        Button button1 = new Button(new Reply(orderButtonReplyPrefix+"_ORDER_PROCESS,"+orderId, "Process Order"));
-        Button button2 = new Button(new Reply(orderButtonReplyPrefix+"_ORDER_CANCEL,"+orderId, "Cancel Order"));
+        Button button1 = new Button(new Reply(orderButtonReplyPrefix+"_ORDER_PROCESS,"+order.getId(), "Process Order"));
+        Button button2 = new Button(new Reply(orderButtonReplyPrefix+"_ORDER_CANCEL,"+order.getId(), "Cancel Order"));
         buttonList.add(button1);
         buttonList.add(button2);
         Action action = new Action();

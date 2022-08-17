@@ -27,6 +27,8 @@ import com.kalsym.order.service.enums.VoucherStatus;
 import com.kalsym.order.service.enums.VoucherType;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderItem;
+import com.kalsym.order.service.model.RegionCountry;
+import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.repository.VoucherSearchSpecs;
 import com.kalsym.order.service.model.repository.VoucherRepository;
 import com.kalsym.order.service.model.repository.CustomerRepository;
@@ -34,11 +36,16 @@ import com.kalsym.order.service.model.repository.CustomerVoucherRepository;
 import com.kalsym.order.service.model.repository.CustomerVoucherSearchSpecs;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
+import com.kalsym.order.service.model.repository.StoreDetailsRepository;
+import com.kalsym.order.service.model.repository.RegionCountriesRepository;
 import com.kalsym.order.service.utility.HttpResponse;
 import com.kalsym.order.service.utility.Logger;
+import com.kalsym.order.service.utility.DateTimeUtil;
 import com.kalsym.order.service.service.WhatsappService;
 import com.kalsym.order.service.service.whatsapp.*;
 import java.util.Optional;
+import java.time.format.DateTimeFormatter;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Date;
@@ -99,6 +106,12 @@ public class WhatsappController {
      
     @Autowired
     OrderItemRepository orderItemRepository;
+    
+    @Autowired
+    StoreDetailsRepository storeDetailsRepository;
+    
+    @Autowired
+    RegionCountriesRepository regionCountriesRepository;
     
     @PostMapping(path = {"/receive"}, name = "webhook-post")
     public ResponseEntity<HttpResponse> webhook(HttpServletRequest request, @RequestBody String json) throws Exception {
@@ -179,9 +192,12 @@ public class WhatsappController {
                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "User view the order. OrderId:"+orderId);        
                Optional<Order> orderOpt = orderRepository.findById(orderId);
                 if (orderOpt.isPresent()) {
+                    //convert time to merchant timezone
+                
                     List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
                     String[] recipientList = {phone};
-                    whatsappService.sendViewOrderResponse(recipientList, orderId, orderOpt.get().getInvoiceId(), orderItems);
+                    String orderTime = ConvertOrderTimeToStoreTimeZone(orderOpt.get().getStoreId(), orderOpt.get().getCreated(), logprefix);
+                    whatsappService.sendViewOrderResponse(recipientList, orderOpt.get(), orderItems, orderTime);
                 } else {
                     //send error
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order not found");        
@@ -193,7 +209,27 @@ public class WhatsappController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
-    
-    
+    private String ConvertOrderTimeToStoreTimeZone(String storeId, Date orderCreated, String logprefix) {
+        String orderTime = null;
+        StoreWithDetails storeWithDetails = null;
+        Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(storeId);
+        if (optStore.isPresent()) {
+            storeWithDetails = optStore.get();                
+            RegionCountry regionCountry = null;
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "RegionCountryId:"+storeWithDetails.getRegionCountryId());
+
+            Optional<RegionCountry> t = regionCountriesRepository.findById(storeWithDetails.getRegionCountryId());
+            if (t.isPresent()) {
+                regionCountry = t.get();                                             
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "RegionCountry:"+regionCountry);
+                LocalDateTime startLocalTime = DateTimeUtil.convertToLocalDateTimeViaInstant(orderCreated, ZoneId.of(regionCountry.getTimezone()) );                
+                DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("dd-MM-yyyy h:mm a");
+                orderTime = formatter1.format(startLocalTime);                                    
+            }
+        } else {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "StoreWithDetails not found");
+        }
+        return orderTime;
+    }
 
 }
