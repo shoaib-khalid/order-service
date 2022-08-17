@@ -57,8 +57,11 @@ public class WhatsappService {
     @Value("${whatsapp.service.notification.url:https://api.symplified.it/whatsapp-java-service/v1/interactive/notification}")
     private String whatsappServiceNotificationUrl;
     
-    @Value("${whatsapp.service.order.reminder.templatename:deliverin_process_new_order2}")
+    @Value("${whatsapp.service.order.reminder.templatename:deliverin_process_new_order3}")
     private String orderReminderTemplateName;
+    
+    @Value("${whatsapp.service.order.awaiting.pickup.templatename:deliverin_process_awaiting_pickup}")
+    private String orderAwaitingPickupTemplateName;
     
     @Value("${whatsapp.service.copy.reminder.templatename:symplified_new_order_notification}")
     private String copyOrderReminderTemplateName;
@@ -624,7 +627,50 @@ public class WhatsappService {
 
     }
      
-     
+    public boolean sendAwaitingPickupResponse(String[] recipients, Order order, String deliveryLink) throws Exception {
+        //alert format : You have new order for store:{{1}} with invoiceNo:{{2}} updated at {{3}}
+        String logprefix = "sendAwaitingPickupResponse";
+        RestTemplate restTemplate = new RestTemplate();        
+        HttpHeaders headers = new HttpHeaders();
+        WhatsappMessage request = new WhatsappMessage();
+        request.setGuest(false);
+        request.setRecipientIds(recipients);
+        request.setRefId(recipients[0]);
+        request.setReferenceId(orderReminderRefId);
+        request.setOrderId(order.getId());
+        
+        Template template = new Template();
+        template.setName(orderAwaitingPickupTemplateName);
+        String[] message = {order.getInvoiceId(), deliveryLink};
+        template.setParameters(message);
+        
+        String[] headerParam = {order.getInvoiceId()};
+        template.setParametersHeader(headerParam);
+        
+        request.setTemplate(template);
+        HttpEntity<WhatsappMessage> httpEntity = new HttpEntity<>(request, headers);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
+        
+        try {
+            ResponseEntity<String> res = restTemplate.postForEntity(whatsappServiceUrl, httpEntity, String.class);
+
+            if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
+                return true;
+            } else {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + res, "");
+                return false;
+            }
+        
+        } catch (Exception ex) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + ex.getMessage(), "");
+            return false;
+        }
+
+    }
+    
+    
     private String ConvertDeliveryType(Order order) {
         if (order.getDeliveryType().equalsIgnoreCase("SELF")) {
             return "SELF-PICKUP";

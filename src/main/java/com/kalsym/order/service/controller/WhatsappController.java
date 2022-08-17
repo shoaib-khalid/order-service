@@ -248,7 +248,7 @@ public class WhatsappController {
                     if (orderShipment!=null) {
                         deliveryLink = orderShipment.getCustomerTrackingUrl();
                     }
-                    whatsappService.sendNotification(recipientList, order, "Order has been updated for :"+order.getInvoiceId()+". Click this link to track delivery : "+deliveryLink);
+                    whatsappService.sendAwaitingPickupResponse(recipientList, order, deliveryLink);                    
                 } else {
                     //fail to process, resend to process
                     whatsappService.sendRetryProcess(recipientList, order, "Fail to process order for invoiceNo:"+order.getInvoiceId()+". Click button below to retry");
