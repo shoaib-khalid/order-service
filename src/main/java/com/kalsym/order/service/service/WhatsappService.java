@@ -544,6 +544,8 @@ public class WhatsappService {
         interactiveMsg.setType("button");
         interactiveMsg.setBody(body);
         
+        request.setInteractive(interactiveMsg);
+        
         HttpEntity<WhatsappNotificationMessage> httpEntity = new HttpEntity<>(request, headers);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceInteractiveUrl, "");
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");

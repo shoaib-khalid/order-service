@@ -86,6 +86,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -306,18 +307,18 @@ public class WhatsappController {
         
         try {
             processOrderUrl = processOrderUrl.replaceAll("%orderId%", orderId);
-            ResponseEntity<String> res = restTemplate.postForEntity(processOrderUrl, httpEntity, String.class);
+            ResponseEntity<String> res = restTemplate.exchange(processOrderUrl, HttpMethod.PUT, httpEntity, String.class);
 
             if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
                 return true;
             } else {
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + res, "");
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not ProcessOrder res: " + res, "");
                 return false;
             }
         
         } catch (Exception ex) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + ex.getMessage(), "");
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not ProcessOrder res: " + ex.getMessage(), "");
             return false;
         }
     }
