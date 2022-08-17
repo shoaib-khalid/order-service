@@ -703,14 +703,14 @@ public class WhatsappService {
     private String ConvertCustomerInfo(Order order) {
         String customerName = order.getOrderShipmentDetail().getReceiverName();
         String customerContact = order.getOrderShipmentDetail().getPhoneNumber();
-        if (customerName.length()>10) {
+        if (customerName!=null && customerName.length()>10) {
             customerName = customerName.substring(0,10);
         }
         return customerName + "("+customerContact+")";
     }
     
     private String ConvertCustomerNotes(String notes) {
-        if (notes.length()>20) {
+        if (notes!=null && notes.length()>20) {
             notes = notes.substring(0,20);
         }
         return notes;
