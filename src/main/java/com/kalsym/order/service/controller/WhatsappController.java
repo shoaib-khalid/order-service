@@ -305,6 +305,7 @@ public class WhatsappController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
         
         try {
+            processOrderUrl = processOrderUrl.replaceAll("%orderId%", orderId);
             ResponseEntity<String> res = restTemplate.postForEntity(processOrderUrl, httpEntity, String.class);
 
             if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {

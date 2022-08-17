@@ -22,6 +22,7 @@ import lombok.ToString;
 @ToString
 public class Template { 
     private String[] parameters;
+    private String[] parametersHeader;
     private String[] parametersButton;
     private ButtonParameter[] buttonParameters; //new field, more customize   
     private String parametersDocument;

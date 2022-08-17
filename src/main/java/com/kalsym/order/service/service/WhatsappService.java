@@ -57,7 +57,7 @@ public class WhatsappService {
     @Value("${whatsapp.service.notification.url:https://api.symplified.it/whatsapp-java-service/v1/interactive/notification}")
     private String whatsappServiceNotificationUrl;
     
-    @Value("${whatsapp.service.order.reminder.templatename:deliverin_process_new_order}")
+    @Value("${whatsapp.service.order.reminder.templatename:deliverin_process_new_order2}")
     private String orderReminderTemplateName;
     
     @Value("${whatsapp.service.copy.reminder.templatename:symplified_new_order_notification}")
@@ -90,10 +90,12 @@ public class WhatsappService {
         request.setReferenceId(orderReminderRefId);
         request.setOrderId(orderId);
         request.setMerchantToken(merchantToken);
+        
         Template template = new Template();
         template.setName(orderReminderTemplateName);
         String[] message = {storeName, invoiceNo, updatedTime};
         template.setParameters(message);
+        
         ButtonParameter[] buttonParameters = new ButtonParameter[2];
         ButtonParameter buttonParameter1 = new ButtonParameter();
         buttonParameter1.setIndex(0);
@@ -108,6 +110,10 @@ public class WhatsappService {
         buttonParameter2.setParameters(params2);
         buttonParameters[1] = buttonParameter2;
         template.setButtonParameters(buttonParameters);
+        
+        String[] headerParam = {invoiceNo};
+        template.setParametersHeader(headerParam);
+        
         request.setTemplate(template);
         HttpEntity<WhatsappMessage> httpEntity = new HttpEntity<>(request, headers);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
