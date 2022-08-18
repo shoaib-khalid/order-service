@@ -26,5 +26,7 @@ public enum StoreAssetType {
     LogoUrl,
     FaviconUrl,
     DiscountBannerUrl,
-    QrcodeUrl;
+    QrcodeUrl,
+    CoverImageUrl;
+    
 }
