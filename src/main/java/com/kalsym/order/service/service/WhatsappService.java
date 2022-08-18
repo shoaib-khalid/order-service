@@ -367,6 +367,7 @@ public class WhatsappService {
         for (OrderItem oi : orderItems) {
             String itemName = "";
             if (oi.getProductVariant()!=null && !"".equals(oi.getProductVariant()) && !"null".equals(oi.getProductVariant())) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "", "Order product variant :"+oi.getProductVariant());
                 itemName = oi.getProductName()+" | "+oi.getProductVariant();
             } else if (oi.getOrderSubItem()!=null) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "", "Order subitem size:"+oi.getOrderSubItem().size());
@@ -387,7 +388,7 @@ public class WhatsappService {
                 itemName = oi.getProductName();
             }
             int quantity = oi.getQuantity();            
-            itemList = itemList + itemCount+". " + itemName + " : *[" + quantity + "]*\n";
+            itemList = itemList + itemCount+". " + itemName + " : X " + quantity + "\n";
             itemCount++;
         }
         String currency="RM";
@@ -396,14 +397,21 @@ public class WhatsappService {
         } else {
             currency="Rs";
         }
-        itemList = itemList + "\nTotal Order : *"+currency+Utilities.Round2DecimalPoint(order.getTotal())+"*";  
-        itemList = itemList + "\nOrder Date : *"+orderTime+"*";
-        itemList = itemList + "\nDelivery Type : *"+ConvertDeliveryType(order)+"*";
-        itemList = itemList + "\nCustomer : *"+ConvertCustomerInfo(order)+"*";
+        //itemList = itemList + "\nTotal Order : *"+currency+Utilities.Round2DecimalPoint(order.getTotal())+"*";  
+        //itemList = itemList + "\nOrder Date : *"+orderTime+"*";
+        //itemList = itemList + "\nDelivery Type : *"+ConvertDeliveryType(order)+"*";
+        //itemList = itemList + "\nCustomer : *"+ConvertCustomerInfo(order)+"*";
+        
+        String customerNotes = "";
         if (order.getCustomerNotes()!=null) {
-            itemList = itemList + "\nCustomerNotes : *"+ConvertCustomerNotes(order.getCustomerNotes())+"*";
+            customerNotes = "\n_Notes : "+ConvertCustomerNotes(order.getCustomerNotes())+"_";
         }
-        bodyText = itemList;
+        bodyText = itemList + customerNotes;
+        
+        int msgCount = (int) Math.ceil((double) bodyText.length() /1024);
+        
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "", "Body text length:"+bodyText.length()+" msg required to send:"+msgCount);
+        
         Body body = new Body();        
         body.setText(bodyText);
         
@@ -414,12 +422,16 @@ public class WhatsappService {
         buttonList.add(button2);
         Action action = new Action();
         action.setButtons(buttonList);
-                      
+                
+        Footer footer = new Footer();        
+        footer.setText(ConvertCustomerInfo(order));        
+        
         interactiveMsg.setHeader(header);
         interactiveMsg.setAction(action);
         interactiveMsg.setType("button");
         interactiveMsg.setBody(body);
-                
+        interactiveMsg.setFooter(footer);
+        
         return interactiveMsg;
     }
     
@@ -703,16 +715,16 @@ public class WhatsappService {
     private String ConvertCustomerInfo(Order order) {
         String customerName = order.getOrderShipmentDetail().getReceiverName();
         String customerContact = order.getOrderShipmentDetail().getPhoneNumber();
-        if (customerName!=null && customerName.length()>10) {
-            customerName = customerName.substring(0,10);
+        if (customerName!=null && customerName.length()>30) {
+            customerName = customerName.substring(0,30);
         }
-        return customerName + "("+customerContact+")";
+        return "Customer:" +customerName + " ("+customerContact+")";
     }
     
     private String ConvertCustomerNotes(String notes) {
-        if (notes!=null && notes.length()>20) {
+        /*if (notes!=null && notes.length()>20) {
             notes = notes.substring(0,20);
-        }
+        }*/
         return notes;
     }
 }

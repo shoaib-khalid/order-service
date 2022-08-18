@@ -17,5 +17,5 @@ public class Interactive {
     private Header header;
     private Body body;
     private Footer footer;
-    private Action action;    
+    private Action action;     
 }
