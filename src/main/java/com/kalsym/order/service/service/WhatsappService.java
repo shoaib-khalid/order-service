@@ -462,30 +462,24 @@ public class WhatsappService {
         
         Body body = new Body();        
         body.setText(text);
-        
-        Interactive interactiveMsg = new Interactive();
-        interactiveMsg.setHeader(header);
-        interactiveMsg.setType("button");
-        interactiveMsg.setBody(body);
-        request.setInteractive(interactiveMsg);
-        
+         
         HttpEntity<WhatsappNotificationMessage> httpEntity = new HttpEntity<>(request, headers);
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceInteractiveUrl, "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceNotificationUrl, "");
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
         
         try {
-            ResponseEntity<String> res = restTemplate.postForEntity(whatsappServiceInteractiveUrl, httpEntity, String.class);
+            ResponseEntity<String> res = restTemplate.postForEntity(whatsappServiceNotificationUrl, httpEntity, String.class);
 
             if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
                 return true;
             } else {
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + res, "");
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendNotification res: " + res, "");
                 return false;
             }
         
         } catch (Exception ex) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendOrderReminder res: " + ex.getMessage(), "");
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendNotification res: " + ex.getMessage(), "");
             return false;
         }
 
@@ -497,7 +491,7 @@ public class WhatsappService {
         RestTemplate restTemplate = new RestTemplate();        
         HttpHeaders headers = new HttpHeaders();
         
-        WhatsappNotificationMessage request = new WhatsappNotificationMessage();
+        WhatsappInteractiveMessage request = new WhatsappInteractiveMessage();
         request.setGuest(false);
         request.setRecipientIds(recipients);
         request.setRefId(recipients[0]);
@@ -525,7 +519,7 @@ public class WhatsappService {
         interactiveMsg.setBody(body);
         request.setInteractive(interactiveMsg);
         
-        HttpEntity<WhatsappNotificationMessage> httpEntity = new HttpEntity<>(request, headers);
+        HttpEntity<WhatsappInteractiveMessage> httpEntity = new HttpEntity<>(request, headers);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceInteractiveUrl, "");
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
         
@@ -553,7 +547,7 @@ public class WhatsappService {
         RestTemplate restTemplate = new RestTemplate();        
         HttpHeaders headers = new HttpHeaders();
         
-        WhatsappNotificationMessage request = new WhatsappNotificationMessage();
+        WhatsappInteractiveMessage request = new WhatsappInteractiveMessage();
         request.setGuest(false);
         request.setRecipientIds(recipients);
         request.setRefId(recipients[0]);
@@ -582,7 +576,7 @@ public class WhatsappService {
         
         request.setInteractive(interactiveMsg);
         
-        HttpEntity<WhatsappNotificationMessage> httpEntity = new HttpEntity<>(request, headers);
+        HttpEntity<WhatsappInteractiveMessage> httpEntity = new HttpEntity<>(request, headers);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceInteractiveUrl, "");
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
         
