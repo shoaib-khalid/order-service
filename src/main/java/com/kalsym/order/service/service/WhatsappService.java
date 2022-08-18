@@ -369,7 +369,7 @@ public class WhatsappService {
             if (oi.getProductVariant()!=null && !"".equals(oi.getProductVariant()) && !"null".equals(oi.getProductVariant())) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "", "Order product variant :"+oi.getProductVariant());
                 itemName = oi.getProductName()+" | "+oi.getProductVariant();
-            } else if (oi.getOrderSubItem()!=null) {
+            } else if (!oi.getOrderSubItem().isEmpty()) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "", "Order subitem size:"+oi.getOrderSubItem().size());
                 String subItemList = "";
                 for (OrderSubItem subItem : oi.getOrderSubItem()) {
@@ -391,10 +391,10 @@ public class WhatsappService {
             
             String ins = "";
             if (oi.getSpecialInstruction()!=null && !"".equals(oi.getSpecialInstruction())) {
-                ins = "_("+oi.getSpecialInstruction()+")_";
-                itemList = itemList + itemCount+". " + itemName + " : X " + quantity + "\n"+ins+"\n";
+                ins = "_("+oi.getSpecialInstruction().replaceAll("\n", "")+")_";
+                itemList = itemList + "*"+itemCount+".* " + itemName + " X " + quantity + "\n"+ins+"\n";
             } else {
-                itemList = itemList + itemCount+". " + itemName + " : X " + quantity + "\n";
+                itemList = itemList + "*"+itemCount+".* " + itemName + " X " + quantity + "\n";
             }
             
             itemCount++;
