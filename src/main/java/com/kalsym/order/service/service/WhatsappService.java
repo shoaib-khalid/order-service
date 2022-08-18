@@ -368,7 +368,7 @@ public class WhatsappService {
             String itemName = "";
             if (oi.getProductVariant()!=null && !"".equals(oi.getProductVariant()) && !"null".equals(oi.getProductVariant())) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "", "Order product variant :"+oi.getProductVariant());
-                itemName = oi.getProductName()+" | "+oi.getProductVariant();
+                itemName = "*"+oi.getProductName()+"* | "+oi.getProductVariant();
             } else if (!oi.getOrderSubItem().isEmpty()) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "", "Order subitem size:"+oi.getOrderSubItem().size());
                 String subItemList = "";
@@ -383,18 +383,18 @@ public class WhatsappService {
                     }
                 }
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "", "combo item product:"+oi.getProductName());                
-                itemName = oi.getProductName()+" | "+subItemList;
+                itemName = "*"+oi.getProductName()+"* | "+subItemList;
             } else{
-                itemName = oi.getProductName();
+                itemName = "*"+oi.getProductName()+"*";
             }
             int quantity = oi.getQuantity();            
             
             String ins = "";
             if (oi.getSpecialInstruction()!=null && !"".equals(oi.getSpecialInstruction())) {
-                ins = "_("+oi.getSpecialInstruction().replaceAll("\n", "")+")_";
-                itemList = itemList + "*"+itemCount+".* " + itemName + " X " + quantity + "\n"+ins+"\n";
+                ins = "_(Ins : "+oi.getSpecialInstruction().replaceAll("\n", "")+")_";
+                itemList = itemList + "\n"+itemCount+". " + itemName + " X *" + quantity + "*\n"+ins+"\n";
             } else {
-                itemList = itemList + "*"+itemCount+".* " + itemName + " X " + quantity + "\n";
+                itemList = itemList + "\n"+itemCount+". " + itemName + " X *" + quantity + "*\n";
             }
             
             itemCount++;
