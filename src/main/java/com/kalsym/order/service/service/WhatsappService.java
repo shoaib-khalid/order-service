@@ -391,7 +391,7 @@ public class WhatsappService {
             
             String ins = "";
             if (oi.getSpecialInstruction()!=null && !"".equals(oi.getSpecialInstruction())) {
-                ins = "_(Ins : "+oi.getSpecialInstruction().replaceAll("\n", "")+")_";
+                ins = "_(Ins : "+oi.getSpecialInstruction().replaceAll("\n", " ")+")_";
                 itemList = itemList + "\n"+itemCount+". " + itemName + " X *" + quantity + "*\n"+ins+"\n";
             } else {
                 itemList = itemList + "\n"+itemCount+". " + itemName + " X *" + quantity + "*\n";
