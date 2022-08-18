@@ -388,7 +388,15 @@ public class WhatsappService {
                 itemName = oi.getProductName();
             }
             int quantity = oi.getQuantity();            
-            itemList = itemList + itemCount+". " + itemName + " : X " + quantity + "\n";
+            
+            String ins = "";
+            if (oi.getSpecialInstruction()!=null && !"".equals(oi.getSpecialInstruction())) {
+                ins = "_("+oi.getSpecialInstruction()+")_";
+                itemList = itemList + itemCount+". " + itemName + " : X " + quantity + "\n"+ins+"\n";
+            } else {
+                itemList = itemList + itemCount+". " + itemName + " : X " + quantity + "\n";
+            }
+            
             itemCount++;
         }
         String currency="RM";
