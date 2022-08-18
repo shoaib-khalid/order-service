@@ -454,15 +454,8 @@ public class WhatsappService {
         request.setRefId(recipients[0]);
         request.setReferenceId(order.getId());
         request.setOrderId(order.getId());
+        request.setText(text);
         
-        String headerText = order.getInvoiceId();
-        Header header = new Header();
-        header.setType("text");
-        header.setText(headerText);
-        
-        Body body = new Body();        
-        body.setText(text);
-         
         HttpEntity<WhatsappNotificationMessage> httpEntity = new HttpEntity<>(request, headers);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceNotificationUrl, "");
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
