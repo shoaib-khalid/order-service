@@ -5,6 +5,7 @@
 Add new request parameter in getAvailableVoucher : voucherCode
 Add new field regionCountryId in order_group
 New feature : merchant process order using whatsapp
+Remove productInvetory from OrderItemWithDetails to avoid error (foreign key broken) if product variant changed
 
 ##DB changes:
 ALTER TABLE order_group ADD regionCountryId varchar(3) default 'MYS';
