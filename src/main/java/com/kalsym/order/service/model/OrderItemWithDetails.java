@@ -62,12 +62,10 @@ public class OrderItemWithDetails implements Serializable {
     @JoinColumn(name = "itemCode", referencedColumnName="itemCode", insertable = false, updatable = false, nullable = true)
     private ProductAsset itemAssetDetails;    
     
-    /*
-    need to remove this since it cause error if itemCode changed/deleted
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "itemCode", referencedColumnName = "itemCode", insertable = false, updatable = false, nullable = true)
     private ProductInventory productInventory;
-    */
+    
     
     /*@OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "productId", insertable = false, updatable = false)
