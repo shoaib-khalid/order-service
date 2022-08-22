@@ -69,10 +69,9 @@ public class OrderItemWithDetails implements Serializable {
     private ProductInventory productInventory;
     */
     
-    /*@OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "productId", insertable = false, updatable = false)
-    private Product productDetails;
-    */
+    private Product product;    
     
     /*
     @ManyToOne(fetch = FetchType.LAZY)
