@@ -664,8 +664,8 @@ public class WhatsappService {
         } else {
             template.setName(orderAwaitingPickupTemplateName);
         }
-        String[] message = {order.getInvoiceId(), deliveryLink};
-        template.setParameters(message);
+        //String[] message = {order.getInvoiceId(), deliveryLink};
+        //template.setParameters(message);
         
         String[] headerParam = {order.getInvoiceId()};
         template.setParametersHeader(headerParam);
