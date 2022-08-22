@@ -1,3 +1,8 @@
+##################################################
+# order-service-3.11.4-SNAPSHOT |22-Aug-2022
+##################################################
+remove productInventory from OrderItemWithDetails to avoid foreign key issue if product variant changed
+
 
 ##################################################
 # order-service-3.11.3-SNAPSHOT |22-Aug-2022
