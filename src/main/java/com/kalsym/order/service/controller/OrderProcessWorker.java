@@ -300,7 +300,7 @@ public class OrderProcessWorker {
                     List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
                     for (int z=0;z<orderPaymentDetailList.size();z++) {
                         String relatedOrderId = orderPaymentDetailList.get(z).getOrderId();
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update same tracking url for orderId:"+relatedOrderId);
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update same tracking url for orderId:"+relatedOrderId+" : "+bodyOrderCompletionStatusUpdate.getTrackingUrl());
                         orderShipmentDetailRepository.UpdateTrackingUrlAndSpOrderId(bodyOrderCompletionStatusUpdate.getTrackingUrl(), bodyOrderCompletionStatusUpdate.getSpOrderId(), relatedOrderId);
                     }
                 }
@@ -586,12 +586,12 @@ public class OrderProcessWorker {
                             orderShipmentDetailRepository.save(orderShipmentDetail);
                             
                             //if order is combined delivery
-                            if (order.getOrderPaymentDetail()!=null && order.getOrderPaymentDetail().getIsCombinedDelivery()) {
+                            if (deliveryOrder.getCustomerTrackingUrl()!=null && order.getOrderPaymentDetail()!=null && order.getOrderPaymentDetail().getIsCombinedDelivery()) {
                                 List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
                                 for (int z=0;z<orderPaymentDetailList.size();z++) {
                                     String relatedOrderId = orderPaymentDetailList.get(z).getOrderId();
-                                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update same tracking url for orderId:"+relatedOrderId);
-                                    orderShipmentDetailRepository.UpdateTrackingUrlAndSpOrderId(bodyOrderCompletionStatusUpdate.getTrackingUrl(), bodyOrderCompletionStatusUpdate.getSpOrderId(), relatedOrderId);
+                                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update same tracking url for orderId:"+relatedOrderId+" : "+deliveryOrder.getCustomerTrackingUrl());
+                                    orderShipmentDetailRepository.UpdateTrackingUrlAndSpOrderId(deliveryOrder.getCustomerTrackingUrl(), bodyOrderCompletionStatusUpdate.getSpOrderId(), relatedOrderId);
                                 }
                             }
                 
