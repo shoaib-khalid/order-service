@@ -24,6 +24,7 @@ import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.OrderPaymentStatusUpdate;
 import com.kalsym.order.service.model.OrderRefund;
 import com.kalsym.order.service.model.OrderShipmentDetail;
+import com.kalsym.order.service.model.OrderPaymentDetail;
 import com.kalsym.order.service.model.PaymentOrder;
 import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.model.ProductInventory;
@@ -76,6 +77,7 @@ public class OrderProcessWorker {
     private PaymentOrderRepository paymentOrderRepository;
     private OrderRefundRepository orderRefundRepository;
     private OrderShipmentDetailRepository orderShipmentDetailRepository;
+    private OrderPaymentDetailRepository orderPaymentDetailRepository;
     private RegionCountriesRepository regionCountriesRepository;
     private OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository;
     private OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository;
@@ -112,6 +114,7 @@ public class OrderProcessWorker {
             PaymentOrderRepository paymentOrderRepository,
             OrderRefundRepository orderRefundRepository,
             OrderShipmentDetailRepository orderShipmentDetailRepository,
+            OrderPaymentDetailRepository orderPaymentDetailRepository,
             RegionCountriesRepository regionCountriesRepository,
             OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository,
             OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository,
@@ -147,6 +150,7 @@ public class OrderProcessWorker {
         this.paymentOrderRepository = paymentOrderRepository;
         this.orderRefundRepository = orderRefundRepository;
         this.orderShipmentDetailRepository = orderShipmentDetailRepository;
+        this.orderPaymentDetailRepository = orderPaymentDetailRepository;
         this.regionCountriesRepository = regionCountriesRepository;
         this.orderPaymentStatusUpdateRepository = orderPaymentStatusUpdateRepository;
         this.orderCompletionStatusUpdateRepository = orderCompletionStatusUpdateRepository;
@@ -284,6 +288,23 @@ public class OrderProcessWorker {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
                 orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
             }
+            
+            if (bodyOrderCompletionStatusUpdate.getTrackingUrl()!=null && !bodyOrderCompletionStatusUpdate.getTrackingUrl().equals("")) {
+                OrderShipmentDetail orderShipmentDetail = order.getOrderShipmentDetail();            
+                orderShipmentDetail.setCustomerTrackingUrl(bodyOrderCompletionStatusUpdate.getTrackingUrl());
+                orderShipmentDetail.setTrackingNumber(bodyOrderCompletionStatusUpdate.getSpOrderId());
+                orderShipmentDetailRepository.save(orderShipmentDetail);
+                
+                //if order is combined delivery
+                if (order.getOrderPaymentDetail()!=null && order.getOrderPaymentDetail().getIsCombinedDelivery()) {
+                    List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
+                    for (int z=0;z<orderPaymentDetailList.size();z++) {
+                        String relatedOrderId = orderPaymentDetailList.get(z).getOrderId();
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update same tracking url for orderId:"+relatedOrderId);
+                        orderShipmentDetailRepository.UpdateTrackingUrlAndSpOrderId(bodyOrderCompletionStatusUpdate.getTrackingUrl(), bodyOrderCompletionStatusUpdate.getSpOrderId(), relatedOrderId);
+                    }
+                }
+            }            
         } else if (newStatus.contains("FAILED")) {
             //something failed in order processing
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Something failed! Not read config from db");
@@ -563,7 +584,17 @@ public class OrderProcessWorker {
                             orderShipmentDetail.setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
                             orderShipmentDetail.setTrackingNumber(deliveryOrder.getSpOrderId());
                             orderShipmentDetailRepository.save(orderShipmentDetail);
-
+                            
+                            //if order is combined delivery
+                            if (order.getOrderPaymentDetail()!=null && order.getOrderPaymentDetail().getIsCombinedDelivery()) {
+                                List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
+                                for (int z=0;z<orderPaymentDetailList.size();z++) {
+                                    String relatedOrderId = orderPaymentDetailList.get(z).getOrderId();
+                                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update same tracking url for orderId:"+relatedOrderId);
+                                    orderShipmentDetailRepository.UpdateTrackingUrlAndSpOrderId(bodyOrderCompletionStatusUpdate.getTrackingUrl(), bodyOrderCompletionStatusUpdate.getSpOrderId(), relatedOrderId);
+                                }
+                            }
+                
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added tracking urls to orderId:" + orderId);
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
                         } else if (deliveryResponse.getStatus().equals("FAILED")) {

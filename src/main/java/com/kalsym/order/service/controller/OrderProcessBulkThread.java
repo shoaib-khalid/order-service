@@ -200,6 +200,7 @@ public class OrderProcessBulkThread extends Thread {
                         paymentOrderRepository,
                         orderRefundRepository,
                         orderShipmentDetailRepository,
+                        orderPaymentDetailRepository,
                         regionCountriesRepository,
                         orderPaymentStatusUpdateRepository,
                         orderCompletionStatusUpdateRepository,

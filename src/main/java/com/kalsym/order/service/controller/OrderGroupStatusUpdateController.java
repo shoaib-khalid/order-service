@@ -85,6 +85,9 @@ public class OrderGroupStatusUpdateController {
 
     @Autowired
     OrderShipmentDetailRepository orderShipmentDetailRepository;
+    
+    @Autowired
+    OrderPaymentDetailRepository orderPaymentDetailRepository;
 
     @Autowired
     OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository;
@@ -184,6 +187,7 @@ public class OrderGroupStatusUpdateController {
                 paymentOrderRepository,
                 orderRefundRepository,
                 orderShipmentDetailRepository,
+                orderPaymentDetailRepository,
                 regionCountriesRepository,
                 orderPaymentStatusUpdateRepository,
                 orderCompletionStatusUpdateRepository,

@@ -85,6 +85,9 @@ public class OrderPaymentStatusUpdateController {
 
     @Autowired
     OrderShipmentDetailRepository orderShipmentDetailRepository;
+    
+    @Autowired
+    OrderPaymentDetailRepository orderPaymentDetailRepository;
 
     @Autowired
     OrderPaymentStatusUpdateRepository orderPaymentStatusUpdateRepository;
@@ -163,6 +166,7 @@ public class OrderPaymentStatusUpdateController {
             paymentOrderRepository,
             orderRefundRepository,
             orderShipmentDetailRepository,
+            orderPaymentDetailRepository,
             regionCountriesRepository,
             orderPaymentStatusUpdateRepository,
             orderCompletionStatusUpdateRepository,

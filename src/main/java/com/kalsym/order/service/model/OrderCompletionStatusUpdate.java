@@ -62,5 +62,10 @@ public class OrderCompletionStatusUpdate {
         modifiedBy = orderCompletionStatusUpdate.getModifiedBy();
         comments = orderCompletionStatusUpdate.getComments();
     }
+    
+    @Transient
+    private String trackingUrl;
+    @Transient
+    private String spOrderId;
 
 }
