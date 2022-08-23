@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.11.5-SNAPSHOT |23-Aug-2022
+##################################################
+Inform delivery-service if order canceled by merchant for combined delivery
+
+
+##################################################
 # order-service-3.11.4-SNAPSHOT |22-Aug-2022
 ##################################################
 remove productInventory from OrderItemWithDetails to avoid foreign key issue if product variant changed

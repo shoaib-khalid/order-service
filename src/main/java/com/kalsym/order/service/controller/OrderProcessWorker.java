@@ -261,7 +261,7 @@ public class OrderProcessWorker {
             } else {        
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
                 orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
-            }
+            }                        
         } else if (newStatus.contains("FAILED_FIND_DRIVER")) {
             //delivery-order inform cannot find rider            
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "FAILED_FIND_DRIVER");
@@ -512,6 +512,19 @@ public class OrderProcessWorker {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "refund record created for orderId: " + order.getId());
                 } else {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Payment Order NOT found with orderId: " + order.getId());
+                }
+                
+                //if combined delivery, need to inform delivery-service
+                if (order.getOrderPaymentDetail().getIsCombinedDelivery()) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Inform delivery-service on canceled order");
+                    try {
+                        DeliveryResponse deliveryResponse = deliveryService.confirmOrderDelivery(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId(), 
+                                order.getId(), 
+                                bodyOrderCompletionStatusUpdate.getDate(), 
+                                bodyOrderCompletionStatusUpdate.getTime());
+                    } catch (Exception ex) {
+                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Exception occur while inform delivery-service : ", ex);
+                    }                    
                 }
             
             default:
