@@ -1609,8 +1609,11 @@ public class OrderController {
         
         PaymentOrder paymentOrder = null;
         if (order.getPaymentType().equals(StorePaymentType.ONLINEPAYMENT.name())) {
-            Optional<PaymentOrder> optPayment = paymentOrderRepository.findByClientTransactionId(orderId);
-
+            Optional<PaymentOrder> optPayment = paymentOrderRepository.findByClientTransactionId("G"+order.getOrderGroupId());
+            if (!optPayment.isPresent()) {
+                //find individual order
+                optPayment = paymentOrderRepository.findByClientTransactionId(order.getId());
+            }
             if (!optPayment.isPresent()) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Payment Order not found with orderId: " + orderId);
                 response.setErrorStatus(HttpStatus.NOT_FOUND);

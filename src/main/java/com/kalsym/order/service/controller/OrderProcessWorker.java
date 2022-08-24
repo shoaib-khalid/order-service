@@ -523,7 +523,11 @@ public class OrderProcessWorker {
                 email.setFrom(financeEmailAddress);
                 email.setFromName(financeEmailSenderName);
                 
-                Optional<PaymentOrder> optPayment = paymentOrderRepository.findByClientTransactionId(order.getId());
+                Optional<PaymentOrder> optPayment = paymentOrderRepository.findByClientTransactionId("G"+order.getOrderGroupId());
+                if (!optPayment.isPresent()) {
+                    //find individual order
+                    optPayment = paymentOrderRepository.findByClientTransactionId(order.getId());
+                }
                 if (optPayment.isPresent()) {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Payment Order found with orderId: " + order.getId());
                     //create refund record

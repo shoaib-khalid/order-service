@@ -3,6 +3,7 @@
 ##################################################
 Inform delivery-service if order canceled by merchant for combined delivery
 Update others record for trackingUrl and spORderId if same deliveryQuotationId for combined delivery
+Bug fix for edit order & cancelled by merchant
 
 
 ##################################################
