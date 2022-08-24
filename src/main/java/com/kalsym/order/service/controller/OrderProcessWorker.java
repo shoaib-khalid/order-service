@@ -300,8 +300,12 @@ public class OrderProcessWorker {
                     List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
                     for (int z=0;z<orderPaymentDetailList.size();z++) {
                         String relatedOrderId = orderPaymentDetailList.get(z).getOrderId();
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update same tracking url for orderId:"+relatedOrderId+" : "+bodyOrderCompletionStatusUpdate.getTrackingUrl());
-                        orderShipmentDetailRepository.UpdateTrackingUrlAndSpOrderId(bodyOrderCompletionStatusUpdate.getTrackingUrl(), bodyOrderCompletionStatusUpdate.getSpOrderId(), relatedOrderId);
+                        //check order status, if cancel no need to update tracking url
+                        Optional<Order> optOrderRelated = orderRepository.findById(relatedOrderId);
+                        if (optOrderRelated.isPresent() && optOrderRelated.get().getCompletionStatus()!=OrderStatus.CANCELED_BY_MERCHANT) {
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update same tracking url for orderId:"+relatedOrderId+" : "+bodyOrderCompletionStatusUpdate.getTrackingUrl());
+                            orderShipmentDetailRepository.UpdateTrackingUrlAndSpOrderId(bodyOrderCompletionStatusUpdate.getTrackingUrl(), bodyOrderCompletionStatusUpdate.getSpOrderId(), relatedOrderId);
+                        }
                     }
                 }
             }            
@@ -590,8 +594,12 @@ public class OrderProcessWorker {
                                 List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
                                 for (int z=0;z<orderPaymentDetailList.size();z++) {
                                     String relatedOrderId = orderPaymentDetailList.get(z).getOrderId();
-                                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update same tracking url for orderId:"+relatedOrderId+" : "+deliveryOrder.getCustomerTrackingUrl());
+                                    //check order status, if cancel no need to update tracking url
+                                    Optional<Order> optOrderRelated = orderRepository.findById(relatedOrderId);
+                                    if (optOrderRelated.isPresent() && optOrderRelated.get().getCompletionStatus()!=OrderStatus.CANCELED_BY_MERCHANT) {
+                                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update same tracking url for orderId:"+relatedOrderId+" : "+deliveryOrder.getCustomerTrackingUrl());
                                     orderShipmentDetailRepository.UpdateTrackingUrlAndSpOrderId(deliveryOrder.getCustomerTrackingUrl(), bodyOrderCompletionStatusUpdate.getSpOrderId(), relatedOrderId);
+                                    }                                    
                                 }
                             }
                 
