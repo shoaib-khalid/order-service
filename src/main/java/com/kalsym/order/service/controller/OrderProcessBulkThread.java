@@ -352,7 +352,7 @@ public class OrderProcessBulkThread extends Thread {
                                 String deliveryChargesRemarks="";
                                 if (order.getOrderPaymentDetail().getIsCombinedDelivery()) {
                                     List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
-                                    deliveryChargesRemarks = " (Combined X"+orderPaymentDetailList.size()+" shops)";
+                                    deliveryChargesRemarks = " (combined x"+orderPaymentDetailList.size()+" shops)";
                                 }
                                 emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, sendActivationLink, storeWithDetails.getRegionVertical().getCustomerActivationNotice(), customerEmail, assetServiceBaseUrl, deliveryChargesRemarks);
                                 email.setRawBody(emailContent);
@@ -384,7 +384,7 @@ public class OrderProcessBulkThread extends Thread {
                                 String deliveryChargesRemarks="";
                                 if (order.getOrderPaymentDetail().getIsCombinedDelivery()) {
                                     List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
-                                    deliveryChargesRemarks = " (Combined X"+orderPaymentDetailList.size()+" shops)";
+                                    deliveryChargesRemarks = " (combined x"+orderPaymentDetailList.size()+" shops)";
                                 }
                                 emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null, assetServiceBaseUrl, deliveryChargesRemarks);
                                 email.setRawBody(emailContent);

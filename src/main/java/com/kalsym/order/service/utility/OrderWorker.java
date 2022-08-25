@@ -561,7 +561,7 @@ public class OrderWorker {
                                 String deliveryChargesRemarks="";
                                 if (order.getOrderPaymentDetail().getIsCombinedDelivery()) {
                                     List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
-                                    deliveryChargesRemarks = " (Combined X"+orderPaymentDetailList.size()+" shops)";
+                                    deliveryChargesRemarks = " (combined x"+orderPaymentDetailList.size()+" shops)";
                                 }
 
                                 emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, order.getOrderShipmentDetail(), null, regionCountry, sendActivationLink, storeWithDetials.getRegionVertical().getCustomerActivationNotice(), customerEmail, assetServiceBaseUrl, deliveryChargesRemarks);

@@ -92,7 +92,7 @@ public class GeneratePdfReport {
             String deliveryChargeRemarks="";            
             if (order.getOrderPaymentDetail().getIsCombinedDelivery()) {
                 List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
-                deliveryChargeRemarks = " (Combined X"+orderPaymentDetailList.size()+" shops)";
+                deliveryChargeRemarks = " (combined x"+orderPaymentDetailList.size()+" shops)";
             }
             
             //invoice header            

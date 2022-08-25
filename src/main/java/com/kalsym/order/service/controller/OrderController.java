@@ -1842,7 +1842,7 @@ public class OrderController {
                         String deliveryChargesRemarks="";
                         if (order.getOrderPaymentDetail().getIsCombinedDelivery()) {
                             List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
-                            deliveryChargesRemarks = " (Combined X"+orderPaymentDetailList.size()+" shops)";
+                            deliveryChargesRemarks = " (combined x"+orderPaymentDetailList.size()+" shops)";
                         }
                         emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null, assetServiceBaseUrl, deliveryChargesRemarks);
                         email.setRawBody(emailContent);
