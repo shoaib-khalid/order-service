@@ -29,9 +29,11 @@ import com.kalsym.order.service.model.OrderSubItem;
 import com.kalsym.order.service.model.Store;
 import com.kalsym.order.service.model.StoreAssets;
 import com.kalsym.order.service.model.Customer;
+import com.kalsym.order.service.model.OrderPaymentDetail;
 import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.RegionCountry;
+import com.kalsym.order.service.model.repository.OrderPaymentDetailRepository;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -45,7 +47,8 @@ public class GeneratePdfReport {
             StoreWithDetails storeWithDetails, 
             OrderShipmentDetail deliveryDetails,
             RegionCountry regionCountry,
-            String assetServiceBaseUrl) {
+            String assetServiceBaseUrl,
+            OrderPaymentDetailRepository orderPaymentDetailRepository) {
 
         Document document = new Document();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -85,6 +88,11 @@ public class GeneratePdfReport {
                 deliveryPostcode = deliveryDetails.getZipcode();
                 deliveryCity = deliveryDetails.getCity();
                 deliveryState = deliveryDetails.getState();
+            }
+            String deliveryChargeRemarks="";            
+            if (order.getOrderPaymentDetail().getIsCombinedDelivery()) {
+                List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
+                deliveryChargeRemarks = " (Combined X"+orderPaymentDetailList.size()+" shops)";
             }
             
             //invoice header            
@@ -253,7 +261,7 @@ public class GeneratePdfReport {
             subtotalSubTable.addCell(setStringCellValue("ORDER DISCOUNT", fontNormal, 0));
             subtotalSubTable.addCell(setNumberCellValue("-" +String.format("%.2f",convertNullToZero(order.getAppliedDiscount())), fontNormal, 0));
             
-            subtotalSubTable.addCell(setStringCellValue("DELIVERY CHARGE", fontNormal, 0));
+            subtotalSubTable.addCell(setStringCellValue("DELIVERY CHARGE "+deliveryChargeRemarks, fontNormal, 0));
             subtotalSubTable.addCell(setNumberCellValue(String.format("%.2f",convertNullToZero(order.getDeliveryCharges())), fontNormal, 0));
             
             subtotalSubTable.addCell(setStringCellValue("DELIVERY DISCOUNT", fontNormal, 0));

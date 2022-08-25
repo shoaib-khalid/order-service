@@ -349,7 +349,12 @@ public class OrderProcessBulkThread extends Thread {
                                     }
                                     customerEmail = customer.getEmail();
                                 }
-                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, sendActivationLink, storeWithDetails.getRegionVertical().getCustomerActivationNotice(), customerEmail, assetServiceBaseUrl);
+                                String deliveryChargesRemarks="";
+                                if (order.getOrderPaymentDetail().getIsCombinedDelivery()) {
+                                    List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
+                                    deliveryChargesRemarks = " (Combined X"+orderPaymentDetailList.size()+" shops)";
+                                }
+                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, sendActivationLink, storeWithDetails.getRegionVertical().getCustomerActivationNotice(), customerEmail, assetServiceBaseUrl, deliveryChargesRemarks);
                                 email.setRawBody(emailContent);
                                 emailService.sendEmail(email);
                             } catch (Exception ex) {
@@ -376,7 +381,12 @@ public class OrderProcessBulkThread extends Thread {
                                 String[] emailAddress = {financeEmailAddress};
                                 email.setFrom(null);
                                 email.setTo(emailAddress);
-                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null, assetServiceBaseUrl);
+                                String deliveryChargesRemarks="";
+                                if (order.getOrderPaymentDetail().getIsCombinedDelivery()) {
+                                    List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
+                                    deliveryChargesRemarks = " (Combined X"+orderPaymentDetailList.size()+" shops)";
+                                }
+                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null, assetServiceBaseUrl, deliveryChargesRemarks);
                                 email.setRawBody(emailContent);
                                 emailService.sendEmail(email);
                             } catch (Exception ex) {

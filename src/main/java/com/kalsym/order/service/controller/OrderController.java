@@ -1839,7 +1839,12 @@ public class OrderController {
                         if (optPaymentDetails.isPresent()) {
                             paymentDetails = optPaymentDetails.get();
                         }
-                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null, assetServiceBaseUrl);
+                        String deliveryChargesRemarks="";
+                        if (order.getOrderPaymentDetail().getIsCombinedDelivery()) {
+                            List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
+                            deliveryChargesRemarks = " (Combined X"+orderPaymentDetailList.size()+" shops)";
+                        }
+                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null, assetServiceBaseUrl, deliveryChargesRemarks);
                         email.setRawBody(emailContent);
                         emailService.sendEmail(email);
                     } catch (Exception ex) {
@@ -1891,7 +1896,7 @@ public class OrderController {
         if (t.isPresent()) {
             regionCountry = t.get();
         }
-        ByteArrayInputStream bis = GeneratePdfReport.orderInvoice(order, orderItemList, storeWithDetails.get(), orderShipmentDetail, regionCountry, assetServiceBaseUrl);
+        ByteArrayInputStream bis = GeneratePdfReport.orderInvoice(order, orderItemList, storeWithDetails.get(), orderShipmentDetail, regionCountry, assetServiceBaseUrl, orderPaymentDetailRepository);
 
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add("Content-Disposition", "inline; filename="+orderId+".pdf");

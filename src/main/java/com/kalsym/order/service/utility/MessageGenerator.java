@@ -27,7 +27,8 @@ public class MessageGenerator {
             boolean sendActivationLink,
             String customerActivationNotice,
             String customerEmail, 
-            String assetServiceBaseUrl) {
+            String assetServiceBaseUrl,
+            String deliveryChargesRemarks) {
         
         if (emailContent != null) {
             if ( storeWithDetails.getStoreLogoUrl()!=null) {
@@ -55,6 +56,7 @@ public class MessageGenerator {
                 emailContent = emailContent.replace("{{delivery-address}}", "N/A");
                 emailContent = emailContent.replace("{{delivery-city}}", "N/A");
             } else {
+                emailContent = emailContent.replace("{{delivery-charges-remarks}}", deliveryChargesRemarks);
                 emailContent = emailContent.replace("{{delivery-charges}}", String.format("%.2f",order.getOrderPaymentDetail().getDeliveryQuotationAmount()) + "");
                 emailContent = emailContent.replace("{{delivery-address}}", orderShipmentDetail.getAddress());
                 emailContent = emailContent.replace("{{delivery-city}}", orderShipmentDetail.getCity());

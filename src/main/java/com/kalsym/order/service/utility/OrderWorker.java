@@ -24,6 +24,7 @@ import com.kalsym.order.service.model.Email;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderCompletionStatusConfig;
 import com.kalsym.order.service.model.OrderItem;
+import com.kalsym.order.service.model.OrderPaymentDetail;
 import com.kalsym.order.service.model.OrderSubItem;
 import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.model.ProductInventory;
@@ -557,7 +558,13 @@ public class OrderWorker {
                                    } 
                                 } 
                                 
-                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, order.getOrderShipmentDetail(), null, regionCountry, sendActivationLink, storeWithDetials.getRegionVertical().getCustomerActivationNotice(), customerEmail, assetServiceBaseUrl);
+                                String deliveryChargesRemarks="";
+                                if (order.getOrderPaymentDetail().getIsCombinedDelivery()) {
+                                    List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
+                                    deliveryChargesRemarks = " (Combined X"+orderPaymentDetailList.size()+" shops)";
+                                }
+
+                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, order.getOrderShipmentDetail(), null, regionCountry, sendActivationLink, storeWithDetials.getRegionVertical().getCustomerActivationNotice(), customerEmail, assetServiceBaseUrl, deliveryChargesRemarks);
                                 Email email = new Email();
                                 ArrayList<String> tos = new ArrayList<>();
                                 tos.add(order.getOrderShipmentDetail().getEmail());

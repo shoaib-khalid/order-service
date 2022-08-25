@@ -204,6 +204,23 @@ public class OrderProcessWorker {
             }
         }
         
+        //check for combined delivery, cannot update to being_delivered if other order not awaiting_pickup / being_delivered
+        if (newStatus.contains("BEING_DELIVERED") && order.getOrderPaymentDetail()!=null && order.getOrderPaymentDetail().getIsCombinedDelivery()) {
+            List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
+            for (int z=0;z<orderPaymentDetailList.size();z++) {
+                String relatedOrderId = orderPaymentDetailList.get(z).getOrderId();
+                //check order status, if cancel no need to update tracking url
+                Optional<Order> optOrderRelated = orderRepository.findById(relatedOrderId);
+                if (optOrderRelated.isPresent() && optOrderRelated.get().getCompletionStatus()!=OrderStatus.AWAITING_PICKUP &&  optOrderRelated.get().getCompletionStatus()!=OrderStatus.BEING_DELIVERED) {
+                    //reject update. cannot update 
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order is being processed. orderId: " + orderId);
+                    orderProcessResult.httpStatus = HttpStatus.CONFLICT;
+                    orderProcessResult.errorMsg = "Order is being processed";
+                    return orderProcessResult;
+                }
+            }
+        }
+        
         StoreWithDetails storeWithDetails = optStore.get();
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderId:"+order.getId()+" invoiceNo:"+order.getInvoiceId()+" Store details got : " + storeWithDetails.toString());
         OrderStatus status = bodyOrderCompletionStatusUpdate.getStatus();
@@ -662,7 +679,7 @@ public class OrderProcessWorker {
                 orderProcessResult.pendingRequestDelivery=true;
             }
 
-            if (orderProcessResult.pendingRequestDelivery==false) {
+            if (orderProcessResult.pendingRequestDelivery==false || newStatus.equals("ASSIGNING_DRIVER")) {
                             
                 //send email to customer if config allows
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email to customer: " + orderCompletionStatusConfig.getEmailToCustomer());
@@ -688,7 +705,12 @@ public class OrderProcessWorker {
                                 }
                                 customerEmail = customer.getEmail();
                             }
-                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, sendActivationLink, storeWithDetails.getRegionVertical().getCustomerActivationNotice(), customerEmail, assetServiceBaseUrl);
+                            String deliveryChargesRemarks="";
+                            if (order.getOrderPaymentDetail().getIsCombinedDelivery()) {
+                                List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
+                                deliveryChargesRemarks = " (Combined X "+orderPaymentDetailList.size()+" shops)";
+                            }
+                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, sendActivationLink, storeWithDetails.getRegionVertical().getCustomerActivationNotice(), customerEmail, assetServiceBaseUrl, deliveryChargesRemarks);
                             email.setRawBody(emailContent);
                             emailService.sendEmail(email);
                         } catch (Exception ex) {
@@ -716,7 +738,12 @@ public class OrderProcessWorker {
                             email.setFrom(null);
                             email.setFromName(financeEmailSenderName);
                             email.setTo(emailAddress);
-                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null, assetServiceBaseUrl);
+                            String deliveryChargesRemarks="";
+                            if (order.getOrderPaymentDetail().getIsCombinedDelivery()) {
+                                List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
+                                deliveryChargesRemarks = " (Combined X"+orderPaymentDetailList.size()+" shops)";
+                            }
+                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null, assetServiceBaseUrl, deliveryChargesRemarks);
                             email.setRawBody(emailContent);
                             emailService.sendEmail(email);
                         } catch (Exception ex) {
