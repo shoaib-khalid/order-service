@@ -556,7 +556,7 @@ public class WhatsappService {
         body.setText(text);
         
         List<Button> buttonList = new ArrayList<>();                         
-        Button button2 = new Button(new Reply(orderButtonReplyPrefix+"_ORDER_PROCESS,"+order.getId(), "Cancel Order"));
+        Button button2 = new Button(new Reply(orderButtonReplyPrefix+"_ORDER_PROCESS,"+order.getId(), "Process Order"));
         buttonList.add(button2);
         Action action = new Action();
         action.setButtons(buttonList);
