@@ -375,6 +375,7 @@ public class OrderProcessWorker {
         }
         //update order to being process
         orderRepository.UpdateOrderBeingProcess(orderId);
+        double refundAmount=0.00;
         
         switch (status) {
             case PAYMENT_CONFIRMED:
@@ -548,6 +549,7 @@ public class OrderProcessWorker {
                 if (optPayment.isPresent()) {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Payment Order found with orderId: " + order.getId());
                     //create refund record
+                    refundAmount=order.getTotal();
                     OrderRefund orderRefund = new OrderRefund();
                     orderRefund.setOrderId(order.getId());
                     orderRefund.setRefundType(RefundType.ORDER_CANCELLED);
@@ -710,7 +712,7 @@ public class OrderProcessWorker {
                                 List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
                                 deliveryChargesRemarks = " (combined x"+orderPaymentDetailList.size()+" shops)";
                             }
-                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, sendActivationLink, storeWithDetails.getRegionVertical().getCustomerActivationNotice(), customerEmail, assetServiceBaseUrl, deliveryChargesRemarks);
+                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, sendActivationLink, storeWithDetails.getRegionVertical().getCustomerActivationNotice(), customerEmail, assetServiceBaseUrl, deliveryChargesRemarks, 0.00);
                             email.setRawBody(emailContent);
                             emailService.sendEmail(email);
                         } catch (Exception ex) {
@@ -719,7 +721,7 @@ public class OrderProcessWorker {
                     } else {
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is null");
                     }
-                }
+                }                
                         
                 //send email to finance if config allows
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email to finance: " + orderCompletionStatusConfig.getEmailToFinance());
@@ -743,7 +745,7 @@ public class OrderProcessWorker {
                                 List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
                                 deliveryChargesRemarks = " (combined x"+orderPaymentDetailList.size()+" shops)";
                             }
-                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null, assetServiceBaseUrl, deliveryChargesRemarks);
+                            emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetails, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null, assetServiceBaseUrl, deliveryChargesRemarks, 0.00);
                             email.setRawBody(emailContent);
                             emailService.sendEmail(email);
                         } catch (Exception ex) {

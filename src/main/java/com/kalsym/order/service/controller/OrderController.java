@@ -249,6 +249,9 @@ public class OrderController {
     @Value("${asset.service.URL:https://assets.symplified.it}")
     private String assetServiceBaseUrl;
     
+    @Value("${whatsapp.process.order.URL:https://api.symplified.it/order-service/v1/orders/%orderId%/completion-status-updates}")
+    private String processOrderUrl;
+    
     //@PreAuthorize("hasAnyAuthority('orders-get', 'all') and (@customOwnerVerifier.VerifyStore(#storeId) or @customOwnerVerifier.VerifyCustomer(#customerId))")    
     @GetMapping(path = {""}, name = "orders-get", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-get', 'all')")
@@ -1761,8 +1764,9 @@ public class OrderController {
             order = orderRepository.save(order);
             
             //insert refund record for finance to refund for ONLINEPAYMENT only
+            double refundAmount = 0.00;
             if (paymentOrder!=null) {
-                double refundAmount = oldGranTotal - newGrandTotal ;            
+                refundAmount = oldGranTotal - newGrandTotal ;            
                 OrderRefund orderRefund = new OrderRefund();
                 orderRefund.setOrderId(order.getId());
                 orderRefund.setRefundType(RefundType.ITEM_REVISED);            
@@ -1770,7 +1774,7 @@ public class OrderController {
                 orderRefund.setRefundAmount(refundAmount);
                 orderRefund.setRefundStatus(RefundStatus.PENDING);
                 orderRefundRepository.save(orderRefund);
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "refund record created for orderId: " + order.getId()+" refundAmount:"+refundAmount);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "refund record created for orderId: " + order.getId()+" refundAmount:"+refundAmount);                                
             } else {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order is COD. no refund record created for orderId: " + order.getId());
             }
@@ -1819,7 +1823,7 @@ public class OrderController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
                 orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
             }
-            
+                        
             //send email to customer if config allows
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email to customer: " + orderCompletionStatusConfig.getEmailToCustomer());
             if (orderCompletionStatusConfig.getEmailToCustomer()) {
@@ -1844,7 +1848,7 @@ public class OrderController {
                             List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
                             deliveryChargesRemarks = " (combined x"+orderPaymentDetailList.size()+" shops)";
                         }
-                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null, assetServiceBaseUrl, deliveryChargesRemarks);
+                        emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, orderShipmentDetail, paymentDetails, regionCountry, false, null, null, assetServiceBaseUrl, deliveryChargesRemarks, refundAmount);
                         email.setRawBody(emailContent);
                         emailService.sendEmail(email);
                     } catch (Exception ex) {
@@ -1853,6 +1857,21 @@ public class OrderController {
                 } else {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "email content is null");
                 }
+            }
+            
+            //check if still got item
+            boolean gotItem=false;
+            for (int i=0;i<orderItems.size();i++) {
+                OrderItem orderItem = orderItems.get(i);
+                if (orderItem.getQuantity()>0) {
+                    gotItem=true;
+                    break;
+                }
+            }
+            if (!gotItem){
+                //cancel the order
+                boolean res = OrderWorker.ProcessOrder(orderId, "CANCEL", logprefix, processOrderUrl);               
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cancel order result:"+res);
             }
             
             response.setSuccessStatus(HttpStatus.ACCEPTED);            

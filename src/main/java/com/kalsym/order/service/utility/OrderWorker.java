@@ -23,6 +23,7 @@ import com.kalsym.order.service.model.DeliveryQuotation;
 import com.kalsym.order.service.model.Email;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderCompletionStatusConfig;
+import com.kalsym.order.service.model.OrderCompletionStatusUpdate;
 import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.OrderPaymentDetail;
 import com.kalsym.order.service.model.OrderSubItem;
@@ -65,8 +66,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 /**
  *
@@ -564,7 +569,7 @@ public class OrderWorker {
                                     deliveryChargesRemarks = " (combined x"+orderPaymentDetailList.size()+" shops)";
                                 }
 
-                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, order.getOrderShipmentDetail(), null, regionCountry, sendActivationLink, storeWithDetials.getRegionVertical().getCustomerActivationNotice(), customerEmail, assetServiceBaseUrl, deliveryChargesRemarks);
+                                emailContent = MessageGenerator.generateEmailContent(emailContent, order, storeWithDetials, orderItems, order.getOrderShipmentDetail(), null, regionCountry, sendActivationLink, storeWithDetials.getRegionVertical().getCustomerActivationNotice(), customerEmail, assetServiceBaseUrl, deliveryChargesRemarks, 0.00);
                                 Email email = new Email();
                                 ArrayList<String> tos = new ArrayList<>();
                                 tos.add(order.getOrderShipmentDetail().getEmail());
@@ -699,5 +704,48 @@ public class OrderWorker {
             return response;
         }
         
+    }
+    
+    
+    public static boolean ProcessOrder(String orderId, String action, String logprefix, String processOrderUrl) {
+        
+        OrderCompletionStatusUpdate request = new OrderCompletionStatusUpdate();
+        request.setOrderId(orderId);
+        
+        if (action.equals("CANCEL")) {
+            request.setStatus(OrderStatus.CANCELED_BY_MERCHANT);
+        } else if (action.equals("PROCESS")) {
+            request.setStatus(OrderStatus.BEING_PREPARED);
+        } else if (action.equals("PICKUP")) {
+            request.setStatus(OrderStatus.AWAITING_PICKUP);
+        }
+        
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer accessToken");
+         
+        HttpEntity<OrderCompletionStatusUpdate> httpEntity = new HttpEntity<>(request, headers);
+        
+        try {
+            String url = processOrderUrl.replaceAll("%orderId%", orderId);
+        
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + processOrderUrl, "");
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
+        
+            ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.PUT, httpEntity, String.class);
+
+            if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
+                return true;
+            } else {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not ProcessOrder res: " + res, "");
+                return false;
+            }
+        
+        } catch (Exception ex) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not ProcessOrder res: " + ex.getMessage(), "");
+            return false;
+        }
     }
 }

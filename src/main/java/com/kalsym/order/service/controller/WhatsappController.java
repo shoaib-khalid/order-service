@@ -45,6 +45,7 @@ import com.kalsym.order.service.model.repository.RegionCountriesRepository;
 import com.kalsym.order.service.utility.HttpResponse;
 import com.kalsym.order.service.utility.Logger;
 import com.kalsym.order.service.utility.DateTimeUtil;
+import com.kalsym.order.service.utility.OrderWorker;
 import com.kalsym.order.service.service.WhatsappService;
 import com.kalsym.order.service.service.whatsapp.*;
 import java.util.Optional;
@@ -222,7 +223,7 @@ public class WhatsappController {
             } else if (replyAction.contains("ORDER_REJECT")) {
                 //cancel order
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Merchant cancel the order. OrderId:"+orderId);        
-                boolean res = ProcessOrder(orderId, "CANCEL", logprefix);
+                boolean res = OrderWorker.ProcessOrder(orderId, "CANCEL", logprefix, processOrderUrl);
                 if (res) {
                     whatsappService.sendNotification(recipientList, order, "Order have been canceled for invoiceNo:"+order.getInvoiceId());
                 } else {
@@ -231,7 +232,7 @@ public class WhatsappController {
                 }
             } else if (replyAction.contains("ORDER_PROCESS")) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Merchant process the order. OrderId:"+orderId);        
-                boolean res = ProcessOrder(orderId, "PROCESS", logprefix);
+                boolean res = OrderWorker.ProcessOrder(orderId, "PROCESS", logprefix, processOrderUrl);
                 if (res) {
                     whatsappService.sendProcessOrderResponse(recipientList, order, "Order has been processed for :"+order.getInvoiceId()+". Click button below when ready for pickup");
                 } else {
@@ -240,7 +241,7 @@ public class WhatsappController {
                 }
             } else if (replyAction.contains("ORDER_PICKUP")) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Mercant ready for pickup. OrderId:"+orderId);        
-                boolean res = ProcessOrder(orderId, "PICKUP", logprefix);
+                boolean res = OrderWorker.ProcessOrder(orderId, "PICKUP", logprefix, processOrderUrl);
                 if (res) {
                     //get delivery link
                     OrderShipmentDetail orderShipment = orderShipmentDetailRepository.findByOrderId(orderId);
@@ -282,47 +283,6 @@ public class WhatsappController {
         }
         return orderTime;
     }
-    
-    private boolean ProcessOrder(String orderId, String action, String logprefix) {
-        
-        OrderCompletionStatusUpdate request = new OrderCompletionStatusUpdate();
-        request.setOrderId(orderId);
-        
-        if (action.equals("CANCEL")) {
-            request.setStatus(OrderStatus.CANCELED_BY_MERCHANT);
-        } else if (action.equals("PROCESS")) {
-            request.setStatus(OrderStatus.BEING_PREPARED);
-        } else if (action.equals("PICKUP")) {
-            request.setStatus(OrderStatus.AWAITING_PICKUP);
-        }
-        
-        RestTemplate restTemplate = new RestTemplate();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer accessToken");
-         
-        HttpEntity<OrderCompletionStatusUpdate> httpEntity = new HttpEntity<>(request, headers);
-        
-        try {
-            String url = processOrderUrl.replaceAll("%orderId%", orderId);
-        
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + processOrderUrl, "");
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
-        
-            ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.PUT, httpEntity, String.class);
-
-            if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
-                return true;
-            } else {
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not ProcessOrder res: " + res, "");
-                return false;
-            }
-        
-        } catch (Exception ex) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not ProcessOrder res: " + ex.getMessage(), "");
-            return false;
-        }
-    }
+       
 
 }

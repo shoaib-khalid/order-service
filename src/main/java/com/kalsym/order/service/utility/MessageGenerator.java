@@ -28,7 +28,8 @@ public class MessageGenerator {
             String customerActivationNotice,
             String customerEmail, 
             String assetServiceBaseUrl,
-            String deliveryChargesRemarks) {
+            String deliveryChargesRemarks,
+            double refundAmount) {
         
         if (emailContent != null) {
             if ( storeWithDetails.getStoreLogoUrl()!=null) {
@@ -97,6 +98,12 @@ public class MessageGenerator {
                 }
             } else {
                 emailContent = emailContent.replace("{{voucher-discount}}", "N/A");
+            }
+            
+            if (refundAmount>0) {
+                emailContent = emailContent.replace("{{refund-amount}}", "-"+String.format("%.2f",refundAmount) + "");
+            } else {
+                emailContent = emailContent.replace("{{refund-amount}}", "N/A");
             }
             
             emailContent = emailContent.replace("{{sub-total}}", String.format("%.2f",order.getSubTotal()) + "");
