@@ -1,8 +1,14 @@
 ##################################################
-# order-service-3.11.6-SNAPSHOT |26-Aug-2022
+# order-service-3.11.7-SNAPSHOT |26-Aug-2022
 ##################################################
 Add refund amount in email to customer asking for bank details for reviseItem
 Cancel order if revised item quantity=0 for all items
+
+##################################################
+# order-service-3.11.6-SNAPSHOT |26-Aug-2022
+##################################################
+Bug fix for multiple order from same location
+
 
 ##################################################
 # order-service-3.11.5-SNAPSHOT |24-Aug-2022
