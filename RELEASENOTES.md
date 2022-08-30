@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.11.8-SNAPSHOT |30-Aug-2022
+##################################################
+Bug fix for rounding 2 decimal point in Utilities
+
+
+##################################################
 # order-service-3.11.7-SNAPSHOT |26-Aug-2022
 ##################################################
 Add refund amount in email to customer asking for bank details for reviseItem

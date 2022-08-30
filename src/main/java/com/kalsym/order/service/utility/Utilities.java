@@ -37,6 +37,7 @@ public class Utilities {
     
     public static Double Round2DecimalPoint(Double input) {
         if (input == null) { return null; }
-        return Math.round(input * 100.0) / 100.0;
+        BigDecimal bd=new BigDecimal(input).setScale(2,RoundingMode.UP);        
+        return bd.doubleValue();
     }
 }

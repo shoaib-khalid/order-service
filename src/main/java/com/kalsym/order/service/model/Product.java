@@ -14,6 +14,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import com.kalsym.order.service.enums.VehicleType;
 import com.kalsym.order.service.OrderServiceApplication;
+import javax.persistence.Transient;
 
 /**
  *
@@ -46,11 +47,12 @@ public class Product {
 //    private String deliveryType;
 //    private String itemType;
     private String seoUrl;
-    private String seoName;
+    private String seoName;    
     private boolean trackQuantity;
     private boolean allowOutOfStockPurchases;
     private int minQuantityForAlarm;
     private Boolean isPackage;
+    private int shortId;
     
     public enum Status {
         ACTIVE,
@@ -72,6 +74,12 @@ public class Product {
             return null;
         else
             return OrderServiceApplication.ASSETURL + "/" + thumbnailUrl;
+    }
+    
+    @Transient
+    String seoNameMarketplace;
+    public String getSeoNameMarketplace() {
+        return shortId+"-"+seoName;
     }
    
 }
