@@ -180,9 +180,12 @@ public class OrderWorker {
 
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "productInventory discountId:["+discountDetails.discountId+"] discountedPrice:"+discountPrice);
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem discountId:["+cartItems.get(i).getDiscountId()+"] price:"+cartItemPrice);
-
+                            
+                            double beza = Math.abs(discountPrice - cartItemPrice);
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem discountId:["+cartItems.get(i).getDiscountId()+"] beza:"+beza);
+                            
                             if (discountDetails.discountId.equals(cartItems.get(i).getDiscountId()) &&
-                                    discountPrice==cartItemPrice) {
+                                    beza < 0.5) {
                                 //dicount still valid
                                 subTotal += cartItems.get(i).getPrice() ;
                                 itemPrice = discountPrice;
