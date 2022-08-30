@@ -36,8 +36,14 @@ public class Utilities {
     }
     
     public static Double Round2DecimalPoint(Double input) {
-        if (input == null) { return null; }
-        BigDecimal bd=new BigDecimal(input).setScale(2,RoundingMode.UP);        
+        
+        int places=2;
+        if (input==null) return null;
+        
+        if (places < 0) throw new IllegalArgumentException();
+
+        BigDecimal bd = BigDecimal.valueOf(input);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
         return bd.doubleValue();
     }
 }
