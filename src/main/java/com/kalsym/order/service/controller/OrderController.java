@@ -790,11 +790,45 @@ public class OrderController {
         CustomerVoucher customerStoreVoucher = null;
         if (cod.getStoreVoucherCode()!=null && !"".equals(cod.getStoreVoucherCode())) {
             customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(cod.getCustomerId(), cod.getStoreVoucherCode(), new Date());
-            if (customerStoreVoucher==null) {
-                response.setStatus(HttpStatus.NOT_FOUND.value());
-                response.setMessage("Voucher code " + cod.getStoreVoucherCode() + " not found");
-                return ResponseEntity.status(response.getStatus()).body(response);
-            } 
+            if (customerStoreVoucher==null) {                
+                //find guest voucher
+                Voucher guestVoucher = customerVoucherRepository.findGuestStoreVoucherByCode(cod.getStoreVoucherCode(), new Date());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store Guest Voucher:"+guestVoucher);
+                if (guestVoucher!=null) {
+                    //check if already redeem
+                    if (cod.getOrderShipmentDetails().getEmail()!=null) {
+                        List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(cod.getOrderShipmentDetails().getEmail(), guestVoucher.getId());
+                        if (usedVoucherList.size()>0) {                        
+                            CustomerVoucher usedVoucher = usedVoucherList.get(0);
+                            if (usedVoucher.getIsUsed()) {
+                                //already used
+                                response.setStatus(HttpStatus.NOT_FOUND.value());
+                                response.setMessage("Voucher code " + cod.getStoreVoucherCode() + " already used");
+                                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                            } else {
+                                customerStoreVoucher = usedVoucher;
+                            }
+                        } else {
+                            customerStoreVoucher = new CustomerVoucher();
+                            customerStoreVoucher.setGuestEmail(cod.getOrderShipmentDetails().getEmail());
+                            customerStoreVoucher.setIsUsed(false);
+                            customerStoreVoucher.setVoucherId(guestVoucher.getId());
+                            customerStoreVoucher.setCreated(new Date());
+                            customerStoreVoucher.setGuestVoucher(true);
+                            customerVoucherRepository.save(customerStoreVoucher);
+                        }
+                    } else {
+                        response.setStatus(HttpStatus.NOT_FOUND.value());
+                        response.setMessage("Please insert email");
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                    }
+                } else {
+                    response.setStatus(HttpStatus.NOT_FOUND.value());
+                    response.setMessage("Store Voucher code " + cod.getStoreVoucherCode() + " not found");
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                }
+                
+            }             
         }
         
         StoreWithDetails storeWithDetials = null;

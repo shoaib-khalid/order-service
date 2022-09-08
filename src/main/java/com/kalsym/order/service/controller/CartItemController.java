@@ -34,6 +34,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kalsym.order.service.model.repository.ProductInventoryRepository;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.utility.Logger;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 import java.util.List;
 import java.util.Date;
 
@@ -62,6 +64,9 @@ public class CartItemController {
     
     @Autowired
     ProductService productService;
+    
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
     
     @GetMapping(path = {""}, name = "cart-items-get")
     @PreAuthorize("hasAnyAuthority('cart-items-get', 'all')")
@@ -235,6 +240,12 @@ public class CartItemController {
         cartRepository.save(savedCart.get());
         
         response.setData(cartItemData.get());
+        
+        //send update via websocket
+        String cartid = savedCart.get().getId();
+        String message = "New Item Added!";
+        simpMessagingTemplate.convertAndSendToUser(cartid, "/secured/user/queue/specific-cart", message);
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     

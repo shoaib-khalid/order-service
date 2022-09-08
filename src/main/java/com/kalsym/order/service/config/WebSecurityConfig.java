@@ -61,6 +61,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf().disable()
                 .authorizeRequests().antMatchers(
+                        "/chat/**",
+                        "/cartUpdate/**",
                         "/orders/track/**",
                         "/orders/pdf/**",
                         "/clients/authenticate",

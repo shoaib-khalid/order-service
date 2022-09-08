@@ -1,4 +1,11 @@
 ##################################################
+# order-service-3.12.0-SNAPSHOT |8-Sept-2022
+##################################################
+New feature : support websocket connection
+Bug fix for placeOrder with storeVoucherCode
+
+
+##################################################
 # order-service-3.11.8-SNAPSHOT |30-Aug-2022
 ##################################################
 Bug fix for rounding 2 decimal point in Utilities

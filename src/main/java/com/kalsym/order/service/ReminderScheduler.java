@@ -43,6 +43,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 /**
  *
  * @author taufik
@@ -78,8 +79,18 @@ public class ReminderScheduler {
     @Value("${order.reminder.copy.msisdn:60123593299,601139343018,60133639668}")
     private String copyMsisdn;
     
-    @Scheduled(fixedRate = 300000)
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
+    
+    @Scheduled(fixedRate = 60000)
     public void checkNotProcessOrder() throws Exception {
+        
+        String testCartId = "cart1";
+        String message = "New Item Added!";
+        //simpMessagingTemplate.convertAndSendToUser(testCartId, "/queue", message);
+        simpMessagingTemplate.convertAndSend("/topic/greetings", message);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "WebSocketTest", "Message sent via websocket");        
+        
         if (isEnabled) {
             String logprefix = "Reminder-Scheduler"; 
             List<String> items = Arrays.asList(verticalToSend.split(","));
