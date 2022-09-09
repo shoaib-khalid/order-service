@@ -157,9 +157,9 @@ public class CartItemController {
         
         //check service type
         Cart cart = savedCart.get();
-        String serviceType = "DELIVERIN";
+        ServiceType serviceType = ServiceType.DELIVERIN;
         if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN){
-            serviceType = "DINEIN";
+            serviceType = ServiceType.DINEIN;
         }
         
         CartItem cartItem;
@@ -183,14 +183,14 @@ public class CartItemController {
                     
             //check for discount
             double itemPrice = 0.00;
-            if (productInventory.getItemDiscount()!=null && serviceType.equals("deliverin")) {
+            if (productInventory.getItemDiscount()!=null && serviceType==ServiceType.DELIVERIN) {
                 //got discount
                 ItemDiscount discountDetails = productInventory.getItemDiscount();
                 itemPrice = discountDetails.discountedPrice;
                 bodyCartItem.setDiscountId(discountDetails.discountId);
                 bodyCartItem.setNormalPrice((float)discountDetails.normalPrice);
                 bodyCartItem.setDiscountLabel(discountDetails.discountLabel);
-            } else if (serviceType.equals("deliverin")) {
+            } else if (serviceType==ServiceType.DELIVERIN) {
                 //no dicount for this item code
                 itemPrice = productInventory.getPrice();
             } else {
