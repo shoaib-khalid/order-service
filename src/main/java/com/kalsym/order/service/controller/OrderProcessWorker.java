@@ -582,11 +582,21 @@ public class OrderProcessWorker {
         
         if (orderCompletionStatusConfig!=null) {
             OrderShipmentDetail orderShipmentDetail = orderShipmentDetailRepository.findByOrderId(orderId);
-            Optional<PaymentOrder> optPaymentDetails = paymentOrderRepository.findByClientTransactionId(orderId);
+            
+            Optional<PaymentOrder> optPaymentDetails = null;
+            if (order.getOrderGroupId()!=null) {
+                optPaymentDetails = paymentOrderRepository.findByClientTransactionId("G"+order.getOrderGroupId());
+                if (!optPaymentDetails.isPresent()) {
+                    optPaymentDetails = paymentOrderRepository.findByClientTransactionId(orderId);
+                }
+            } else {
+                optPaymentDetails = paymentOrderRepository.findByClientTransactionId(orderId);
+            }
             PaymentOrder paymentDetails = null;
             if (optPaymentDetails.isPresent()) {
                 paymentDetails = optPaymentDetails.get();
             }
+            
             //request delivery
             orderProcessResult.pendingRequestDelivery=false;
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "request delivery: " + orderCompletionStatusConfig.getRequestDelivery());
