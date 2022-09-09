@@ -101,6 +101,7 @@ public class OrderGroup implements Serializable {
     
     private String regionCountryId;
     
+    @Enumerated(EnumType.STRING)
     private ServiceType serviceType;
     
     @Transient

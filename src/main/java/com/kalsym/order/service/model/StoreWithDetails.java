@@ -79,6 +79,7 @@ public class StoreWithDetails implements Serializable {
     
     private String dineInPaymentType;
     
+    @Enumerated(EnumType.STRING)
     private DineInOption dineInOption;
     
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)

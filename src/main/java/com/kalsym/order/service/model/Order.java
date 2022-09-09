@@ -127,8 +127,10 @@ public class Order implements Serializable {
     
     private String orderGroupId;
     
+    @Enumerated(EnumType.STRING)
     private ServiceType serviceType;
     
+    @Enumerated(EnumType.STRING)
     private DineInOption dineInOption;
     
     @Transient
