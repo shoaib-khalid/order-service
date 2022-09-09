@@ -320,7 +320,12 @@ public class OrderWorker {
                 order.setPaymentStatus(PaymentStatus.PENDING);
                 order.setCustomerId(cod.getCustomerId());
                 order.setDeliveryCharges(cod.getOrderPaymentDetails().getDeliveryQuotationAmount());
-                order.setPaymentType(storeWithDetials.getPaymentType());                
+                if (cart.getServiceType()!=null && cart.getServiceType().equalsIgnoreCase("DINEIN")) {
+                    order.setPaymentType(storeWithDetials.getDineInPaymentType()); 
+                    order.setDineInOption(storeWithDetials.getDineInOption());
+                } else {
+                    order.setPaymentType(storeWithDetials.getPaymentType());                
+                }
                 order.setCustomerNotes(cod.getCustomerNotes());
 
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceChargesPercentage: " + storeWithDetials.getServiceChargesPercentage());
@@ -367,6 +372,11 @@ public class OrderWorker {
                 order.setStoreVoucherDiscount(orderTotalObject.getStoreVoucherDiscount());
                 order.setStoreVoucherId(orderTotalObject.getStoreVoucherId());
                 order.setTotalDataObject(orderTotalObject);
+                if (cart.getServiceType()!=null) {
+                    order.setServiceType(cart.getServiceType());
+                } else {
+                    order.setServiceType("DELIVERIN");
+                }
                 
                 // saving order object to get order Id
                 order = orderRepository.save(order);
@@ -379,6 +389,10 @@ public class OrderWorker {
                 // save shipment detials
                 Boolean storePickup = cod.getOrderShipmentDetails().getStorePickup();
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store Pickup:"+storePickup);
+                
+                if (cart.getServiceType()!=null && cart.getServiceType().equalsIgnoreCase("DINEIN")) {
+                    storePickup=true;
+                }
                 
                 if (storePickup==null) {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Delivery Type:["+cod.getOrderShipmentDetails().getDeliveryType()+"]");

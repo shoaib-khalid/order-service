@@ -929,7 +929,10 @@ public class OrderController {
                 orderGroup.setPaidAmount(0.00);
             }
             orderGroup.setRegionCountryId(storeWithDetials.getRegionCountryId());
-            orderGroup.setServiceType(cart.getServiceType());
+            if (cart.getServiceType()!=null)
+                orderGroup.setServiceType(cart.getServiceType());
+            else
+                orderGroup.setServiceType("DELIVERIN");
             
             orderGroupRepository.save(orderGroup);
             

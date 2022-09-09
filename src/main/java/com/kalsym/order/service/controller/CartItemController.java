@@ -155,9 +155,9 @@ public class CartItemController {
         
         //check service type
         Cart cart = savedCart.get();
-        String serviceType = "deliverin";
-        if (cart.getServiceType()!=null && cart.getServiceType().equalsIgnoreCase("dinein")){
-            serviceType = "dinein";
+        String serviceType = "DELIVERIN";
+        if (cart.getServiceType()!=null && cart.getServiceType().equalsIgnoreCase("DINEIN")){
+            serviceType = "DINEIN";
         }
         
         CartItem cartItem;
@@ -328,9 +328,9 @@ public class CartItemController {
         
         //check service type
         Cart cart = savedCart.get();
-        String serviceType = "deliverin";
-        if (cart.getServiceType()!=null && cart.getServiceType().equalsIgnoreCase("dinein")){
-            serviceType = "dinein";
+        String serviceType = "DELIVERIN";
+        if (cart.getServiceType()!=null && cart.getServiceType().equalsIgnoreCase("DINEIN")){
+            serviceType = "DINEIN";
         }
         
         Optional<CartItem> optCartItem = cartItemRepository.findById(id);
@@ -544,9 +544,7 @@ public class CartItemController {
                             
                             //check service type
                             Cart existingCart = cart.get();
-                            String serviceType = "deliverin";
-                            if (existingCart.getServiceType()!=null && existingCart.getServiceType().equalsIgnoreCase("dinein")){
-                                serviceType = "dinein";
+                            if (existingCart.getServiceType()!=null && existingCart.getServiceType().equalsIgnoreCase("DINEIN")){
                                 cartItem.setProductPrice((float)itemPriceDineIn);
                                 cartItem.setPrice((float)(cartItem.getQuantity() * itemPriceDineIn));
                                 cartItem.setNormalPrice(null);

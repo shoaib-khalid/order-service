@@ -125,6 +125,10 @@ public class Order implements Serializable {
     
     private String orderGroupId;
     
+    private String serviceType;
+    
+    private String dineInOption;
+    
     @Transient
     private OrderObject totalDataObject;
       

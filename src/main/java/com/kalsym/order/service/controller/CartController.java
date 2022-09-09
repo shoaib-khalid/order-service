@@ -343,6 +343,9 @@ public class CartController {
         try {
             bodyCart.setIsOpen(Boolean.TRUE);
             bodyCart.setStage(CartStage.CREATED);
+            if (bodyCart.getServiceType()==null) {
+                bodyCart.setServiceType("DELIVERIN");
+            } 
             savedCart = cartRepository.save(bodyCart);
             response.setSuccessStatus(HttpStatus.CREATED);
         } catch (Exception exp) {

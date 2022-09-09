@@ -6,8 +6,11 @@ Bug fix for placeOrder with storeVoucherCode
 New feature : Dine-In ordering
 
 ##DB Changes:
-ALTER TABLE cart ADD serviceType VARCHAR(20); # to know deliverin or dinein
-ALTER TABLE order_group ADD serviceType VARCHAR(20); # to know deliverin or dinein
+ALTER TABLE `cart` ADD serviceType ENUM('DINEIN','DELIVERIN'); # to know deliverin or dinein
+ALTER TABLE `order` ADD dineInOption ENUM('SELFCOLLECT','SENTOTABLE');
+ALTER TABLE `order_group` ADD serviceType ENUM('DINEIN','DELIVERIN'); # to know deliverin or dinein
+ALTER TABLE `order` ADD serviceType ENUM('DINEIN','DELIVERIN');
+
 
 ##################################################
 # order-service-3.11.8-SNAPSHOT |30-Aug-2022

@@ -76,6 +76,10 @@ public class StoreWithDetails implements Serializable {
 //    @Enumerated(EnumType.STRING)
     private String paymentType;
     
+    private String dineInPaymentType;
+    
+    private String dineInOption;
+    
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date snoozeStartTime;
