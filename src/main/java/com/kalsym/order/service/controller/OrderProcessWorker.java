@@ -847,6 +847,21 @@ public class OrderProcessWorker {
         orderProcessResult.orderCompletionStatusConfig = orderCompletionStatusConfig;
         orderProcessResult.email = email;
         orderProcessResult.storeWithDetails = storeWithDetails;
+        
+        //get next action
+        if (orderCompletionStatusConfig!=null) {
+            OrderCompletionStatusConfig nextCompletionStatusConfig = null;
+            int nextSequence = orderCompletionStatusConfig.getStatusSequence()+1;
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find config for next status VerticalId:"+verticalId+" NextSequence:"+nextSequence+" storePickup:"+storePickup+" deliveryType:"+storeDeliveryType+" paymentType:"+order.getPaymentType());
+            List<OrderCompletionStatusConfig> nextActionCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusSequenceAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, nextSequence, storePickup, storeDeliveryType, order.getPaymentType());
+            if (nextActionCompletionStatusConfigs != null || !nextActionCompletionStatusConfigs.isEmpty()) {           
+                nextCompletionStatusConfig = nextActionCompletionStatusConfigs.get(0);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Next action status: " + nextCompletionStatusConfig.getStatus()+" sequence:"+nextCompletionStatusConfig.getStatusSequence());
+                orderProcessResult.nextCompletionStatus = nextCompletionStatusConfig.status;
+                orderProcessResult.nextActionText = nextCompletionStatusConfig.nextActionText;
+            }
+        }
+        
         return orderProcessResult;
         
     }
