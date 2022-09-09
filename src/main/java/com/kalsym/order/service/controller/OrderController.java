@@ -1209,6 +1209,7 @@ public class OrderController {
         //get shipment details from one of order created
         OrderShipmentDetail orderShipmentDetail = orderCreatedList.get(0).getOrderShipmentDetail();
         customerId = orderCreatedList.get(0).getCustomerId();
+        ServiceType serviceType = orderCreatedList.get(0).getServiceType();
         
         orderGroup.setCustomerId(customerId);
         orderGroup.setDeliveryCharges(sumDeliveryCharges);  
@@ -1228,6 +1229,7 @@ public class OrderController {
             orderGroup.setPaymentStatus("PENDING");
             orderGroup.setPaidAmount(0.00);
         }
+        orderGroup.setServiceType(serviceType);
         orderGroupRepository.save(orderGroup);
                
         //update orderGroupId for each order
