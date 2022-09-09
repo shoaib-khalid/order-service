@@ -128,6 +128,7 @@ public class OrderWithDetails implements Serializable {
     
     @Enumerated(EnumType.STRING)
     private DineInOption dineInOption;
+    
     @Transient
     private OrderGroupObject orderGroupDetails;
     

@@ -93,5 +93,6 @@ public class Cart implements Serializable {
     private CartStage stage;
     
     //service type
+    @Enumerated(EnumType.STRING)
     private ServiceType serviceType;
 }
