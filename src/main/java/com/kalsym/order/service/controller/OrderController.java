@@ -929,6 +929,7 @@ public class OrderController {
                 orderGroup.setPaidAmount(0.00);
             }
             orderGroup.setRegionCountryId(storeWithDetials.getRegionCountryId());
+            orderGroup.setServiceType(cart.getServiceType());
             
             orderGroupRepository.save(orderGroup);
             

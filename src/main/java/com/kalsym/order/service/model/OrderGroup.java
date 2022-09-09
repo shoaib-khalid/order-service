@@ -100,6 +100,8 @@ public class OrderGroup implements Serializable {
     
     private String regionCountryId;
     
+    private String serviceType;
+    
     @Transient
     private Double totalOrderAmount;
         

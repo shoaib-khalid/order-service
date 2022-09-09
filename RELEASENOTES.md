@@ -1,9 +1,13 @@
 ##################################################
-# order-service-3.12.0-SNAPSHOT |8-Sept-2022
+# order-service-3.12.0-SNAPSHOT |9-Sept-2022
 ##################################################
 New feature : support websocket connection
 Bug fix for placeOrder with storeVoucherCode
+New feature : Dine-In ordering
 
+##DB Changes:
+ALTER TABLE cart ADD serviceType VARCHAR(20); # to know deliverin or dinein
+ALTER TABLE order_group ADD serviceType VARCHAR(20); # to know deliverin or dinein
 
 ##################################################
 # order-service-3.11.8-SNAPSHOT |30-Aug-2022

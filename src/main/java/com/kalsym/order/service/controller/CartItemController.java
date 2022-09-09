@@ -153,6 +153,12 @@ public class CartItemController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         
+        //check service type
+        Cart cart = savedCart.get();
+        String serviceType = "deliverin";
+        if (cart.getServiceType()!=null && cart.getServiceType().equalsIgnoreCase("dinein")){
+            serviceType = "dinein";
+        }
         
         CartItem cartItem;
         try {
@@ -175,17 +181,21 @@ public class CartItemController {
                     
             //check for discount
             double itemPrice = 0.00;
-            if (productInventory.getItemDiscount()!=null) {
+            if (productInventory.getItemDiscount()!=null && serviceType.equals("deliverin")) {
                 //got discount
                 ItemDiscount discountDetails = productInventory.getItemDiscount();
                 itemPrice = discountDetails.discountedPrice;
                 bodyCartItem.setDiscountId(discountDetails.discountId);
                 bodyCartItem.setNormalPrice((float)discountDetails.normalPrice);
                 bodyCartItem.setDiscountLabel(discountDetails.discountLabel);
-            } else {
+            } else if (serviceType.equals("deliverin")) {
                 //no dicount for this item code
                 itemPrice = productInventory.getPrice();
+            } else {
+                //use dine-in price
+                itemPrice = productInventory.getDineInPrice();
             }
+            
             bodyCartItem.setProductPrice((float)itemPrice);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "itemPrice:"+itemPrice);
             //check if product is package            
@@ -316,6 +326,13 @@ public class CartItemController {
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
         }
         
+        //check service type
+        Cart cart = savedCart.get();
+        String serviceType = "deliverin";
+        if (cart.getServiceType()!=null && cart.getServiceType().equalsIgnoreCase("dinein")){
+            serviceType = "dinein";
+        }
+        
         Optional<CartItem> optCartItem = cartItemRepository.findById(id);
         
         if (!optCartItem.isPresent()) {
@@ -333,7 +350,7 @@ public class CartItemController {
             
         //check for discount
         double itemPrice = 0.00;
-        if (productInventory.getItemDiscount()!=null) {
+        if (productInventory.getItemDiscount()!=null && serviceType.equals("deliverin")) {
             //got discount
             ItemDiscount discountDetails = productInventory.getItemDiscount();
             itemPrice = discountDetails.discountedPrice;
@@ -341,10 +358,13 @@ public class CartItemController {
             bodyCartItem.setNormalPrice((float)discountDetails.normalPrice);
             bodyCartItem.setDiscountLabel(discountDetails.discountLabel);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item got discount. price:"+itemPrice);            
-        } else {
+        } else if (serviceType.equals("deliverin")) {
             //no dicount for this item code
             itemPrice = productInventory.getPrice();
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item no discount. price:"+itemPrice);            
+        } else {
+            itemPrice = productInventory.getDineInPrice();
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item for dine-in. price:"+itemPrice);            
         }
         bodyCartItem.setProductPrice((float)itemPrice);
             
@@ -437,7 +457,9 @@ public class CartItemController {
             CartItem item = existingItem.get();
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "item exist for cartId: " + item.getCartId() + " with productId: " + item.getProductId());
             int newQty = item.getQuantity() + quantityChange;
+            Float newPrice = (Float.parseFloat(String.valueOf(newQty))) * item.getProductPrice();
             item.setQuantity(newQty);
+            item.setPrice(newPrice);
             cartItemRepository.save(item);
         } else {
             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item not found for id: " + id);
@@ -490,6 +512,7 @@ public class CartItemController {
 
                 //check for discount
                 double itemPrice = 0.00;
+                double itemPriceDineIn = 0.00;
                 String itemDiscountLabel=null;
                 String itemDiscountId=null;
                 double itemNormalPrice=0.00;
@@ -505,6 +528,7 @@ public class CartItemController {
                 } else {
                     //no dicount for this item code
                     itemPrice = productInventory.getPrice();
+                    itemPriceDineIn = productInventory.getDineInPrice();
                 }
                 itemProductPrice = itemPrice;
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "itemPrice:"+itemPrice);
@@ -517,16 +541,30 @@ public class CartItemController {
                     Optional<Cart> cart = cartRepository.findById(cartItem.getCartId());
                     if (cart.isPresent()) {
                         if (cart.get().getIsOpen()) {
-                            cartItem.setProductPrice((float)itemProductPrice);
-                            cartItem.setPrice((float)(cartItem.getQuantity() * itemProductPrice));
-                            if (itemDiscountId!=null) {
-                                cartItem.setDiscountId(itemDiscountId);
-                                cartItem.setNormalPrice((float)itemNormalPrice);
-                                cartItem.setDiscountLabel(itemDiscountLabel);
-                            } else {
+                            
+                            //check service type
+                            Cart existingCart = cart.get();
+                            String serviceType = "deliverin";
+                            if (existingCart.getServiceType()!=null && existingCart.getServiceType().equalsIgnoreCase("dinein")){
+                                serviceType = "dinein";
+                                cartItem.setProductPrice((float)itemPriceDineIn);
+                                cartItem.setPrice((float)(cartItem.getQuantity() * itemPriceDineIn));
                                 cartItem.setNormalPrice(null);
                                 cartItem.setDiscountLabel(null);
+                            } else {
+                                cartItem.setProductPrice((float)itemProductPrice);
+                                cartItem.setPrice((float)(cartItem.getQuantity() * itemProductPrice));
+                                
+                                if (itemDiscountId!=null) {
+                                    cartItem.setDiscountId(itemDiscountId);
+                                    cartItem.setNormalPrice((float)itemNormalPrice);
+                                    cartItem.setDiscountLabel(itemDiscountLabel);
+                                } else {
+                                    cartItem.setNormalPrice(null);
+                                    cartItem.setDiscountLabel(null);
+                                }
                             }
+                                                                                   
                             cartItemRepository.save(cartItem);
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem price updated with for cartItemId: " + cartItem.getId());
                         }
