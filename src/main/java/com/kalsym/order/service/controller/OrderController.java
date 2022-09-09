@@ -12,6 +12,8 @@ import com.kalsym.order.service.enums.RefundType;
 import com.kalsym.order.service.enums.RefundStatus;
 import com.kalsym.order.service.enums.VehicleType;
 import com.kalsym.order.service.enums.CartStage;
+import com.kalsym.order.service.enums.ServiceType;
+import com.kalsym.order.service.enums.DineInOption;
 import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.OrderPaymentDetail;
 import com.kalsym.order.service.model.object.CustomPageable;
@@ -932,7 +934,7 @@ public class OrderController {
             if (cart.getServiceType()!=null)
                 orderGroup.setServiceType(cart.getServiceType());
             else
-                orderGroup.setServiceType("DELIVERIN");
+                orderGroup.setServiceType(ServiceType.DELIVERIN);
             
             orderGroupRepository.save(orderGroup);
             

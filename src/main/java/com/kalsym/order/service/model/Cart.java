@@ -1,6 +1,7 @@
 package com.kalsym.order.service.model;
 
 import com.kalsym.order.service.enums.CartStage;
+import com.kalsym.order.service.enums.ServiceType;
 import com.kalsym.order.service.model.object.ItemDiscount;
 import java.io.Serializable;
 import java.util.Date;
@@ -92,5 +93,5 @@ public class Cart implements Serializable {
     private CartStage stage;
     
     //service type
-    private String serviceType;
+    private ServiceType serviceType;
 }

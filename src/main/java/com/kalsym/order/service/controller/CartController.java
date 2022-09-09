@@ -3,6 +3,8 @@ package com.kalsym.order.service.controller;
 import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.enums.CartStage;
 import com.kalsym.order.service.enums.DeliveryType;
+import com.kalsym.order.service.enums.ServiceType;
+import com.kalsym.order.service.enums.DineInOption;
 import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.model.repository.CartWithDetailsRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
@@ -344,7 +346,7 @@ public class CartController {
             bodyCart.setIsOpen(Boolean.TRUE);
             bodyCart.setStage(CartStage.CREATED);
             if (bodyCart.getServiceType()==null) {
-                bodyCart.setServiceType("DELIVERIN");
+                bodyCart.setServiceType(ServiceType.DELIVERIN);
             } 
             savedCart = cartRepository.save(bodyCart);
             response.setSuccessStatus(HttpStatus.CREATED);

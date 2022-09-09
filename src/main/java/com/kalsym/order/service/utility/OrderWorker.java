@@ -12,6 +12,7 @@ import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.enums.ProductStatus;
 import com.kalsym.order.service.enums.StorePaymentType;
 import com.kalsym.order.service.enums.VehicleType;
+import com.kalsym.order.service.enums.ServiceType;
 import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.COD;
 import com.kalsym.order.service.model.Cart;
@@ -320,7 +321,7 @@ public class OrderWorker {
                 order.setPaymentStatus(PaymentStatus.PENDING);
                 order.setCustomerId(cod.getCustomerId());
                 order.setDeliveryCharges(cod.getOrderPaymentDetails().getDeliveryQuotationAmount());
-                if (cart.getServiceType()!=null && cart.getServiceType().equalsIgnoreCase("DINEIN")) {
+                if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN) {
                     order.setPaymentType(storeWithDetials.getDineInPaymentType()); 
                     order.setDineInOption(storeWithDetials.getDineInOption());
                 } else {
@@ -375,7 +376,7 @@ public class OrderWorker {
                 if (cart.getServiceType()!=null) {
                     order.setServiceType(cart.getServiceType());
                 } else {
-                    order.setServiceType("DELIVERIN");
+                    order.setServiceType(ServiceType.DELIVERIN);
                 }
                 
                 // saving order object to get order Id
@@ -390,7 +391,7 @@ public class OrderWorker {
                 Boolean storePickup = cod.getOrderShipmentDetails().getStorePickup();
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store Pickup:"+storePickup);
                 
-                if (cart.getServiceType()!=null && cart.getServiceType().equalsIgnoreCase("DINEIN")) {
+                if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN) {
                     storePickup=true;
                 }
                 

@@ -4,6 +4,7 @@ package com.kalsym.order.service.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.kalsym.order.service.enums.StorePaymentType;
 import com.kalsym.order.service.enums.StoreAssetType;
+import com.kalsym.order.service.enums.DineInOption;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -78,7 +79,7 @@ public class StoreWithDetails implements Serializable {
     
     private String dineInPaymentType;
     
-    private String dineInOption;
+    private DineInOption dineInOption;
     
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")

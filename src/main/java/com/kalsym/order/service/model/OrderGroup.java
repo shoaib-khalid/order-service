@@ -3,6 +3,7 @@ package com.kalsym.order.service.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
+import com.kalsym.order.service.enums.ServiceType;
 import com.kalsym.order.service.utility.DateTimeUtil;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -100,7 +101,7 @@ public class OrderGroup implements Serializable {
     
     private String regionCountryId;
     
-    private String serviceType;
+    private ServiceType serviceType;
     
     @Transient
     private Double totalOrderAmount;

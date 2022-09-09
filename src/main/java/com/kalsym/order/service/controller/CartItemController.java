@@ -1,6 +1,8 @@
 package com.kalsym.order.service.controller;
 
 import com.kalsym.order.service.OrderServiceApplication;
+import com.kalsym.order.service.enums.ServiceType;
+import com.kalsym.order.service.enums.DineInOption;
 import com.kalsym.order.service.model.Cart;
 import com.kalsym.order.service.model.ProductInventory;
 import com.kalsym.order.service.model.Product;
@@ -156,7 +158,7 @@ public class CartItemController {
         //check service type
         Cart cart = savedCart.get();
         String serviceType = "DELIVERIN";
-        if (cart.getServiceType()!=null && cart.getServiceType().equalsIgnoreCase("DINEIN")){
+        if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN){
             serviceType = "DINEIN";
         }
         
@@ -328,9 +330,9 @@ public class CartItemController {
         
         //check service type
         Cart cart = savedCart.get();
-        String serviceType = "DELIVERIN";
-        if (cart.getServiceType()!=null && cart.getServiceType().equalsIgnoreCase("DINEIN")){
-            serviceType = "DINEIN";
+        ServiceType serviceType = ServiceType.DELIVERIN;
+        if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN){
+            serviceType = ServiceType.DINEIN;
         }
         
         Optional<CartItem> optCartItem = cartItemRepository.findById(id);
@@ -350,7 +352,7 @@ public class CartItemController {
             
         //check for discount
         double itemPrice = 0.00;
-        if (productInventory.getItemDiscount()!=null && serviceType.equals("deliverin")) {
+        if (productInventory.getItemDiscount()!=null && serviceType==ServiceType.DELIVERIN) {
             //got discount
             ItemDiscount discountDetails = productInventory.getItemDiscount();
             itemPrice = discountDetails.discountedPrice;
@@ -358,7 +360,7 @@ public class CartItemController {
             bodyCartItem.setNormalPrice((float)discountDetails.normalPrice);
             bodyCartItem.setDiscountLabel(discountDetails.discountLabel);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item got discount. price:"+itemPrice);            
-        } else if (serviceType.equals("deliverin")) {
+        } else if (serviceType==ServiceType.DELIVERIN) {
             //no dicount for this item code
             itemPrice = productInventory.getPrice();
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item no discount. price:"+itemPrice);            
@@ -544,7 +546,7 @@ public class CartItemController {
                             
                             //check service type
                             Cart existingCart = cart.get();
-                            if (existingCart.getServiceType()!=null && existingCart.getServiceType().equalsIgnoreCase("DINEIN")){
+                            if (existingCart.getServiceType()!=null && existingCart.getServiceType()==ServiceType.DINEIN){
                                 cartItem.setProductPrice((float)itemPriceDineIn);
                                 cartItem.setPrice((float)(cartItem.getQuantity() * itemPriceDineIn));
                                 cartItem.setNormalPrice(null);
