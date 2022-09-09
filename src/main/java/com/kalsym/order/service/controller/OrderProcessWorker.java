@@ -841,8 +841,7 @@ public class OrderProcessWorker {
         //update order to finish process
         orderRepository.UpdateOrderFinishProcess(orderId);
         
-        orderProcessResult.httpStatus = HttpStatus.ACCEPTED;        
-        orderProcessResult.data = order;
+        orderProcessResult.httpStatus = HttpStatus.ACCEPTED;                
         orderProcessResult.previousStatus = previousStatus;
         orderProcessResult.orderCompletionStatusConfig = orderCompletionStatusConfig;
         orderProcessResult.email = email;
@@ -857,10 +856,11 @@ public class OrderProcessWorker {
             if (nextActionCompletionStatusConfigs != null || !nextActionCompletionStatusConfigs.isEmpty()) {           
                 nextCompletionStatusConfig = nextActionCompletionStatusConfigs.get(0);
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Next action status: " + nextCompletionStatusConfig.getStatus()+" sequence:"+nextCompletionStatusConfig.getStatusSequence());
-                orderProcessResult.nextCompletionStatus = nextCompletionStatusConfig.status;
-                orderProcessResult.nextActionText = nextCompletionStatusConfig.nextActionText;
+                order.setNextCompletionStatus(nextCompletionStatusConfig.status);
+                order.setNextActionText(nextCompletionStatusConfig.nextActionText);                
             }
         }
+        orderProcessResult.data = order;
         
         return orderProcessResult;
         

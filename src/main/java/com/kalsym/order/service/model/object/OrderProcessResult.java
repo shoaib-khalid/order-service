@@ -23,7 +23,5 @@ public class OrderProcessResult {
     public OrderStatus previousStatus;
     public OrderCompletionStatusConfig orderCompletionStatusConfig;
     public Email email;
-    public StoreWithDetails storeWithDetails;
-    public String nextCompletionStatus;
-    public String nextActionText;
+    public StoreWithDetails storeWithDetails;   
 }
