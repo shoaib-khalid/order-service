@@ -46,6 +46,17 @@ public interface VoucherRepository extends PagingAndSortingRepository<Voucher, S
             @Param("voucherId") String voucherId
     );
     
+    /**
+     * clear cart item
+     * @param voucherId
+     */
+    @Transactional
+    @Modifying
+    @Query("UPDATE Voucher m SET m.totalRedeem = m.totalRedeem-1 WHERE id = :voucherId") 
+    public void addVoucherBalance(
+            @Param("voucherId") String voucherId
+    );
+    
     
     @Query("SELECT m FROM Voucher m WHERE "
             + "m.isNewUserVoucher = true "

@@ -174,7 +174,7 @@ public class VoucherController {
             Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " Voucher already exist customerId: " + customerId+" voucherId:"+voucher.getId());
             response.setSuccessStatus(HttpStatus.CONFLICT);
             response.setError("Voucher already exist");
-            response.setMessage("Voucher already exist");
+            response.setMessage("Sorry, you have redeemed this voucher");
             return ResponseEntity.status(response.getStatus()).body(response);
         }
         

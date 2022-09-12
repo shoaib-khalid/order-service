@@ -2,6 +2,8 @@
 # order-service-3.12.1-SNAPSHOT |12-Sept-2022
 ##################################################
 Bug fix for getOrderById
+Revert voucher if merchant canceled the order
+Bug fix for message during claim voucher
 
 
 ##################################################
