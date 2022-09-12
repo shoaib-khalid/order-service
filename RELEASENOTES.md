@@ -1,9 +1,16 @@
 ##################################################
+# order-service-3.12.1-SNAPSHOT |12-Sept-2022
+##################################################
+Bug fix for getOrderById
+
+
+##################################################
 # order-service-3.12.0-SNAPSHOT |9-Sept-2022
 ##################################################
 New feature : support websocket connection
 Bug fix for placeOrder with storeVoucherCode
 New feature : Dine-In ordering
+Bug fix for revise item email content
 
 ##DB Changes:
 ALTER TABLE `cart` ADD serviceType ENUM('DINEIN','DELIVERIN'); # to know deliverin or dinein

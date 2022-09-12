@@ -100,6 +100,9 @@ public class OrderWithDetails implements Serializable {
     
     @Column(nullable = true)
     private Double voucherDiscount;
+    
+    @Column(nullable = true)
+    private Double storeVoucherDiscount;   
      
     private String appliedDiscountDescription ;
      
