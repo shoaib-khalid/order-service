@@ -5,6 +5,7 @@ import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.enums.ServiceType;
 import com.kalsym.order.service.enums.DineInOption;
+import com.kalsym.order.service.enums.DineInPack;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.utility.DateTimeUtil;
 import java.io.Serializable;
@@ -132,6 +133,9 @@ public class Order implements Serializable {
     
     @Enumerated(EnumType.STRING)
     private DineInOption dineInOption;
+    
+    @Enumerated(EnumType.STRING)
+    private DineInPack dineInPack;
     
     @Transient
     private OrderObject totalDataObject;

@@ -2,6 +2,7 @@ package com.kalsym.order.service.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.kalsym.order.service.enums.DineInOption;
+import com.kalsym.order.service.enums.DineInPack;
 import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.enums.ServiceType;
@@ -132,6 +133,9 @@ public class OrderWithDetails implements Serializable {
     @Enumerated(EnumType.STRING)
     private DineInOption dineInOption;
     
+    @Enumerated(EnumType.STRING)
+    private DineInPack dineInPack;
+     
     @Transient
     private OrderGroupObject orderGroupDetails;
     

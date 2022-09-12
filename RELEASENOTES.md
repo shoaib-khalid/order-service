@@ -19,6 +19,7 @@ ALTER TABLE `cart` ADD serviceType ENUM('DINEIN','DELIVERIN'); # to know deliver
 ALTER TABLE `order` ADD dineInOption ENUM('SELFCOLLECT','SENTOTABLE');
 ALTER TABLE `order_group` ADD serviceType ENUM('DINEIN','DELIVERIN'); # to know deliverin or dinein
 ALTER TABLE `order` ADD serviceType ENUM('DINEIN','DELIVERIN');
+ALTER TABLE `order` ADD dineInPack ENUM('DINEIN','TAKEAWAY');
 
 
 ##################################################

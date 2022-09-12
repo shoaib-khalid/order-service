@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import com.kalsym.order.service.enums.DineInPack;
+
 /**
  *
  * @author FaisalHayatJadoon
@@ -26,7 +28,8 @@ public class COD implements Serializable {
     private OrderShipmentDetail orderShipmentDetails;
     private OrderPaymentDetail orderPaymentDetails;
     private List<CartItem> cartItems;
-    
+    private DineInPack dineInPack;
+            
     public COD(String cartId, OrderShipmentDetail orderShipmentDetails, OrderPaymentDetail orderPaymentDetails) {
         this.cartId = cartId;
         this.orderShipmentDetails = orderShipmentDetails;

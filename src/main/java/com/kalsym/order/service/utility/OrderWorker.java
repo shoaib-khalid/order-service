@@ -324,6 +324,7 @@ public class OrderWorker {
                 if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN) {
                     order.setPaymentType(storeWithDetials.getDineInPaymentType()); 
                     order.setDineInOption(storeWithDetials.getDineInOption());
+                    order.setDineInPack(cod.getDineInPack());
                 } else {
                     order.setPaymentType(storeWithDetials.getPaymentType());                
                 }
