@@ -767,6 +767,7 @@ public class OrderController {
                     customerPlatformVoucher.setVoucherId(guestVoucher.getId());
                     customerPlatformVoucher.setVoucher(guestVoucher);
                     customerPlatformVoucher.setGuestVoucher(true);
+                    customerPlatformVoucher.setStoreId(storeId);
                 } else {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
                     response.setMessage("Voucher code " + platformVoucherCode + " not found");
@@ -824,6 +825,7 @@ public class OrderController {
                             customerStoreVoucher.setVoucherId(guestVoucher.getId());
                             customerStoreVoucher.setCreated(new Date());
                             customerStoreVoucher.setGuestVoucher(true);
+                            customerStoreVoucher.setStoreId(storeId);
                             customerVoucherRepository.save(customerStoreVoucher);
                         }
                     } else {
