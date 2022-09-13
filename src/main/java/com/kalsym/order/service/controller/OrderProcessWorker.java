@@ -574,7 +574,43 @@ public class OrderProcessWorker {
                         Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Exception occur while inform delivery-service : ", ex);
                     }                    
                 }
-            
+                
+                //revert voucher if any
+                if (order.getStoreVoucherId()!=null) {
+                    CustomerVoucher customerVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(order.getCustomerId(), order.getStoreVoucherId());
+                    if (customerVoucher!=null) {
+                        customerVoucher.setIsUsed(false);
+                        customerVoucherRepository.save(customerVoucher);
+                        voucherRepository.addVoucherBalance(order.getStoreVoucherId());                                                                
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Revert customer voucherId: " + order.getStoreVoucherId());
+                    } 
+                }
+                if (order.getOrderGroupId()!=null) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find order groupId:"+order.getOrderGroupId());
+                    Optional<OrderGroup> orderGroup = orderGroupRepository.findById(order.getOrderGroupId());
+                    if (orderGroup.isPresent()) {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Group found:"+orderGroup.get().getId());
+                        CustomerVoucher customerVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(order.getCustomerId(), orderGroup.get().getPlatformVoucherId());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerVoucher found:"+customerVoucher);
+                        if (customerVoucher!=null && customerVoucher.getIsUsed()==true) {
+                            customerVoucher.setIsUsed(false);
+                            customerVoucherRepository.save(customerVoucher);
+                            voucherRepository.addVoucherBalance(orderGroup.get().getPlatformVoucherId());                                                                
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Revert customer group voucherId: " + orderGroup.get().getPlatformVoucherId());
+                        } 
+                        
+                        //update for guest                        
+                        List<CustomerVoucher> guestVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(order.getOrderShipmentDetail().getEmail(), orderGroup.get().getPlatformVoucherId());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Guest voucher found:"+guestVoucherList.size());
+                        if (guestVoucherList.size()>0 && guestVoucherList.get(0).getIsUsed()==true) {
+                            CustomerVoucher guestVoucher = guestVoucherList.get(0);
+                            guestVoucher.setIsUsed(false);
+                            customerVoucherRepository.save(guestVoucher);
+                            voucherRepository.addVoucherBalance(orderGroup.get().getPlatformVoucherId());                                                                
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Revert guest group voucherId: " + orderGroup.get().getPlatformVoucherId());
+                        } 
+                    }
+                }
             default:
                order.setCompletionStatus(status);
                insertOrderCompletionStatusUpdate(status, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);

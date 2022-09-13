@@ -78,7 +78,7 @@ public class ReminderScheduler {
     @Value("${order.reminder.copy.msisdn:60123593299,601139343018,60133639668}")
     private String copyMsisdn;
     
-    @Scheduled(fixedRate = 300000)
+    @Scheduled(fixedRate = 60000)
     public void checkNotProcessOrder() throws Exception {
         if (isEnabled) {
             String logprefix = "Reminder-Scheduler"; 

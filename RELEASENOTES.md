@@ -1,4 +1,11 @@
 ##################################################
+# order-service-3.11.8-HOTFIX |13-Sept-2022
+##################################################
+Change order reminder scheduler to run every 60 second
+
+
+
+##################################################
 # order-service-3.11.8-SNAPSHOT |30-Aug-2022
 ##################################################
 Bug fix for rounding 2 decimal point in Utilities
