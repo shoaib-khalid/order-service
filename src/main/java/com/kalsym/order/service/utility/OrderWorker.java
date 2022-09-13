@@ -575,7 +575,7 @@ public class OrderWorker {
                                     customerEmail = customer.getEmail();
                                 }
 
-                                if (sendReceiptToReceiver) {
+                                if (sendReceiptToReceiver!=null && sendReceiptToReceiver) {
                                    //get receiver info
                                    if (order.getOrderShipmentDetail()!=null) {
                                        customerEmail = order.getOrderShipmentDetail().getEmail();
@@ -688,7 +688,7 @@ public class OrderWorker {
                                 }
                             }
                             
-                            if (sendReceiptToReceiver) {
+                            if (sendReceiptToReceiver!=null && sendReceiptToReceiver) {
                                 //get receiver info
                                 if (order.getOrderShipmentDetail()!=null) {
                                     customerMsisdn = order.getOrderShipmentDetail().getPhoneNumber();
