@@ -23,5 +23,6 @@ package com.kalsym.order.service.enums;
 public enum VoucherStatus {
    ACTIVE,
    INACTIVE,
-   EXPIRED;
+   EXPIRED,
+   DELETED;
 }
