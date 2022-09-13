@@ -826,6 +826,7 @@ public class OrderController {
                             customerStoreVoucher.setCreated(new Date());
                             customerStoreVoucher.setGuestVoucher(true);
                             customerStoreVoucher.setStoreId(storeId);
+                            customerStoreVoucher.setVoucher(guestVoucher);
                             customerVoucherRepository.save(customerStoreVoucher);
                         }
                     } else {
