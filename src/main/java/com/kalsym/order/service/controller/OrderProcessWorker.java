@@ -581,7 +581,8 @@ public class OrderProcessWorker {
                     if (customerVoucher!=null) {
                         customerVoucher.setIsUsed(false);
                         customerVoucherRepository.save(customerVoucher);
-                        voucherRepository.addVoucherBalance(order.getStoreVoucherId());                                                                
+                        voucherRepository.addVoucherBalance(order.getStoreVoucherId());  
+                        order.setStoreVoucherId(null);
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Revert customer voucherId: " + order.getStoreVoucherId());
                     } 
                 }
@@ -595,7 +596,10 @@ public class OrderProcessWorker {
                         if (customerVoucher!=null && customerVoucher.getIsUsed()==true) {
                             customerVoucher.setIsUsed(false);
                             customerVoucherRepository.save(customerVoucher);
-                            voucherRepository.addVoucherBalance(orderGroup.get().getPlatformVoucherId());                                                                
+                            voucherRepository.addVoucherBalance(orderGroup.get().getPlatformVoucherId()); 
+                            OrderGroup orderG = orderGroup.get();
+                            orderG.setPlatformVoucherId(null);
+                            orderGroupRepository.save(orderG);
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Revert customer group voucherId: " + orderGroup.get().getPlatformVoucherId());
                         } 
                         
@@ -606,7 +610,10 @@ public class OrderProcessWorker {
                             CustomerVoucher guestVoucher = guestVoucherList.get(0);
                             guestVoucher.setIsUsed(false);
                             customerVoucherRepository.save(guestVoucher);
-                            voucherRepository.addVoucherBalance(orderGroup.get().getPlatformVoucherId());                                                                
+                            voucherRepository.addVoucherBalance(orderGroup.get().getPlatformVoucherId()); 
+                            OrderGroup orderG = orderGroup.get();
+                            orderG.setPlatformVoucherId(null);
+                            orderGroupRepository.save(orderG);
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Revert guest group voucherId: " + orderGroup.get().getPlatformVoucherId());
                         } 
                     }
