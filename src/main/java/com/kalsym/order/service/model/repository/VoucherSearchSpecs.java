@@ -40,6 +40,7 @@ public class VoucherSearchSpecs {
      * @param voucherType
      * @param storeId
      * @param verticalCode
+     * @param voucherCode
      * @param example
      * @return
      */

@@ -59,6 +59,7 @@ public class Voucher implements Serializable {
     private Double minimumSpend;
     private Boolean allowDoubleDiscount;
     private Boolean requireToClaim;
+    private Boolean allowMultipleRedeem;
     
     @Enumerated(EnumType.STRING)
     private VoucherStatus status;
@@ -91,5 +92,12 @@ public class Voucher implements Serializable {
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "voucherId", insertable = false, updatable = false, nullable = true)
     private List<VoucherStore> voucherStoreList;
+    
+    public boolean getAllowMultipleRedeem() {
+        if (allowMultipleRedeem==null)
+            return false;
+        else 
+            return allowMultipleRedeem;
+    }
 
 }

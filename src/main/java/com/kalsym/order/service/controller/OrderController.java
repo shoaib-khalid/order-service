@@ -693,6 +693,7 @@ public class OrderController {
      * @param saveCustomerInformation
      * @param platformVoucherCode
      * @param sendReceiptToReceiver
+     * @param storeId
      * @param cod
      * @return
      * @throws Exception
@@ -704,6 +705,7 @@ public class OrderController {
             @RequestParam(required = false) Boolean saveCustomerInformation,
             @RequestParam(required = false) String platformVoucherCode,
             @RequestParam(required = false) Boolean sendReceiptToReceiver,
+            @RequestParam(required = false) String storeId,
             @RequestBody COD cod) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         
@@ -749,7 +751,7 @@ public class OrderController {
                     List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(cod.getOrderShipmentDetails().getEmail(), guestVoucher.getId());
                     if (usedVoucherList.size()>0) {  
                         CustomerVoucher usedVoucher = usedVoucherList.get(0);
-                        if (usedVoucher.getIsUsed()) {
+                        if (usedVoucher.getIsUsed() && !guestVoucher.getAllowMultipleRedeem()) {
                             //already used
                             response.setStatus(HttpStatus.NOT_FOUND.value());
                             response.setMessage("Voucher code " + platformVoucherCode + " already used");
@@ -799,13 +801,18 @@ public class OrderController {
                 if (guestVoucher!=null) {
                     //check if already redeem
                     if (cod.getOrderShipmentDetails().getEmail()!=null) {
-                        List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(cod.getOrderShipmentDetails().getEmail(), guestVoucher.getId());
+                        List<CustomerVoucher> usedVoucherList = null;
+                        if (storeId!=null) {
+                            usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherIdAndStoreId(cod.getOrderShipmentDetails().getEmail(), guestVoucher.getId(), storeId);
+                        } else {
+                            usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(cod.getOrderShipmentDetails().getEmail(), guestVoucher.getId());
+                        }
                         if (usedVoucherList.size()>0) {                        
                             CustomerVoucher usedVoucher = usedVoucherList.get(0);
-                            if (usedVoucher.getIsUsed()) {
+                            if (usedVoucher.getIsUsed() && !guestVoucher.getAllowMultipleRedeem()) {
                                 //already used
                                 response.setStatus(HttpStatus.NOT_FOUND.value());
-                                response.setMessage("Voucher code " + cod.getStoreVoucherCode() + " already used");
+                                response.setMessage("Sorry, you have redeemed this voucher");
                                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                             } else {
                                 customerStoreVoucher = usedVoucher;
@@ -826,7 +833,7 @@ public class OrderController {
                     }
                 } else {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
-                    response.setMessage("Store Voucher code " + cod.getStoreVoucherCode() + " not found");
+                    response.setMessage("Sorry, Store Voucher code " + cod.getStoreVoucherCode() + " not found");
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                 }
                 

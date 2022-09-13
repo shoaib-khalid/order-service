@@ -23,6 +23,7 @@ import com.kalsym.order.service.model.CustomerVoucher;
 import com.kalsym.order.service.model.VoucherVertical;
 import com.kalsym.order.service.enums.VoucherStatus;
 import com.kalsym.order.service.enums.VoucherType;
+import com.kalsym.order.service.model.VoucherStore;
 import com.kalsym.order.service.model.repository.VoucherSearchSpecs;
 import com.kalsym.order.service.model.repository.VoucherRepository;
 import com.kalsym.order.service.model.repository.CustomerRepository;
@@ -115,6 +116,94 @@ public class VoucherController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
     
+    @GetMapping(path = {"/verify/{customerEmail}/{voucherCode}/{storeId}"}, name = "voucher-post")
+    @PreAuthorize("hasAnyAuthority('voucher-post', 'all')")
+    public ResponseEntity<HttpResponse> postGuestClaimVoucher(HttpServletRequest request,
+            @PathVariable(required = true) String customerEmail,
+            @PathVariable(required = true) String voucherCode,
+            @PathVariable(required = false) String storeId
+            ) {
+        String logprefix = request.getRequestURI();
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Logger.application.info(OrderServiceApplication.VERSION, logprefix, "customerEmail: " + customerEmail+" voucherCode:"+voucherCode);
+        
+        List<Customer> optCustomer = null;
+        if (storeId!=null) {
+            optCustomer = customerRepository.findByEmailAndStoreId(customerEmail, storeId);
+        } else {
+            optCustomer = customerRepository.findByEmail(customerEmail);
+        }
+        
+        //check promo code
+        Voucher voucher = voucherRepository.findByVoucherCode(voucherCode);
+        if (voucher==null) {
+            Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " NOT_FOUND voucherCode: " + voucherCode);
+            response.setSuccessStatus(HttpStatus.NOT_FOUND);
+            response.setError("Voucher not found");
+            response.setMessage("Voucher not found");
+            return ResponseEntity.status(response.getStatus()).body(response);
+        } else {
+            //check status
+            if (voucher.getStatus()!=VoucherStatus.ACTIVE) {
+                response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
+                response.setError("Voucher not active");
+                response.setMessage("Voucher not active");
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
+            //check total redeem
+            if (voucher.getTotalRedeem()>=voucher.getTotalQuantity()) {
+                response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
+                response.setError("Voucher fully redeemed");
+                response.setMessage("Sorry, you have redeemed this voucher");
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
+            //check expiry date
+            Date currentDate = new Date();
+            if (currentDate.compareTo(voucher.getStartDate()) < 0 || currentDate.compareTo(voucher.getEndDate()) > 0) {
+                response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
+                response.setError("Voucher is expired");
+                response.setMessage("Voucher is expired");
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
+        }
+        
+        if (!optCustomer.isEmpty() && !voucher.getAllowMultipleRedeem()) {
+            String customerId = optCustomer.get(0).getId();
+            CustomerVoucher existingVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(customerId, voucher.getId());
+            if (existingVoucher!=null) {
+                Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Voucher already exist customerId: " + customerId+" voucherId:"+voucher.getId());
+                response.setSuccessStatus(HttpStatus.CONFLICT);
+                response.setError("Voucher already exist");
+                response.setMessage("Sorry, you have redeemed this voucher");
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
+        }
+                
+        if (storeId!=null && voucher.getVoucherType()==VoucherType.STORE) {
+            //check store id
+            boolean storeValid=false;
+            List<VoucherStore> storeList = voucher.getVoucherStoreList();
+            for (int x=0;x<storeList.size();x++) {
+                if (storeId.equals(storeList.get(x).getStoreId())) {
+                    storeValid=true;
+                    break;
+                }
+            }
+            if (!storeValid) {
+                Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Voucher not valid for this store storeId: " + storeId+" voucherId:"+voucher.getId());
+                response.setSuccessStatus(HttpStatus.CONFLICT);
+                response.setError("Voucher not valid for this store");
+                response.setMessage("Sorry, voucher code cannot be used for this store");
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
+        }
+        
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(voucher);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }    
+    
     
     @PostMapping(path = {"/claim/{customerId}/{voucherCode}"}, name = "voucher-post")
     @PreAuthorize("hasAnyAuthority('voucher-post', 'all')")
@@ -156,7 +245,7 @@ public class VoucherController {
             if (voucher.getTotalRedeem()>=voucher.getTotalQuantity()) {
                 response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
                 response.setError("Voucher fully redeemed");
-                response.setMessage("Sorry, you have redeemed this voucher");
+                response.setMessage("Sorry, voucher is fully redeemed");
                 return ResponseEntity.status(response.getStatus()).body(response);
             }
             //check expiry date
@@ -170,7 +259,7 @@ public class VoucherController {
         }
         
         CustomerVoucher existingVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(customerId, voucher.getId());
-        if (existingVoucher!=null) {
+        if (existingVoucher!=null && !voucher.getAllowMultipleRedeem()) {
             Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " Voucher already exist customerId: " + customerId+" voucherId:"+voucher.getId());
             response.setSuccessStatus(HttpStatus.CONFLICT);
             response.setError("Voucher already exist");
@@ -308,7 +397,7 @@ public class VoucherController {
         }
         
         CustomerVoucher existingVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(customerId, selectedVoucher.getId());
-        if (existingVoucher!=null) {
+        if (existingVoucher!=null && !selectedVoucher.getAllowMultipleRedeem()) {
             Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " Voucher already exist customerId: " + customerId+" voucherId:"+selectedVoucher.getId());
             response.setSuccessStatus(HttpStatus.CONFLICT);
             response.setError("Voucher already exist");

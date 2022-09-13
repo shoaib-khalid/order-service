@@ -111,6 +111,15 @@ public interface CustomerVoucherRepository extends PagingAndSortingRepository<Cu
             @Param("voucherId") String voucherId
             );
     
+    
+    @Query("SELECT m FROM CustomerVoucher m "
+            + "WHERE m.guestEmail = :guestEmail AND m.voucherId = :voucherId AND m.storeId = :storeId")           
+    List<CustomerVoucher> findByGuestEmailAndVoucherIdAndStoreId(
+            @Param("guestEmail") String guestEmail,
+            @Param("voucherId") String voucherId,
+            @Param("storeId") String storeId
+            );
+    
     @Query("SELECT m FROM Voucher m "
             + "WHERE m.status='ACTIVE' "
             + "AND m.voucherType='STORE' "
