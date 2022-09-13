@@ -830,6 +830,7 @@ public class CartController {
                             customerStoreVoucher.setGuestEmail(email);
                             customerStoreVoucher.setIsUsed(false);
                             customerStoreVoucher.setVoucherId(guestVoucher.getId());
+                            customerStoreVoucher.setVoucher(guestVoucher);
                             customerStoreVoucher.setCreated(new Date());
                             customerStoreVoucher.setGuestVoucher(true);
                             customerVoucherRepository.save(customerStoreVoucher);
