@@ -586,7 +586,10 @@ public class OrderController {
             String verticalId = storeWithDetails.getVerticalCode();
             Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
             String storeDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
-        
+            if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN) {
+                storeDeliveryType = storeWithDetails.getDineInOption().name();
+            }
+                        
             //get current status
             String currentStatus = order.getCompletionStatus().name();
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find config for current status VerticalId:"+verticalId+" Status:"+currentStatus+" storePickup:"+storePickup+" deliveryType:"+storeDeliveryType+" paymentType:"+order.getPaymentType());
