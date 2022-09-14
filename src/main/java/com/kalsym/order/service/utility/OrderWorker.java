@@ -423,7 +423,7 @@ public class OrderWorker {
                      }
                 }
                 cod.getOrderShipmentDetails().setOrderId(order.getId());
-                if (cod.getOrderShipmentDetails().getPhoneNumber().startsWith("0")) {
+                if (cod.getOrderShipmentDetails().getPhoneNumber()!=null && cod.getOrderShipmentDetails().getPhoneNumber().startsWith("0")) {
                     String countryCode = cart.getStore().getRegionCountry().getCountryCode();
                     String customerMsisdn = countryCode + cod.getOrderShipmentDetails().getPhoneNumber().substring(1);
                     cod.getOrderShipmentDetails().setPhoneNumber(customerMsisdn);               
