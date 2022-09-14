@@ -1,11 +1,12 @@
 ##################################################
-# order-service-3.12.1-SNAPSHOT |13-Sept-2022
+# order-service-3.12.1-SNAPSHOT |14-Sept-2022
 ##################################################
 Bug fix for getOrderById
 Revert voucher if merchant canceled the order
 Bug fix for message during claim voucher
 Add new field to allow voucher multiple redeem if allowMultipleRedeem=1
 Allow voucher to claim by customer with same email address, different storeId
+Bug fix for emailTemplate for order CANCELED_BY_MERCHANT
 
 ##DB Changes:
 ALTER TABLE voucher ADD allowMultipleRedeem TINYINT(1) DEFAULT 0;

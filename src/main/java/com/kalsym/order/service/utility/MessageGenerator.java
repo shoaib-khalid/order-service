@@ -47,7 +47,11 @@ public class MessageGenerator {
                 LocalDateTime startLocalTime = DateTimeUtil.convertToLocalDateTimeViaInstant(order.getCreated(), ZoneId.of(regionCountry.getTimezone()) );                
                 DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("dd-MM-yyyy h:mm a");
                 emailContent = emailContent.replace("{{order-created-date-time}}", formatter1.format(startLocalTime));                
-            }            
+            } else {
+                LocalDateTime startLocalTime = DateTimeUtil.convertToLocalDateTimeViaInstant(order.getCreated(), ZoneId.of("Asia/Kuala_Lumpur") );                
+                DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("dd-MM-yyyy h:mm a");
+                emailContent = emailContent.replace("{{order-created-date-time}}", formatter1.format(startLocalTime));
+            }          
             
             if (order.getOrderShipmentDetail().getStorePickup()==null) {
                 order.getOrderShipmentDetail().setStorePickup(Boolean.FALSE);
@@ -113,16 +117,27 @@ public class MessageGenerator {
             if (orderShipmentDetail != null) {
                 if (orderShipmentDetail.getCustomerTrackingUrl() != null) {
                     emailContent = emailContent.replace("{{customer-tracking-url}}", orderShipmentDetail.getCustomerTrackingUrl());
+                } else {
+                    emailContent = emailContent.replace("{{customer-tracking-url}}", "");
                 }
+            } else {
+                emailContent = emailContent.replace("{{customer-tracking-url}}", "");
             }
             
             if (paymentDetails != null) {
                 if (paymentDetails.getPaymentChannel()!= null) {
                     emailContent = emailContent.replace("{{payment-channel}}", paymentDetails.getPaymentChannel());
+                } else {
+                    emailContent = emailContent.replace("{{payment-channel}}", "");
                 }
                 if (paymentDetails.getCreatedDate()!= null) {                    
                     emailContent = emailContent.replace("{{payment-date}}", paymentDetails.getCreatedDate().toString());
+                } else {
+                    emailContent = emailContent.replace("{{payment-date}}", "");
                 }
+            } else {
+                emailContent = emailContent.replace("{{payment-channel}}", "");
+                emailContent = emailContent.replace("{{payment-date}}", "");
             }
             
             
@@ -130,7 +145,8 @@ public class MessageGenerator {
                 emailContent = emailContent.replace("{{customer-activation-notice}}", customerActivationNotice);
                 emailContent = emailContent.replace("{{customer-email}}", customerEmail);
             } else {
-               emailContent = emailContent.replace("{{customer-activation-notice}}", "");
+                emailContent = emailContent.replace("{{customer-activation-notice}}", "");
+                emailContent = emailContent.replace("{{customer-email}}", "");
             }
 
         }
