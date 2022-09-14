@@ -188,4 +188,10 @@ public class Order implements Serializable {
             return null;
         }
     }
+    
+    @Transient
+    private String nextCompletionStatus;
+    
+    @Transient
+    private String nextActionText;
 }

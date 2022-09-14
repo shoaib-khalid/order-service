@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.11.9-HOTFIX |14-Sept-2022
+##################################################
+Add 'nextAction' in response of completion status update
+
+
+##################################################
 # order-service-3.11.8-HOTFIX |13-Sept-2022
 ##################################################
 Change order reminder scheduler to run every 60 second
