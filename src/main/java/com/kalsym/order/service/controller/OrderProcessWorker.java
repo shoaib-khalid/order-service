@@ -10,6 +10,7 @@ import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.enums.RefundStatus;
 import com.kalsym.order.service.enums.RefundType;
+import com.kalsym.order.service.enums.ServiceType;
 import com.kalsym.order.service.enums.StorePaymentType;
 import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.Customer;
@@ -267,6 +268,10 @@ public class OrderProcessWorker {
         String verticalId = storeWithDetails.getVerticalCode();
         Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
         String storeDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
+        if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN) {
+            storeDeliveryType = storeWithDetails.getDineInOption().name();
+        }
+
         newStatus = newStatus.replace(" ", "_");
         OrderStatus previousStatus = order.getCompletionStatus();
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prevStatus:"+previousStatus+" newStatus:"+newStatus+" CompletionCriteria = [verticalId:"+verticalId+" storePickup:"+storePickup+" storeDeliveryType: " + storeDeliveryType+" orderPaymentType:"+order.getPaymentType()+"]");        
