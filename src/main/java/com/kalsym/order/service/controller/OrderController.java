@@ -1153,6 +1153,7 @@ public class OrderController {
             
             if (cod.getOrderShipmentDetails()==null) {
                 OrderShipmentDetail orderShipmentDetails = new OrderShipmentDetail();
+                orderShipmentDetails.setStorePickup(true);
                 cod.setOrderShipmentDetails(orderShipmentDetails);
             }
             if (cod.getOrderPaymentDetails()==null) {
