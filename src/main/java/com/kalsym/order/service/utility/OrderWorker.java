@@ -196,7 +196,6 @@ public class OrderWorker {
                                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Discount not valid");
                                 response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
                                 response.setMessage("Discount not valid");
-                                response.setData(cartItems.get(i));
                                 return response;
                             }
                         } else {
@@ -204,16 +203,20 @@ public class OrderWorker {
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Discount not valid");
                             response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
                             response.setMessage("Discount not valid");
-                            response.setData(cartItems.get(i));
                             return response;
                         }
                     } else {                    
-                        if (cartItems.get(i).getProductPrice() != Float.parseFloat(String.valueOf(productInventory.getPrice()))) {
+                        if (cart.getServiceType()==ServiceType.DELIVERIN && cartItems.get(i).getProductPrice() != Float.parseFloat(String.valueOf(productInventory.getPrice()))) {
                             // should return warning if prices are not same
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
                             response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
-                            response.setMessage("Ops! The product price for "+cartItems.get(i).getProductName()+" has been updated. Please refresh the Checkout page.");
-                            response.setData(cartItems.get(i));
+                            response.setMessage("Ops! The product price for "+cartItems.get(i).getProductName()+" has been updated. Please refresh the Checkout page.");                            
+                            return response;
+                        } else if (cart.getServiceType()==ServiceType.DINEIN && cartItems.get(i).getProductPrice() != Float.parseFloat(String.valueOf(productInventory.getDineInPrice()))) {
+                            // should return warning if prices are not same
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
+                            response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+                            response.setMessage("Ops! The product price for "+cartItems.get(i).getProductName()+" has been updated. Please refresh the Checkout page.");                            
                             return response;
                         }
                         subTotal += cartItems.get(i).getPrice() ;
