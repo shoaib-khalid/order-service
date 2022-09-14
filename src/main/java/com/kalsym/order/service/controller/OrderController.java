@@ -64,6 +64,8 @@ import com.kalsym.order.service.model.PaymentOrder;
 import com.kalsym.order.service.model.StoreDiscount;
 import com.kalsym.order.service.model.Voucher;
 import com.kalsym.order.service.model.VoucherStore;
+import com.kalsym.order.service.model.OrderShipmentDetail;
+import com.kalsym.order.service.model.OrderPaymentDetail;
 import com.kalsym.order.service.model.object.Discount;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.object.OrderDetails;
@@ -990,10 +992,12 @@ public class OrderController {
         String customerEmail = null;
         if (codList.length>0) {
             customerId = codList[0].getCustomerId();
-            customerEmail = codList[0].getOrderShipmentDetails().getEmail();
+            if (codList[0].getOrderShipmentDetails()!=null) {
+                customerEmail = codList[0].getOrderShipmentDetails().getEmail();
+            }
         }
         
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "CustomerId:"+customerId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "CustomerId:"+customerId+" customerEmail:"+customerEmail);
         
         //check platform voucher code if provided
         CustomerVoucher customerPlatformVoucher = null;
@@ -1145,6 +1149,15 @@ public class OrderController {
                         gotCartItemDiscount=true;
                     }
                 }
+            }
+            
+            if (cod.getOrderShipmentDetails()==null) {
+                OrderShipmentDetail orderShipmentDetails = new OrderShipmentDetail();
+                cod.setOrderShipmentDetails(orderShipmentDetails);
+            }
+            if (cod.getOrderPaymentDetails()==null) {
+                OrderPaymentDetail orderPaymentDetails = new OrderPaymentDetail();
+                cod.setOrderPaymentDetails(orderPaymentDetails);
             }
             
             HttpResponse orderResponse = OrderWorker.placeOrder(

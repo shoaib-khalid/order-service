@@ -320,12 +320,14 @@ public class OrderWorker {
                 order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE);
                 order.setPaymentStatus(PaymentStatus.PENDING);
                 order.setCustomerId(cod.getCustomerId());
-                order.setDeliveryCharges(cod.getOrderPaymentDetails().getDeliveryQuotationAmount());
+                
                 if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN) {
+                    order.setDeliveryCharges(0.00);
                     order.setPaymentType(storeWithDetials.getDineInPaymentType()); 
                     order.setDineInOption(storeWithDetials.getDineInOption());
                     order.setDineInPack(cod.getDineInPack());
                 } else {
+                    order.setDeliveryCharges(cod.getOrderPaymentDetails().getDeliveryQuotationAmount());
                     order.setPaymentType(storeWithDetials.getPaymentType());                
                 }
                 order.setCustomerNotes(cod.getCustomerNotes());
