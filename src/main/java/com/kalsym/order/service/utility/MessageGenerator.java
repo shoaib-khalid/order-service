@@ -57,6 +57,7 @@ public class MessageGenerator {
                 order.getOrderShipmentDetail().setStorePickup(Boolean.FALSE);
             }
             if (order.getOrderShipmentDetail().getStorePickup()) {
+                emailContent = emailContent.replace("{{delivery-charges-remarks}}", "");
                 emailContent = emailContent.replace("{{delivery-charges}}", "N/A");
                 emailContent = emailContent.replace("{{delivery-address}}", "N/A");
                 emailContent = emailContent.replace("{{delivery-city}}", "N/A");
