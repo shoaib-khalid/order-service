@@ -220,7 +220,7 @@ public class OrderWorker {
                             return response;
                         }
                         subTotal += cartItems.get(i).getPrice() ;
-                        itemPrice = cartItems.get(i).getPrice() ;
+                        itemPrice = cartItems.get(i).getProductPrice();
                     }
                     
 
