@@ -911,7 +911,7 @@ public class OrderProcessWorker {
             int nextSequence = orderCompletionStatusConfig.getStatusSequence()+1;
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find config for next status VerticalId:"+verticalId+" NextSequence:"+nextSequence+" storePickup:"+storePickup+" deliveryType:"+storeDeliveryType+" paymentType:"+order.getPaymentType());
             List<OrderCompletionStatusConfig> nextActionCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusSequenceAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, nextSequence, storePickup, storeDeliveryType, order.getPaymentType());
-            if (nextActionCompletionStatusConfigs != null || !nextActionCompletionStatusConfigs.isEmpty()) {           
+            if (nextActionCompletionStatusConfigs != null && !nextActionCompletionStatusConfigs.isEmpty()) {           
                 nextCompletionStatusConfig = nextActionCompletionStatusConfigs.get(0);
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Next action status: " + nextCompletionStatusConfig.getStatus()+" sequence:"+nextCompletionStatusConfig.getStatusSequence());
                 order.setNextCompletionStatus(nextCompletionStatusConfig.status);
