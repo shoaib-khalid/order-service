@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.11.10-HOTFIX |15-Sept-2022
+##################################################
+Add packingSize XS in product. if packingSize=XS, item count set to 1 during getWeightOfCart
+
+
+##################################################
 # order-service-3.11.9-HOTFIX |14-Sept-2022
 ##################################################
 Add 'nextAction' in response of completion status update

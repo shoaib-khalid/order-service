@@ -53,6 +53,7 @@ public class Product {
     private int minQuantityForAlarm;
     private Boolean isPackage;
     private int shortId;
+    private String packingSize;
     
     public enum Status {
         ACTIVE,
