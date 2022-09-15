@@ -619,11 +619,18 @@ public class CartController {
                     }
                     double itemWeight = cartItem.getQuantity() * singleItemWeight;
                     totalWeight = totalWeight + itemWeight;
-                    totalPcs = totalPcs + cartItem.getQuantity();
+                    
 
                     //check if any of item need a bigger vehicle
                     Optional<Product> productInfoOpt = productRepository.findById(cartItem.getProductId());
                     Product productInfo = productInfoOpt.get();
+                    
+                    int itemPcs = cartItem.getQuantity();
+                    if (productInfo.getPackingSize()!=null && productInfo.getPackingSize().equalsIgnoreCase("XS")) {
+                        itemPcs = 1;
+                    }
+                    totalPcs = totalPcs + itemPcs;
+                    
                     if (productInfo.getVehicleType()==VehicleType.CAR && vehicleSize<2) {
                         vehicleType=VehicleType.CAR;
                         vehicleSize=2;

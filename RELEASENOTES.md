@@ -7,6 +7,7 @@ Bug fix for message during claim voucher
 Add new field to allow voucher multiple redeem if allowMultipleRedeem=1
 Allow voucher to claim by customer with same email address, different storeId
 Bug fix for emailTemplate for order CANCELED_BY_MERCHANT
+Add new packingSize : XS. if packingSize=XS, totalItem set to 1 during getWeightOfCart
 
 ##DB Changes:
 ALTER TABLE voucher ADD allowMultipleRedeem TINYINT(1) DEFAULT 0;
