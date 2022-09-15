@@ -625,7 +625,7 @@ public class CartController {
                     Optional<Product> productInfoOpt = productRepository.findById(cartItem.getProductId());
                     Product productInfo = productInfoOpt.get();
                     
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Product packing size:"+productInfo.getPackingSize());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Product ["+productInfo.getName()+"] packing size:"+productInfo.getPackingSize());
                     int itemPcs = cartItem.getQuantity();
                     if (productInfo.getPackingSize()!=null && productInfo.getPackingSize().equalsIgnoreCase("XS")) {
                         itemPcs = 1;
@@ -715,7 +715,7 @@ public class CartController {
             w.setTotalPcs(totalPcs);
             response.setSuccessStatus(HttpStatus.OK);
             response.setData(w);
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "GetWeight Response : "+w.toString());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "TotalWeight : "+totalWeight+" Pcs:"+totalPcs+" Vehicle:"+vehicleType);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         
         } catch (Exception exp) {
