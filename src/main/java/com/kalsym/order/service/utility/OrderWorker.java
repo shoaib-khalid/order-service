@@ -195,7 +195,6 @@ public class OrderWorker {
                                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Discount not valid");
                                 response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
                                 response.setMessage("Discount not valid");
-                                response.setData(cartItems.get(i));
                                 return response;
                             }
                         } else {
@@ -203,7 +202,6 @@ public class OrderWorker {
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Discount not valid");
                             response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
                             response.setMessage("Discount not valid");
-                            response.setData(cartItems.get(i));
                             return response;
                         }
                     } else {                    
@@ -212,7 +210,6 @@ public class OrderWorker {
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
                             response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
                             response.setMessage("Ops! The product price for "+cartItems.get(i).getProductName()+" has been updated. Please refresh the Checkout page.");
-                            response.setData(cartItems.get(i));
                             return response;
                         }
                         subTotal += cartItems.get(i).getPrice() ;
@@ -559,7 +556,7 @@ public class OrderWorker {
                                     customerEmail = customer.getEmail();
                                 }
 
-                                if (sendReceiptToReceiver) {
+                                if (sendReceiptToReceiver!=null && sendReceiptToReceiver) {
                                    //get receiver info
                                    if (order.getOrderShipmentDetail()!=null) {
                                        customerEmail = order.getOrderShipmentDetail().getEmail();
@@ -672,7 +669,7 @@ public class OrderWorker {
                                 }
                             }
                             
-                            if (sendReceiptToReceiver) {
+                            if (sendReceiptToReceiver!=null && sendReceiptToReceiver) {
                                 //get receiver info
                                 if (order.getOrderShipmentDetail()!=null) {
                                     customerMsisdn = order.getOrderShipmentDetail().getPhoneNumber();

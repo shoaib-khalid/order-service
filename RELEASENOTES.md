@@ -1,4 +1,14 @@
 ##################################################
+# order-service-3.11.11-HOTFIX |19-Sept-2022
+##################################################
+Bug fix for claim/redeem store voucher
+
+##DB Changes:
+ALTER TABLE customer_voucher ADD storeId VARCHAR(50);
+REMOVE index customerId, voucherId
+
+
+##################################################
 # order-service-3.11.10-HOTFIX |15-Sept-2022
 ##################################################
 Add packingSize XS in product. if packingSize=XS, item count set to 1 during getWeightOfCart

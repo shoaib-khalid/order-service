@@ -45,6 +45,7 @@ public class Customer {
 
     private String phoneNumber;
     private String email;
+    private String storeId;
     @CreationTimestamp
     private Date created;
     @UpdateTimestamp

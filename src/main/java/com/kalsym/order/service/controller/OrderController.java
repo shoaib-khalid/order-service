@@ -691,6 +691,7 @@ public class OrderController {
      * @param saveCustomerInformation
      * @param platformVoucherCode
      * @param sendReceiptToReceiver
+     * @param storeId
      * @param cod
      * @return
      * @throws Exception
@@ -702,6 +703,7 @@ public class OrderController {
             @RequestParam(required = false) Boolean saveCustomerInformation,
             @RequestParam(required = false) String platformVoucherCode,
             @RequestParam(required = false) Boolean sendReceiptToReceiver,
+            @RequestParam(required = false) String storeId,
             @RequestBody COD cod) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         
@@ -763,6 +765,7 @@ public class OrderController {
                     customerPlatformVoucher.setVoucherId(guestVoucher.getId());
                     customerPlatformVoucher.setVoucher(guestVoucher);
                     customerPlatformVoucher.setGuestVoucher(true);
+                    customerPlatformVoucher.setStoreId(storeId);
                 } else {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
                     response.setMessage("Voucher code " + platformVoucherCode + " not found");
@@ -940,10 +943,12 @@ public class OrderController {
         String customerEmail = null;
         if (codList.length>0) {
             customerId = codList[0].getCustomerId();
-            customerEmail = codList[0].getOrderShipmentDetails().getEmail();
+            if (codList[0].getOrderShipmentDetails()!=null) {
+                customerEmail = codList[0].getOrderShipmentDetails().getEmail();
+            }            
         }
         
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "CustomerId:"+customerId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "CustomerId:"+customerId+" customerEmail:"+customerEmail);
         
         //check platform voucher code if provided
         CustomerVoucher customerPlatformVoucher = null;
@@ -1097,6 +1102,15 @@ public class OrderController {
                 }
             }
             
+            if (cod.getOrderShipmentDetails()==null) {
+                OrderShipmentDetail orderShipmentDetails = new OrderShipmentDetail();
+                cod.setOrderShipmentDetails(orderShipmentDetails);
+            }
+            if (cod.getOrderPaymentDetails()==null) {
+                OrderPaymentDetail orderPaymentDetails = new OrderPaymentDetail();
+                cod.setOrderPaymentDetails(orderPaymentDetails);
+            }
+
             HttpResponse orderResponse = OrderWorker.placeOrder(
                     request.getRequestURI(), optCart.get(), selectedCartItem, cod, optStore.get(), optStoreDeliveryDetail.get(),
                     customerStoreVoucher,
@@ -1838,7 +1852,15 @@ public class OrderController {
                             regionCountry = t.get();
                         }
                         OrderShipmentDetail orderShipmentDetail = orderShipmentDetailRepository.findByOrderId(orderId);
-                        Optional<PaymentOrder> optPaymentDetails = paymentOrderRepository.findByClientTransactionId(orderId);
+                        Optional<PaymentOrder> optPaymentDetails = null;
+                        if (order.getOrderGroupId()!=null) {
+                            optPaymentDetails = paymentOrderRepository.findByClientTransactionId("G"+order.getOrderGroupId());
+                            if (!optPaymentDetails.isPresent()) {
+                               optPaymentDetails = paymentOrderRepository.findByClientTransactionId(orderId);
+                            }
+                        } else {
+                            optPaymentDetails = paymentOrderRepository.findByClientTransactionId(orderId);
+                        }
                         PaymentOrder paymentDetails = null;
                         if (optPaymentDetails.isPresent()) {
                             paymentDetails = optPaymentDetails.get();

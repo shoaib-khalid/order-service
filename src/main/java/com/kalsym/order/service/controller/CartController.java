@@ -730,7 +730,8 @@ public class CartController {
             @RequestParam(required = false) String voucherCode,  
             @RequestParam(required = false) String storeVoucherCode,  
             @RequestParam(required = false) String customerId,
-            @RequestParam(required = false) String email
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String storeId
             ) {
         String logprefix = request.getRequestURI() + " ";
 
@@ -810,13 +811,18 @@ public class CartController {
                 if (guestVoucher!=null) {
                     //check if already redeem
                     if (email!=null) {
-                        List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(email, guestVoucher.getId());
+                        List<CustomerVoucher> usedVoucherList = null;
+                        if (storeId!=null) {
+                            usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherIdAndStoreId(email, guestVoucher.getId(), storeId);
+                        } else {
+                            usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(email, guestVoucher.getId());
+                        }
                         if (usedVoucherList.size()>0) {                        
                             CustomerVoucher usedVoucher = usedVoucherList.get(0);
                             if (usedVoucher.getIsUsed()) {
                                 //already used
                                 response.setStatus(HttpStatus.NOT_FOUND.value());
-                                response.setMessage("Voucher code " + voucherCode + " already used");
+                                response.setMessage("You have redeemed this voucher");
                                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                             } else {
                                 customerStoreVoucher = usedVoucher;
@@ -826,6 +832,7 @@ public class CartController {
                             customerStoreVoucher.setGuestEmail(email);
                             customerStoreVoucher.setIsUsed(false);
                             customerStoreVoucher.setVoucherId(guestVoucher.getId());
+                            customerStoreVoucher.setVoucher(guestVoucher);
                             customerStoreVoucher.setCreated(new Date());
                             customerStoreVoucher.setGuestVoucher(true);
                             customerVoucherRepository.save(customerStoreVoucher);
@@ -837,7 +844,7 @@ public class CartController {
                     }
                 } else {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
-                    response.setMessage("Store Voucher code " + voucherCode + " not found");
+                    response.setMessage("Store Voucher code " + storeVoucherCode + " not found");
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                 }
                 

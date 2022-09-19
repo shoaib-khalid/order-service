@@ -384,13 +384,13 @@ public class OrderProcessWorker {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cleared cartItem for cartId: " + order.getCartId());
                 
                 //deduct customer voucher 
-                if (order.getVoucherId()!=null) {
-                    voucherRepository.deductVoucherBalance(order.getVoucherId());                                        
-                    CustomerVoucher customerVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(order.getCustomerId(), order.getVoucherId());
+                if (order.getStoreVoucherId()!=null) {
+                    voucherRepository.deductVoucherBalance(order.getStoreVoucherId());                                        
+                    CustomerVoucher customerVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(order.getCustomerId(), order.getStoreVoucherId());
                     if (customerVoucher!=null) {
                         customerVoucher.setIsUsed(true);
                         customerVoucherRepository.save(customerVoucher);
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Removed customer voucherId: " + order.getVoucherId());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Removed customer voucherId: " + order.getStoreVoucherId());
                     } 
                 }
                 
@@ -625,7 +625,15 @@ public class OrderProcessWorker {
         
         if (orderCompletionStatusConfig!=null) {
             OrderShipmentDetail orderShipmentDetail = orderShipmentDetailRepository.findByOrderId(orderId);
-            Optional<PaymentOrder> optPaymentDetails = paymentOrderRepository.findByClientTransactionId(orderId);
+            Optional<PaymentOrder> optPaymentDetails = null;
+            if (order.getOrderGroupId()!=null) {
+                optPaymentDetails = paymentOrderRepository.findByClientTransactionId("G"+order.getOrderGroupId());
+                if (!optPaymentDetails.isPresent()) {
+                    optPaymentDetails = paymentOrderRepository.findByClientTransactionId(orderId);
+                }
+            } else {
+                optPaymentDetails = paymentOrderRepository.findByClientTransactionId(orderId);
+            }
             PaymentOrder paymentDetails = null;
             if (optPaymentDetails.isPresent()) {
                 paymentDetails = optPaymentDetails.get();
