@@ -235,6 +235,18 @@ public class CartItemController {
                 } 
             }
             response.setSuccessStatus(HttpStatus.CREATED);
+            
+            String message = "{ "
+                + "\"operation\":\"addNewItem\", "
+                + "\"cartId\":\""+savedCart.get().getId()+"\", "
+                + "\"itemCode\":\""+bodyCartItem.getItemCode()+"\", "
+                + "\"productId\":\""+bodyCartItem.getProductId()+"\", "
+                + "\"quantity\":"+bodyCartItem.getQuantity()+", "
+                + "\"timestamp\":\""+new Date()+"\", "
+                + "}";
+            simpMessagingTemplate.convertAndSend("/topic/cart/"+savedCart.get().getId(), message);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Message sent via websocket to /topic/greetings/"+savedCart.get().getId() );        
+        
         } catch (Exception exp) {
             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error saving cart item", exp);
             response.setMessage(exp.getMessage());
@@ -251,12 +263,7 @@ public class CartItemController {
         savedCart.get().setUpdated(new Date());
         cartRepository.save(savedCart.get());
         
-        response.setData(cartItemData.get());
-        
-        //send update via websocket
-        String cartid = savedCart.get().getId();
-        String message = "New Item Added!";
-        simpMessagingTemplate.convertAndSendToUser(cartid, "/secured/user/queue/specific-cart", message);
+        response.setData(cartItemData.get());        
         
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

@@ -7,6 +7,7 @@ package com.kalsym.order.service.utility;
 
 import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.enums.DeliveryType;
+import com.kalsym.order.service.enums.ServiceType;
 import com.kalsym.order.service.model.Cart;
 import com.kalsym.order.service.model.CartItem;
 import com.kalsym.order.service.model.Order;
@@ -245,10 +246,15 @@ public class OrderCalculation {
                 
         //calculating Kalsym commission 
         double commission = 0;
-        if (storeCommission != null) {
-            commission = totalWithoutDelivery * (storeCommission.getRate() / 100);
-            if (commission < storeCommission.getMinChargeAmount()) {
-                commission = storeCommission.getMinChargeAmount();
+        if (storeCommission != null) {                                    
+            if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN) {
+                //no commission for DINE-IN
+                commission = 0;
+            } else {
+                commission = totalWithoutDelivery * (storeCommission.getRate() / 100);
+                if (commission < storeCommission.getMinChargeAmount()) {
+                    commission = storeCommission.getMinChargeAmount();
+                }    
             }
         }
                                

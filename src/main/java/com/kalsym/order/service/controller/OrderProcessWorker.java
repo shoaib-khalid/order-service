@@ -348,19 +348,35 @@ public class OrderProcessWorker {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderStatusstatusConfigs: " + orderCompletionStatusConfigs.size());
                 orderCompletionStatusConfig = orderCompletionStatusConfigs.get(0);
             }
-                
+            
+            //check if order already canceled
+            if (previousStatus==OrderStatus.CANCELED_BY_MERCHANT) {
+                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order already canceled");                    
+                orderProcessResult.httpStatus = HttpStatus.NOT_ACCEPTABLE;
+                orderProcessResult.errorMsg = "Order already canceled";
+                return orderProcessResult;
+            }
+            
+            //check if order already completed
+            if (previousStatus==OrderStatus.DELIVERED_TO_CUSTOMER) {
+                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order already completed");                    
+                orderProcessResult.httpStatus = HttpStatus.NOT_ACCEPTABLE;
+                orderProcessResult.errorMsg = "Order already completed";
+                return orderProcessResult;
+            }
+            
             //check current status if in correct sequence
             OrderCompletionStatusConfig prevOrderCompletionStatusConfig = null;
             
             List<OrderCompletionStatusConfig> prevOrderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, previousStatus.name(), storePickup, storeDeliveryType, order.getPaymentType());
             if (prevOrderCompletionStatusConfigs == null || prevOrderCompletionStatusConfigs.isEmpty()) {
-                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prevOrderCompletionStatusConfigs not found!");
+                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prevOrderCompletionStatusConfigs not found!");                
                 if (status==OrderStatus.PAYMENT_CONFIRMED) {
                     Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Not correct sequence");                    
                     orderProcessResult.httpStatus = HttpStatus.NOT_ACCEPTABLE;
                     orderProcessResult.errorMsg = "Wrong status sent: " + newStatus;
                     return orderProcessResult;
-                }
+                } 
             } else {
                 prevOrderCompletionStatusConfig = prevOrderCompletionStatusConfigs.get(0);
                 int prevSequence = prevOrderCompletionStatusConfig.getStatusSequence();
