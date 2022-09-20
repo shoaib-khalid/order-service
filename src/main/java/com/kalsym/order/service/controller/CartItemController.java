@@ -237,7 +237,7 @@ public class CartItemController {
             response.setSuccessStatus(HttpStatus.CREATED);
             
             String message = "{ "
-                + "\"operation\":\"addNewItem\", "
+                + "\"operation\":\"addCartItem\", "
                 + "\"cartId\":\""+savedCart.get().getId()+"\", "
                 + "\"itemCode\":\""+bodyCartItem.getItemCode()+"\", "
                 + "\"productId\":\""+bodyCartItem.getProductId()+"\", "
@@ -245,7 +245,7 @@ public class CartItemController {
                 + "\"timestamp\":\""+new Date()+"\", "
                 + "}";
             simpMessagingTemplate.convertAndSend("/topic/cart/"+savedCart.get().getId(), message);
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Message sent via websocket to /topic/greetings/"+savedCart.get().getId() );        
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Message sent via websocket to /topic/cart/"+savedCart.get().getId() );        
         
         } catch (Exception exp) {
             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error saving cart item", exp);
@@ -304,6 +304,17 @@ public class CartItemController {
         try {
             cartItemRepository.delete(savedItem.get());
             response.setSuccessStatus(HttpStatus.OK);
+            
+             String message = "{ "
+                + "\"operation\":\"deleteCartItem\", "
+                + "\"cartId\":\""+savedCart.get().getId()+"\", "
+                + "\"itemCode\":\""+savedItem.get().getItemCode()+"\", "
+                + "\"cartItemId\":\""+id+"\", "
+                + "\"timestamp\":\""+new Date()+"\", "
+                + "}";
+            simpMessagingTemplate.convertAndSend("/topic/cart/"+savedCart.get().getId(), message);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Message sent via websocket to /topic/cart/"+savedCart.get().getId() );        
+        
         } catch (Exception exp) {
             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error deleting cart item with id: " + id, exp);
             response.setMessage(exp.getMessage());
@@ -431,6 +442,15 @@ public class CartItemController {
         try {
             cartItemRepository.clearCartItem(cartId);
             response.setSuccessStatus(HttpStatus.OK);
+            
+            String message = "{ "
+                + "\"operation\":\"clearCartItem\", "
+                + "\"cartId\":\""+savedCart.get().getId()+"\", "
+                + "\"timestamp\":\""+new Date()+"\", "
+                + "}";
+            simpMessagingTemplate.convertAndSend("/topic/cart/"+savedCart.get().getId(), message);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Message sent via websocket to /topic/cart/"+savedCart.get().getId() );        
+        
         } catch (Exception exp) {
             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error clear cart item with cartId: " + cartId, exp);
             response.setMessage(exp.getMessage());
@@ -470,6 +490,18 @@ public class CartItemController {
             item.setQuantity(newQty);
             item.setPrice(newPrice);
             cartItemRepository.save(item);
+            
+            String message = "{ "
+                + "\"operation\":\"updateCartItem\", "
+                + "\"cartId\":\""+cartId+"\", "
+                + "\"itemCode\":\""+item.getItemCode()+"\", "
+                + "\"cartItemId\":\""+item.getId()+"\", "
+                + "\"newQuantity\":\""+newQty+"\", "
+                + "\"timestamp\":\""+new Date()+"\", "
+                + "}";
+            simpMessagingTemplate.convertAndSend("/topic/cart/"+savedCart.get().getId(), message);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Message sent via websocket to /topic/cart/"+savedCart.get().getId() );        
+        
         } else {
             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item not found for id: " + id);
             response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);

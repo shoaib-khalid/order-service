@@ -1,5 +1,5 @@
 ##################################################
-# order-service-3.12.1-SNAPSHOT |19-Sept-2022
+# order-service-3.12.1-SNAPSHOT |20-Sept-2022
 ##################################################
 Bug fix for getOrderById
 Revert voucher if merchant canceled the order
@@ -9,6 +9,8 @@ Allow voucher to claim by customer with same email address, different storeId
 Bug fix for emailTemplate for order CANCELED_BY_MERCHANT
 Add new packingSize : XS. if packingSize=XS, totalItem set to 1 during getWeightOfCart
 Bug fix for order process if status already CANCELED_BY_MERCHANT & DELIVERED_TO_CUSTOMER
+New features : listen web-socket to receive connection from front-end
+	-broadcast to client for event addNewCartItem, removeCartItem, updateCartItem, clearCartItem
 
 ##DB Changes:
 ALTER TABLE voucher ADD allowMultipleRedeem TINYINT(1) DEFAULT 0;
