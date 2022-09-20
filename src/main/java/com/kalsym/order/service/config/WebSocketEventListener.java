@@ -10,10 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
-
+import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import com.kalsym.order.service.utility.Logger;
 
 /**
@@ -47,5 +48,16 @@ public class WebSocketEventListener {
 
             messagingTemplate.convertAndSend("/topic/public", chatMessage);
         }*/
+    }
+    
+    @EventListener
+    public void handleSessionSubscribeEvent(SessionSubscribeEvent event) {
+        GenericMessage message = (GenericMessage) event.getMessage();
+        String simpDestination = (String) message.getHeaders().get("simpDestination");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Received SubscribeEvent simpDestination:"+simpDestination);
+        
+        if (simpDestination.startsWith("/topic/group/1")) {
+          // do stuff
+        }
     }
 }

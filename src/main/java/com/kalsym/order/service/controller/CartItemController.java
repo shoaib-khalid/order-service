@@ -242,7 +242,7 @@ public class CartItemController {
                 + "\"itemCode\":\""+bodyCartItem.getItemCode()+"\", "
                 + "\"productId\":\""+bodyCartItem.getProductId()+"\", "
                 + "\"quantity\":"+bodyCartItem.getQuantity()+", "
-                + "\"timestamp\":\""+new Date()+"\", "
+                + "\"timestamp\":\""+new Date()+"\" "
                 + "}";
             simpMessagingTemplate.convertAndSend("/topic/cart/"+savedCart.get().getId(), message);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Message sent via websocket to /topic/cart/"+savedCart.get().getId() );        
@@ -310,7 +310,7 @@ public class CartItemController {
                 + "\"cartId\":\""+savedCart.get().getId()+"\", "
                 + "\"itemCode\":\""+savedItem.get().getItemCode()+"\", "
                 + "\"cartItemId\":\""+id+"\", "
-                + "\"timestamp\":\""+new Date()+"\", "
+                + "\"timestamp\":\""+new Date()+"\" "
                 + "}";
             simpMessagingTemplate.convertAndSend("/topic/cart/"+savedCart.get().getId(), message);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Message sent via websocket to /topic/cart/"+savedCart.get().getId() );        
@@ -414,7 +414,18 @@ public class CartItemController {
         //update updated field for cart
         savedCart.get().setUpdated(new Date());
         cartRepository.save(savedCart.get());
-                
+
+        String message = "{ "
+                + "\"operation\":\"updateCartItem\", "
+                + "\"cartId\":\""+cartId+"\", "
+                + "\"itemCode\":\""+bodyCartItem.getItemCode()+"\", "
+                + "\"cartItemId\":\""+bodyCartItem.getId()+"\", "
+                + "\"newQuantity\":\""+bodyCartItem.getQuantity()+"\", "
+                + "\"timestamp\":\""+new Date()+"\" "
+                + "}";
+        simpMessagingTemplate.convertAndSend("/topic/cart/"+savedCart.get().getId(), message);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Message sent via websocket to /topic/cart/"+savedCart.get().getId() );        
+
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem updated for cartItemId: " + id);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(cartItemRepository.save(cartItem));
@@ -446,7 +457,7 @@ public class CartItemController {
             String message = "{ "
                 + "\"operation\":\"clearCartItem\", "
                 + "\"cartId\":\""+savedCart.get().getId()+"\", "
-                + "\"timestamp\":\""+new Date()+"\", "
+                + "\"timestamp\":\""+new Date()+"\" "
                 + "}";
             simpMessagingTemplate.convertAndSend("/topic/cart/"+savedCart.get().getId(), message);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Message sent via websocket to /topic/cart/"+savedCart.get().getId() );        
@@ -497,7 +508,7 @@ public class CartItemController {
                 + "\"itemCode\":\""+item.getItemCode()+"\", "
                 + "\"cartItemId\":\""+item.getId()+"\", "
                 + "\"newQuantity\":\""+newQty+"\", "
-                + "\"timestamp\":\""+new Date()+"\", "
+                + "\"timestamp\":\""+new Date()+"\" "
                 + "}";
             simpMessagingTemplate.convertAndSend("/topic/cart/"+savedCart.get().getId(), message);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Message sent via websocket to /topic/cart/"+savedCart.get().getId() );        

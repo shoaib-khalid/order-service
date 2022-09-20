@@ -35,8 +35,8 @@ public class WebSocketController {
 	@Autowired
 	private SimpMessageSendingOperations simpMessagingTemplate;
 
-	@MessageMapping("/app/chat")
-	@SendToUser("/topic/greetings")
+	@MessageMapping("/app/websocket")
+	@SendToUser("/topic/cart")
 	public String processMessageFromClient(@Payload String message, Principal principal) throws Exception {
 		Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Received -> Client:"+principal.getName()+" message:"+message);
                 String name = new Gson().fromJson(message, Map.class).get("name").toString();
