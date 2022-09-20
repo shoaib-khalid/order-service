@@ -85,14 +85,6 @@ public class ReminderScheduler {
     @Scheduled(fixedRate = 60000)
     public void checkNotProcessOrder() throws Exception {
         
-        
-        String testCartId = "cart1";
-        String message = "New Item Added!";
-        //simpMessagingTemplate.convertAndSendToUser(testCartId, "/queue", message);
-        simpMessagingTemplate.convertAndSend("/topic/greetings", message);
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "WebSocketTest", "Message sent via websocket");        
-        
-        
         if (isEnabled) {
             String logprefix = "Reminder-Scheduler"; 
             List<String> items = Arrays.asList(verticalToSend.split(","));
