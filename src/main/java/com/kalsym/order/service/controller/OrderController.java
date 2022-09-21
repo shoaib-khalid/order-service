@@ -380,6 +380,7 @@ public class OrderController {
             @RequestParam(required = false) String city,
             @RequestParam(required = false) OrderStatus[] completionStatus,
             @RequestParam(required = false) String[] orderIds,
+            @RequestParam(required = false) String[] orderGroupIds,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
         String logprefix = request.getRequestURI() + " getOrdersWithDetails() ";
@@ -461,7 +462,7 @@ public class OrderController {
         
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
         
-        Page<OrderWithDetails> orderWithPage = orderWithDetailsRepository.findAll(getOrderWithDetailsSpecWithDatesBetweenMultipleStatus(from, to, completionStatus, orderIds, orderExample), pageable);
+        Page<OrderWithDetails> orderWithPage = orderWithDetailsRepository.findAll(getOrderWithDetailsSpecWithDatesBetweenMultipleStatus(from, to, completionStatus, orderIds, orderGroupIds, orderExample), pageable);
         
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(orderWithPage);
@@ -1497,10 +1498,12 @@ public class OrderController {
      * @param to
      * @param example
      * @param completionStatusList
+     * @param idList
+     * @param orderGroupIds
      * @return
      */
     public Specification<OrderWithDetails> getOrderWithDetailsSpecWithDatesBetweenMultipleStatus(
-            Date from, Date to, OrderStatus[] completionStatusList, String[] idList, Example<OrderWithDetails> example) {
+            Date from, Date to, OrderStatus[] completionStatusList, String[] idList, String[] orderGroupIds, Example<OrderWithDetails> example) {
 
         return (Specification<OrderWithDetails>) (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
@@ -1540,6 +1543,21 @@ public class OrderController {
                 }
 
                 Predicate finalPredicate = builder.or(orderIdPredicatesList.toArray(new Predicate[idCount]));
+                predicates.add(finalPredicate);
+            }
+            
+            if (orderGroupIds!=null) {
+                int idCount = orderGroupIds.length;
+                List<Predicate> orderGroupIdPredicatesList = new ArrayList<>();
+                for (int i=0;i<orderGroupIds.length;i++) {
+                    if (orderGroupIds[i].startsWith("G")) {
+                        orderGroupIds[i] = orderGroupIds[i].substring(1);
+                    }
+                    Predicate predicateForGroupId = builder.equal(root.get("orderGroupId"), orderGroupIds[i]);
+                    orderGroupIdPredicatesList.add(predicateForGroupId);                    
+                }
+
+                Predicate finalPredicate = builder.or(orderGroupIdPredicatesList.toArray(new Predicate[idCount]));
                 predicates.add(finalPredicate);
             }
                        
