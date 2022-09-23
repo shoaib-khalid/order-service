@@ -142,6 +142,32 @@ public class OrderGroupController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
+    @GetMapping(path = {"/search"}, name = "orders-group-get-by-id", produces = "application/json")
+    @PreAuthorize("hasAnyAuthority('orders-group-get-by-id', 'all')")
+    public ResponseEntity<HttpResponse> searchOrderGroup(HttpServletRequest request,
+            @RequestParam(required = false) String[] orderGroupIds,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize) {
+
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        
+        OrderGroup orderMatch = new OrderGroup();
+        ExampleMatcher matcher = ExampleMatcher
+                .matchingAll()
+                .withIgnoreCase()
+                .withIgnoreNullValues()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        Example<OrderGroup> orderExample = Example.of(orderMatch, matcher);
+        
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
+        
+        Page<OrderGroup> orderGroup = orderGroupRepository.findAll(getOrderGroupMultipleId(orderGroupIds, orderExample), pageable);
+        
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(orderGroup);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    
     /**
      * Accept two dates and example matcher
      *
@@ -164,6 +190,39 @@ public class OrderGroupController {
            
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
 
+            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
+    
+    
+      /**
+     * Accept two dates and example matcher
+     *
+     * @param example
+     * @param orderGroupIds
+     * @return
+     */
+    public Specification<OrderGroup> getOrderGroupMultipleId(
+            String[] orderGroupIds, Example<OrderGroup> example) {
+
+        return (Specification<OrderGroup>) (root, query, builder) -> {
+            final List<Predicate> predicates = new ArrayList<>();
+
+            if (orderGroupIds!=null) {
+                int idCount = orderGroupIds.length;
+                List<Predicate> orderIdPredicatesList = new ArrayList<>();
+                for (int i=0;i<orderGroupIds.length;i++) {
+                    Predicate predicateForId = builder.equal(root.get("id"), orderGroupIds[i]);
+                    orderIdPredicatesList.add(predicateForId);                    
+                }
+
+                Predicate finalPredicate = builder.or(orderIdPredicatesList.toArray(new Predicate[idCount]));
+                predicates.add(finalPredicate);
+            }
+                
+            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+            
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "getOrderGroupMultipleId", "Predicates:"+predicates.toString());
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
