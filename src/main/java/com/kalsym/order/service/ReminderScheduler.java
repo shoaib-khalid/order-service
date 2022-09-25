@@ -78,12 +78,15 @@ public class ReminderScheduler {
     @Value("${order.reminder.copy.msisdn:60123593299,601139343018,60133639668}")
     private String copyMsisdn;
     
+    @Value("${order.reminder.wait.minute:1}")
+    private int minuteToWait;
+    
     @Scheduled(fixedRate = 60000)
     public void checkNotProcessOrder() throws Exception {
         if (isEnabled) {
             String logprefix = "Reminder-Scheduler"; 
             List<String> items = Arrays.asList(verticalToSend.split(","));
-            List<Object[]> orderList = orderRepository.getNotProcessOrder(items, maxTotalReminder);
+            List<Object[]> orderList = orderRepository.getNotProcessOrder(items, maxTotalReminder, minuteToWait);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Start checking not process order for vertical:"+verticalToSend+". Order Count:"+orderList.size());        
             for (int i=0;i<orderList.size();i++) {
                 Object[] order = orderList.get(i);

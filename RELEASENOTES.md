@@ -1,4 +1,13 @@
 ##################################################
+# order-service-3.11.12-HOTFIX |25-Sept-2022
+##################################################
+Put wait minute to send reminder in config
+
+##Config Changes:
+order.reminder.wait.minute=1
+
+
+##################################################
 # order-service-3.11.11-HOTFIX |19-Sept-2022
 ##################################################
 Bug fix for claim/redeem store voucher

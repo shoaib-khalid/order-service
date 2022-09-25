@@ -34,8 +34,8 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
             + "INNER JOIN `client` C ON B.clientId=C.id "
             + "WHERE ( (completionStatus='PAYMENT_CONFIRMED' AND A.paymentType='ONLINEPAYMENT') OR (completionStatus='RECEIVED_AT_STORE' AND A.paymentType='COD') ) "
             + "AND verticalCode IN (:verticalList) "
-            + "AND totalReminderSent<:maxReminder AND DATE_ADD(A.created, INTERVAL 5 MINUTE) < NOW()", nativeQuery = true)
-    List<Object[]> getNotProcessOrder(@Param("verticalList") List verticalList, @Param("maxReminder") int maxReminder);
+            + "AND totalReminderSent<:maxReminder AND DATE_ADD(A.created, INTERVAL :minuteToWait MINUTE) < NOW()", nativeQuery = true)
+    List<Object[]> getNotProcessOrder(@Param("verticalList") List verticalList, @Param("maxReminder") int maxReminder, @Param("minuteToWait") int minuteToWait);
     
     @Transactional 
     @Modifying
