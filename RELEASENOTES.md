@@ -1,4 +1,12 @@
 ##################################################
+# order-service-3.12.2-SNAPSHOT |26-Sept-2022
+##################################################
+Put wait minute to send order reminder in config
+
+##Config Changes: order.reminder.wait.minute=1
+
+
+##################################################
 # order-service-3.12.1-SNAPSHOT |21-Sept-2022
 ##################################################
 Bug fix for getOrderById
