@@ -1,4 +1,70 @@
 ##################################################
+# order-service-3.13.0-SNAPSHOT |26-Sept-2022
+##################################################
+New feature : product add-on
+
+API effected:
+---------------
+add item to cart
+getDiscountOfCart
+placeOrder
+
+##DB Changes:
+CREATE TABLE `addon_template_group` (
+  `id` varchar(50) NOT NULL,
+  `storeId` varchar(50) DEFAULT NULL,
+  `title` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `addon_template_item` (
+  `id` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `groupId` varchar(50) DEFAULT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `price` decimal(10,2) DEFAULT NULL,
+  `dineInPrice` decimal(10,2) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ;
+
+CREATE TABLE `cart_item_addon` (
+  `id` varchar(50) NOT NULL,
+  `cartItemId` varchar(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  `price` decimal(10,2) DEFAULT NULL,
+  `productAddOnId` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `productAddOnId` (`productAddOnId`),
+  KEY `orderItemId` (`cartItemId`)
+) ;
+
+CREATE TABLE `order_item_addon` (
+  `id` varchar(50) NOT NULL,
+  `orderItemId` varchar(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  `price` decimal(10,2) DEFAULT NULL,
+  `productAddOnId` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `orderItemId` (`orderItemId`),
+  KEY `productAddOnId` (`productAddOnId`),
+  CONSTRAINT `order_item_addon_ibfk_1` FOREIGN KEY (`orderItemId`) REFERENCES `order_item` (`id`),
+  CONSTRAINT `order_item_addon_ibfk_2` FOREIGN KEY (`productAddOnId`) REFERENCES `product_addon` (`id`)
+) ;
+
+CREATE TABLE `product_addon` (
+  `id` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `productId` varchar(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  `addOnItemId` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+  `price` decimal(10,2) DEFAULT NULL,
+  `dineInPrice` decimal(10,2) DEFAULT NULL,
+  `status` enum('AVAILABLE','NOTAVAILABLE','OUTOFSTOCK') DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `productId` (`productId`),
+  KEY `addOnItemId` (`addOnItemId`),
+  CONSTRAINT `product_addon_ibfk_1` FOREIGN KEY (`productId`) REFERENCES `product` (`id`),
+  CONSTRAINT `product_addon_ibfk_2` FOREIGN KEY (`addOnItemId`) REFERENCES `addon_template_item` (`id`)
+);
+
+
+
+##################################################
 # order-service-3.12.2-SNAPSHOT |26-Sept-2022
 ##################################################
 Put wait minute to send order reminder in config

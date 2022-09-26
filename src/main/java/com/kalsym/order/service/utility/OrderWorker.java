@@ -28,7 +28,9 @@ import com.kalsym.order.service.model.OrderCompletionStatusUpdate;
 import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.OrderPaymentDetail;
 import com.kalsym.order.service.model.OrderSubItem;
+import com.kalsym.order.service.model.OrderItemAddOn;
 import com.kalsym.order.service.model.Product;
+import com.kalsym.order.service.model.ProductAddOn;
 import com.kalsym.order.service.model.ProductInventory;
 import com.kalsym.order.service.model.ProductInventoryItem;
 import com.kalsym.order.service.model.ProductVariantAvailable;
@@ -223,7 +225,28 @@ public class OrderWorker {
                         itemPrice = cartItems.get(i).getProductPrice();
                     }
                     
-
+                    //check for addOn price
+                    if (cartItems.get(i).getCartItemAddOn()!=null && !cartItems.get(i).getCartItemAddOn().isEmpty()) {
+                        for (int z=0;z<cartItems.get(i).getCartItemAddOn().size();z++) {
+                            ProductAddOn productAddOn = cartItems.get(i).getCartItemAddOn().get(z).getProductAddOn();
+                            if (cart.getServiceType()==ServiceType.DELIVERIN && cartItems.get(i).getCartItemAddOn().get(z).getPrice() != Float.parseFloat(String.valueOf(productAddOn.getPrice()))) {
+                                // should return warning if prices are not same
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "AddOn prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
+                                response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+                                response.setMessage("Ops! The Add-On price for "+cartItems.get(i).getProductName()+" has been updated. Please refresh the Checkout page.");                            
+                                return response;
+                            } else if (cart.getServiceType()==ServiceType.DINEIN && cartItems.get(i).getCartItemAddOn().get(z).getPrice() != Float.parseFloat(String.valueOf(productAddOn.getDineInPrice()))) {
+                                // should return warning if prices are not same
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "AddOn prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
+                                response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+                                response.setMessage("Ops! The Add-On price for "+cartItems.get(i).getProductName()+" has been updated. Please refresh the Checkout page.");                            
+                                return response;
+                            }
+                            subTotal += cartItems.get(i).getCartItemAddOn().get(z).getPrice() ;
+                            itemPrice = itemPrice + cartItems.get(i).getCartItemAddOn().get(z).getPrice() ;
+                        }
+                    }
+                    
                     //creating orderItem
                     OrderItem orderItem = new OrderItem();
                     orderItem.setItemCode(cartItems.get(i).getItemCode());
@@ -291,7 +314,20 @@ public class OrderWorker {
                         }
                         orderItem.setOrderSubItem(orderSubItemList);
                     }
-                        
+                    
+                    //add addOn if any
+                    List<OrderItemAddOn> orderItemAddOnList=null;
+                    if (cartItems.get(i).getCartItemAddOn()!=null && !cartItems.get(i).getCartItemAddOn().isEmpty()) {
+                        orderItemAddOnList = new ArrayList();
+                        for (int z=0;z<cartItems.get(i).getCartItemAddOn().size();z++) {
+                            OrderItemAddOn orderItemAddOn = new OrderItemAddOn();
+                            orderItemAddOn.setOrderItemId(cartItems.get(i).getId());
+                            orderItemAddOn.setProductAddOnId(cartItems.get(i).getCartItemAddOn().get(z).getProductAddOnId());
+                            orderItemAddOn.setPrice(cartItems.get(i).getCartItemAddOn().get(z).getPrice());
+                            orderItem.setOrderItemAddOn(orderItemAddOnList);
+                        }                                                
+                    }
+                    
                     //adding new orderItem to orderItems list
                     orderItems.add(orderItem);
 

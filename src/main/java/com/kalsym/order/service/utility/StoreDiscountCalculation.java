@@ -10,6 +10,7 @@ import com.kalsym.order.service.enums.DiscountCalculationType;
 import com.kalsym.order.service.enums.DiscountType;
 import com.kalsym.order.service.model.Cart;
 import com.kalsym.order.service.model.CartItem;
+import com.kalsym.order.service.model.CartItemAddOn;
 import com.kalsym.order.service.model.StoreDiscount;
 import com.kalsym.order.service.model.StoreDiscountTier;
 import com.kalsym.order.service.model.object.Discount;
@@ -46,6 +47,13 @@ public class StoreDiscountCalculation {
             for (int i=0;i<cartItems.size();i++) {
                 CartItem item = cartItems.get(i);
                 salesAmount = salesAmount + item.getPrice();
+                //check cart addOn item
+                if (item.getCartItemAddOn()!=null && !item.getCartItemAddOn().isEmpty()) {
+                    for (int x=0;x<item.getCartItemAddOn().size();x++) {
+                        CartItemAddOn cartItemAddOn = item.getCartItemAddOn().get(x);
+                        salesAmount = salesAmount + cartItemAddOn.getPrice();
+                    }
+                }
             }
             discount.setCartSubTotal(Utilities.roundDouble(salesAmount,2));
         } else {
@@ -66,6 +74,13 @@ public class StoreDiscountCalculation {
                     salesDiscountedItem = salesDiscountedItem + item.getPrice();
                 }
                 salesAmount = salesAmount + item.getPrice();
+                //check cart addOn item
+                if (item.getCartItemAddOn()!=null && !item.getCartItemAddOn().isEmpty()) {
+                    for (int x=0;x<item.getCartItemAddOn().size();x++) {
+                        CartItemAddOn cartItemAddOn = item.getCartItemAddOn().get(x);
+                        salesAmount = salesAmount + cartItemAddOn.getPrice();
+                    }
+                }
                 
             }
             discount.setCartSubTotal(Utilities.roundDouble(salesAmount,2));

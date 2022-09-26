@@ -61,10 +61,9 @@ public class CartItem implements Serializable {
     @JoinColumn(name = "cartItemId", insertable = false, updatable = false, nullable = true)
     private List<CartSubItem> cartSubItem;
     
-    /*@ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cartId", insertable=false, updatable=false)
-    private Cart cartMain;
-     */
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cartItemId", insertable = false, updatable = false, nullable = true)
+    private List<CartItemAddOn> cartItemAddOn;
     
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "itemCode", referencedColumnName = "itemCode", insertable = false, updatable = false, nullable = true)

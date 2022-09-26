@@ -8,8 +8,10 @@ import com.kalsym.order.service.model.ProductInventory;
 import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.model.CartItem;
 import com.kalsym.order.service.model.CartSubItem;
+import com.kalsym.order.service.model.CartItemAddOn;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.CartSubItemRepository;
+import com.kalsym.order.service.model.repository.CartItemAddOnRepository;
 import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.model.repository.ProductRepository;
 import com.kalsym.order.service.utility.HttpResponse;
@@ -57,6 +59,9 @@ public class CartItemController {
     
     @Autowired
     CartSubItemRepository cartSubItemRepository;
+    
+    @Autowired
+    CartItemAddOnRepository cartItemAddOnRepository;
     
     @Autowired
     ProductInventoryRepository productInventoryRepository;
@@ -232,6 +237,17 @@ public class CartItemController {
                     bodyCartItem.setPrice(bodyCartItem.getQuantity() * bodyCartItem.getProductPrice());
                     bodyCartItem.setProductName(productInventory.getProduct().getName());
                     cartItem = cartItemRepository.save(bodyCartItem);
+                    
+                    //save add-on if any
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item addOn: " + bodyCartItem.getCartItemAddOn());
+                    if (bodyCartItem.getCartItemAddOn()!=null && !bodyCartItem.getCartItemAddOn().isEmpty()) {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Save cart item addOn: " + bodyCartItem.getCartItemAddOn().toString());
+                        for (int x=0;x<bodyCartItem.getCartItemAddOn().size();x++) {
+                            CartItemAddOn cartItemAddOn = bodyCartItem.getCartItemAddOn().get(x);
+                            cartItemAddOn.setCartItemId(cartItem.getId());
+                            cartItemAddOnRepository.save(cartItemAddOn);
+                        }
+                    }
                 } 
             }
             response.setSuccessStatus(HttpStatus.CREATED);
