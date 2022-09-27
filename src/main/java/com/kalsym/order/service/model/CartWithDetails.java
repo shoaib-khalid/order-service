@@ -1,11 +1,15 @@
 package com.kalsym.order.service.model;
 
+import com.kalsym.order.service.enums.DineInOption;
+import com.kalsym.order.service.enums.ServiceType;
 import com.kalsym.order.service.model.object.ItemDiscount;
 import com.kalsym.order.service.model.object.StoreSnooze;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -49,6 +53,10 @@ public class CartWithDetails implements Serializable {
 
     private String storeId;
     
+    //service type
+    @Enumerated(EnumType.STRING)
+    private ServiceType serviceType;
+    
     @Transient
     private String storeVoucherCode;
     
@@ -60,6 +68,10 @@ public class CartWithDetails implements Serializable {
     
     @Transient
     private StoreSnooze storeSnooze;
+    
+    @Transient 
+    @Enumerated(EnumType.STRING)
+    private DineInOption dineInOption;
         
     @CreationTimestamp
     private Date created;

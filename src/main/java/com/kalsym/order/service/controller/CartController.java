@@ -235,7 +235,9 @@ public class CartController {
                 storeSnooze.isSnooze=false;
             }
             cartWithDetails.setStoreSnooze(storeSnooze);
-            
+            if (cartWithDetails.getServiceType()!=null && cartWithDetails.getServiceType()==ServiceType.DINEIN) {
+                cartWithDetails.setDineInOption(store.getDineInOption());
+            }
             cartDetailsList[i] = cartWithDetails; 
         }
         
