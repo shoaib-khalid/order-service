@@ -68,6 +68,7 @@ CREATE TABLE `product_addon` (
 # order-service-3.12.2-SNAPSHOT |26-Sept-2022
 ##################################################
 Put wait minute to send order reminder in config
+Add dineInOption in cart details
 
 ##Config Changes: order.reminder.wait.minute=1
 
