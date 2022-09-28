@@ -895,7 +895,7 @@ public class OrderProcessWorker {
                                     isRegisteredUser=true;
                                 }
                             }
-                            whatsappService.sendCustomerAlert(customerMsisdn, status.name(), storeWithDetails.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp(), orderCompletionStatusConfig.getPushWAToCustomerTemplateName(), orderCompletionStatusConfig.getPushWAToCustomerTemplateFormat(), storeWithDetails.getCity(), invoicePdf, isRegisteredUser);
+                            whatsappService.sendCustomerAlert(customerMsisdn, status.name(), storeWithDetails.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp(), orderCompletionStatusConfig.getPushWAToCustomerTemplateName(), orderCompletionStatusConfig.getPushWAToCustomerTemplateFormat(), storeWithDetails.getCity(), invoicePdf, isRegisteredUser, order.getServiceType());
                         } else {
                             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order shipment details not found");
                         }

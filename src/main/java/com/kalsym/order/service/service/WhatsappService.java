@@ -21,6 +21,7 @@ import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.OrderSubItem;
+import com.kalsym.order.service.enums.ServiceType;
 import com.kalsym.order.service.service.whatsapp.Action;
 import com.kalsym.order.service.service.whatsapp.Body;
 import com.kalsym.order.service.service.whatsapp.Button;
@@ -235,7 +236,7 @@ public class WhatsappService {
             String customerMsisdn, String status, String storeName, 
             String invoiceNo, String orderId, String updatedTime,
             String customerTemplateName, String WATemplateFormat, String storeCity, 
-            String invoicePdf, boolean isRegisteredUser) throws Exception {
+            String invoicePdf, boolean isRegisteredUser, ServiceType serviceType) throws Exception {
         //alert format : %invoiceNo%,%storeName%,%orderStatus%,%timestamp%
         String logprefix = "sendCustomerAlert";
         
@@ -254,6 +255,8 @@ public class WhatsappService {
         Template template = new Template();
         String templateNameGuest = customerTemplateName;
         String templateNameUser = customerTemplateName;
+        String templateNameDeliverin = customerTemplateName;
+        String templateNameDinein = customerTemplateName;
         String[] templateNameList = customerTemplateName.split(";"); 
         for (int z=0;z<templateNameList.length;z++) {
             String[] temp=templateNameList[z].split("=");
@@ -261,12 +264,21 @@ public class WhatsappService {
                 templateNameGuest = temp[1];
             } else if (temp[0].equalsIgnoreCase("user")) {
                 templateNameUser = temp[1];
-            }
+            } else if (temp[0].equalsIgnoreCase("deliverin")) {
+                templateNameDeliverin = temp[1];
+            } else if (temp[0].equalsIgnoreCase("dinein")) {
+                templateNameDinein = temp[1];            
+            } 
         }
         if (isRegisteredUser)
             template.setName(templateNameUser);
         else
             template.setName(templateNameGuest);
+        
+        if (serviceType!=null && serviceType==ServiceType.DINEIN)
+            template.setName(templateNameDinein);
+        else
+            template.setName(templateNameDeliverin);
         
         WATemplateFormat = WATemplateFormat.replaceAll("%invoiceNo%", invoiceNo);
         WATemplateFormat = WATemplateFormat.replaceAll("%storeName%", storeName);
