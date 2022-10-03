@@ -270,6 +270,7 @@ public class WhatsappService {
                 templateNameDinein = temp[1];            
             } 
         }
+        
         if (isRegisteredUser)
             template.setName(templateNameUser);
         else
@@ -279,7 +280,7 @@ public class WhatsappService {
             template.setName(templateNameDinein);
         else
             template.setName(templateNameDeliverin);
-        
+
         WATemplateFormat = WATemplateFormat.replaceAll("%invoiceNo%", invoiceNo);
         WATemplateFormat = WATemplateFormat.replaceAll("%storeName%", storeName);
         WATemplateFormat = WATemplateFormat.replaceAll("%orderStatus%", status);
@@ -300,6 +301,12 @@ public class WhatsappService {
                 String parameterDoc = temp[1];
                 template.setParametersDocument(parameterDoc); 
                 template.setParametersDocumentFileName(invoiceNo+".pdf");
+            } else if (serviceType!=null && serviceType==ServiceType.DELIVERIN && temp[0].equalsIgnoreCase("button_deliverin")) {
+                String[] parameterList = temp[1].split(",");
+                template.setParametersButton(parameterList);
+            } else if (serviceType!=null && serviceType==ServiceType.DINEIN && temp[0].equalsIgnoreCase("button_dinein")) {
+                String[] parameterList = temp[1].split(",");
+                template.setParametersButton(parameterList);            
             }
         }
         request.setTemplate(template);
