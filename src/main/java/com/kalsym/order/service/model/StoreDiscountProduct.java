@@ -63,5 +63,7 @@ public class StoreDiscountProduct implements Serializable {
     private String categoryId;
     private String calculationType;
     private Double discountAmount;
+    private String dineIncalculationType;
+    private Double dineInDiscountAmount;
    
 }
