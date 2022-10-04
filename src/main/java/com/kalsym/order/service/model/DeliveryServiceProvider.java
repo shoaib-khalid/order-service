@@ -24,6 +24,6 @@ import lombok.ToString;
 public class DeliveryServiceProvider {
     
     @Id 
-    String id;
+    Integer id;
     String name;  
 }
