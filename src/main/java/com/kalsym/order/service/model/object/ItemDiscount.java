@@ -16,12 +16,16 @@ import java.util.Date;
  */
 public class ItemDiscount {
     public double normalPrice;
+    public double dineInNormalPrice;
     public double discountedPrice;
+    public double dineInDiscountedPrice;
     public String discountLabel;
     public double discountAmount;    
     public boolean normalItemOnly;
     public String discountId;
     public DiscountCalculationType calculationType;
+    public double dineInDiscountAmount;  
+    public DiscountCalculationType dineInCalculationType;
     
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     public Date discountStartTime;    

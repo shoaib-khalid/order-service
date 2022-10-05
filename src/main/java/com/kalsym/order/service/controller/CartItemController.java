@@ -189,15 +189,26 @@ public class CartItemController {
             //check for discount
             double itemPrice = 0.00;
             if (productInventory.getItemDiscount()!=null && serviceType==ServiceType.DELIVERIN) {
-                //got discount
-                ItemDiscount discountDetails = productInventory.getItemDiscount();
-                itemPrice = discountDetails.discountedPrice;
-                bodyCartItem.setDiscountId(discountDetails.discountId);
-                bodyCartItem.setNormalPrice((float)discountDetails.normalPrice);
-                bodyCartItem.setDiscountLabel(discountDetails.discountLabel);
+                if (productInventory.getItemDiscount().discountAmount>0) {
+                    //got discount
+                    ItemDiscount discountDetails = productInventory.getItemDiscount();
+                    itemPrice = discountDetails.discountedPrice;
+                    bodyCartItem.setDiscountId(discountDetails.discountId);
+                    bodyCartItem.setNormalPrice((float)discountDetails.normalPrice);
+                    bodyCartItem.setDiscountLabel(discountDetails.discountLabel);
+                }
             } else if (serviceType==ServiceType.DELIVERIN) {
                 //no dicount for this item code
                 itemPrice = productInventory.getPrice();
+            } else if (productInventory.getItemDiscount()!=null && serviceType==ServiceType.DINEIN) {
+                if (productInventory.getItemDiscount().dineInDiscountAmount>0) {
+                    //got discount
+                    ItemDiscount discountDetails = productInventory.getItemDiscount();
+                    itemPrice = discountDetails.dineInDiscountedPrice;
+                    bodyCartItem.setDiscountId(discountDetails.discountId);
+                    bodyCartItem.setNormalPrice((float)discountDetails.dineInNormalPrice);
+                    bodyCartItem.setDiscountLabel(discountDetails.discountLabel);
+                }
             } else {
                 //use dine-in price
                 itemPrice = productInventory.getDineInPrice();
@@ -383,21 +394,33 @@ public class CartItemController {
         ProductInventory productInventory = productService.getProductInventoryById(savedCart.get().getStoreId(), cartItem.getProductId(), cartItem.getItemCode());
             
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details for package: " + productInventory.toString());
-            
+                
         //check for discount
         double itemPrice = 0.00;
         if (productInventory.getItemDiscount()!=null && serviceType==ServiceType.DELIVERIN) {
             //got discount
-            ItemDiscount discountDetails = productInventory.getItemDiscount();
-            itemPrice = discountDetails.discountedPrice;
-            bodyCartItem.setDiscountId(discountDetails.discountId);
-            bodyCartItem.setNormalPrice((float)discountDetails.normalPrice);
-            bodyCartItem.setDiscountLabel(discountDetails.discountLabel);
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item got discount. price:"+itemPrice);            
+            if (productInventory.getItemDiscount().discountAmount>0) {
+                //got discount
+                ItemDiscount discountDetails = productInventory.getItemDiscount();
+                itemPrice = discountDetails.discountedPrice;
+                bodyCartItem.setDiscountId(discountDetails.discountId);
+                bodyCartItem.setNormalPrice((float)discountDetails.normalPrice);
+                bodyCartItem.setDiscountLabel(discountDetails.discountLabel);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item got deliverin discount. price:"+itemPrice);            
+            }            
         } else if (serviceType==ServiceType.DELIVERIN) {
             //no dicount for this item code
             itemPrice = productInventory.getPrice();
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item no discount. price:"+itemPrice);            
+        } else if (productInventory.getItemDiscount()!=null && serviceType==ServiceType.DINEIN) {
+            if (productInventory.getItemDiscount().dineInDiscountAmount>0) {
+                //got discount
+                ItemDiscount discountDetails = productInventory.getItemDiscount();
+                itemPrice = discountDetails.dineInDiscountedPrice;
+                bodyCartItem.setDiscountId(discountDetails.discountId);
+                bodyCartItem.setNormalPrice((float)discountDetails.dineInNormalPrice);
+                bodyCartItem.setDiscountLabel(discountDetails.discountLabel);
+            }
         } else {
             itemPrice = productInventory.getDineInPrice();
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item for dine-in. price:"+itemPrice);            

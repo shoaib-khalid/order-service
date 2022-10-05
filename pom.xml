@@ -9,7 +9,11 @@
     </parent>
     <groupId>com.kalsym</groupId>
     <artifactId>order-service</artifactId>
+<<<<<<< HEAD
     <version>3.13.1-SNAPSHOT</version>
+=======
+    <version>3.12.3-SNAPSHOT</version>
+>>>>>>> staging
     <name>order-service</name>
     <description>Order service</description>
     <properties>

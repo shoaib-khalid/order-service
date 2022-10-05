@@ -17,17 +17,20 @@
 package com.kalsym.order.service;
 
 import com.kalsym.order.service.OrderServiceApplication;
+import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountRepository;
 import com.kalsym.order.service.model.repository.StoreDiscountProductRepository;
 import com.kalsym.order.service.model.repository.ProductInventoryRepository;
 import com.kalsym.order.service.utility.Logger;
 import com.kalsym.order.service.model.ProductInventory;
+import com.kalsym.order.service.model.Cart;
 import com.kalsym.order.service.model.CartItem;
 import com.kalsym.order.service.model.object.ItemDiscount;
 import com.kalsym.order.service.model.StoreDiscount;
 import com.kalsym.order.service.model.StoreDiscountProduct;
 import com.kalsym.order.service.enums.DiscountCalculationType;
+import com.kalsym.order.service.enums.ServiceType;
 import com.kalsym.order.service.utility.ProductDiscount;
 
 import java.util.List;
@@ -52,6 +55,9 @@ import org.springframework.beans.factory.annotation.Value;
 
 @Component
 public class ProductDiscountScheduler {
+    
+    @Autowired
+    CartRepository cartRepository;
     
     @Autowired
     CartItemRepository cartItemRepository;
@@ -94,31 +100,54 @@ public class ProductDiscountScheduler {
                         String itemId = (String)item[0];
                         
                         ItemDiscount discountDetails = ProductDiscount.getItemDiscount(storeDiscountRepository, storeId, itemCode);
-                        if (discountDetails != null) {                    
-                            double discountedPrice = productInventory.getPrice();
-                            if (discountDetails.calculationType.equals(DiscountCalculationType.FIX)) {
-                                discountedPrice = productInventory.getPrice() - discountDetails.discountAmount;
-                            } else if (discountDetails.calculationType.equals(DiscountCalculationType.PERCENT)) {
-                                discountedPrice = productInventory.getPrice() - (discountDetails.discountAmount / 100 * productInventory.getPrice());
+                        if (discountDetails != null) { 
+                            if (discountDetails.discountAmount>0) {
+                                double discountedPrice = productInventory.getPrice();
+                                if (discountDetails.calculationType.equals(DiscountCalculationType.FIX)) {
+                                    discountedPrice = productInventory.getPrice() - discountDetails.discountAmount;
+                                } else if (discountDetails.calculationType.equals(DiscountCalculationType.PERCENT)) {
+                                    discountedPrice = productInventory.getPrice() - (discountDetails.discountAmount / 100 * productInventory.getPrice());
+                                }
+                                discountDetails.discountedPrice = discountedPrice;
                             }
-                            discountDetails.discountedPrice = discountedPrice;
+                            if (discountDetails.dineInDiscountAmount>0){
+                                double discountedPrice = productInventory.getPrice();
+                                if (discountDetails.dineInCalculationType.equals(DiscountCalculationType.FIX)) {
+                                    discountedPrice = productInventory.getPrice() - discountDetails.dineInDiscountAmount;
+                                } else if (discountDetails.dineInCalculationType.equals(DiscountCalculationType.PERCENT)) {
+                                    discountedPrice = productInventory.getPrice() - (discountDetails.dineInDiscountAmount / 100 * productInventory.getPrice());
+                                }
+                                discountDetails.dineInDiscountedPrice = discountedPrice;
+                            }
                             discountDetails.normalPrice = productInventory.getPrice();                    
+                            discountDetails.dineInNormalPrice = productInventory.getDineInPrice();                    
+                            
                             productInventory.setItemDiscount(discountDetails); 
 
                             double itemProductPrice = productInventory.getPrice();
 
-                            //update price
+                            //update price                            
                             Optional<CartItem> cartItemOpt = cartItemRepository.findById(itemId);
                             CartItem cartItem = cartItemOpt.get();
-                            cartItem.setProductPrice((float)discountDetails.discountedPrice);
-                            cartItem.setPrice((float)(cartItem.getQuantity() * discountDetails.discountedPrice));
-                            cartItem.setDiscountId(discountDetails.discountId);
-                            cartItem.setNormalPrice((float)discountDetails.normalPrice);
-                            cartItem.setDiscountLabel(discountDetails.discountLabel);
-                            cartItem.setDiscountCheckTimestamp(new Date());
-                            cartItemRepository.save(cartItem);
+                            Optional<Cart> cartOpt = cartRepository.findById(cartItem.getCartId());
+                            if (cartOpt.isPresent()) {                                                            
+                                if (cartOpt.get().getServiceType()==ServiceType.DELIVERIN) {
+                                    cartItem.setProductPrice((float)discountDetails.discountedPrice);
+                                    cartItem.setNormalPrice((float)discountDetails.normalPrice);
+                                } else {
+                                    cartItem.setProductPrice((float)discountDetails.dineInDiscountedPrice);
+                                    cartItem.setNormalPrice((float)discountDetails.dineInNormalPrice);
+                                }
 
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Discounted item updated item:"+itemCode+" discountId:"+discountDetails.discountId);
+                                cartItem.setPrice((float)(cartItem.getQuantity() * discountDetails.discountedPrice));
+                                cartItem.setDiscountId(discountDetails.discountId);
+
+                                cartItem.setDiscountLabel(discountDetails.discountLabel);
+                                cartItem.setDiscountCheckTimestamp(new Date());
+                                cartItemRepository.save(cartItem);
+
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Discounted item updated item:"+itemCode+" discountId:"+discountDetails.discountId);
+                            }
                         } 
                     }
                     

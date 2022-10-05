@@ -1,7 +1,20 @@
 ##################################################
-# order-service-3.13.1-SNAPSHOT |3-Oct-2022
+# order-service-3.13.1-SNAPSHOT |5-Oct-2022
 ##################################################
+New feature : product discount for DINE-IN
 
+DB Changes:
+----------------------------
+1. Modify stored procedure : getItemDiscount
+	-add new column in select :
+		SELECT discountName, startDate, endDate, normalPriceItemOnly, discountAmount, calculationType, storeDiscountId, 
+			dineInDiscountAmount, dineInCalculationType 
+		FROM store_discount A INNER JOIN store_discount_product B ON A.id=B.storeDiscountId WHERE B.id=foundDiscount;
+
+2. Add new field in store_discount_product
+		ALTER TABLE store_discount_product dineInDiscountAmount DECIMAL(10,2);
+	    ALTER TABLE store_discount_product dineInCalculationType ENUM('FIX','PERCENT');
+		
 
 ##################################################
 # order-service-3.13.0-SNAPSHOT |26-Sept-2022
@@ -70,7 +83,13 @@ CREATE TABLE `product_addon` (
 
 
 ##################################################
-# order-service-3.12.2-SNAPSHOT |29-Sept-2022
+# order-service-3.12.3-SNAPSHOT |4-Oct-2022
+##################################################
+Change id of DeliveryServiceProvider from string to integer
+
+
+##################################################
+# order-service-3.12.2-SNAPSHOT |4-Oct-2022
 ##################################################
 Put wait minute to send order reminder in config
 Add dineInOption in cart details

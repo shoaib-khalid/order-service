@@ -45,6 +45,8 @@ public class ProductDiscount {
                     discountDetails.discountAmount = Double.parseDouble(String.valueOf(itemDiscount[4]));
                     discountDetails.calculationType = DiscountCalculationType.valueOf(String.valueOf(itemDiscount[5]));
                     discountDetails.discountId =  String.valueOf(itemDiscount[6]);
+                    discountDetails.dineInDiscountAmount = Double.parseDouble(String.valueOf(itemDiscount[7]));
+                    discountDetails.dineInCalculationType = DiscountCalculationType.valueOf(String.valueOf(itemDiscount[8]));
                 } catch (Exception ex){
                     Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, "getItemDiscount", "Error extracting discount details : ", ex);
                 }
