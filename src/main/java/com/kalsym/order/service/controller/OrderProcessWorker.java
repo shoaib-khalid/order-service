@@ -267,14 +267,14 @@ public class OrderProcessWorker {
         
         String verticalId = storeWithDetails.getVerticalCode();
         Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
-        String storeDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
+        String orderDeliveryType = order.getDeliveryType();
         if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN) {
-            storeDeliveryType = storeWithDetails.getDineInOption().name();
+            orderDeliveryType = order.getDineInOption().name();
         }
 
         newStatus = newStatus.replace(" ", "_");
         OrderStatus previousStatus = order.getCompletionStatus();
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prevStatus:"+previousStatus+" newStatus:"+newStatus+" CompletionCriteria = [verticalId:"+verticalId+" storePickup:"+storePickup+" storeDeliveryType: " + storeDeliveryType+" orderPaymentType:"+order.getPaymentType()+"]");        
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prevStatus:"+previousStatus+" newStatus:"+newStatus+" CompletionCriteria = [verticalId:"+verticalId+" storePickup:"+storePickup+" orderDeliveryType: " + orderDeliveryType+" orderPaymentType:"+order.getPaymentType()+"]");        
         
         OrderCompletionStatusConfig orderCompletionStatusConfig = null;
                 
@@ -291,7 +291,7 @@ public class OrderProcessWorker {
         } else if (newStatus.contains("FAILED_FIND_DRIVER")) {
             //delivery-order inform cannot find rider            
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "FAILED_FIND_DRIVER");
-            List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStoreDeliveryType(verticalId, newStatus, storeDeliveryType);            
+            List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStoreDeliveryType(verticalId, newStatus, orderDeliveryType);            
             if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
                 Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + newStatus);                
             } else {        
@@ -303,7 +303,7 @@ public class OrderProcessWorker {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "ASSIGNING_DRIVER");
             status = OrderStatus.AWAITING_PICKUP;
             email.getBody().setOrderStatus(status);
-            List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStoreDeliveryTypeAndStorePickup(verticalId, OrderStatus.AWAITING_PICKUP.name(), storeDeliveryType, storePickup);            
+            List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStoreDeliveryTypeAndStorePickup(verticalId, OrderStatus.AWAITING_PICKUP.name(), orderDeliveryType, storePickup);            
             if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
                 Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: AWAITING_PICKUP" + newStatus);                
             } else {        
@@ -337,7 +337,7 @@ public class OrderProcessWorker {
         } else {
             //normal flow
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Normal flow. Read config from db");
-            List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, newStatus, storePickup, storeDeliveryType, order.getPaymentType());            
+            List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, newStatus, storePickup, orderDeliveryType, order.getPaymentType());            
             if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
                 Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for status: " + newStatus);
                 
@@ -368,7 +368,7 @@ public class OrderProcessWorker {
             //check current status if in correct sequence
             OrderCompletionStatusConfig prevOrderCompletionStatusConfig = null;
             
-            List<OrderCompletionStatusConfig> prevOrderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, previousStatus.name(), storePickup, storeDeliveryType, order.getPaymentType());
+            List<OrderCompletionStatusConfig> prevOrderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, previousStatus.name(), storePickup, orderDeliveryType, order.getPaymentType());
             if (prevOrderCompletionStatusConfigs == null || prevOrderCompletionStatusConfigs.isEmpty()) {
                 Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prevOrderCompletionStatusConfigs not found!");                
                 if (status==OrderStatus.PAYMENT_CONFIRMED) {
@@ -925,8 +925,8 @@ public class OrderProcessWorker {
         if (orderCompletionStatusConfig!=null) {
             OrderCompletionStatusConfig nextCompletionStatusConfig = null;
             int nextSequence = orderCompletionStatusConfig.getStatusSequence()+1;
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find config for next status VerticalId:"+verticalId+" NextSequence:"+nextSequence+" storePickup:"+storePickup+" deliveryType:"+storeDeliveryType+" paymentType:"+order.getPaymentType());
-            List<OrderCompletionStatusConfig> nextActionCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusSequenceAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, nextSequence, storePickup, storeDeliveryType, order.getPaymentType());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find config for next status VerticalId:"+verticalId+" NextSequence:"+nextSequence+" storePickup:"+storePickup+" deliveryType:"+orderDeliveryType+" paymentType:"+order.getPaymentType());
+            List<OrderCompletionStatusConfig> nextActionCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusSequenceAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, nextSequence, storePickup, orderDeliveryType, order.getPaymentType());
             if (nextActionCompletionStatusConfigs != null && !nextActionCompletionStatusConfigs.isEmpty()) {           
                 nextCompletionStatusConfig = nextActionCompletionStatusConfigs.get(0);
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Next action status: " + nextCompletionStatusConfig.getStatus()+" sequence:"+nextCompletionStatusConfig.getStatusSequence());

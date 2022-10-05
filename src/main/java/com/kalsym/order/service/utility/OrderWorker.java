@@ -543,9 +543,9 @@ public class OrderWorker {
                     
                 //get order completion config
                 String verticalId = storeWithDetials.getVerticalCode();                    
-                String storeDeliveryType = storeDeliveryDetail.getType();
+                String storeDeliveryType = order.getDeliveryType();
                 if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN) {
-                    storeDeliveryType = storeWithDetials.getDineInOption().name();
+                    storeDeliveryType = order.getDineInOption().name();
                 }
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status:"+OrderStatus.RECEIVED_AT_STORE.name()+" VerticalId:"+verticalId+" storePickup:"+storePickup+" deliveryType:"+storeDeliveryType+" paymentType:"+order.getPaymentType());
                 List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, OrderStatus.RECEIVED_AT_STORE.name(), storePickup, storeDeliveryType, order.getPaymentType());
