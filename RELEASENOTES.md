@@ -12,8 +12,8 @@ DB Changes:
 		FROM store_discount A INNER JOIN store_discount_product B ON A.id=B.storeDiscountId WHERE B.id=foundDiscount;
 
 2. Add new field in store_discount_product
-		ALTER TABLE store_discount_product dineInDiscountAmount DECIMAL(10,2);
-	    ALTER TABLE store_discount_product dineInCalculationType ENUM('FIX','PERCENT');
+		ALTER TABLE store_discount_product ADD dineInDiscountAmount DECIMAL(10,2);
+	    ALTER TABLE store_discount_product ADD dineInCalculationType ENUM('FIX','PERCENT');
 		
 
 ##################################################
