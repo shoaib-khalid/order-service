@@ -1,7 +1,8 @@
 ##################################################
-# order-service-3.12.3-SNAPSHOT |4-Oct-2022
+# order-service-3.12.3-SNAPSHOT |5-Oct-2022
 ##################################################
 Change id of DeliveryServiceProvider from string to integer
+Bug fix for order details, nextActionText null when store change dineInOption
 
 
 ##################################################
