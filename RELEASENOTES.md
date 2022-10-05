@@ -3,6 +3,11 @@
 ##################################################
 New feature : product discount for DINE-IN
 
+API effected:
+	add item to cart
+	getOrderWithDetails
+	calculateOrder
+	
 DB Changes:
 ----------------------------
 1. Modify stored procedure : getItemDiscount

@@ -178,13 +178,20 @@ public class OrderWorker {
                         //check if discount still valid
                         ItemDiscount discountDetails = productInventory.getItemDiscount();
                         if (discountDetails!=null) {
+                            
                             double discountPrice = Utilities.Round2DecimalPoint(discountDetails.discountedPrice);
+                            double dineInDiscountPrice = Utilities.Round2DecimalPoint(discountDetails.dineInDiscountedPrice);
                             double cartItemPrice = Utilities.Round2DecimalPoint(cartItems.get(i).getProductPrice().doubleValue());
-
+                            
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "productInventory discountId:["+discountDetails.discountId+"] discountedPrice:"+discountPrice);
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem discountId:["+cartItems.get(i).getDiscountId()+"] price:"+cartItemPrice);
                             
-                            double beza = Math.abs(discountPrice - cartItemPrice);
+                            double beza = 0.00;
+                            if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN) {
+                                beza = Math.abs(dineInDiscountPrice - cartItemPrice);
+                            } else {
+                                beza = Math.abs(discountPrice - cartItemPrice);
+                            }
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem discountId:["+cartItems.get(i).getDiscountId()+"] beza:"+beza);
                             
                             if (discountDetails.discountId.equals(cartItems.get(i).getDiscountId()) &&
