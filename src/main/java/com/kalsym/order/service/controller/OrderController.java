@@ -589,12 +589,12 @@ public class OrderController {
             Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
             String storeDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
             if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN) {
-                storeDeliveryType = order.getDeliveryType();
+                storeDeliveryType = order.getDineInOption().name();
             }
                         
             //get current status
             String currentStatus = order.getCompletionStatus().name();
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find config for current status VerticalId:"+verticalId+" Status:"+currentStatus+" storePickup:"+storePickup+" storeDeliveryType"+storeDeliveryType+" paymentType:"+order.getPaymentType()+" dineInOption:"+order.getDineInOption());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find config for current status VerticalId:"+verticalId+" Status:"+currentStatus+" storePickup:"+storePickup+" storeDeliveryType:"+storeDeliveryType+" paymentType:"+order.getPaymentType()+" dineInOption:"+order.getDineInOption());
             List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = null;
             orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, currentStatus, storePickup, storeDeliveryType, order.getPaymentType());            
             OrderCompletionStatusConfig orderCompletionStatusConfig = null;
@@ -607,7 +607,7 @@ public class OrderController {
                 //get next action
                 OrderCompletionStatusConfig nextCompletionStatusConfig = null;
                 int nextSequence = orderCompletionStatusConfig.getStatusSequence()+1;
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find config for next status VerticalId:"+verticalId+" NextSequence:"+nextSequence+" storePickup:"+storePickup+" orderDeliveryType:"+order.getDeliveryType()+" paymentType:"+order.getPaymentType()+" dineInOption:"+order.getDineInOption());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find config for next status VerticalId:"+verticalId+" NextSequence:"+nextSequence+" storePickup:"+storePickup+" storeDeliveryType:"+order.getDeliveryType()+" paymentType:"+order.getPaymentType()+" dineInOption:"+order.getDineInOption());
                 
                 List<OrderCompletionStatusConfig> nextActionCompletionStatusConfigs = null;
                 if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN) {
@@ -1656,7 +1656,7 @@ public class OrderController {
         
         String storeDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
         if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN) {
-            storeDeliveryType = order.getDeliveryType();
+            storeDeliveryType = order.getDineInOption().name();
         }
             
         //get current status
