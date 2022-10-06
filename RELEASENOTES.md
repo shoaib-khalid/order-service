@@ -4,6 +4,10 @@
 Change id of DeliveryServiceProvider from string to integer
 Bug fix for order details, nextActionText null when store change dineInOption
 
+##DB Changes:
+---------------
+field 'id' in 'delivery_sp' change datatype to integer from varchar
+
 
 ##################################################
 # order-service-3.12.2-SNAPSHOT |4-Oct-2022

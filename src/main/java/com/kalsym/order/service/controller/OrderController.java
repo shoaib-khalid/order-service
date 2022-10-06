@@ -589,18 +589,14 @@ public class OrderController {
             Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
             String storeDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
             if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN) {
-                storeDeliveryType = storeWithDetails.getDineInOption().name();
+                storeDeliveryType = order.getDeliveryType();
             }
                         
             //get current status
             String currentStatus = order.getCompletionStatus().name();
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find config for current status VerticalId:"+verticalId+" Status:"+currentStatus+" storePickup:"+storePickup+" deliveryType:"+storeDeliveryType+" paymentType:"+order.getPaymentType()+" dineInOption:"+order.getDineInOption());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find config for current status VerticalId:"+verticalId+" Status:"+currentStatus+" storePickup:"+storePickup+" storeDeliveryType"+storeDeliveryType+" paymentType:"+order.getPaymentType()+" dineInOption:"+order.getDineInOption());
             List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = null;
-            if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN) {
-                orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, currentStatus, storePickup, order.getDineInOption().name(), order.getPaymentType());
-            } else {
-                orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, currentStatus, storePickup, order.getDeliveryType(), order.getPaymentType());
-            }
+            orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, currentStatus, storePickup, storeDeliveryType, order.getPaymentType());            
             OrderCompletionStatusConfig orderCompletionStatusConfig = null;
             if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
                 Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for current status: " + currentStatus);            
@@ -1657,17 +1653,18 @@ public class OrderController {
         StoreWithDetails storeWithDetails = optStore.get();
         String verticalId = storeWithDetails.getVerticalCode();
         Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
-        String storeDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
         
+        String storeDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
+        if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN) {
+            storeDeliveryType = order.getDeliveryType();
+        }
+            
         //get current status
         String currentStatus = order.getCompletionStatus().name();
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find config for current status VerticalId:"+verticalId+" Status:"+currentStatus+" storePickup:"+storePickup+" orderDeliveryType:"+order.getDeliveryType()+" paymentType:"+order.getPaymentType()+" dineInOption:"+order.getDineInOption());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find config for current status VerticalId:"+verticalId+" Status:"+currentStatus+" storePickup:"+storePickup+" storeDeliveryType:"+storeDeliveryType+" paymentType:"+order.getPaymentType()+" dineInOption:"+order.getDineInOption());
         List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = null;
-        if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN) {
-            orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, currentStatus, storePickup, order.getDineInOption().name(), order.getPaymentType());
-        } else {
-            orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, currentStatus, storePickup, order.getDeliveryType(), order.getPaymentType());
-        }
+        orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, currentStatus, storePickup, storeDeliveryType, order.getPaymentType());
+        
         OrderCompletionStatusConfig orderCompletionStatusConfig = null;
         if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {
             Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status config not found for current status: " + currentStatus);            

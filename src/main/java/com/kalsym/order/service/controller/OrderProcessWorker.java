@@ -267,7 +267,7 @@ public class OrderProcessWorker {
         
         String verticalId = storeWithDetails.getVerticalCode();
         Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
-        String orderDeliveryType = order.getDeliveryType();
+        String orderDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
         if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN) {
             orderDeliveryType = order.getDineInOption().name();
         }
