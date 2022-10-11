@@ -1157,6 +1157,11 @@ public class OrderController {
                     if (cartItemOpt.get().getDiscountId()!=null) {
                         gotCartItemDiscount=true;
                     }
+                } else {
+                    //cart item not found in db
+                    response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+                    response.setMessage("Cart item not found");
+                    return ResponseEntity.status(response.getStatus()).body(response);
                 }
             }
             
