@@ -36,7 +36,7 @@ public class ProductAddOn {
     private String id;
 
     private String productId;
-    private String addOnItemId;
+    private String addonTemplateItemId;
     private Double price;
     private Double dineInPrice;
     
@@ -51,7 +51,7 @@ public class ProductAddOn {
     private Status status;
     
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "addOnItemId", referencedColumnName = "id", insertable = false, updatable = false, nullable = true)    
+    @JoinColumn(name = "addonTemplateItemId", referencedColumnName = "id", insertable = false, updatable = false, nullable = true)    
     private AddOnTemplateItem addOnTemplateItem;
       
 }
