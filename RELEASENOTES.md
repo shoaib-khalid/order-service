@@ -1,7 +1,8 @@
 ##################################################
-# order-service-3.12.4-SNAPSHOT |11-Oct-2022
+# order-service-3.12.4-SNAPSHOT |14-Oct-2022
 ##################################################
 Return error if item not found during place order
+Only send reminder alert for DELIVERIN
 
 
 ##################################################
