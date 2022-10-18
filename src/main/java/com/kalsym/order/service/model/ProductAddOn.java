@@ -43,7 +43,8 @@ public class ProductAddOn {
     public enum Status {
         AVAILABLE,
         NOTAVAILABLE,
-        OUTOFSTOCK;
+        OUTOFSTOCK,
+        DELETED;
     }
     
     @Column(columnDefinition = "ENUM('ACTIVE', 'DELETED', 'DRAFT', 'INACTIVE', 'OUTOFSTOCK')")
