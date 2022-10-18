@@ -9,6 +9,7 @@ import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.model.CartItem;
 import com.kalsym.order.service.model.CartSubItem;
 import com.kalsym.order.service.model.CartItemAddOn;
+import com.kalsym.order.service.model.ProductAddOn;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.CartSubItemRepository;
 import com.kalsym.order.service.model.repository.CartItemAddOnRepository;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.kalsym.order.service.model.repository.ProductInventoryRepository;
+import com.kalsym.order.service.model.repository.ProductAddOnRepository;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.utility.Logger;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -65,6 +67,9 @@ public class CartItemController {
     
     @Autowired
     ProductInventoryRepository productInventoryRepository;
+    
+    @Autowired
+    ProductAddOnRepository productAddOnRepository;
     
     @Autowired
     ProductRepository productRepository;
@@ -256,6 +261,11 @@ public class CartItemController {
                         for (int x=0;x<bodyCartItem.getCartItemAddOn().size();x++) {
                             CartItemAddOn cartItemAddOn = bodyCartItem.getCartItemAddOn().get(x);
                             cartItemAddOn.setCartItemId(cartItem.getId());
+                            //get add-on price
+                            Optional<ProductAddOn> productAddOnOpt = productAddOnRepository.findById(cartItemAddOn.getProductAddOnId());
+                            if (productAddOnOpt.isPresent()) {
+                                cartItemAddOn.setPrice(productAddOnOpt.get().getPrice().floatValue());
+                            }
                             cartItemAddOnRepository.save(cartItemAddOn);
                         }
                     }
