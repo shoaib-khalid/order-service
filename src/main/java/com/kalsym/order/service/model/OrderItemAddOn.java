@@ -16,6 +16,7 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import com.kalsym.order.service.enums.DiscountCalculationType;
 import java.io.Serializable;
+import javax.persistence.OneToOne;
 
 /**
  *
@@ -36,6 +37,10 @@ public class OrderItemAddOn implements Serializable {
     private String orderItemId;
     private String productAddOnId;
     private Float price;
+    
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "productAddOnId", referencedColumnName = "id", insertable = false, updatable = false, nullable = true)
+    private ProductAddOn productAddOn;
     
 
 }
