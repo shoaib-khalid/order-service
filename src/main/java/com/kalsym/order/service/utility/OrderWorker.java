@@ -339,14 +339,17 @@ public class OrderWorker {
                     //add addOn if any
                     List<OrderItemAddOn> orderItemAddOnList=null;
                     if (cartItems.get(i).getCartItemAddOn()!=null && !cartItems.get(i).getCartItemAddOn().isEmpty()) {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cart item addOn size:"+cartItems.get(i).getCartItemAddOn().size());
                         orderItemAddOnList = new ArrayList();
                         for (int z=0;z<cartItems.get(i).getCartItemAddOn().size();z++) {
                             OrderItemAddOn orderItemAddOn = new OrderItemAddOn();
                             orderItemAddOn.setOrderItemId(cartItems.get(i).getId());
                             orderItemAddOn.setProductAddOnId(cartItems.get(i).getCartItemAddOn().get(z).getProductAddOnId());
                             orderItemAddOn.setPrice(cartItems.get(i).getCartItemAddOn().get(z).getPrice());
-                            orderItem.setOrderItemAddOn(orderItemAddOnList);
-                        }                                                
+                            orderItemAddOnList.add(orderItemAddOn);
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Added AddOnItem:"+orderItemAddOn.toString());
+                        }  
+                        orderItem.setOrderItemAddOn(orderItemAddOnList);                            
                     }
                     
                     //adding new orderItem to orderItems list
