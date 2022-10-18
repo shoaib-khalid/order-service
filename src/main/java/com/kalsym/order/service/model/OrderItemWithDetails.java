@@ -58,6 +58,10 @@ public class OrderItemWithDetails implements Serializable {
     @JoinColumn(name = "orderItemId", insertable = false, updatable = false, nullable = true)
     private List<OrderSubItem> orderSubItem;
     
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "orderItemId", insertable = false, updatable = false, nullable = true)
+    private List<OrderItemAddOn> orderItemAddOn;
+    
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "itemCode", referencedColumnName="itemCode", insertable = false, updatable = false, nullable = true)
     private ProductAsset itemAssetDetails;    
