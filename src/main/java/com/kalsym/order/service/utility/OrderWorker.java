@@ -214,14 +214,20 @@ public class OrderWorker {
                             response.setMessage("Discount not valid");
                             return response;
                         }
-                    } else {                    
-                        if (cart.getServiceType()==ServiceType.DELIVERIN && cartItems.get(i).getProductPrice() != Float.parseFloat(String.valueOf(productInventory.getPrice()))) {
+                    } else { 
+                        double cartPrice = Utilities.Round2DecimalPoint(cartItems.get(i).getProductPrice().doubleValue());
+                        double deliverinPrice = Utilities.Round2DecimalPoint(productInventory.getPrice());
+                        double dineinPrice = Utilities.Round2DecimalPoint(productInventory.getDineInPrice());
+                        double bezaDeliverIn = Math.abs(cartPrice - deliverinPrice);                        
+                        double bezaDineIn = Math.abs(cartPrice - dineinPrice);  
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item Cart price:"+cartPrice+" deliverinPrice:"+deliverinPrice+" dineinPrice:"+dineinPrice);
+                        if (cart.getServiceType()==ServiceType.DELIVERIN && bezaDeliverIn>0.5) {
                             // should return warning if prices are not same
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
                             response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
                             response.setMessage("Ops! The product price for "+cartItems.get(i).getProductName()+" has been updated. Please refresh the Checkout page.");                            
                             return response;
-                        } else if (cart.getServiceType()==ServiceType.DINEIN && cartItems.get(i).getProductPrice() != Float.parseFloat(String.valueOf(productInventory.getDineInPrice()))) {
+                        } else if (cart.getServiceType()==ServiceType.DINEIN && bezaDineIn>0.5) {
                             // should return warning if prices are not same
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
                             response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
@@ -236,15 +242,21 @@ public class OrderWorker {
                     if (cartItems.get(i).getCartItemAddOn()!=null && !cartItems.get(i).getCartItemAddOn().isEmpty()) {
                         for (int z=0;z<cartItems.get(i).getCartItemAddOn().size();z++) {
                             ProductAddOn productAddOn = cartItems.get(i).getCartItemAddOn().get(z).getProductAddOn();
-                            if (cart.getServiceType()==ServiceType.DELIVERIN && cartItems.get(i).getCartItemAddOn().get(z).getPrice() != Float.parseFloat(String.valueOf(productAddOn.getPrice()))) {
+                            double cartPrice = Utilities.Round2DecimalPoint(cartItems.get(i).getCartItemAddOn().get(z).getPrice().doubleValue());
+                            double deliverinPrice = Utilities.Round2DecimalPoint(productAddOn.getPrice());
+                            double dineinPrice = Utilities.Round2DecimalPoint(productAddOn.getDineInPrice());
+                            double bezaDeliverIn = Math.abs(cartPrice - deliverinPrice);                        
+                            double bezaDineIn = Math.abs(cartPrice - dineinPrice);   
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "AddOn Cart price:"+cartPrice+" deliverinPrice:"+deliverinPrice+" dineinPrice:"+dineinPrice);
+                            if (cart.getServiceType()==ServiceType.DELIVERIN && bezaDeliverIn>0.5 ) {
                                 // should return warning if prices are not same
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "AddOn prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "AddOn prices are not same, price got : oldPrice:" + cartItems.get(i).getProductPrice() + ", newPrice:" + String.valueOf(productInventory.getPrice()));
                                 response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
                                 response.setMessage("Ops! The Add-On price for "+cartItems.get(i).getProductName()+" has been updated. Please refresh the Checkout page.");                            
                                 return response;
-                            } else if (cart.getServiceType()==ServiceType.DINEIN && cartItems.get(i).getCartItemAddOn().get(z).getPrice() != Float.parseFloat(String.valueOf(productAddOn.getDineInPrice()))) {
+                            } else if (cart.getServiceType()==ServiceType.DINEIN && bezaDineIn>0.5) {
                                 // should return warning if prices are not same
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "AddOn prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "AddOn prices are not same, price got : oldPrice:" + cartItems.get(i).getProductPrice() + ", newPrice:" + String.valueOf(productInventory.getPrice()));
                                 response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
                                 response.setMessage("Ops! The Add-On price for "+cartItems.get(i).getProductName()+" has been updated. Please refresh the Checkout page.");                            
                                 return response;
