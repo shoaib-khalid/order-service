@@ -54,11 +54,11 @@ public class OrderItemWithDetails implements Serializable {
     private DiscountCalculationType discountCalculationType;
     private Float discountCalculationValue;
     
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "orderItemId", insertable = false, updatable = false, nullable = true)
     private List<OrderSubItem> orderSubItem;
     
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "orderItemId", insertable = false, updatable = false, nullable = true)
     private List<OrderItemAddOn> orderItemAddOn;
     
