@@ -274,7 +274,11 @@ public class CartItemController {
                             //get add-on price
                             Optional<ProductAddOn> productAddOnOpt = productAddOnRepository.findById(cartItemAddOn.getProductAddOnId());
                             if (productAddOnOpt.isPresent()) {
-                                cartItemAddOn.setPrice(productAddOnOpt.get().getPrice().floatValue());
+                                if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN){
+                                    cartItemAddOn.setPrice(productAddOnOpt.get().getDineInPrice().floatValue());
+                                } else {
+                                    cartItemAddOn.setPrice(productAddOnOpt.get().getPrice().floatValue());
+                                }
                             }
                             cartItemAddOnRepository.save(cartItemAddOn);
                         }
