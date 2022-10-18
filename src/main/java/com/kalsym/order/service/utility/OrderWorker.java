@@ -54,6 +54,7 @@ import com.kalsym.order.service.model.repository.VoucherRepository;
 import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.OrderSubItemRepository;
+import com.kalsym.order.service.model.repository.OrderItemAddOnRepository;
 import com.kalsym.order.service.model.repository.StoreRepository;
 import com.kalsym.order.service.model.repository.RegionCountriesRepository;
 import com.kalsym.order.service.model.repository.CustomerRepository;
@@ -108,6 +109,7 @@ public class OrderWorker {
             OrderShipmentDetailRepository orderShipmentDetailRepository,
             OrderItemRepository orderItemRepository,
             OrderSubItemRepository orderSubItemRepository,
+            OrderItemAddOnRepository orderItemAddOnRepository,
             VoucherRepository voucherRepository,
             StoreRepository storeRepository,
             RegionCountriesRepository regionCountriesRepository,
@@ -511,7 +513,18 @@ public class OrderWorker {
                             orderSubItemRepository.save(orderSubItem);
                         }                            
                     }
-
+                    
+                    //add cart add-on if any
+                    List<OrderItemAddOn> orderAddOnItemList=null;
+                    if (orderItem.getOrderItemAddOn()!=null) {
+                        orderAddOnItemList = new ArrayList();
+                        for (int x=0;x<orderItem.getOrderItemAddOn().size();x++) {                                
+                            OrderItemAddOn orderItemAddOn = orderItem.getOrderItemAddOn().get(x);
+                            orderItemAddOn.setOrderItemId(orderItem.getId());
+                            orderItemAddOnRepository.save(orderItemAddOn);
+                        }                            
+                    }
+                    
                     // getting product information if product tracking is enabled we will reduce the quantity
                     product = productService.getProductById(order.getStoreId(), orderItems.get(i).getProductId());
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Got product details of orderItem: " + product.toString());

@@ -73,6 +73,7 @@ import com.kalsym.order.service.model.object.ItemDiscount;
 import com.kalsym.order.service.model.object.OrderGroupObject;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.OrderSubItemRepository;
+import com.kalsym.order.service.model.repository.OrderItemAddOnRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.model.repository.OrderCompletionStatusConfigRepository;
@@ -189,6 +190,9 @@ public class OrderController {
 
     @Autowired
     OrderSubItemRepository orderSubItemRepository;
+    
+    @Autowired
+    OrderItemAddOnRepository orderItemAddOnRepository;
     
     @Autowired
     CartItemRepository cartItemRepository;
@@ -896,7 +900,7 @@ public class OrderController {
                 storeDetailsRepository, storeDeliveryDetailRepository, 
                 productInventoryRepository, storeDiscountRepository, storeDiscountTierRepository, 
                 orderRepository, orderPaymentDetailRepository, orderShipmentDetailRepository, 
-                orderItemRepository, orderSubItemRepository, voucherRepository, storeRepository, 
+                orderItemRepository, orderSubItemRepository, orderItemAddOnRepository, voucherRepository, storeRepository, 
                 regionCountriesRepository, customerRepository, 
                 orderCompletionStatusConfigRepository, 
                 productService, orderPostService, fcmService, 
@@ -1187,7 +1191,7 @@ public class OrderController {
                     storeDetailsRepository, storeDeliveryDetailRepository, 
                     productInventoryRepository, storeDiscountRepository, storeDiscountTierRepository, 
                     orderRepository, orderPaymentDetailRepository, orderShipmentDetailRepository, 
-                    orderItemRepository, orderSubItemRepository, voucherRepository, storeRepository, 
+                    orderItemRepository, orderSubItemRepository, orderItemAddOnRepository, voucherRepository, storeRepository, 
                     regionCountriesRepository, customerRepository, 
                     orderCompletionStatusConfigRepository, 
                     productService, orderPostService, fcmService, 
