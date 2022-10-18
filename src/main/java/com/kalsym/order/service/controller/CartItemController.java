@@ -238,13 +238,19 @@ public class CartItemController {
                     }
                 }
             } else {
-                //find item in current cart & no add-on product, increase quantity if already exist
-                CartItem existingItem = cartItemRepository.findByCartIdAndItemCodeAndSpecialInstruction(bodyCartItem.getCartId(), bodyCartItem.getItemCode(), bodyCartItem.getSpecialInstruction());
+                
                 boolean gotAddOn=false;
                 if (bodyCartItem.getCartItemAddOn()!=null && !bodyCartItem.getCartItemAddOn().isEmpty() ) {
                     gotAddOn=true;
                 }
-                if (existingItem != null && gotAddOn==false) {
+                
+                CartItem existingItem = null;
+                if (gotAddOn==false) {
+                    //find item in current cart & no add-on product, increase quantity if already exist
+                    existingItem = cartItemRepository.findByCartIdAndItemCodeAndSpecialInstruction(bodyCartItem.getCartId(), bodyCartItem.getItemCode(), bodyCartItem.getSpecialInstruction());
+                }
+                
+                if (existingItem != null) {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "item already exist for cartId: " + bodyCartItem.getCartId());
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "item already exist for itemCode: " + bodyCartItem.getItemCode());
 
