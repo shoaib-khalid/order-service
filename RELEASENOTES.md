@@ -2,6 +2,7 @@
 # order-service-3.13.2-SNAPSHOT |19-Oct-2022
 ##################################################
 Add new field in order table : channel
+Include product inventory in order item details
 
 ##DB Changes:
 ALTER TABLE `order` ADD channel ENUM('DELIVERIN','PAYHUB2U') DEFAULT 'DELIVERIN';

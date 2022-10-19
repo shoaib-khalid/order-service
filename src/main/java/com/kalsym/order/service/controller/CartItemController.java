@@ -468,8 +468,24 @@ public class CartItemController {
                     subItem.setCartItemId(cartItem.getId());
                     cartSubItemRepository.save(subItem);
                 }
-            }
+            }            
         } else {
+            //update product add-on price
+            if (cartItem.getCartItemAddOn()!=null) {
+                for (int i=0;i<cartItem.getCartItemAddOn().size();i++) {
+                    CartItemAddOn addOnItem = cartItem.getCartItemAddOn().get(i);
+                    //get add-on price
+                    Optional<ProductAddOn> productAddOnOpt = productAddOnRepository.findById(addOnItem.getProductAddOnId());
+                    if (productAddOnOpt.isPresent()) {
+                        if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN){
+                            addOnItem.setPrice(productAddOnOpt.get().getDineInPrice().floatValue() * bodyCartItem.getQuantity());
+                        } else {
+                            addOnItem.setPrice(productAddOnOpt.get().getPrice().floatValue() * bodyCartItem.getQuantity());
+                        }
+                    }
+                    cartItemAddOnRepository.save(addOnItem);
+                }
+            }
             //find product invertory against itemcode to set sku
             cartItem.update(bodyCartItem, (float)itemPrice);
         }
@@ -548,7 +564,7 @@ public class CartItemController {
         Optional<Cart> savedCart = null;
         
         savedCart = cartRepository.findById(cartId);
-        if (savedCart == null) {
+        if (savedCart.isPresent() == false) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-updatequantity-by-id, cartId not found, cartId: " + id);
             response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
             return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
@@ -564,6 +580,23 @@ public class CartItemController {
             item.setQuantity(newQty);
             item.setPrice(newPrice);
             cartItemRepository.save(item);
+            
+            //update product add-on price
+            if (item.getCartItemAddOn()!=null) {
+                for (int i=0;i<item.getCartItemAddOn().size();i++) {
+                    CartItemAddOn addOnItem = item.getCartItemAddOn().get(i);
+                    //get add-on price
+                    Optional<ProductAddOn> productAddOnOpt = productAddOnRepository.findById(addOnItem.getProductAddOnId());
+                    if (productAddOnOpt.isPresent()) {
+                        if (savedCart.get().getServiceType()!=null && savedCart.get().getServiceType()==ServiceType.DINEIN){
+                            addOnItem.setPrice(productAddOnOpt.get().getDineInPrice().floatValue() * newQty);
+                        } else {
+                            addOnItem.setPrice(productAddOnOpt.get().getPrice().floatValue() * newQty);
+                        }
+                    }
+                    cartItemAddOnRepository.save(addOnItem);
+                }
+            }
             
             String message = "{ "
                 + "\"operation\":\"updateCartItem\", "
