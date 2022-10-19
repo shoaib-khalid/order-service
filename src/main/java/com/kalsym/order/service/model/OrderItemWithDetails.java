@@ -65,13 +65,12 @@ public class OrderItemWithDetails implements Serializable {
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "itemCode", referencedColumnName="itemCode", insertable = false, updatable = false, nullable = true)
     private ProductAsset itemAssetDetails;    
-    
-    /*
-    remove to avoid foreign key issue if product variant changed
-    @OneToOne(fetch = FetchType.EAGER)
+        
+    //remove to avoid foreign key issue if product variant changed
+    //try include back 
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "itemCode", referencedColumnName = "itemCode", insertable = false, updatable = false, nullable = true)
-    private ProductInventory productInventory;
-    */
+    private ProductInventory productInventory;    
     
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "productId", insertable = false, updatable = false)

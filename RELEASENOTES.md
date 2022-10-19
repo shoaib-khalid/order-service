@@ -4,8 +4,8 @@
 Add new field in order table : channel
 
 ##DB Changes:
-ALTER TABLE `order` ADD channel ENUM('DELIVERIN','PAYHUB2U');
-ALTER TABLE `order_group` ADD channel ENUM('DELIVERIN','PAYHUB2U');
+ALTER TABLE `order` ADD channel ENUM('DELIVERIN','PAYHUB2U') DEFAULT 'DELIVERIN';
+ALTER TABLE `order_group` ADD channel ENUM('DELIVERIN','PAYHUB2U') DEFAULT 'DELIVERIN;
 
 
 ##################################################
