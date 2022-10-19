@@ -67,10 +67,10 @@ public class OrderItemWithDetails implements Serializable {
     private ProductAsset itemAssetDetails;    
         
     //remove to avoid foreign key issue if product variant changed
-    //try include back 
-    @OneToOne(fetch = FetchType.LAZY)
+    /*@OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "itemCode", referencedColumnName = "itemCode", insertable = false, updatable = false, nullable = true)
     private ProductInventory productInventory;    
+    */
     
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "productId", insertable = false, updatable = false)
