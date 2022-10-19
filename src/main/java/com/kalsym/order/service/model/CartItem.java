@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 /**
  *
@@ -84,6 +85,18 @@ public class CartItem implements Serializable {
 //        SKU = cartItem.getSKU();
     }
 
+    @Transient
+    private Float totalPrice;
     
+    public Float getTotalPrice() {
+        float totalItemPrice=0;
+        float totalAddOnItemPrice=0;
+        if (cartItemAddOn!=null && !cartItemAddOn.isEmpty()) {
+            for (int i=0;i<cartItemAddOn.size();i++) {
+                totalAddOnItemPrice = totalAddOnItemPrice + cartItemAddOn.get(i).getPrice();
+            }
+        }
+        return price + totalItemPrice;
+    }
 
 }
