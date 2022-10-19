@@ -14,6 +14,7 @@ import com.kalsym.order.service.enums.VehicleType;
 import com.kalsym.order.service.enums.CartStage;
 import com.kalsym.order.service.enums.ServiceType;
 import com.kalsym.order.service.enums.DineInOption;
+import com.kalsym.order.service.enums.Channel;
 import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.OrderPaymentDetail;
 import com.kalsym.order.service.model.object.CustomPageable;
@@ -716,6 +717,7 @@ public class OrderController {
      * @param platformVoucherCode
      * @param sendReceiptToReceiver
      * @param storeId
+     * @param channel
      * @param cod
      * @return
      * @throws Exception
@@ -728,6 +730,7 @@ public class OrderController {
             @RequestParam(required = false) String platformVoucherCode,
             @RequestParam(required = false) Boolean sendReceiptToReceiver,
             @RequestParam(required = false) String storeId,
+            @RequestParam(required = false) Channel channel,
             @RequestBody COD cod) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         
@@ -895,6 +898,7 @@ public class OrderController {
                 customerStoreVoucher,
                 saveCustomerInformation, 
                 sendReceiptToReceiver,
+                channel,
                 onboardingOrderLink, orderInvoiceBaseUrl, logprefix, 
                 cartRepository, cartItemRepository, customerVoucherRepository, 
                 storeDetailsRepository, storeDeliveryDetailRepository, 
@@ -968,6 +972,11 @@ public class OrderController {
             else
                 orderGroup.setServiceType(ServiceType.DELIVERIN);
             
+            if (channel!=null)
+                orderGroup.setChannel(channel);
+            else
+                orderGroup.setChannel(Channel.DELIVERIN);
+            
             orderGroupRepository.save(orderGroup);
             
             orderRepository.UpdateOrderGroupId(orderCreated.getId(), orderGroup.getId());            
@@ -988,6 +997,7 @@ public class OrderController {
      * @param saveCustomerInformation
      * @param platformVoucherCode
      * @param sendReceiptToReceiver
+     * @param channel
      * @param codList
      * @return
      * @throws Exception
@@ -998,6 +1008,7 @@ public class OrderController {
             @RequestParam(required = false) Boolean saveCustomerInformation,
             @RequestParam(required = false) String platformVoucherCode,
             @RequestParam(required = false) Boolean sendReceiptToReceiver,
+            @RequestParam(required = false) Channel channel,
             @RequestBody COD[] codList) throws Exception {
         String logprefix = request.getRequestURI() + " ";
        
@@ -1186,6 +1197,7 @@ public class OrderController {
                     customerStoreVoucher,
                     saveCustomerInformation, 
                     sendReceiptToReceiver,
+                    channel,
                     onboardingOrderLink, orderInvoiceBaseUrl, logprefix, 
                     cartRepository, cartItemRepository, customerVoucherRepository, 
                     storeDetailsRepository, storeDeliveryDetailRepository, 
@@ -1274,6 +1286,10 @@ public class OrderController {
             orderGroup.setPaidAmount(0.00);
         }
         orderGroup.setServiceType(serviceType);
+        if (channel!=null)
+            orderGroup.setChannel(channel);
+        else
+            orderGroup.setChannel(Channel.DELIVERIN);
         orderGroupRepository.save(orderGroup);
                
         //update orderGroupId for each order

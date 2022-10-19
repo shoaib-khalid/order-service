@@ -13,6 +13,7 @@ import com.kalsym.order.service.enums.ProductStatus;
 import com.kalsym.order.service.enums.StorePaymentType;
 import com.kalsym.order.service.enums.VehicleType;
 import com.kalsym.order.service.enums.ServiceType;
+import com.kalsym.order.service.enums.Channel;
 import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.COD;
 import com.kalsym.order.service.model.Cart;
@@ -92,7 +93,8 @@ public class OrderWorker {
             StoreDeliveryDetail storeDeliveryDetail,
             CustomerVoucher customerStoreVoucher,
             Boolean saveCustomerInformation,
-            Boolean sendReceiptToReceiver,            
+            Boolean sendReceiptToReceiver,  
+            Channel channel,
             String onboardingOrderLink,
             String invoiceBaseUrl,
             String logprefix,
@@ -443,6 +445,11 @@ public class OrderWorker {
                     order.setServiceType(cart.getServiceType());
                 } else {
                     order.setServiceType(ServiceType.DELIVERIN);
+                }
+                if (channel!=null) {
+                    order.setChannel(channel);
+                } else {
+                    order.setChannel(Channel.DELIVERIN);
                 }
                 
                 // saving order object to get order Id

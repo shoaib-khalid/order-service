@@ -6,6 +6,7 @@ import com.kalsym.order.service.enums.DineInPack;
 import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.enums.ServiceType;
+import com.kalsym.order.service.enums.Channel;
 import com.kalsym.order.service.model.object.OrderGroupObject;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.utility.DateTimeUtil;
@@ -126,6 +127,9 @@ public class OrderWithDetails implements Serializable {
     private String voucherId;
     
     private String orderGroupId;
+    
+    @Enumerated(EnumType.STRING)
+    private Channel channel;
     
     @Enumerated(EnumType.STRING)
     private ServiceType serviceType;

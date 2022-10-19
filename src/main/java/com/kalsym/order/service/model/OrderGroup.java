@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.enums.ServiceType;
+import com.kalsym.order.service.enums.Channel;
 import com.kalsym.order.service.utility.DateTimeUtil;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -58,7 +59,7 @@ public class OrderGroup implements Serializable {
     private String customerId;
     private Double appliedDiscount;
     private Double deliveryDiscount;    
-            
+    
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -103,6 +104,9 @@ public class OrderGroup implements Serializable {
     
     @Enumerated(EnumType.STRING)
     private ServiceType serviceType;
+    
+    @Enumerated(EnumType.STRING)
+    private Channel channel;
     
     @Transient
     private Double totalOrderAmount;

@@ -1,4 +1,14 @@
 ##################################################
+# order-service-3.13.2-SNAPSHOT |19-Oct-2022
+##################################################
+Add new field in order table : channel
+
+##DB Changes:
+ALTER TABLE `order` ADD channel ENUM('DELIVERIN','PAYHUB2U');
+ALTER TABLE `order_group` ADD channel ENUM('DELIVERIN','PAYHUB2U');
+
+
+##################################################
 # order-service-3.13.1-SNAPSHOT |5-Oct-2022
 ##################################################
 New feature : product discount for DINE-IN
