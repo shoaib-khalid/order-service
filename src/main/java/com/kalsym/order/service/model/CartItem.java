@@ -96,7 +96,8 @@ public class CartItem implements Serializable {
                 totalAddOnItemPrice = totalAddOnItemPrice + cartItemAddOn.get(i).getPrice();
             }
         }
-        return price + totalItemPrice;
+        totalItemPrice = price + totalAddOnItemPrice;
+        return totalItemPrice;
     }
 
 }
