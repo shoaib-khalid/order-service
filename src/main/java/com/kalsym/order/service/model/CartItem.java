@@ -93,7 +93,9 @@ public class CartItem implements Serializable {
         float totalAddOnItemPrice=0;
         if (cartItemAddOn!=null && !cartItemAddOn.isEmpty()) {
             for (int i=0;i<cartItemAddOn.size();i++) {
-                totalAddOnItemPrice = totalAddOnItemPrice + cartItemAddOn.get(i).getPrice();
+                if (cartItemAddOn.get(i)!=null && cartItemAddOn.get(i).getPrice()!=null) {
+                    totalAddOnItemPrice = totalAddOnItemPrice + cartItemAddOn.get(i).getPrice();
+                }
             }
         }
         totalItemPrice = price + totalAddOnItemPrice;
