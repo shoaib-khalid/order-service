@@ -247,8 +247,8 @@ public class OrderWorker {
                         for (int z=0;z<cartItems.get(i).getCartItemAddOn().size();z++) {
                             ProductAddOn productAddOn = cartItems.get(i).getCartItemAddOn().get(z).getProductAddOn();
                             double cartPrice = Utilities.Round2DecimalPoint(cartItems.get(i).getCartItemAddOn().get(z).getPrice().doubleValue());
-                            double deliverinPrice = Utilities.Round2DecimalPoint(productAddOn.getPrice());
-                            double dineinPrice = Utilities.Round2DecimalPoint(productAddOn.getDineInPrice());
+                            double deliverinPrice = Utilities.Round2DecimalPoint(productAddOn.getPrice() * cartItems.get(i).getQuantity());
+                            double dineinPrice = Utilities.Round2DecimalPoint(productAddOn.getDineInPrice() * cartItems.get(i).getQuantity());
                             double bezaDeliverIn = Math.abs(cartPrice - deliverinPrice);                        
                             double bezaDineIn = Math.abs(cartPrice - dineinPrice);   
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "AddOn Cart price:"+cartPrice+" deliverinPrice:"+deliverinPrice+" dineinPrice:"+dineinPrice);
