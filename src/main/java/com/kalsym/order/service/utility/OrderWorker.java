@@ -246,9 +246,9 @@ public class OrderWorker {
                     if (cartItems.get(i).getCartItemAddOn()!=null && !cartItems.get(i).getCartItemAddOn().isEmpty()) {
                         for (int z=0;z<cartItems.get(i).getCartItemAddOn().size();z++) {
                             ProductAddOn productAddOn = cartItems.get(i).getCartItemAddOn().get(z).getProductAddOn();
-                            double cartPrice = Utilities.Round2DecimalPoint(cartItems.get(i).getCartItemAddOn().get(z).getPrice().doubleValue());
-                            double deliverinPrice = Utilities.Round2DecimalPoint(productAddOn.getPrice() * cartItems.get(i).getQuantity());
-                            double dineinPrice = Utilities.Round2DecimalPoint(productAddOn.getDineInPrice() * cartItems.get(i).getQuantity());
+                            double cartPrice = Utilities.Round2DecimalPoint(cartItems.get(i).getCartItemAddOn().get(z).getProductPrice().doubleValue());
+                            double deliverinPrice = Utilities.Round2DecimalPoint(productAddOn.getPrice());
+                            double dineinPrice = Utilities.Round2DecimalPoint(productAddOn.getDineInPrice());
                             double bezaDeliverIn = Math.abs(cartPrice - deliverinPrice);                        
                             double bezaDineIn = Math.abs(cartPrice - dineinPrice);   
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "AddOn Cart price:"+cartPrice+" deliverinPrice:"+deliverinPrice+" dineinPrice:"+dineinPrice);
@@ -266,7 +266,7 @@ public class OrderWorker {
                                 return response;
                             }
                             subTotal += cartItems.get(i).getCartItemAddOn().get(z).getPrice() ;
-                            itemPrice = itemPrice + cartItems.get(i).getCartItemAddOn().get(z).getPrice() ;
+                            itemPrice = itemPrice + cartItems.get(i).getCartItemAddOn().get(z).getProductPrice() ;
                         }
                     }
                     
@@ -348,6 +348,7 @@ public class OrderWorker {
                             orderItemAddOn.setOrderItemId(cartItems.get(i).getId());
                             orderItemAddOn.setProductAddOnId(cartItems.get(i).getCartItemAddOn().get(z).getProductAddOnId());
                             orderItemAddOn.setPrice(cartItems.get(i).getCartItemAddOn().get(z).getPrice());
+                            orderItemAddOn.setProductPrice(cartItems.get(i).getCartItemAddOn().get(z).getProductPrice());
                             orderItemAddOnList.add(orderItemAddOn);
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Added AddOnItem:"+orderItemAddOn.toString());
                         }  

@@ -37,6 +37,7 @@ public class OrderItemAddOn implements Serializable {
     private String orderItemId;
     private String productAddOnId;
     private Float price;
+    private Float productPrice;
     
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "productAddOnId", referencedColumnName = "id", insertable = false, updatable = false, nullable = true)

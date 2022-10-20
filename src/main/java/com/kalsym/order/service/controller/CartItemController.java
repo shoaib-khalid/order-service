@@ -276,8 +276,10 @@ public class CartItemController {
                             if (productAddOnOpt.isPresent()) {
                                 if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN){
                                     cartItemAddOn.setPrice(productAddOnOpt.get().getDineInPrice().floatValue() * bodyCartItem.getQuantity());
+                                    cartItemAddOn.setProductPrice(productAddOnOpt.get().getDineInPrice().floatValue());
                                 } else {
                                     cartItemAddOn.setPrice(productAddOnOpt.get().getPrice().floatValue() * bodyCartItem.getQuantity());
+                                    cartItemAddOn.setProductPrice(productAddOnOpt.get().getPrice().floatValue());
                                 }
                             }
                             cartItemAddOnRepository.save(cartItemAddOn);
