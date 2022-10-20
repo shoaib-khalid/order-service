@@ -98,7 +98,11 @@ public class CartItem implements Serializable {
                 }
             }
         }
-        totalItemPrice = price + totalAddOnItemPrice;
+        if (price!=null) {
+            totalItemPrice = price + totalAddOnItemPrice;
+        } else {
+            totalItemPrice = totalAddOnItemPrice;
+        }        
         return totalItemPrice;
     }
 
