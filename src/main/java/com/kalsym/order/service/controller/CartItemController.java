@@ -4,6 +4,7 @@ import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.enums.ServiceType;
 import com.kalsym.order.service.enums.DineInOption;
 import com.kalsym.order.service.model.Cart;
+import com.kalsym.order.service.model.Error;
 import com.kalsym.order.service.model.ProductInventory;
 import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.model.CartItem;
@@ -15,6 +16,7 @@ import com.kalsym.order.service.model.repository.CartSubItemRepository;
 import com.kalsym.order.service.model.repository.CartItemAddOnRepository;
 import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.model.repository.ProductRepository;
+import com.kalsym.order.service.model.repository.ErrorCodeRepository;
 import com.kalsym.order.service.utility.HttpResponse;
 import com.kalsym.order.service.model.object.ItemDiscount;
 import java.util.Optional;
@@ -73,6 +75,9 @@ public class CartItemController {
     
     @Autowired
     ProductRepository productRepository;
+    
+    @Autowired
+    ErrorCodeRepository errorCodeRepository;
     
     @Autowired
     ProductService productService;
@@ -151,18 +156,18 @@ public class CartItemController {
         Optional<Cart> savedCart = null;
         
         savedCart = cartRepository.findById(cartId);
-        if (savedCart == null) {
+        if (savedCart.isPresent()==false) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart-items-post, cartId not found, cartId: " + cartId);
-            response.setErrorStatus(HttpStatus.FAILED_DEPENDENCY);
-            return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(response);
+            response.setStatus("OS", "CART", HttpStatus.CONFLICT, Error.RECORD_NOT_FOUND, errorCodeRepository);
+            return ResponseEntity.status(response.getStatus()).body(response);            
         }
         
         //get product info
         Optional<Product> optProduct = productRepository.findById(bodyCartItem.getProductId());
         if (!optProduct.isPresent()) {
             response.setMessage("Product not found");
-            response.setErrorStatus(HttpStatus.NOT_FOUND);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            response.setErrorStatus(HttpStatus.CONFLICT);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
         
         //check service type

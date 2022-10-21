@@ -2,11 +2,15 @@ package com.kalsym.order.service.utility;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.http.HttpStatus;
+import com.kalsym.order.service.model.Error;
+import com.kalsym.order.service.model.ErrorCode;
+import com.kalsym.order.service.model.repository.ErrorCodeRepository;
 
 /**
  *
@@ -30,7 +34,8 @@ public class HttpResponse {
     private String message;
     private Object data;
     private String path;
-
+    private String errorCode;
+    
     /**
      * *
      * Sets success and message as reason phrase of provided status.
@@ -63,5 +68,24 @@ public class HttpResponse {
     public void setErrorStatus(HttpStatus status, String message) {
         this.status = status.value();
         this.error = message;
+    }
+    
+    
+    /**
+     * *
+     * Sets status and custom message.
+     * @param modules
+     * @param errorCategory
+     * @param status
+     * @param error
+     * @param errorCodeRepository
+     */
+    public void setStatus(String modules, String errorCategory, HttpStatus status, Error error, ErrorCodeRepository errorCodeRepository) {
+        Optional<ErrorCode> errorCodeOpt = errorCodeRepository.findByModulesAndErrorCategoryAndErrorCode(modules, errorCategory, error.errorCode);
+        this.status = status.value();
+        if (errorCodeOpt.isPresent()) {
+            this.message = errorCodeOpt.get().getErrorMessage();
+            this.errorCode = modules+"-"+errorCategory+"-"+errorCodeOpt.get().getErrorCode();
+        }
     }
 }
