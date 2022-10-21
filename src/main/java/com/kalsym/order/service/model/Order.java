@@ -210,4 +210,12 @@ public class Order implements Serializable {
     
     @Transient
     private String nextActionText;
+    
+    public String getCustomerNotes() {
+        String customerNotesToDisplay = this.customerNotes;
+        if (this.customerNotes!=null && this.customerNotes.equalsIgnoreCase("SELFCOLLECT")) {
+            customerNotesToDisplay = "Self collect";
+        }
+        return customerNotesToDisplay;
+    }
 }

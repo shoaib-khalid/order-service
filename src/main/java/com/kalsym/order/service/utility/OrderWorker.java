@@ -622,7 +622,7 @@ public class OrderWorker {
                     
                 //get order completion config
                 String verticalId = storeWithDetials.getVerticalCode();                    
-                String storeDeliveryType = order.getDeliveryType();
+                String storeDeliveryType = storeWithDetials.getStoreDeliveryDetail().getType();
                 if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN) {
                     storeDeliveryType = order.getDineInOption().name();
                 }

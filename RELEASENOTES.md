@@ -1,4 +1,5 @@
 ##################################################
+<<<<<<< HEAD
 # order-service-3.14.0-SNAPSHOT |21-Oct-2022
 ##################################################
 Add error code in response of postCartItem
@@ -104,6 +105,12 @@ CREATE TABLE `product_addon` (
   CONSTRAINT `product_addon_ibfk_2` FOREIGN KEY (`addOnItemId`) REFERENCES `addon_template_item` (`id`)
 );
 
+=======
+# order-service-3.12.4-SNAPSHOT |14-Oct-2022
+##################################################
+Return error if item not found during place order
+Only send reminder alert for DELIVERIN
+>>>>>>> staging
 
 
 ##################################################
@@ -111,6 +118,10 @@ CREATE TABLE `product_addon` (
 ##################################################
 Change id of DeliveryServiceProvider from string to integer
 Bug fix for order details, nextActionText null when store change dineInOption
+
+##DB Changes:
+---------------
+field 'id' in 'delivery_sp' change datatype to integer from varchar
 
 
 ##################################################

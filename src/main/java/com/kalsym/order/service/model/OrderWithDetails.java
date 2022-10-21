@@ -209,4 +209,12 @@ public class OrderWithDetails implements Serializable {
             return null;
         }
     }
+    
+    public String getCustomerNotes() {
+        String customerNotesToDisplay = this.customerNotes;
+        if (this.customerNotes!=null && this.customerNotes.equalsIgnoreCase("SELFCOLLECT")) {
+            customerNotesToDisplay = "Self collect";
+        }
+        return customerNotesToDisplay;
+    }
 }
