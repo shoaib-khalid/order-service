@@ -1,5 +1,4 @@
 ##################################################
-<<<<<<< HEAD
 # order-service-3.14.0-SNAPSHOT |21-Oct-2022
 ##################################################
 Add error code in response of postCartItem
