@@ -42,11 +42,24 @@ public class ProductDiscount {
                     //discountName, startDate, endDate, normalPriceItemOnly, discountAmount, calculationType, discountId
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "discountDetails:"+itemDiscount.toString());
                     discountDetails.discountLabel = String.valueOf(itemDiscount[0]);
-                    discountDetails.discountAmount = Double.parseDouble(String.valueOf(itemDiscount[4]));
-                    discountDetails.calculationType = DiscountCalculationType.valueOf(String.valueOf(itemDiscount[5]));
+                    
+                    if (itemDiscount[4]!=null) {
+                        discountDetails.discountAmount = Double.parseDouble(String.valueOf(itemDiscount[4]));
+                    }
+                    if (itemDiscount[5]!=null) {
+                        discountDetails.calculationType = DiscountCalculationType.valueOf(String.valueOf(itemDiscount[5]));
+                    }
+                    
                     discountDetails.discountId =  String.valueOf(itemDiscount[6]);
-                    discountDetails.dineInDiscountAmount = Double.parseDouble(String.valueOf(itemDiscount[7]));
-                    discountDetails.dineInCalculationType = DiscountCalculationType.valueOf(String.valueOf(itemDiscount[8]));
+                    
+                    if (itemDiscount[7]!=null) {
+                        discountDetails.dineInDiscountAmount = Double.parseDouble(String.valueOf(itemDiscount[7]));
+                    }
+                    
+                    if (itemDiscount[8]!=null) {
+                        discountDetails.dineInCalculationType = DiscountCalculationType.valueOf(String.valueOf(itemDiscount[8]));
+                    }
+                    
                 } catch (Exception ex){
                     Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, "getItemDiscount", "Error extracting discount details : ", ex);
                 }

@@ -1,4 +1,10 @@
 ##################################################
+# order-service-3.14.1-SNAPSHOT |26-Oct-2022
+##################################################
+Bug fix for item discount null on scheduler
+
+
+##################################################
 # order-service-3.14.0-SNAPSHOT |21-Oct-2022
 ##################################################
 Add error code in response of postCartItem
