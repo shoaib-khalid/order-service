@@ -280,6 +280,20 @@ public class VoucherController {
             return ResponseEntity.status(response.getStatus()).body(response);
         }
         
+        //check deactivated account
+        List<Customer> deactivatedCustomerList = customerRepository.findByOriginalUsername(optCustomer.get().getEmail());
+        for (int i=0;i<deactivatedCustomerList.size();i++) {
+            String deactivatedCustomerId = deactivatedCustomerList.get(i).getId();
+            existingVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(deactivatedCustomerId, voucher.getId());
+            if (existingVoucher!=null && !voucher.getAllowMultipleRedeem()) {
+                Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " Voucher already exist customerId: " + customerId+" voucherId:"+voucher.getId());
+                response.setSuccessStatus(HttpStatus.CONFLICT);
+                response.setError("Voucher already exist");
+                response.setMessage("Sorry, you have redeemed this voucher");
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
+        }
+        
         CustomerVoucher customerVoucher = new CustomerVoucher();
         customerVoucher.setCustomerId(customerId);
         customerVoucher.setIsUsed(Boolean.FALSE);
@@ -416,6 +430,20 @@ public class VoucherController {
             response.setError("Voucher already exist");
             response.setMessage("Sorry, you have redeemed this voucher");
             return ResponseEntity.status(response.getStatus()).body(response);
+        }
+        
+        //check deactivated account
+        List<Customer> deactivatedCustomerList = customerRepository.findByOriginalUsername(optCustomer.get().getEmail());
+        for (int i=0;i<deactivatedCustomerList.size();i++) {
+            String deactivatedCustomerId = deactivatedCustomerList.get(i).getId();
+            existingVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(deactivatedCustomerId, selectedVoucher.getId());
+            if (existingVoucher!=null && !selectedVoucher.getAllowMultipleRedeem()) {
+                Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " Voucher already exist customerId: " + customerId+" voucherId:"+selectedVoucher.getId());
+                response.setSuccessStatus(HttpStatus.CONFLICT);
+                response.setError("Voucher already exist");
+                response.setMessage("Sorry, you have redeemed this voucher");
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
         }
         
         CustomerVoucher customerVoucher = new CustomerVoucher();

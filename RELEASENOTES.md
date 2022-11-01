@@ -1,4 +1,14 @@
 ##################################################
+# order-service-3.14.2-SNAPSHOT |31-Oct-2022
+##################################################
+Validate voucher claim & redeem for deactivated and re-register customer
+Add new field in customer : originalUsername;
+
+##DB Changes:
+ALTER TABLE customer ADD originalUsername VARCHAR(50);
+
+
+##################################################
 # order-service-3.14.1-SNAPSHOT |26-Oct-2022
 ##################################################
 Bug fix for item discount null on scheduler
