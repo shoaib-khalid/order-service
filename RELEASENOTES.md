@@ -1,11 +1,12 @@
 ##################################################
-# order-service-3.14.2-SNAPSHOT |31-Oct-2022
+# order-service-3.14.2-SNAPSHOT |1-Nov-2022
 ##################################################
 Validate voucher claim & redeem for deactivated and re-register customer
 Add new field in customer : originalUsername;
-
+Filter order by serviceType : DELIVERIN or DINEIN
 ##DB Changes:
 ALTER TABLE customer ADD originalUsername VARCHAR(50);
+ALTER TABLE customer ADD originalEmail VARCHAR(50);
 
 
 ##################################################

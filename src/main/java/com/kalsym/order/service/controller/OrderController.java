@@ -279,6 +279,7 @@ public class OrderController {
             @RequestParam(required = false) String zipcode,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) OrderStatus completionStatus,
+            @RequestParam(required = false) ServiceType serviceType,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
         String logprefix = request.getRequestURI() + " getOrders() ";
@@ -304,6 +305,10 @@ public class OrderController {
 
         if (invoiceId != null && !invoiceId.isEmpty()) {
             orderMatch.setInvoiceId(invoiceId);
+        }
+        
+        if (serviceType != null) {
+            orderMatch.setServiceType(serviceType);
         }
 
         /*if (completionStatus != null) {            
@@ -386,6 +391,7 @@ public class OrderController {
             @RequestParam(required = false) OrderStatus[] completionStatus,
             @RequestParam(required = false) String[] orderIds,
             @RequestParam(required = false) String[] orderGroupIds,
+            @RequestParam(required = false) ServiceType serviceType,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize) {
         String logprefix = request.getRequestURI() + " getOrdersWithDetails() ";
@@ -411,6 +417,10 @@ public class OrderController {
 
         if (invoiceId != null && !invoiceId.isEmpty()) {
             orderMatch.setInvoiceId(invoiceId);
+        }
+        
+        if (serviceType != null) {
+            orderMatch.setServiceType(serviceType);
         }
 
         /*if (completionStatus != null) {            
@@ -491,6 +501,7 @@ public class OrderController {
             @RequestParam(required = false) String phoneNumber,
             @RequestParam(required = false) String zipcode,
             @RequestParam(required = false) String city,
+            @RequestParam(required = false) ServiceType serviceType,
             @RequestParam(required = false) OrderStatus[] completionStatus,
             @RequestParam(required = false, defaultValue = "created") String sortByCol,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortingOrder,
@@ -521,6 +532,10 @@ public class OrderController {
             orderMatch.setInvoiceId(invoiceId);
         }
 
+        if (serviceType != null) {
+            orderMatch.setServiceType(serviceType);
+        }
+        
         /*if (completionStatus != null) {            
             orderMatch.setCompletionStatus(completionStatus);            
         }*/
