@@ -24,5 +24,5 @@ public interface CustomerRepository extends PagingAndSortingRepository<Customer,
     
     List<Customer> findByEmailAndStoreId(@Param("email") String email, @Param("storeId") String storeId);
     
-    List<Customer> findByOriginalUsername(@Param("email") String email);
+    List<Customer> findByOriginalEmail(@Param("email") String email);
 }

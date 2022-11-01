@@ -281,7 +281,7 @@ public class VoucherController {
         }
         
         //check deactivated account
-        List<Customer> deactivatedCustomerList = customerRepository.findByOriginalUsername(optCustomer.get().getEmail());
+        List<Customer> deactivatedCustomerList = customerRepository.findByOriginalEmail(optCustomer.get().getEmail());
         for (int i=0;i<deactivatedCustomerList.size();i++) {
             String deactivatedCustomerId = deactivatedCustomerList.get(i).getId();
             existingVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(deactivatedCustomerId, voucher.getId());
@@ -433,7 +433,7 @@ public class VoucherController {
         }
         
         //check deactivated account
-        List<Customer> deactivatedCustomerList = customerRepository.findByOriginalUsername(optCustomer.get().getEmail());
+        List<Customer> deactivatedCustomerList = customerRepository.findByOriginalEmail(optCustomer.get().getEmail());
         for (int i=0;i<deactivatedCustomerList.size();i++) {
             String deactivatedCustomerId = deactivatedCustomerList.get(i).getId();
             existingVoucher = customerVoucherRepository.findByCustomerIdAndVoucherId(deactivatedCustomerId, selectedVoucher.getId());

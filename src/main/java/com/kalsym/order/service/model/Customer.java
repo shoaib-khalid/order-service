@@ -56,7 +56,7 @@ public class Customer {
     
     private String countryId;
     
-    private String originalUsername;
+    private String originalEmail;
     
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "countryId", insertable = false, updatable = false)
