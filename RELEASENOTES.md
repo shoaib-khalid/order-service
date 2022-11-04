@@ -2,6 +2,7 @@
 # order-service-3.15.0-SNAPSHOT |4-Nov-2022
 ##################################################
 New api for famous product
+Order count summary can be filter by serviceType
 
 ##DB Changes:
 CREATE TABLE `tag_product_feature` (
