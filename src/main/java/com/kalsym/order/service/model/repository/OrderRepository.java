@@ -1,6 +1,7 @@
 package com.kalsym.order.service.model.repository;
 
 import com.kalsym.order.service.enums.OrderStatus;
+import com.kalsym.order.service.enums.ServiceType;
 import com.kalsym.order.service.model.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -28,6 +29,14 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
     @Query("SELECT c.completionStatus, COUNT(c.id) FROM Order AS c "
             + "WHERE c.storeId = :storeId AND completionStatus<>'RECEIVED_AT_STORE' GROUP BY c.completionStatus")
     List<Object[]> getCountSummaryOnlinePayment(@Param("storeId") String storeId);
+    
+    @Query("SELECT c.completionStatus, COUNT(c.id) FROM Order AS c "
+            + "WHERE c.storeId = :storeId AND c.serviceType = :serviceType GROUP BY c.completionStatus")
+    List<Object[]> getCountSummaryCODByServiceType(@Param("storeId") String storeId, @Param("serviceType") ServiceType serviceType);
+    
+    @Query("SELECT c.completionStatus, COUNT(c.id) FROM Order AS c "
+            + "WHERE c.storeId = :storeId AND completionStatus<>'RECEIVED_AT_STORE' AND serviceType = :serviceType GROUP BY c.completionStatus")
+    List<Object[]> getCountSummaryOnlinePaymentByServiceType(@Param("storeId") String storeId, @Param("serviceType") ServiceType serviceType);
     
     @Query(value = "SELECT A.id, A.invoiceId, B.phoneNumber, B.name, B.clientId,  C.username, C.password, A.updated, A.storeId  "
             + "FROM `order` A INNER JOIN `store` B ON A.storeId=B.id  "

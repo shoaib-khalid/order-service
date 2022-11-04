@@ -1628,7 +1628,8 @@ public class OrderController {
     @GetMapping(path = {"/countsummary/{storeId}"}, name = "orders-get", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-get', 'all') and @customOwnerVerifier.VerifyStore(#storeId)")
     public ResponseEntity<HttpResponse> getCountSummary(HttpServletRequest request,
-            @PathVariable(required = true) String storeId
+            @PathVariable(required = true) String storeId,
+            @RequestParam(required = false) ServiceType serviceType
            ) {
         String logprefix = request.getRequestURI() + " ";
     
@@ -1659,10 +1660,18 @@ public class OrderController {
         Store store = optStore.get();
         List<Object> dataSummaryList = new ArrayList<Object>();
         List<Object[]> countSummaryList = null;
-        if (store.getPaymentType().equals("COD")) {
-            countSummaryList = orderRepository.getCountSummaryCOD(storeId);
+        if (serviceType!=null && !serviceType.equals("")) {
+            if (store.getPaymentType().equals("COD") || serviceType==ServiceType.DINEIN) {
+                countSummaryList = orderRepository.getCountSummaryCODByServiceType(storeId, serviceType);
+            } else {
+                countSummaryList = orderRepository.getCountSummaryOnlinePaymentByServiceType(storeId, serviceType);
+            }
         } else {
-            countSummaryList = orderRepository.getCountSummaryOnlinePayment(storeId);
+            if (store.getPaymentType().equals("COD")) {
+                countSummaryList = orderRepository.getCountSummaryCOD(storeId);
+            } else {
+                countSummaryList = orderRepository.getCountSummaryOnlinePayment(storeId);
+            }
         }
         for (int i=0;i<countSummaryList.size();i++) {
             Object[] summary = countSummaryList.get(i);
