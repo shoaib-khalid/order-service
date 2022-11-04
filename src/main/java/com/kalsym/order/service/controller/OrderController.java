@@ -2150,50 +2150,76 @@ public class OrderController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-items-famous, tagKeyword: " + tagKeyword);
         
         TagKeyword tag = tagRepository.findByKeyword(tagKeyword);
-        String tagType="foodcourt";
-        for (int i=0;i<tag.getTagConfigs().size();i++) {
-            TagConfig tagConfig = tag.getTagConfigs().get(i);
-            if (tagConfig.getProperty().equals("type")) {
-                tagType = tagConfig.getContent();
-            }
-        }
-        
         List<Product> famousProductList = new ArrayList();
-        int limit =5;
-        if (tagType.equalsIgnoreCase("restaurant")) {
-           limit=30;
-        }
         
-        //get famous product for the store
-        for (int x=0;x<tag.getTagDetails().size();x++) {
-            TagDetails tagDetails = tag.getTagDetails().get(x);
-            String storeId = tagDetails.getStoreId();
-            if (storeId!=null) {
-             List<Object[]> productList = orderItemRepository.getFamousItemByStoreId(storeId, limit);
-             for (int z=0;z<productList.size();z++) {
-                   Object[] product = productList.get(z);
-                   java.math.BigInteger count = (java.math.BigInteger)product[0];
-                   String itemCode = (String)product[1];
-                   String productId = (String)product[2];
-                   String productName = (String)product[3];
-                   String seoUrl = (String)product[4];
-                   String categoryId = (String)product[5];
-                   String thumnailUrl = (String)product[6];
-                   Product productInfo = new Product();
-                   productInfo.setId(productId);
-                   productInfo.setName(productName);
-                   productInfo.setSeoUrl(seoUrl);
-                   productInfo.setStoreId(storeId);
-                   productInfo.setCategoryId(categoryId);
-                   productInfo.setThumbnailUrl(thumnailUrl);
-                   famousProductList.add(productInfo);
-             }
+        if (tag!=null) {                            
+            String tagType="foodcourt";
+            for (int i=0;i<tag.getTagConfigs().size();i++) {
+                TagConfig tagConfig = tag.getTagConfigs().get(i);
+                if (tagConfig.getProperty().equals("type")) {
+                    tagType = tagConfig.getContent();
+                }
+            }
+            
+            int limit =5;
+            if (tagType.equalsIgnoreCase("restaurant")) {
+               limit=30;
+            }
+
+            //get famous product for the store
+            for (int x=0;x<tag.getTagDetails().size();x++) {
+                TagDetails tagDetails = tag.getTagDetails().get(x);
+                String storeId = tagDetails.getStoreId();
+                if (storeId!=null) {
+                 List<Object[]> productList = orderItemRepository.getFamousItemByStoreId(storeId, limit);
+                 for (int z=0;z<productList.size();z++) {
+                       Object[] product = productList.get(z);
+                       java.math.BigInteger count = (java.math.BigInteger)product[0];
+                       String itemCode = (String)product[1];
+                       String productId = (String)product[2];
+                       String productName = (String)product[3];
+                       String seoUrl = (String)product[4];
+                       String categoryId = (String)product[5];
+                       String thumnailUrl = (String)product[6];
+                       Product productInfo = new Product();
+                       productInfo.setId(productId);
+                       productInfo.setName(productName);
+                       productInfo.setSeoUrl(seoUrl);
+                       productInfo.setStoreId(storeId);
+                       productInfo.setCategoryId(categoryId);
+                       productInfo.setThumbnailUrl(thumnailUrl);
+                       famousProductList.add(productInfo);
+                 }
+                }
+            }
+        } else {
+            //find in store
+            String storeId = tagKeyword;
+            int limit=30;
+            List<Object[]> productList = orderItemRepository.getFamousItemByStoreId(storeId, limit);
+            for (int z=0;z<productList.size();z++) {
+                  Object[] product = productList.get(z);
+                  java.math.BigInteger count = (java.math.BigInteger)product[0];
+                  String itemCode = (String)product[1];
+                  String productId = (String)product[2];
+                  String productName = (String)product[3];
+                  String seoUrl = (String)product[4];
+                  String categoryId = (String)product[5];
+                  String thumnailUrl = (String)product[6];
+                  Product productInfo = new Product();
+                  productInfo.setId(productId);
+                  productInfo.setName(productName);
+                  productInfo.setSeoUrl(seoUrl);
+                  productInfo.setStoreId(storeId);
+                  productInfo.setCategoryId(categoryId);
+                  productInfo.setThumbnailUrl(thumnailUrl);
+                  famousProductList.add(productInfo);
             }
         }
-        
-        if (famousProductList.size()==0) {
+
+        if (famousProductList.isEmpty()) {
             //query tag product feature
-            if (tag.getProductFeatureList()!=null && !tag.getProductFeatureList().isEmpty()) {
+            if (tag!=null && tag.getProductFeatureList()!=null && !tag.getProductFeatureList().isEmpty()) {
                 for (int x=0;x<tag.getProductFeatureList().size();x++) {
                     famousProductList.add(tag.getProductFeatureList().get(x).getProduct());
                 }
