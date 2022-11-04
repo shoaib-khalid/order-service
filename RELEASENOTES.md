@@ -1,4 +1,25 @@
 ##################################################
+# order-service-3.15.0-SNAPSHOT |4-Nov-2022
+##################################################
+New api for famous product
+
+##DB Changes:
+CREATE TABLE `tag_product_feature` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `tagId` bigint DEFAULT NULL,
+  `productId` varchar(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  `sequence` decimal(10,2) DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `product_feature_config_FK` (`productId`),
+  KEY `tagId` (`tagId`),
+  CONSTRAINT `tag_product_feature_ibfk_1` FOREIGN KEY (`tagId`) REFERENCES `tag_keyword` (`id`),
+  CONSTRAINT `tag_product_feature_ibfk_2` FOREIGN KEY (`productId`) REFERENCES `product` (`id`)
+) 
+
+
+##################################################
 # order-service-3.14.2-SNAPSHOT |1-Nov-2022
 ##################################################
 Validate voucher claim & redeem for deactivated and re-register customer

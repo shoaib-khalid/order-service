@@ -67,6 +67,10 @@ import com.kalsym.order.service.model.Voucher;
 import com.kalsym.order.service.model.VoucherStore;
 import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.OrderPaymentDetail;
+import com.kalsym.order.service.model.TagConfig;
+import com.kalsym.order.service.model.TagDetails;
+import com.kalsym.order.service.model.TagKeyword;
+import com.kalsym.order.service.model.TagProductFeature;
 import com.kalsym.order.service.model.object.Discount;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.object.OrderDetails;
@@ -98,6 +102,8 @@ import com.kalsym.order.service.model.repository.CustomerVoucherRepository;
 import com.kalsym.order.service.model.repository.VoucherRepository;
 import com.kalsym.order.service.model.repository.CustomerRepository;
 import com.kalsym.order.service.model.repository.OrderGroupRepository;
+import com.kalsym.order.service.model.repository.TagRepository;
+import com.kalsym.order.service.model.repository.TagProductFeatureRepository;
 import com.kalsym.order.service.service.CustomerService;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.FCMService;
@@ -248,6 +254,12 @@ public class OrderController {
     
     @Autowired
     CustomerRepository customerRepository;
+    
+    @Autowired
+    TagRepository tagRepository;
+    
+    @Autowired
+    TagProductFeatureRepository tagProductFeatureRepository;
     
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
@@ -2124,6 +2136,74 @@ public class OrderController {
         
     }
     
+    
+    @GetMapping(path = {"/famous/{tagKeyword}"}, name = "order-items-get")
+    @PreAuthorize("hasAnyAuthority('order-items-get', 'all')")
+    public ResponseEntity<HttpResponse> famousItems(HttpServletRequest request,
+            @PathVariable(required = true) String tagKeyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize) throws Exception {
+        String logprefix = request.getRequestURI() + " ";
+
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-items-famous, tagKeyword: " + tagKeyword);
+        
+        TagKeyword tag = tagRepository.findByKeyword(tagKeyword);
+        String tagType="foodcourt";
+        for (int i=0;i<tag.getTagConfigs().size();i++) {
+            TagConfig tagConfig = tag.getTagConfigs().get(i);
+            if (tagConfig.getProperty().equals("type")) {
+                tagType = tagConfig.getContent();
+            }
+        }
+        
+        List<Product> famousProductList = new ArrayList();
+        int limit =5;
+        if (tagType.equalsIgnoreCase("restaurant")) {
+           limit=30;
+        }
+        
+        //get famous product for the store
+        for (int x=0;x<tag.getTagDetails().size();x++) {
+            TagDetails tagDetails = tag.getTagDetails().get(x);
+            String storeId = tagDetails.getStoreId();
+            if (storeId!=null) {
+             List<Object[]> productList = orderItemRepository.getFamousItemByStoreId(storeId, limit);
+             for (int z=0;z<productList.size();z++) {
+                   Object[] product = productList.get(z);
+                   java.math.BigInteger count = (java.math.BigInteger)product[0];
+                   String itemCode = (String)product[1];
+                   String productId = (String)product[2];
+                   String productName = (String)product[3];
+                   String seoUrl = (String)product[4];
+                   String categoryId = (String)product[5];
+                   String thumnailUrl = (String)product[6];
+                   Product productInfo = new Product();
+                   productInfo.setId(productId);
+                   productInfo.setName(productName);
+                   productInfo.setSeoUrl(seoUrl);
+                   productInfo.setStoreId(storeId);
+                   productInfo.setCategoryId(categoryId);
+                   productInfo.setThumbnailUrl(thumnailUrl);
+                   famousProductList.add(productInfo);
+             }
+            }
+        }
+        
+        if (famousProductList.size()==0) {
+            //query tag product feature
+            if (tag.getProductFeatureList()!=null && !tag.getProductFeatureList().isEmpty()) {
+                for (int x=0;x<tag.getProductFeatureList().size();x++) {
+                    famousProductList.add(tag.getProductFeatureList().get(x).getProduct());
+                }
+            }
+        }
+        
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(famousProductList);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
     
     /**
      *

@@ -3,15 +3,22 @@ package com.kalsym.order.service.controller;
 import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.OrderItem;
+import com.kalsym.order.service.model.TagKeyword;
+import com.kalsym.order.service.model.TagConfig;
+import com.kalsym.order.service.model.TagDetails;
+import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.model.ProductInventory;
 import com.kalsym.order.service.model.ProductInventoryItem;
 import com.kalsym.order.service.model.ProductVariantAvailable;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.OrderRepository;
 import com.kalsym.order.service.model.repository.ProductInventoryRepository;
+import com.kalsym.order.service.model.repository.TagRepository;
 import com.kalsym.order.service.utility.HttpResponse;
 import com.kalsym.order.service.utility.Logger;
 import java.util.Optional;
+import java.util.List;
+import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +55,9 @@ public class OrderItemController {
     @Autowired
     ProductInventoryRepository productInventoryRepository;
 
+    @Autowired
+    TagRepository tagRepository;
+     
     @Value("${order.item.price.update:false}")
     Boolean orderItemPriceUpdate;
 
@@ -221,5 +231,7 @@ public class OrderItemController {
         response.setData(orderItemRepository.save(orderItem));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
+    
+    
     
 }
