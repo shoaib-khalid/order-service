@@ -47,6 +47,14 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
             + "AND serviceType='DELIVERIN'", nativeQuery = true)
     List<Object[]> getNotProcessOrder(@Param("verticalList") List verticalList, @Param("maxReminder") int maxReminder, @Param("minuteToWait") int minuteToWait);
     
+    @Query(value = "SELECT A.id, A.invoiceId, B.phoneNumber, B.name, B.clientId,  C.username, C.password, A.updated, A.storeId  "
+            + "FROM `order` A INNER JOIN `store` B ON A.storeId=B.id  "
+            + "INNER JOIN `client` C ON B.clientId=C.id "
+            + "WHERE ( (completionStatus='PAYMENT_CONFIRMED' AND A.paymentType='ONLINEPAYMENT') OR (completionStatus='RECEIVED_AT_STORE' AND A.paymentType='COD') ) "
+            + "AND DATE_ADD(A.created, INTERVAL :hourToWait HOUR) < NOW() "
+            + "AND serviceType='DINEIN'", nativeQuery = true)
+    List<Object[]> getNotProcessOrderDineIn(@Param("hourToWait") int hourToWait);
+       
     @Transactional 
     @Modifying
     @Query("UPDATE Order m SET m.beingProcess=1 WHERE m.id = :orderId") 

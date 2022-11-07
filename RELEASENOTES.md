@@ -1,4 +1,14 @@
 ##################################################
+# order-service-3.15.1-SNAPSHOT |7-Nov-2022
+##################################################
+Auto Cancel for Dine-In for not process order more than 24 hours
+
+##Configuration changes:
+dinein.autocancel.enabled=true
+dinein.autocancel.wait.hour=24
+
+
+##################################################
 # order-service-3.15.0-SNAPSHOT |4-Nov-2022
 ##################################################
 New api for famous product
