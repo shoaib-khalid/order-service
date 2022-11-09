@@ -83,6 +83,10 @@ public class OrderShipmentDetail implements Serializable {
         if (orderShipmentDetail.getCustomerTrackingUrl() != null) {
             merchantTrackingUrl = orderShipmentDetail.getMerchantTrackingUrl();
         }
+        
+        if (orderShipmentDetail.getPhoneNumber() != null) {
+            phoneNumber = orderShipmentDetail.getPhoneNumber();
+        }
     }
 
 }

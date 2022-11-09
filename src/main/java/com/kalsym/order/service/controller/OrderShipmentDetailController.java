@@ -171,6 +171,42 @@ public class OrderShipmentDetailController {
         response.setData(orderShipmentDetailRepository.save(bodyOrderShipmentDetail));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
+    
+    
+    @PutMapping(path = {"/{orderId}"}, name = "order-shipment-details-put-by-id")
+    @PreAuthorize("hasAnyAuthority('order-shipment-details-put-by-id', 'all')")
+    public ResponseEntity<HttpResponse> putOrderShipmentDetailsByOrderId(HttpServletRequest request,
+            @PathVariable(required = true) String orderId,
+            @Valid @RequestBody OrderShipmentDetail bodyOrderShipmentDetail) throws Exception {
+        String logprefix = request.getRequestURI() + " ";
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-shipment-details-put-by-id, orderId: {}", orderId);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, bodyOrderShipmentDetail.toString(), "");
+
+        Optional<Order> optOrder = orderRepository.findById(orderId);
+
+        if (!optOrder.isPresent()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order not found with orderId: {}", orderId);
+            response.setErrorStatus(HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
+        Optional<OrderShipmentDetail> optOrderShipmentDetail = orderShipmentDetailRepository.findById(orderId);
+
+        if (!optOrderShipmentDetail.isPresent()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderShipmentDetail not found with orderId: {}", orderId);
+            response.setErrorStatus(HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderShipmentDetail found with orderId: {}", orderId);
+
+        optOrderShipmentDetail.get().update(bodyOrderShipmentDetail);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderShipmentDetail updated for orderId: {}", orderId);
+        response.setSuccessStatus(HttpStatus.ACCEPTED);
+        response.setData(orderShipmentDetailRepository.save(optOrderShipmentDetail.get()));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
         
     
 }
