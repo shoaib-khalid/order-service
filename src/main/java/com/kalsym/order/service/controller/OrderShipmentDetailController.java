@@ -173,7 +173,7 @@ public class OrderShipmentDetailController {
     }
     
     
-    @PutMapping(path = {"/{orderId}"}, name = "order-shipment-details-put-by-id")
+    @PutMapping(path = {""}, name = "order-shipment-details-put-by-id")
     @PreAuthorize("hasAnyAuthority('order-shipment-details-put-by-id', 'all')")
     public ResponseEntity<HttpResponse> putOrderShipmentDetailsByOrderId(HttpServletRequest request,
             @PathVariable(required = true) String orderId,
