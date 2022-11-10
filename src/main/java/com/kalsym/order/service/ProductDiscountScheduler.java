@@ -114,9 +114,9 @@ public class ProductDiscountScheduler {
                             if (discountDetails.dineInDiscountAmount>0){
                                 double discountedPrice = productInventory.getPrice();
                                 if (discountDetails.dineInCalculationType.equals(DiscountCalculationType.FIX)) {
-                                    discountedPrice = productInventory.getPrice() - discountDetails.dineInDiscountAmount;
+                                    discountedPrice = productInventory.getDineInPrice() - discountDetails.dineInDiscountAmount;
                                 } else if (discountDetails.dineInCalculationType.equals(DiscountCalculationType.PERCENT)) {
-                                    discountedPrice = productInventory.getPrice() - (discountDetails.dineInDiscountAmount / 100 * productInventory.getPrice());
+                                    discountedPrice = productInventory.getDineInPrice() - (discountDetails.dineInDiscountAmount / 100 * productInventory.getDineInPrice());
                                 }
                                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "itemCode:"+itemCode+" DineIn discountedPrice:"+discountedPrice);
                                 discountDetails.dineInDiscountedPrice = discountedPrice;
