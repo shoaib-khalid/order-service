@@ -136,12 +136,13 @@ public class ProductDiscountScheduler {
                                 if (cartOpt.get().getServiceType()==ServiceType.DELIVERIN) {
                                     cartItem.setProductPrice((float)discountDetails.discountedPrice);
                                     cartItem.setNormalPrice((float)discountDetails.normalPrice);
+                                    cartItem.setPrice((float)(cartItem.getQuantity() * discountDetails.discountedPrice));
                                 } else {
                                     cartItem.setProductPrice((float)discountDetails.dineInDiscountedPrice);
                                     cartItem.setNormalPrice((float)discountDetails.dineInNormalPrice);
+                                    cartItem.setPrice((float)(cartItem.getQuantity() * discountDetails.dineInDiscountedPrice));
                                 }
-
-                                cartItem.setPrice((float)(cartItem.getQuantity() * discountDetails.discountedPrice));
+                                
                                 cartItem.setDiscountId(discountDetails.discountId);
 
                                 cartItem.setDiscountLabel(discountDetails.discountLabel);
