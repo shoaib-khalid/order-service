@@ -108,6 +108,7 @@ public class ProductDiscountScheduler {
                                 } else if (discountDetails.calculationType.equals(DiscountCalculationType.PERCENT)) {
                                     discountedPrice = productInventory.getPrice() - (discountDetails.discountAmount / 100 * productInventory.getPrice());
                                 }
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "itemCode:"+itemCode+" DeliverIn discountedPrice:"+discountedPrice);
                                 discountDetails.discountedPrice = discountedPrice;
                             }
                             if (discountDetails.dineInDiscountAmount>0){
@@ -117,6 +118,7 @@ public class ProductDiscountScheduler {
                                 } else if (discountDetails.dineInCalculationType.equals(DiscountCalculationType.PERCENT)) {
                                     discountedPrice = productInventory.getPrice() - (discountDetails.dineInDiscountAmount / 100 * productInventory.getPrice());
                                 }
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "itemCode:"+itemCode+" DineIn discountedPrice:"+discountedPrice);
                                 discountDetails.dineInDiscountedPrice = discountedPrice;
                             }
                             discountDetails.normalPrice = productInventory.getPrice();                    
