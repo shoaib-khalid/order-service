@@ -2,6 +2,8 @@
 # order-service-3.15.2-SNAPSHOT |9-Nov-2022
 ##################################################
 New API to update order shipment phone number
+Bug fix for order item discount
+Cron to get daily best selling item
 
 
 ##################################################

@@ -56,4 +56,14 @@ public class DateTimeUtil {
         String timeStr = d[1];
         return dateStr+" "+timeStr.substring(0, 5);
     }
+    
+    public static String yesterdayDate() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date currentDate = new Date();
+        Calendar c = Calendar.getInstance();
+        c.setTime(currentDate);
+        c.add(Calendar.DATE, -1);
+        Date yesterday = c.getTime();
+        return dateFormat.format(yesterday);
+    }
 }

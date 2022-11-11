@@ -2,6 +2,7 @@ package com.kalsym.order.service.model.repository;
 
 import com.kalsym.order.service.model.OrderItem;
 import java.util.List;
+import java.util.Date;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,4 +36,12 @@ public interface OrderItemRepository extends PagingAndSortingRepository<OrderIte
         "LIMIT :limit", nativeQuery = true)
     List<Object[]> getFamousItemByStoreId(@Param("storeId") String storeId, int limit);
     
+    
+    @Query(value = "SELECT COUNT(*) AS bil, A.itemCode, C.productId " +
+             "FROM `order_item` A " +
+        	"INNER JOIN `order` B ON A.orderId=B.id " +
+        	"INNER JOIN `product_inventory` C ON A.itemCode=C.itemCode " +
+        "WHERE DATE(B.created) = :snapshotDate " +
+        "GROUP BY A.itemcode", nativeQuery = true)
+    List<Object[]> getTodaySnapshot(@Param("snapshotDate") String snapshotDate); 
 }

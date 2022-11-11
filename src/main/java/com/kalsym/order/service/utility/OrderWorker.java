@@ -202,7 +202,11 @@ public class OrderWorker {
                                     beza < 0.5) {
                                 //dicount still valid
                                 subTotal += cartItems.get(i).getPrice() ;
-                                itemPrice = discountPrice;
+                                if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN) {
+                                    itemPrice = dineInDiscountPrice;
+                                } else {
+                                    itemPrice = discountPrice;
+                                }
                             } else {
                                 //discount no more valid
                                 // should return warning if prices are not same

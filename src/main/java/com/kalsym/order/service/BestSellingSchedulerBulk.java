@@ -52,7 +52,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
  */
 
 @Component
-public class BestSellingScheduler {
+public class BestSellingSchedulerBulk {
     
     @Autowired
     OrderItemRepository orderItemRepository;
@@ -60,33 +60,49 @@ public class BestSellingScheduler {
     @Autowired
     OrderItemSnapshotRepository orderSnapshotRepository;
        
-    @Value("${bestselling.snapshot.enabled:true}")
+    @Value("${bestselling.snapshot.bulk.enabled:true}")
     private boolean isEnabled;
      
-    @Scheduled(cron = "${bestselling.cron.expression}")
+    @Scheduled(cron = "0 55 11 * * *")
     public void checkNotProcessOrder() throws Exception {
         
         if (isEnabled) {
             String logprefix = "BestSellingSnapshot-Scheduler"; 
-            String yesterdayDate = com.kalsym.order.service.utility.DateTimeUtil.yesterdayDate();
-            Date date1=new SimpleDateFormat("yyyy-MM-dd").parse(yesterdayDate);  
-            List<Object[]> itemList = orderItemRepository.getTodaySnapshot(yesterdayDate);
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Start checking not process order for DINEIN. Order Count:"+itemList.size());        
-            for (int i=0;i<itemList.size();i++) {
-                Object[] order = itemList.get(i);
-                BigInteger totalOrder = (BigInteger)order[0];
-                String itemCode = (String)order[1];
-                String productId = (String)order[2];
+            
+             String[] dateList = new String[10];
+            dateList[0]="2022-11-01";
+            dateList[1]="2022-11-02";
+            dateList[2]="2022-11-03";
+            dateList[3]="2022-11-04";
+            dateList[4]="2022-11-05";
+           dateList[5]="2022-11-06";
+           dateList[6]="2022-11-07";
+           dateList[7]="2022-11-08";
+           dateList[8]="2022-11-09";
+           dateList[9]="2022-11-10";
+           
+            for (int x=0;x<dateList.length;x++) {
+                String date = dateList[x];
+                Date date1=new SimpleDateFormat("yyyy-MM-dd").parse(date);  
                  
-                //insert db
-                OrderItemSnapshot snapshot = new OrderItemSnapshot();
-                snapshot.setDt(date1);
-                snapshot.setItemCode(itemCode);
-                snapshot.setProductId(productId);
-                snapshot.setTotalOrder(totalOrder.intValue());
-                orderSnapshotRepository.save(snapshot);
-                
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Data saved for date:"+yesterdayDate+" ItemCode:"+itemCode+" productId:"+productId+" totalOrder:"+totalOrder);
+                List<Object[]> itemList = orderItemRepository.getTodaySnapshot(date);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Start checking not process order for DINEIN. Order Count:"+itemList.size());        
+                for (int i=0;i<itemList.size();i++) {
+                    Object[] order = itemList.get(i);
+                    BigInteger totalOrder = (BigInteger)order[0];
+                    String itemCode = (String)order[1];
+                    String productId = (String)order[2];
+
+                    //insert db
+                    OrderItemSnapshot snapshot = new OrderItemSnapshot();
+                    snapshot.setDt(date1);
+                    snapshot.setItemCode(itemCode);
+                    snapshot.setProductId(productId);
+                    snapshot.setTotalOrder(totalOrder.intValue());
+                    orderSnapshotRepository.save(snapshot);
+
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Data saved for date:"+date+" ItemCode:"+itemCode+" productId:"+productId+" totalOrder:"+totalOrder);
+                }
             }
         }
     }
