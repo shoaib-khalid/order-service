@@ -646,6 +646,7 @@ public class OrderProcessWorker {
                 if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN && orderCompletionStatusConfig!=null && difference_In_Hours>20) {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Auto cancel by system. no need to send WA alert");
                     orderCompletionStatusConfig.setPushWAToCustomer(false);
+                    orderCompletionStatusConfig.setEmailToCustomer(false);
                 }
             default:
                order.setCompletionStatus(status);
