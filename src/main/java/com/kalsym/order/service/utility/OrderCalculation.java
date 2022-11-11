@@ -16,6 +16,7 @@ import com.kalsym.order.service.model.StoreCommission;
 import com.kalsym.order.service.model.CustomerVoucher;
 import com.kalsym.order.service.model.VoucherVertical;
 import com.kalsym.order.service.model.VoucherStore;
+import com.kalsym.order.service.model.VoucherServiceType;
 import com.kalsym.order.service.model.object.Discount;
 import com.kalsym.order.service.model.object.DiscountVoucher;
 import com.kalsym.order.service.model.object.OrderObject;
@@ -80,7 +81,7 @@ public class OrderCalculation {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher minimum spend: " + customerPlatformVoucher.getVoucher().getMinimumSpend());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher allowDoubleDiscount: " + customerPlatformVoucher.getVoucher().getAllowDoubleDiscount());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher verticalList: " + customerPlatformVoucher.getVoucher().getVoucherVerticalList().toString());
-            
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher serviceType: " + customerPlatformVoucher.getVoucher().getVoucherServiceTypeList().toString());
             
             //check voucher minimum spend
             if (Utilities.convertToDouble(discount.getCartSubTotal()) < customerPlatformVoucher.getVoucher().getMinimumSpend()) {
@@ -119,7 +120,26 @@ public class OrderCalculation {
                 orderTotal.setGotError(Boolean.TRUE);
                 orderTotal.setErrorMessage("Voucher cannot be used for this store.");
                 return orderTotal;
-            }                        
+            }    
+            
+            //check serviceType 
+            boolean serviceTypeValid=false;
+            if (customerPlatformVoucher.getVoucher().getVoucherServiceTypeList()!=null && customerPlatformVoucher.getVoucher().getVoucherServiceTypeList().size()>0) {
+                for (int i=0;i<customerPlatformVoucher.getVoucher().getVoucherServiceTypeList().size();i++) {
+                    VoucherServiceType voucherServiceType = customerPlatformVoucher.getVoucher().getVoucherServiceTypeList().get(i);
+                    if (voucherServiceType.getServiceType().equals(cart.getServiceType())) {
+                        serviceTypeValid=true;
+                    }
+                }
+            } else {
+                serviceTypeValid=true;
+            }            
+            if (!serviceTypeValid) {
+                //error, not allow for this store
+                orderTotal.setGotError(Boolean.TRUE);
+                orderTotal.setErrorMessage("Voucher cannot be used for this service.");
+                return orderTotal;
+            }    
             
             DiscountVoucher discountVoucher = VoucherDiscountCalculation.CalculateVoucherDiscount( deliveryCharge, orderTotal.getSubTotal(), customerPlatformVoucher, logprefix);                
             double subTotalDiscount=0.00;
@@ -193,6 +213,25 @@ public class OrderCalculation {
                 orderTotal.setErrorMessage("Voucher cannot be used for this store.");
                 return orderTotal;
             }
+            
+             //check serviceType 
+            boolean serviceTypeValid=false;
+            if (customerStoreVoucher.getVoucher().getVoucherServiceTypeList()!=null && customerStoreVoucher.getVoucher().getVoucherServiceTypeList().size()>0) {
+                for (int i=0;i<customerStoreVoucher.getVoucher().getVoucherServiceTypeList().size();i++) {
+                    VoucherServiceType voucherServiceType = customerStoreVoucher.getVoucher().getVoucherServiceTypeList().get(i);
+                    if (voucherServiceType.getServiceType().equals(cart.getServiceType())) {
+                        serviceTypeValid=true;
+                    }
+                }
+            } else {
+                serviceTypeValid=true;
+            }
+            if (!serviceTypeValid) {
+                //error, not allow for this store
+                orderTotal.setGotError(Boolean.TRUE);
+                orderTotal.setErrorMessage("Voucher cannot be used for this service.");
+                return orderTotal;
+            }    
             
             //check store            
             boolean storeValid=false;

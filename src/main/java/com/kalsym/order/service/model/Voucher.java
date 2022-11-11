@@ -93,6 +93,10 @@ public class Voucher implements Serializable {
     @JoinColumn(name = "voucherId", insertable = false, updatable = false, nullable = true)
     private List<VoucherStore> voucherStoreList;
     
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "voucherId", insertable = false, updatable = false, nullable = true)
+    private List<VoucherServiceType> voucherServiceTypeList;
+    
     public boolean getAllowMultipleRedeem() {
         if (allowMultipleRedeem==null)
             return false;

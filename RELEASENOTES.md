@@ -4,6 +4,7 @@
 New API to update order shipment phone number
 Bug fix for order item discount
 Cron to get daily best selling item
+Validate voucher code againts voucher service type
 
 ##DB Changes:
 CREATE TABLE order_item_snapshot (
@@ -12,6 +13,15 @@ dt date,
 itemCode varchar(50),
 productId varchar(50),
 totalOrder int
+);
+
+CREATE TABLE `voucher_service_type` (
+  `id` varchar(50) NOT NULL,
+  `voucherId` varchar(50) DEFAULT NULL,
+  `serviceType` enum('DINEIN','DELIVERIN') DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
 );
 
 ##################################################
