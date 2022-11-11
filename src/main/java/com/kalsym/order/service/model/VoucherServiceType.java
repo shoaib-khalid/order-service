@@ -38,7 +38,7 @@ import javax.persistence.TemporalType;
 @Setter
 @ToString
 @Entity
-@Table(name = "voucher_store")
+@Table(name = "voucher_service_type")
 @NoArgsConstructor
 public class VoucherServiceType implements Serializable {
 
