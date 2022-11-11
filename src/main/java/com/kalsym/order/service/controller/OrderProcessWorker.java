@@ -639,6 +639,14 @@ public class OrderProcessWorker {
                         } 
                     }
                 }
+                
+                //dont send WA alert if order cancel for dine-in & already more than 20 hours
+                long difference_In_Time = new Date().getTime() - order.getCreated().getTime();
+                long difference_In_Hours = (difference_In_Time / (1000 * 60 * 60)) % 24;
+                if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN && orderCompletionStatusConfig!=null && difference_In_Hours>20) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Auto cancel by system. no need to send WA alert");
+                    orderCompletionStatusConfig.setPushWAToCustomer(false);
+                }
             default:
                order.setCompletionStatus(status);
                insertOrderCompletionStatusUpdate(status, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
