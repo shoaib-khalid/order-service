@@ -38,7 +38,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
-import java.math.BigInteger;
+import java.math.BigDecimal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -63,7 +63,7 @@ public class BestSellingSchedulerBulk {
     @Value("${bestselling.snapshot.bulk.enabled:true}")
     private boolean isEnabled;
      
-    @Scheduled(cron = "0 55 11 * * *")
+    @Scheduled(cron = "0 52 14 * * *")
     public void checkNotProcessOrder() throws Exception {
         
         if (isEnabled) {
@@ -89,7 +89,7 @@ public class BestSellingSchedulerBulk {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Start checking not process order for DINEIN. Order Count:"+itemList.size());        
                 for (int i=0;i<itemList.size();i++) {
                     Object[] order = itemList.get(i);
-                    BigInteger totalOrder = (BigInteger)order[0];
+                    BigDecimal totalOrder = (BigDecimal)order[0];
                     String itemCode = (String)order[1];
                     String productId = (String)order[2];
 

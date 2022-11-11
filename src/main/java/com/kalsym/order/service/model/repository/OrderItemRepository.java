@@ -37,7 +37,7 @@ public interface OrderItemRepository extends PagingAndSortingRepository<OrderIte
     List<Object[]> getFamousItemByStoreId(@Param("storeId") String storeId, int limit);
     
     
-    @Query(value = "SELECT COUNT(*) AS bil, A.itemCode, C.productId " +
+    @Query(value = "SELECT SUM(A.quantity) AS bil, A.itemCode, C.productId " +
              "FROM `order_item` A " +
         	"INNER JOIN `order` B ON A.orderId=B.id " +
         	"INNER JOIN `product_inventory` C ON A.itemCode=C.itemCode " +

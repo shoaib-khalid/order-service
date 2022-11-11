@@ -5,6 +5,14 @@ New API to update order shipment phone number
 Bug fix for order item discount
 Cron to get daily best selling item
 
+##DB Changes:
+CREATE TABLE order_item_snapshot (
+id bigint primary key auto_increment,
+dt date,
+itemCode varchar(50),
+productId varchar(50),
+totalOrder int
+);
 
 ##################################################
 # order-service-3.15.1-SNAPSHOT |7-Nov-2022
