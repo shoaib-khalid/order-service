@@ -47,7 +47,9 @@ public class VoucherServiceType implements Serializable {
     @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
     
-    private String voucherId;       
+    private String voucherId;  
+    
+    @Enumerated(EnumType.STRING)
     private ServiceType serviceType;    
    
 }
