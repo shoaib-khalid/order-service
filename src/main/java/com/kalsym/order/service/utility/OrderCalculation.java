@@ -335,6 +335,7 @@ public class OrderCalculation {
             //check voucher minimum spend
             if (sumCartSubTotal < platformVoucher.getVoucher().getMinimumSpend()) {
                 //error, not reach minimum amount
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error. sumCartSubTotal:"+sumCartSubTotal+" minimum spend:"+platformVoucher.getVoucher().getMinimumSpend());
                 orderTotal.setGotError(Boolean.TRUE);
                 orderTotal.setErrorMessage("Your order did not meet the minimum spend required of the voucher.");
                 return orderTotal;
@@ -343,6 +344,7 @@ public class OrderCalculation {
             //check voucher double discount (sub total)
             if (platformVoucher.getVoucher().getAllowDoubleDiscount()==false && sumCartSubTotalDiscount>0) {
                 //error, not allow double discount
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error. AllowDoubleDiscount:"+platformVoucher.getVoucher().getAllowDoubleDiscount()+" sumCartSubTotalDiscount:"+sumCartSubTotalDiscount);
                 orderTotal.setGotError(Boolean.TRUE);                
                 orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");                
                 return orderTotal;
@@ -351,6 +353,7 @@ public class OrderCalculation {
              //check voucher double discount (delivery discount)
             if (platformVoucher.getVoucher().getAllowDoubleDiscount()==false && sumDeliveryChargeDiscount>0) {
                 //error, not allow double discount
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error. AllowDoubleDiscount:"+platformVoucher.getVoucher().getAllowDoubleDiscount()+" sumDeliveryChargeDiscount:"+sumDeliveryChargeDiscount);                
                 orderTotal.setGotError(Boolean.TRUE);                
                 orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");                
                 return orderTotal;
@@ -359,6 +362,7 @@ public class OrderCalculation {
              //check voucher double discount for item discount
             if (gotItemDiscount && platformVoucher.getVoucher().getAllowDoubleDiscount()==false) {
                 //error, not allow double discount
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error. AllowDoubleDiscount:"+platformVoucher.getVoucher().getAllowDoubleDiscount()+" gotItemDiscount:"+gotItemDiscount);                               
                 orderTotal.setGotError(Boolean.TRUE);
                 orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");
                 return orderTotal;
@@ -374,6 +378,7 @@ public class OrderCalculation {
             }
             if (!verticalValid) {
                 //error, not allow for this store
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error. verticalValid:"+verticalValid);
                 orderTotal.setGotError(Boolean.TRUE);
                 orderTotal.setErrorMessage("Sorry, this voucher cannot be used for this store.");
                 return orderTotal;
@@ -393,6 +398,7 @@ public class OrderCalculation {
             }            
             if (!serviceTypeValid) {
                 //error, not allow for this store
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error. serviceTypeValid:"+serviceTypeValid);
                 orderTotal.setGotError(Boolean.TRUE);
                 orderTotal.setErrorMessage("Sorry, this voucher cannot be used for this service.");
                 return orderTotal;
