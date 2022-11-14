@@ -965,11 +965,14 @@ public class CartController {
         CustomerVoucher customerPlatformVoucher = null;
         if (platformVoucherCode!=null && (customerId!=null || email!=null)) {
             //check voucher in customer account
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "platformVoucherCode:"+platformVoucherCode);
             customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(customerId, platformVoucherCode, new Date());
             if (customerPlatformVoucher==null) {
                 //find guest voucher
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "platformVoucherCode:"+platformVoucherCode+" not found in customer profile");
                 Voucher guestVoucher = customerVoucherRepository.findGuestPlatformVoucherByCode(platformVoucherCode, new Date());
                 if (guestVoucher!=null) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "platformVoucherCode:"+platformVoucherCode+" found in guest profile");
                     //check if already redeem
                     List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(email, guestVoucher.getId());
                     if (usedVoucherList.size()>0) {  
@@ -988,11 +991,14 @@ public class CartController {
                     customerPlatformVoucher.setVoucher(guestVoucher);
                     customerPlatformVoucher.setGuestVoucher(true);
                 } else {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "platformVoucherCode:"+platformVoucherCode+" not found in guest profile");
                     response.setStatus(HttpStatus.NOT_FOUND.value());
                     response.setMessage("Voucher code " + platformVoucherCode + " not found");
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
                 }
-            } 
+            } else {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "platformVoucherCode:"+platformVoucherCode+" found in customer profile");
+            }
         }  
         
         double groupDeliveryCharge=0;

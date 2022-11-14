@@ -72,7 +72,7 @@ public class OrderCalculation {
                 break;
             }
         }
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Got item dicount:"+gotItemDiscount);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Got item dicount:"+gotItemDiscount+" customerPlatformVoucher:"+customerPlatformVoucher+" customerStoreVoucher:"+customerStoreVoucher);
                 
         //calculate platform voucher code discount
         double platformVoucherDiscountAmount = 0.00;
@@ -174,6 +174,7 @@ public class OrderCalculation {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store voucher minimum spend: " + customerStoreVoucher.getVoucher().getMinimumSpend());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store voucher allowDoubleDiscount: " + customerStoreVoucher.getVoucher().getAllowDoubleDiscount());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store voucher verticalList: " + customerStoreVoucher.getVoucher().getVoucherVerticalList().toString());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Store voucher serviceTypeList: " + customerStoreVoucher.getVoucher().getVoucherServiceTypeList().toString());
             
             //check voucher minimum spend
             if (Utilities.convertToDouble(discount.getCartSubTotal()) < customerStoreVoucher.getVoucher().getMinimumSpend()) {
@@ -359,7 +360,7 @@ public class OrderCalculation {
                 orderTotal.setGotError(Boolean.TRUE);
                 orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");
                 return orderTotal;
-            }   
+            } 
             
             DiscountVoucher discountVoucher = VoucherDiscountCalculation.CalculateVoucherDiscount( sumDeliveryCharge, sumCartSubTotal, platformVoucher, logprefix);                
             double subTotalDiscount=0.00;
