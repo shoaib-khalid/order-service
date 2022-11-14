@@ -948,7 +948,16 @@ public class OrderController {
                     gotItemDiscount=true;
                 }
             }
-            OrderObject groupTotal = OrderCalculation.CalculateGroupOrderTotal(orderCreated.getSubTotal(), orderCreated.getAppliedDiscount(), orderCreated.getDeliveryCharges(), orderCreated.getDeliveryDiscount(), customerPlatformVoucher, orderCreated.getStoreServiceCharges(), logprefix, gotItemDiscount);            
+            String cartServiceType = "";
+            if (orderCreated.getServiceType()!=null) {
+                cartServiceType = orderCreated.getServiceType().name();
+            }
+            OrderObject groupTotal = OrderCalculation.CalculateGroupOrderTotal(
+                    orderCreated.getSubTotal(), orderCreated.getAppliedDiscount(), 
+                    orderCreated.getDeliveryCharges(), orderCreated.getDeliveryDiscount(), 
+                    customerPlatformVoucher, orderCreated.getStoreServiceCharges(), 
+                    logprefix, gotItemDiscount,
+                    storeWithDetials.getVerticalCode(), cartServiceType);            
             if (groupTotal.getGotError()) {
                 // should return warning if got error
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while calculating discount:"+groupTotal.getErrorMessage());
@@ -1182,6 +1191,8 @@ public class OrderController {
         Map<String, Double> combinedDeliveryFeeMap = new HashMap<String, Double>();
         
         String regionCountryId="MYS";
+        String cartVerticalCode="";
+        String cartServiceType="";
         for (int i=0;i<codList.length;i++) {
             COD cod = codList[i];
             String cartId = cod.getCartId();
@@ -1258,6 +1269,11 @@ public class OrderController {
             paymentType = orderCreated.getPaymentType();
             regionCountryId = optStore.get().getRegionCountryId();
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Created SubTotal:"+orderCreated.getSubTotal()+" deliverFee:"+orderCreated.getDeliveryCharges()+" svcCharge:"+orderCreated.getStoreServiceCharges()+" Total:"+orderCreated.getTotal());
+        
+            cartVerticalCode = optStore.get().getVerticalCode();
+            if (orderCreated.getServiceType()!=null) {
+                cartServiceType = orderCreated.getServiceType().name();
+            }
         }       
         for (Map.Entry<String, Double> combinedDelivery :
             combinedDeliveryFeeMap.entrySet()) {
@@ -1265,7 +1281,12 @@ public class OrderController {
             sumDeliveryCharges = sumDeliveryCharges + combinedDelivery.getValue();
         }
                 
-        OrderObject groupTotal = OrderCalculation.CalculateGroupOrderTotal(sumCartSubTotal, sumAppliedDiscount, sumDeliveryCharges, sumDeliveryDiscount, customerPlatformVoucher, sumStoreServiceCharges, logprefix, gotCartItemDiscount);
+        OrderObject groupTotal = OrderCalculation.CalculateGroupOrderTotal(
+                sumCartSubTotal, sumAppliedDiscount, 
+                sumDeliveryCharges, sumDeliveryDiscount, 
+                customerPlatformVoucher, sumStoreServiceCharges, 
+                logprefix, gotCartItemDiscount,
+                cartVerticalCode, cartServiceType);
         if (groupTotal.getGotError()) {
             // should return warning if got error
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while calculating discount:"+groupTotal.getErrorMessage());

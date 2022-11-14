@@ -1010,6 +1010,8 @@ public class CartController {
         
         List<Discount> storeDiscountList = new ArrayList();
         Map<String, Double> combinedDeliveryFeeMap = new HashMap<String, Double>();
+        String cartVerticalCode="";
+        String cartServiceType="";
         for (int i=0;i<cartList.length;i++) {            
             String cartId = cartList[i].getCartId();
             Optional<Cart> cartOptional = cartRepository.findById(cartId);
@@ -1064,6 +1066,7 @@ public class CartController {
             Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, selectedCartItem);        
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:"+cartId+" deliveryCharge:"+deliveryCharge+" totalSubTotalDiscount:"+discount.getSubTotalDiscount()+" totalShipmentDiscount:"+discount.getDeliveryDiscount());
             
+            //not check platform voucher here since it's group order
             OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission,  
                             deliveryCharge, deliveryType, null, customerStoreVoucher, storeWithDetials.getVerticalCode(),
                             cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, selectedCartItem);                
@@ -1099,6 +1102,11 @@ public class CartController {
             groupServiceCharge = groupServiceCharge + Utilities.convertToDouble(discount.getStoreServiceCharge());
             groupDeliveryDiscount = groupDeliveryDiscount + Utilities.convertToDouble(discount.getDeliveryDiscount());            
             groupSubTotalDiscount = groupSubTotalDiscount + Utilities.convertToDouble(discount.getSubTotalDiscount());
+        
+            cartVerticalCode = storeWithDetials.getVerticalCode();
+            if (cart.getServiceType()!=null) {
+                cartServiceType = cart.getServiceType().name();
+            }
         }
         
         for (Map.Entry<String, Double> combinedDelivery :
@@ -1117,7 +1125,8 @@ public class CartController {
                         groupDeliveryDiscount,
                         customerPlatformVoucher, 
                         groupServiceCharge,
-                        logprefix, gotCartItemDiscount);                
+                        logprefix, gotCartItemDiscount,
+                        cartVerticalCode, cartServiceType);                
 
         if (groupOrderTotalObject.getGotError()) {
             // should return warning if got error

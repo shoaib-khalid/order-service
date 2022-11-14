@@ -316,7 +316,8 @@ public class OrderCalculation {
             Double sumCartSubTotal, Double sumCartSubTotalDiscount,
             Double sumDeliveryCharge, Double sumDeliveryChargeDiscount,
             CustomerVoucher platformVoucher, Double sumServiceCharge,
-            String logprefix, boolean gotItemDiscount) {
+            String logprefix, boolean gotItemDiscount, 
+            String cartVerticalCode, String cartServiceType) {
         
         OrderObject orderTotal = new OrderObject();
         orderTotal.setGotError(Boolean.FALSE);
@@ -361,6 +362,40 @@ public class OrderCalculation {
                 orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");
                 return orderTotal;
             } 
+            
+            //check vertical code
+            boolean verticalValid=false;
+            for (int i=0;i<platformVoucher.getVoucher().getVoucherVerticalList().size();i++) {
+                VoucherVertical voucherVertical = platformVoucher.getVoucher().getVoucherVerticalList().get(i);
+                if (voucherVertical.getVerticalCode().equals(cartVerticalCode)) {
+                    verticalValid=true;
+                }
+            }
+            if (!verticalValid) {
+                //error, not allow for this store
+                orderTotal.setGotError(Boolean.TRUE);
+                orderTotal.setErrorMessage("Sorry, this voucher cannot be used for this store.");
+                return orderTotal;
+            }    
+            
+            //check serviceType 
+            boolean serviceTypeValid=false;
+            if (platformVoucher.getVoucher().getVoucherServiceTypeList()!=null && platformVoucher.getVoucher().getVoucherServiceTypeList().size()>0) {
+                for (int i=0;i<platformVoucher.getVoucher().getVoucherServiceTypeList().size();i++) {
+                    VoucherServiceType voucherServiceType = platformVoucher.getVoucher().getVoucherServiceTypeList().get(i);
+                    if (voucherServiceType.getServiceType().equals(cartServiceType)) {
+                        serviceTypeValid=true;
+                    }
+                }
+            } else {
+                serviceTypeValid=true;
+            }            
+            if (!serviceTypeValid) {
+                //error, not allow for this store
+                orderTotal.setGotError(Boolean.TRUE);
+                orderTotal.setErrorMessage("Sorry, this voucher cannot be used for this service.");
+                return orderTotal;
+            }    
             
             DiscountVoucher discountVoucher = VoucherDiscountCalculation.CalculateVoucherDiscount( sumDeliveryCharge, sumCartSubTotal, platformVoucher, logprefix);                
             double subTotalDiscount=0.00;
