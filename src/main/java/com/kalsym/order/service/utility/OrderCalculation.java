@@ -330,6 +330,7 @@ public class OrderCalculation {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher minimum spend: " + platformVoucher.getVoucher().getMinimumSpend());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher allowDoubleDiscount: " + platformVoucher.getVoucher().getAllowDoubleDiscount());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher verticalList: " + platformVoucher.getVoucher().getVoucherVerticalList().toString());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartVerticalCode: " +cartVerticalCode+" cartServiceType:"+cartServiceType);
             
             //check voucher minimum spend
             if (sumCartSubTotal < platformVoucher.getVoucher().getMinimumSpend()) {
