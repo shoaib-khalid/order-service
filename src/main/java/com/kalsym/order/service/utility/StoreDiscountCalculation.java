@@ -35,6 +35,7 @@ public class StoreDiscountCalculation {
         List<StoreDiscount> discountAvailable = storeDiscountRepository.findAvailableDiscount(cart.getStoreId(), new Date());
         Discount discount = new Discount();
         if (discountAvailable.isEmpty()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "discountAvailable not found");
             discount.setDeliveryDiscount(Utilities.roundDouble(0.00,2));
             discount.setSubTotalDiscount(Utilities.roundDouble(0.00,2));
             double salesAmount=0;

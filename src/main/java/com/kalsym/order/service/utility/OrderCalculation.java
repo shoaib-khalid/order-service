@@ -330,6 +330,7 @@ public class OrderCalculation {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher minimum spend: " + platformVoucher.getVoucher().getMinimumSpend());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher allowDoubleDiscount: " + platformVoucher.getVoucher().getAllowDoubleDiscount());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher verticalList: " + platformVoucher.getVoucher().getVoucherVerticalList().toString());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Platform voucher serviceType: " + platformVoucher.getVoucher().getVoucherServiceTypeList().toString());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartVerticalCode: " +cartVerticalCode+" cartServiceType:"+cartServiceType);
             
             //check voucher minimum spend
@@ -389,7 +390,7 @@ public class OrderCalculation {
             if (platformVoucher.getVoucher().getVoucherServiceTypeList()!=null && platformVoucher.getVoucher().getVoucherServiceTypeList().size()>0) {
                 for (int i=0;i<platformVoucher.getVoucher().getVoucherServiceTypeList().size();i++) {
                     VoucherServiceType voucherServiceType = platformVoucher.getVoucher().getVoucherServiceTypeList().get(i);
-                    if (voucherServiceType.getServiceType().equals(cartServiceType)) {
+                    if (voucherServiceType.getServiceType().name().equals(cartServiceType)) {
                         serviceTypeValid=true;
                     }
                 }
