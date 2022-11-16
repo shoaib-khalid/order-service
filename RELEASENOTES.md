@@ -24,6 +24,11 @@ CREATE TABLE `voucher_service_type` (
   PRIMARY KEY (`id`)
 );
 
+
+##Configuration changes:
+bestselling.cron.expression=0 10 7 * * *
+
+
 ##################################################
 # order-service-3.15.1-SNAPSHOT |7-Nov-2022
 ##################################################
