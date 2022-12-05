@@ -23,6 +23,9 @@ import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.OrderGroup;
 import com.kalsym.order.service.model.QrcodeSession;
+import com.kalsym.order.service.model.QrcodeGenerateRequest;
+import com.kalsym.order.service.model.QrcodeGenerateResponse;
+import com.kalsym.order.service.model.QrcodeValidateResponse;
 import com.kalsym.order.service.model.repository.TagRepository;
 import com.kalsym.order.service.model.repository.QrcodeSessionRepository;
 import com.kalsym.order.service.model.repository.StoreDetailsRepository;
@@ -74,15 +77,14 @@ public class QrCodeController {
     String qrCodeUrl;
     
     @PostMapping(path = {"/generate"}, name = "qrcode-generate")
-    public ResponseEntity<HttpResponse> generate(HttpServletRequest request, @RequestBody String json) throws Exception {
+    public ResponseEntity<HttpResponse> generate(HttpServletRequest request, @RequestBody QrcodeGenerateRequest genReq) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "qrcode-generate-post, URL:  " + request.getRequestURI());
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request Body:  " + json);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request Body:  " + genReq.toString());
         
-        JsonObject jsonRequest = new Gson().fromJson(json, JsonObject.class);
-        String storeId = jsonRequest.get("storeId").getAsString();        
+        String storeId = genReq.getStoreId();        
         List<Object[]> tagList = tagRepository.findByStoreId(storeId);
         BigInteger tagId=null;
         String tagKeyword="";
@@ -107,9 +109,9 @@ public class QrCodeController {
         qrcodeSessionRepository.save(session);
         
         String urlGenerated = qrCodeUrl + "/" + tagKeyword + "?token=" + token;
-        JsonObject jsonResponse = new JsonObject();
-        jsonResponse.addProperty("url", urlGenerated);
-        response.setData(jsonResponse);
+        QrcodeGenerateResponse qrResp = new QrcodeGenerateResponse();
+        qrResp.setUrl(urlGenerated);
+        response.setData(qrResp);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -152,11 +154,12 @@ public class QrCodeController {
             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
         }
         
-        JsonObject jsonResponse = new JsonObject();
-        jsonResponse.addProperty("tokenValid", true);
-        response.setData(jsonResponse);
+        QrcodeValidateResponse qrResp = new QrcodeValidateResponse();
+        qrResp.setTokenValid(true);
+        response.setData(qrResp);
         
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+    
     
 }

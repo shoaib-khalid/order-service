@@ -8,6 +8,7 @@
  CREATE TABLE qrcode_session (
  token VARCHAR(50) PRIMARY KEY,
  tagId BIGINT,
+ storeId varchar(50),
  created DATETIME
  );
  
