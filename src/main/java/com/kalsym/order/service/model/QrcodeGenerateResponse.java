@@ -20,6 +20,6 @@ import lombok.ToString;
 public class QrcodeGenerateResponse implements Serializable {
     
     private String url;
-
+    private String token;
 
 }
