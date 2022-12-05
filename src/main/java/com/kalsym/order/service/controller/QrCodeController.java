@@ -111,6 +111,7 @@ public class QrCodeController {
         String urlGenerated = qrCodeUrl + "/" + tagKeyword + "?token=" + token;
         QrcodeGenerateResponse qrResp = new QrcodeGenerateResponse();
         qrResp.setUrl(urlGenerated);
+        qrResp.setToken(token);
         response.setData(qrResp);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
