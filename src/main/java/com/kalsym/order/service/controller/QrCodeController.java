@@ -32,6 +32,7 @@ import com.kalsym.order.service.utility.Logger;
 import com.kalsym.order.service.utility.TxIdUtil;
 import java.util.List;
 import java.util.Optional;
+import java.math.BigInteger;
 
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,11 +84,11 @@ public class QrCodeController {
         JsonObject jsonRequest = new Gson().fromJson(json, JsonObject.class);
         String storeId = jsonRequest.get("storeId").getAsString();        
         List<Object[]> tagList = tagRepository.findByStoreId(storeId);
-        Long tagId=null;
+        BigInteger tagId=null;
         String tagKeyword="";
         if (tagList!=null && tagList.size()>0) {
             Object[] tag = tagList.get(0);            
-            tagId = (Long)(tag[0]);
+            tagId = (BigInteger)(tag[0]);
             tagKeyword = String.valueOf(tag[1]);
         } else {
             //cannot find tag for this store

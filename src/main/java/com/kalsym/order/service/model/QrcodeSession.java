@@ -6,6 +6,7 @@ import com.kalsym.order.service.model.object.ItemDiscount;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.math.BigInteger;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -46,7 +47,7 @@ public class QrcodeSession implements Serializable {
     @Id
     private String token;
 
-    private Long tagId;
+    private BigInteger tagId;
     
     private String storeId;
        
