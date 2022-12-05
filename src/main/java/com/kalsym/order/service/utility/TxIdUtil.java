@@ -33,4 +33,18 @@ public class TxIdUtil {
         String referenceId = prefix + String.format("%05d", orderNo);
         return referenceId;
     }
+    
+    public static String generateQrcodeToken(String prefix) {
+        String referenceId = prefix;
+        Date dNow = new Date();
+        SimpleDateFormat ft = new SimpleDateFormat("yyMMddhhmmss");
+        String datetime = ft.format(dNow);
+
+        Random rnd = new Random();
+        int n = 100 + rnd.nextInt(900);
+
+        referenceId = referenceId + datetime + n;
+
+        return referenceId;
+    }
 }

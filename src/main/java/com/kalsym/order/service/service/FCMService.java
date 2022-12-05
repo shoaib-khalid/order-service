@@ -72,5 +72,47 @@ public class FCMService {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " res: " + res);
 
     }
+    
+    
+    public void sendQrcodeNotification(String storeId, String storeName, String domain) {
+        String logprefix = "sendQrcodeNotification";
+        RestTemplate restTemplate = new RestTemplate();
+
+        FCMNotification fcmNotification = new FCMNotification();
+
+        fcmNotification.setTo("/topics/" + storeId);
+        FCMNotificationData fcmNotificationData = new FCMNotificationData();
+        fcmNotificationData.setTitle("qrcode");
+        fcmNotificationData.setStoreName(storeName);
+        String body = "Please request new qrcode";
+        fcmNotificationData.setBody(body);
+        fcmNotification.setData(fcmNotificationData);
+        
+        String fcmToken = fcmTokenDeliverIn;
+        if (domain.contains("deliverin")) {
+            fcmToken = fcmTokenDeliverIn;
+        } else if (domain.contains("easydukan")) {
+            fcmToken = fcmTokenEasyDukan;
+        } else if (domain.contains("dev-my")) {
+            fcmToken = fcmTokenDeliverIn;
+        } else if (domain.contains("dev-pk")) {
+            fcmToken = fcmTokenEasyDukan;
+        } else {
+            fcmToken = fcmTokenDeliverIn;
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", fcmToken);
+
+        HttpEntity<FCMNotification> entity = new HttpEntity<>(fcmNotification, headers);
+
+        String url = fcmUrl;
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " url: " + url);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " entity: " + entity);
+
+        ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " res: " + res);
+
+    }
 
 }
