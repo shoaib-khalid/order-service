@@ -1,5 +1,5 @@
 ##################################################
-# order-service-3.16.1-SNAPSHOT |7-Dec-2022
+# order-service-3.16.0-SNAPSHOT |5-Dec-2022
 ##################################################
 
 1. add new parameter qrToken when place order for DINE-IN 
@@ -14,6 +14,11 @@
 	-need to change FE to query for unpaid qrcode_order_group	
 
 3. New field in store table : considateOrder = true/false
+
+
+4. New API for request generate qrcode url for Dine-In 
+5. New API for validate qrcode token during scan the qrcode
+
 
 ##DB Changes:
 ALTER TABLE store ADD dineInConsolidatedOrder TINYINT(1) DEFAULT 0;
@@ -46,13 +51,7 @@ END$$
 
 DELIMITER ;
 
-##################################################
-# order-service-3.16.0-SNAPSHOT |5-Dec-2022
-##################################################
-1. New API for request generate qrcode url for Dine-In 
-2. New API for validate qrcode token during scan the qrcode
 
-##DB Changes:
  CREATE TABLE qrcode_session (
  token VARCHAR(50) PRIMARY KEY,
  tagId BIGINT,
