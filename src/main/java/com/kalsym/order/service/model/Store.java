@@ -46,6 +46,8 @@ public class Store implements Serializable {
 
     private String paymentType;
     private Integer invoiceSeqNo;
+    private Boolean dineInConsolidatedOrder;
+    private Integer qrInvoiceSeqNo;
     
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "regionCountryId", insertable = false, updatable = false)

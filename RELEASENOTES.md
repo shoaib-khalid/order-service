@@ -1,4 +1,52 @@
 ##################################################
+# order-service-3.16.1-SNAPSHOT |7-Dec-2022
+##################################################
+
+1. add new parameter qrToken when place order for DINE-IN 
+	-if place order with same token, put under same qrcode_order_group
+	-save storeId in qrcode_order_group for dine-in
+	-new field in qrcode_order_group to save invoiceNo
+	
+2. new api to merchant finalize order for dine-in
+	-api to query unpaid qrcode_order_group
+	-can search by table number in qrcode_order_group
+	-new field to save payment status in qrcode_order_group
+	-need to change FE to query for unpaid qrcode_order_group	
+
+3. New field in store table : considateOrder = true/false
+
+##DB Changes:
+ALTER TABLE store ADD dineInConsolidatedOrder TINYINT(1) DEFAULT 0;
+ALTER TABLE store ADD qrInvoiceSeqNo INT(11);
+ALTER TABLE `order` ADD orderQrGroupId BIGINT;
+ALTER TABLE qrcode_session ADD status TINYINT(1) DEFAULT 0 COMMENT '0=new 1=scanned'
+CREATE TABLE `qrcode_order_group` (
+	id BIGINT PRIMARY KEY AUTO_INCREMENT,
+	qrToken VARCHAR(50),
+	orderId VARCHAR(50),
+	storeId VARCHAR(50),
+	invoiceNo VARCHAR(50)
+	paymentStatus ENUM('PENDING','PAID'),
+	tableNo VARCHAR(20)
+	);
+	
+
+DELIMITER $$
+
+USE `symplified`$$
+
+DROP FUNCTION IF EXISTS `getQrInvoiceSeqNo`$$
+
+CREATE FUNCTION `getQrInvoiceSeqNo`(storeId VARCHAR(50)) RETURNS INT
+    DETERMINISTIC
+BEGIN
+UPDATE store SET qrInvoiceSeqNo=LAST_INSERT_ID(qrInvoiceSeqNo+1) WHERE id=storeId;
+RETURN LAST_INSERT_ID();
+END$$
+
+DELIMITER ;
+
+##################################################
 # order-service-3.16.0-SNAPSHOT |5-Dec-2022
 ##################################################
 1. New API for request generate qrcode url for Dine-In 

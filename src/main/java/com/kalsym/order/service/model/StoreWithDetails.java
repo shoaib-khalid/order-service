@@ -204,4 +204,6 @@ public class StoreWithDetails implements Serializable {
         }
         return null;
     }
+    
+    private Boolean dineInConsolidatedOrder;
 }

@@ -75,6 +75,7 @@ import com.kalsym.order.service.model.object.Discount;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.object.OrderDetails;
 import com.kalsym.order.service.model.object.ItemDiscount;
+import com.kalsym.order.service.model.QrcodeOrderGroup;
 import com.kalsym.order.service.model.object.OrderGroupObject;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.OrderSubItemRepository;
@@ -146,6 +147,7 @@ import org.springframework.http.MediaType;
 import org.springframework.core.io.InputStreamResource;
 import java.io.ByteArrayInputStream;
 import org.springframework.http.HttpHeaders;
+import com.kalsym.order.service.model.repository.QrcodeOrderGroupRepository;
 
 /**
  *
@@ -260,6 +262,9 @@ public class OrderController {
     
     @Autowired
     TagProductFeatureRepository tagProductFeatureRepository;
+    
+    @Autowired
+    QrcodeOrderGroupRepository qrcodeOrderGroupRepository;
     
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
@@ -737,8 +742,10 @@ public class OrderController {
      * @param platformVoucherCode
      * @param sendReceiptToReceiver
      * @param storeId
-     * @param channel
+     * @param channel     
      * @param cod
+     * @param qrToken
+     * @param tableNo
      * @return
      * @throws Exception
      */
@@ -751,6 +758,8 @@ public class OrderController {
             @RequestParam(required = false) Boolean sendReceiptToReceiver,
             @RequestParam(required = false) String storeId,
             @RequestParam(required = false) Channel channel,
+            @RequestParam(required = false) String qrToken,
+            @RequestParam(required = false) String tableNo,                        
             @RequestBody COD cod) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         
@@ -933,8 +942,7 @@ public class OrderController {
         if (response.getStatus()==HttpStatus.CREATED.value()) {
             Order orderCreated = (Order)response.getData();  
             String customerId = orderCreated.getCustomerId();
-
-            //create order group
+            
             OrderGroup orderGroup = new OrderGroup();
             orderGroup.setCustomerId(customerId);
             orderGroup.setDeliveryCharges(orderCreated.getDeliveryCharges());
@@ -1006,6 +1014,22 @@ public class OrderController {
             else
                 orderGroup.setChannel(Channel.DELIVERIN);
             
+            if (orderGroup.getServiceType()==ServiceType.DINEIN && qrToken!=null) {
+                QrcodeOrderGroup qrOrder = qrcodeOrderGroupRepository.findByQrToken(qrToken);
+                if (qrOrder==null) {
+                    //create new group
+                    qrOrder = new QrcodeOrderGroup();
+                    String invoiceId = TxIdUtil.generateGroupInvoiceNo(storeWithDetials.getId(), "DN", storeRepository);                
+                    qrOrder.setQrToken(qrToken);
+                    qrOrder.setTableNo(tableNo);                
+                    qrOrder.setInvoiceNo(invoiceId);
+                    qrOrder.setStoreId(storeWithDetials.getId()); 
+                    qrOrder.setPaymentStatus(PaymentStatus.PENDING);
+                    qrcodeOrderGroupRepository.save(qrOrder);
+                } 
+                orderRepository.UpdateQrcodeOrderGroupId(orderCreated.getId(), qrOrder.getId());
+            }
+            
             orderGroupRepository.save(orderGroup);
             
             orderRepository.UpdateOrderGroupId(orderCreated.getId(), orderGroup.getId());            
@@ -1027,6 +1051,8 @@ public class OrderController {
      * @param platformVoucherCode
      * @param sendReceiptToReceiver
      * @param channel
+     * @param qrToken
+     * @param tableNo
      * @param codList
      * @return
      * @throws Exception
@@ -1038,6 +1064,8 @@ public class OrderController {
             @RequestParam(required = false) String platformVoucherCode,
             @RequestParam(required = false) Boolean sendReceiptToReceiver,
             @RequestParam(required = false) Channel channel,
+            @RequestParam(required = false) String qrToken,
+            @RequestParam(required = false) String tableNo,
             @RequestBody COD[] codList) throws Exception {
         String logprefix = request.getRequestURI() + " ";
        
@@ -1099,6 +1127,8 @@ public class OrderController {
             }
         }
         
+        String qrStoreId=null;
+        
         //validate every cart in the group
         for (int z=0;z<codList.length;z++) {            
             COD cod = codList[z];
@@ -1157,6 +1187,7 @@ public class OrderController {
             Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(optCart.get().getStoreId());
             if (optStore.isPresent()) {
                 storeWithDetials = optStore.get();
+                qrStoreId = storeWithDetials.getId();
             } else {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "store with storeId: " + optCart.get().getStoreId() + " not found");
                 response.setStatus(HttpStatus.NOT_FOUND.value());
@@ -1295,6 +1326,8 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
         }
         
+        //check if group order already exist
+        
         //calculate grand total
         orderTotal = sumCartSubTotal - sumAppliedDiscount + sumStoreServiceCharges + sumDeliveryCharges - sumDeliveryDiscount - sumStoreVoucherDiscount;
         
@@ -1336,12 +1369,33 @@ public class OrderController {
             orderGroup.setChannel(channel);
         else
             orderGroup.setChannel(Channel.DELIVERIN);
+        
+        Long qrGroupOrderId = null;
+        if (orderGroup.getServiceType()==ServiceType.DINEIN && qrToken!=null) {
+            QrcodeOrderGroup qrOrder = qrcodeOrderGroupRepository.findByQrToken(qrToken);
+            if (qrOrder==null) {
+                //create new group
+                qrOrder = new QrcodeOrderGroup();
+                String invoiceId = TxIdUtil.generateGroupInvoiceNo(qrStoreId, "DN", storeRepository);                
+                qrOrder.setQrToken(qrToken);
+                qrOrder.setTableNo(tableNo);                
+                qrOrder.setInvoiceNo(invoiceId);
+                qrOrder.setStoreId(qrStoreId); 
+                qrOrder.setPaymentStatus(PaymentStatus.PENDING);
+                qrcodeOrderGroupRepository.save(qrOrder);
+            } 
+            qrGroupOrderId = qrOrder.getId();
+        }
+        
         orderGroupRepository.save(orderGroup);
                
         //update orderGroupId for each order
         for (int x=0;x<orderCreatedList.size();x++) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update OrderGroupId="+orderGroup.getId()+" for OrderId:"+orderCreatedList.get(x).getId());
             orderRepository.UpdateOrderGroupId(orderCreatedList.get(x).getId(), orderGroup.getId());
+            if (orderGroup.getServiceType()==ServiceType.DINEIN && qrToken!=null && qrGroupOrderId!=null) {
+                orderRepository.UpdateQrcodeOrderGroupId(orderCreatedList.get(x).getId(), qrGroupOrderId);
+            }
         }                
         
         //save customer voucher in account

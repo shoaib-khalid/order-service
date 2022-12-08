@@ -100,6 +100,14 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
     
     @Transactional 
     @Modifying
+    @Query("UPDATE Order m SET m.orderQrGroupId=:orderGroupId WHERE m.id = :orderId") 
+    void UpdateQrcodeOrderGroupId(
+            @Param("orderId") String orderId,
+            @Param("orderGroupId") long orderGroupId
+            );
+    
+    @Transactional 
+    @Modifying
     @Query("UPDATE Order m SET m.total=:orderTotal WHERE m.id = :orderId") 
     void UpdateOrderTotal(
             @Param("orderId") String orderId,

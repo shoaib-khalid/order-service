@@ -29,7 +29,7 @@ public class COD implements Serializable {
     private OrderPaymentDetail orderPaymentDetails;
     private List<CartItem> cartItems;
     private DineInPack dineInPack;
-            
+    
     public COD(String cartId, OrderShipmentDetail orderShipmentDetails, OrderPaymentDetail orderPaymentDetails) {
         this.cartId = cartId;
         this.orderShipmentDetails = orderShipmentDetails;

@@ -34,6 +34,15 @@ public class TxIdUtil {
         return referenceId;
     }
     
+     public static String generateGroupInvoiceNo(String storeId, String prefix, StoreRepository storeRepository) {
+        
+        //get running number for current store
+        int orderNo = storeRepository.getQrInvoiceSeqNo(storeId);
+        if (orderNo>=99999) { storeRepository.ResetQrInvoiceSeqNo(storeId); }
+        String referenceId = prefix + String.format("%05d", orderNo);
+        return referenceId;
+    }
+    
     public static String generateQrcodeToken(String prefix) {
         String referenceId = prefix;
         Date dNow = new Date();

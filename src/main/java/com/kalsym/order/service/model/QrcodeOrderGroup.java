@@ -1,6 +1,7 @@
 package com.kalsym.order.service.model;
 
 import com.kalsym.order.service.enums.CartStage;
+import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.enums.ServiceType;
 import com.kalsym.order.service.model.object.ItemDiscount;
 import java.io.Serializable;
@@ -12,6 +13,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -36,28 +38,21 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Getter
 @Setter
 @ToString
-@Table(name = "qrcode_session")
+@Table(name = "qrcode_order_group")
 
 /**
  * When a customer leaves an online store without making a purchase it is
  * recorded as an abandoned cart
  */
-public class QrcodeSession implements Serializable {
+public class QrcodeOrderGroup implements Serializable {
 
-    @Id
-    private String token;
+    @Id @GeneratedValue(strategy=GenerationType.IDENTITY)
+    Long id;
 
-    private BigInteger tagId;
-    
+    private String qrToken;
+    private String invoiceNo;
     private String storeId;
-       
-    @CreationTimestamp
-    private Date created;
-    
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "tagId", insertable = false, updatable = false, nullable = true)
-    private TagKeyword tagKeyword;
-    
-    private Integer status;
+    private PaymentStatus paymentStatus;
+    private String tableNo;
     
 }
