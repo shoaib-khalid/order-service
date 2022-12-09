@@ -59,6 +59,7 @@ public class QrcodeOrderGroup implements Serializable {
     private String qrToken;
     private String invoiceNo;
     private String storeId;
+    @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
     private String tableNo;
     
