@@ -1032,8 +1032,21 @@ public class OrderController {
                     qrOrder.setServiceCharges(orderCreated.getStoreServiceCharges());
                     qrOrder.setTotalOrderAmount(orderCreated.getTotal());
                     qrcodeOrderGroupRepository.save(qrOrder);
-                } 
-                orderRepository.UpdateQrcodeOrderGroupId(qrOrder.getId(), orderCreated.getId());
+                } else {
+                    double subTotal = qrOrder.getSubTotal() + orderCreated.getSubTotal();
+                    double appliedDiscount = qrOrder.getAppliedDiscount() + orderCreated.getAppliedDiscount();
+                    double deliverCharge = qrOrder.getDeliveryCharges() + orderCreated.getDeliveryCharges();
+                    double deliveryDiscount = qrOrder.getDeliveryDiscount() + orderCreated.getDeliveryDiscount();
+                    double serviceCharge = qrOrder.getServiceCharges() + orderCreated.getStoreServiceCharges();
+                    double totalOrderAmount = qrOrder.getTotalOrderAmount() + orderCreated.getTotal();
+                    qrOrder.setSubTotal(subTotal);
+                    qrOrder.setAppliedDiscount(appliedDiscount);
+                    qrOrder.setDeliveryCharges(deliverCharge);
+                    qrOrder.setDeliveryDiscount(deliveryDiscount);
+                    qrOrder.setServiceCharges(serviceCharge);
+                    qrOrder.setTotalOrderAmount(totalOrderAmount);
+                }
+                orderRepository.UpdateQrcodeOrderGroupId(qrOrder.getId(), orderCreated.getId(), qrToken);
             }
             
             orderGroupRepository.save(orderGroup);
@@ -1380,7 +1393,7 @@ public class OrderController {
         if (orderGroup.getServiceType()==ServiceType.DINEIN && qrToken!=null) {
             QrcodeOrderGroup qrOrder = qrcodeOrderGroupRepository.findByQrToken(qrToken);
             if (qrOrder==null) {
-                //create new group
+                //create new qr group order
                 qrOrder = new QrcodeOrderGroup();
                 String invoiceId = TxIdUtil.generateGroupInvoiceNo(qrStoreId, "DN", storeRepository);                
                 qrOrder.setQrToken(qrToken);
@@ -1388,8 +1401,27 @@ public class OrderController {
                 qrOrder.setInvoiceNo(invoiceId);
                 qrOrder.setStoreId(qrStoreId); 
                 qrOrder.setPaymentStatus(PaymentStatus.PENDING);
+                qrOrder.setSubTotal(orderGroup.getSubTotal());
+                qrOrder.setAppliedDiscount(orderGroup.getAppliedDiscount());
+                qrOrder.setDeliveryCharges(orderGroup.getDeliveryCharges());
+                qrOrder.setDeliveryDiscount(orderGroup.getDeliveryDiscount());
+                qrOrder.setServiceCharges(orderGroup.getServiceCharges());
+                qrOrder.setTotalOrderAmount(orderGroup.getTotal());
                 qrcodeOrderGroupRepository.save(qrOrder);
-            } 
+            } else {
+                double subTotal = qrOrder.getSubTotal() + orderGroup.getSubTotal();
+                double appliedDiscount = qrOrder.getAppliedDiscount() + orderGroup.getAppliedDiscount();
+                double deliverCharge = qrOrder.getDeliveryCharges() + orderGroup.getDeliveryCharges();
+                double deliveryDiscount = qrOrder.getDeliveryDiscount() + orderGroup.getDeliveryDiscount();
+                double serviceCharge = qrOrder.getServiceCharges() + orderGroup.getServiceCharges();
+                double totalOrderAmount = qrOrder.getTotalOrderAmount() + orderGroup.getTotal();
+                qrOrder.setSubTotal(subTotal);
+                qrOrder.setAppliedDiscount(appliedDiscount);
+                qrOrder.setDeliveryCharges(deliverCharge);
+                qrOrder.setDeliveryDiscount(deliveryDiscount);
+                qrOrder.setServiceCharges(serviceCharge);
+                qrOrder.setTotalOrderAmount(totalOrderAmount);
+            }            
             qrGroupOrderId = qrOrder.getId();
         }
         
@@ -1400,7 +1432,7 @@ public class OrderController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update OrderGroupId="+orderGroup.getId()+" for OrderId:"+orderCreatedList.get(x).getId());
             orderRepository.UpdateOrderGroupId(orderCreatedList.get(x).getId(), orderGroup.getId());
             if (orderGroup.getServiceType()==ServiceType.DINEIN && qrToken!=null && qrGroupOrderId!=null) {
-                orderRepository.UpdateQrcodeOrderGroupId(qrGroupOrderId, orderCreatedList.get(x).getId());
+                orderRepository.UpdateQrcodeOrderGroupId(qrGroupOrderId, orderCreatedList.get(x).getId(), qrToken);
             }
         }                
         
