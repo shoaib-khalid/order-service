@@ -1017,7 +1017,7 @@ public class OrderController {
             if (orderGroup.getServiceType()==ServiceType.DINEIN && qrToken!=null) {
                 QrcodeOrderGroup qrOrder = qrcodeOrderGroupRepository.findByQrToken(qrToken);
                 if (qrOrder==null) {
-                    //create new group
+                    //create new qr group order
                     qrOrder = new QrcodeOrderGroup();
                     String invoiceId = TxIdUtil.generateGroupInvoiceNo(storeWithDetials.getId(), "DN", storeRepository);                
                     qrOrder.setQrToken(qrToken);
@@ -1025,6 +1025,12 @@ public class OrderController {
                     qrOrder.setInvoiceNo(invoiceId);
                     qrOrder.setStoreId(storeWithDetials.getId()); 
                     qrOrder.setPaymentStatus(PaymentStatus.PENDING);
+                    qrOrder.setSubTotal(orderCreated.getSubTotal());
+                    qrOrder.setAppliedDiscount(orderCreated.getAppliedDiscount());
+                    qrOrder.setDeliveryCharges(orderCreated.getDeliveryCharges());
+                    qrOrder.setDeliveryDiscount(orderCreated.getDeliveryDiscount());
+                    qrOrder.setServiceCharges(orderCreated.getStoreServiceCharges());
+                    qrOrder.setTotalOrderAmount(orderCreated.getTotal());
                     qrcodeOrderGroupRepository.save(qrOrder);
                 } 
                 orderRepository.UpdateQrcodeOrderGroupId(orderCreated.getId(), qrOrder.getId());

@@ -32,7 +32,9 @@ CREATE TABLE `qrcode_order_group` (
 	storeId VARCHAR(50),
 	invoiceNo VARCHAR(50)
 	paymentStatus ENUM('PENDING','PAID'),
-	tableNo VARCHAR(20)
+	tableNo VARCHAR(20),
+	created datetime,
+	updated datetime
 	);
 	
 
@@ -56,7 +58,9 @@ DELIMITER ;
  token VARCHAR(50) PRIMARY KEY,
  tagId BIGINT,
  storeId varchar(50),
- created DATETIME
+ created DATETIME,
+ updated datetime,
+ status tinyint(1) default 0
  );
  
  
