@@ -1033,7 +1033,7 @@ public class OrderController {
                     qrOrder.setTotalOrderAmount(orderCreated.getTotal());
                     qrcodeOrderGroupRepository.save(qrOrder);
                 } 
-                orderRepository.UpdateQrcodeOrderGroupId(orderCreated.getId(), qrOrder.getId());
+                orderRepository.UpdateQrcodeOrderGroupId(qrOrder.getId(), orderCreated.getId());
             }
             
             orderGroupRepository.save(orderGroup);
@@ -1400,7 +1400,7 @@ public class OrderController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update OrderGroupId="+orderGroup.getId()+" for OrderId:"+orderCreatedList.get(x).getId());
             orderRepository.UpdateOrderGroupId(orderCreatedList.get(x).getId(), orderGroup.getId());
             if (orderGroup.getServiceType()==ServiceType.DINEIN && qrToken!=null && qrGroupOrderId!=null) {
-                orderRepository.UpdateQrcodeOrderGroupId(orderCreatedList.get(x).getId(), qrGroupOrderId);
+                orderRepository.UpdateQrcodeOrderGroupId(qrGroupOrderId, orderCreatedList.get(x).getId());
             }
         }                
         

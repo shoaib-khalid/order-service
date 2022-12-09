@@ -129,7 +129,7 @@ public class Order implements Serializable {
     
     private String orderGroupId;
     
-    private String orderQrGroupId;
+    private Long orderQrGroupId;
     
     @Enumerated(EnumType.STRING)
     private ServiceType serviceType;
