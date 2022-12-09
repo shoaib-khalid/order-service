@@ -131,6 +131,8 @@ public class Order implements Serializable {
     
     private Long orderQrGroupId;
     
+    private String qrToken;
+    
     @Enumerated(EnumType.STRING)
     private ServiceType serviceType;
     
