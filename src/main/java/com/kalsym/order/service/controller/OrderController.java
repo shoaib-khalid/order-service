@@ -1030,7 +1030,7 @@ public class OrderController {
                     qrOrder.setDeliveryCharges(orderCreated.getDeliveryCharges());
                     qrOrder.setDeliveryDiscount(orderCreated.getDeliveryDiscount());
                     qrOrder.setServiceCharges(orderCreated.getStoreServiceCharges());
-                    qrOrder.setTotalOrderAmount(orderCreated.getTotal());
+                    qrOrder.setTotalAmount(orderCreated.getTotal());
                     qrcodeOrderGroupRepository.save(qrOrder);
                 } else {
                     double subTotal = qrOrder.getSubTotal() + orderCreated.getSubTotal();
@@ -1044,7 +1044,7 @@ public class OrderController {
                     qrOrder.setDeliveryCharges(deliverCharge);
                     qrOrder.setDeliveryDiscount(deliveryDiscount);
                     qrOrder.setServiceCharges(serviceCharge);
-                    qrOrder.setTotalOrderAmount(totalOrderAmount);
+                    qrOrder.setTotalAmount(totalOrderAmount);
                 }
                 orderRepository.UpdateQrcodeOrderGroupId(qrOrder.getId(), orderCreated.getId(), qrToken);
             }
@@ -1406,7 +1406,7 @@ public class OrderController {
                 qrOrder.setDeliveryCharges(orderGroup.getDeliveryCharges());
                 qrOrder.setDeliveryDiscount(orderGroup.getDeliveryDiscount());
                 qrOrder.setServiceCharges(orderGroup.getServiceCharges());
-                qrOrder.setTotalOrderAmount(orderGroup.getTotal());
+                qrOrder.setTotalAmount(orderGroup.getTotal());
                 qrcodeOrderGroupRepository.save(qrOrder);
             } else {
                 double subTotal = qrOrder.getSubTotal() + orderGroup.getSubTotal();
@@ -1420,7 +1420,7 @@ public class OrderController {
                 qrOrder.setDeliveryCharges(deliverCharge);
                 qrOrder.setDeliveryDiscount(deliveryDiscount);
                 qrOrder.setServiceCharges(serviceCharge);
-                qrOrder.setTotalOrderAmount(totalOrderAmount);
+                qrOrder.setTotalAmount(totalOrderAmount);
             }            
             qrGroupOrderId = qrOrder.getId();
         }

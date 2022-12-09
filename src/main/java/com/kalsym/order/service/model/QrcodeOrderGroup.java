@@ -76,10 +76,8 @@ public class QrcodeOrderGroup implements Serializable {
     private Double appliedDiscount;
     private Double deliveryCharges;
     private Double deliveryDiscount;
-    private Double serviceCharges;
-    
-    @Transient
-    private Double totalOrderAmount;
+    private Double serviceCharges;       
+    private Double totalAmount;
             
     public Double getTotalOrderAmount() {
         return convertToZero(subTotal) - convertToZero(appliedDiscount) + convertToZero(deliveryCharges) - convertToZero(deliveryDiscount) + convertToZero(serviceCharges);
