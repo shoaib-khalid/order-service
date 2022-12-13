@@ -27,8 +27,7 @@ ALTER TABLE `order_group` ADD orderQrGroupId BIGINT;
 ALTER TABLE qrcode_session ADD status TINYINT(1) DEFAULT 0 COMMENT '0=new 1=scanned'
 CREATE TABLE `qrcode_order_group` (
 	id BIGINT PRIMARY KEY AUTO_INCREMENT,
-	qrToken VARCHAR(50),
-	orderId VARCHAR(50),
+	qrToken VARCHAR(50),	
 	storeId VARCHAR(50),
 	invoiceNo VARCHAR(50)
 	paymentStatus ENUM('PENDING','PAID'),
