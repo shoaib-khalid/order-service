@@ -127,11 +127,7 @@ public class Order implements Serializable {
     
     private String storeVoucherId;
     
-    private String orderGroupId;
-    
-    private Long orderQrGroupId;
-    
-    private String qrToken;
+    private String orderGroupId;       
     
     @Enumerated(EnumType.STRING)
     private ServiceType serviceType;

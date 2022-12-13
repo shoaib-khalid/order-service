@@ -1,5 +1,5 @@
 ##################################################
-# order-service-3.16.0-SNAPSHOT |5-Dec-2022
+# order-service-3.16.0-SNAPSHOT |13-Dec-2022
 ##################################################
 
 1. add new parameter qrToken when place order for DINE-IN 
@@ -23,7 +23,7 @@
 ##DB Changes:
 ALTER TABLE store ADD dineInConsolidatedOrder TINYINT(1) DEFAULT 0;
 ALTER TABLE store ADD qrInvoiceSeqNo INT(11);
-ALTER TABLE `order` ADD orderQrGroupId BIGINT;
+ALTER TABLE `order_group` ADD orderQrGroupId BIGINT;
 ALTER TABLE qrcode_session ADD status TINYINT(1) DEFAULT 0 COMMENT '0=new 1=scanned'
 CREATE TABLE `qrcode_order_group` (
 	id BIGINT PRIMARY KEY AUTO_INCREMENT,

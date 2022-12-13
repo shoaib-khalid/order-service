@@ -104,6 +104,7 @@ public class QrOrderController {
             @RequestParam(required = false) String tableNo,
             @RequestParam(required = false) String invoiceNo,
             @RequestParam(required = false) PaymentStatus paymentStatus,
+            @RequestParam(required = false) String[] orderGroupIds,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,            
             @RequestParam(required = false, defaultValue = "created") String sortByCol,
@@ -137,7 +138,7 @@ public class QrOrderController {
                 .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
         Example<QrcodeOrderGroup> example = Example.of(orderMatch, matcher);
                 
-        Page<QrcodeOrderGroup> orderWithPage = qrcodeOrderGroupRepository.findAll(getSpecWithDatesBetweenMultipleStatus(from, to, example), pageable);
+        Page<QrcodeOrderGroup> orderWithPage = qrcodeOrderGroupRepository.findAll(getSpecWithDatesBetweenMultipleStatus(from, to, orderGroupIds, example), pageable);
         
         //consolidate item
         List<QrcodeOrderGroup> orderList = orderWithPage.getContent();
@@ -205,7 +206,7 @@ public class QrOrderController {
      * @return
      */
     public Specification<QrcodeOrderGroup> getSpecWithDatesBetweenMultipleStatus(
-            Date from, Date to, Example<QrcodeOrderGroup> example) {
+            Date from, Date to, String[] orderGroupIds, Example<QrcodeOrderGroup> example) {
 
         return (Specification<QrcodeOrderGroup>) (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
@@ -217,7 +218,19 @@ public class QrOrderController {
             }
                         
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+            
+            if (orderGroupIds!=null) {
+                int idCount = orderGroupIds.length;
+                List<Predicate> orderIdPredicatesList = new ArrayList<>();
+                for (int i=0;i<orderGroupIds.length;i++) {
+                    Predicate predicateForId = builder.equal(root.get("id"), orderGroupIds[i]);
+                    orderIdPredicatesList.add(predicateForId);                    
+                }
 
+                Predicate finalPredicate = builder.or(orderIdPredicatesList.toArray(new Predicate[idCount]));
+                predicates.add(finalPredicate);
+            }
+            
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

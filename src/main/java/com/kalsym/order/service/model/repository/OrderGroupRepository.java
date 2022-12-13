@@ -7,9 +7,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -18,4 +21,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OrderGroupRepository extends PagingAndSortingRepository<OrderGroup, String>, JpaRepository<OrderGroup, String> , JpaSpecificationExecutor<OrderGroup> {
 
+    @Transactional 
+    @Modifying
+    @Query("UPDATE OrderGroup m SET m.orderQrGroupId=:qrOrderGroupId WHERE m.id = :orderGroupId") 
+    void UpdateQrcodeOrderGroupId(
+            @Param("orderGroupId") long qrOrderGroupId,
+            @Param("orderGroupId") String orderGroupId            
+            );
 }

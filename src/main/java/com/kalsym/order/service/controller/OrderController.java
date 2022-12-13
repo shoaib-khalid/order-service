@@ -1013,7 +1013,11 @@ public class OrderController {
                 orderGroup.setChannel(channel);
             else
                 orderGroup.setChannel(Channel.DELIVERIN);
+                         
+            orderGroupRepository.save(orderGroup);
             
+            orderRepository.UpdateOrderGroupId(orderCreated.getId(), orderGroup.getId());
+                                  
             if (orderGroup.getServiceType()==ServiceType.DINEIN && qrToken!=null) {
                 QrcodeOrderGroup qrOrder = qrcodeOrderGroupRepository.findByQrToken(qrToken);
                 if (qrOrder==null) {
@@ -1045,13 +1049,15 @@ public class OrderController {
                     qrOrder.setDeliveryDiscount(deliveryDiscount);
                     qrOrder.setServiceCharges(serviceCharge);
                     qrOrder.setTotalAmount(totalOrderAmount);
+                    qrcodeOrderGroupRepository.save(qrOrder);
                 }
-                orderRepository.UpdateQrcodeOrderGroupId(qrOrder.getId(), orderCreated.getId(), qrToken);
+                
+                if (orderGroup.getServiceType()==ServiceType.DINEIN && qrToken!=null) {
+                  orderGroupRepository.UpdateQrcodeOrderGroupId(qrOrder.getId(), orderGroup.getId());
+                }
+                
             }
-            
-            orderGroupRepository.save(orderGroup);
-            
-            orderRepository.UpdateOrderGroupId(orderCreated.getId(), orderGroup.getId());            
+           
             orderCreated.setId(orderCreated.getId());
             
             orderCreated.setOrderGroupId("G"+orderGroup.getId());
@@ -1430,11 +1436,11 @@ public class OrderController {
         //update orderGroupId for each order
         for (int x=0;x<orderCreatedList.size();x++) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update OrderGroupId="+orderGroup.getId()+" for OrderId:"+orderCreatedList.get(x).getId());
-            orderRepository.UpdateOrderGroupId(orderCreatedList.get(x).getId(), orderGroup.getId());
-            if (orderGroup.getServiceType()==ServiceType.DINEIN && qrToken!=null && qrGroupOrderId!=null) {
-                orderRepository.UpdateQrcodeOrderGroupId(qrGroupOrderId, orderCreatedList.get(x).getId(), qrToken);
-            }
-        }                
+            orderRepository.UpdateOrderGroupId(orderCreatedList.get(x).getId(), orderGroup.getId());            
+        }  
+        if (orderGroup.getServiceType()==ServiceType.DINEIN && qrToken!=null && qrGroupOrderId!=null) {
+            orderGroupRepository.UpdateQrcodeOrderGroupId(qrGroupOrderId, orderGroup.getId());
+        }
         
         //save customer voucher in account
         if (customerPlatformVoucher!=null && customerPlatformVoucher.getGuestVoucher()!=null && customerPlatformVoucher.getGuestVoucher()) {

@@ -78,7 +78,12 @@ public class QrcodeOrderGroup implements Serializable {
     private Double deliveryDiscount;
     private Double serviceCharges;       
     private Double totalAmount;
-            
+    private Long orderQrGroupId;
+    
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "orderQrGroupId", insertable = false, updatable = false, nullable = true)
+    private List<OrderGroup> orderGroupList;
+    
     public Double getTotalOrderAmount() {
         return convertToZero(subTotal) - convertToZero(appliedDiscount) + convertToZero(deliveryCharges) - convertToZero(deliveryDiscount) + convertToZero(serviceCharges);
     }
