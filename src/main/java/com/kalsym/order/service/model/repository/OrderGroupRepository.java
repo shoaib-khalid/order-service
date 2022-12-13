@@ -25,7 +25,7 @@ public interface OrderGroupRepository extends PagingAndSortingRepository<OrderGr
     @Modifying
     @Query("UPDATE OrderGroup m SET m.orderQrGroupId=:qrOrderGroupId WHERE m.id = :orderGroupId") 
     void UpdateQrcodeOrderGroupId(
-            @Param("orderGroupId") long qrOrderGroupId,
+            @Param("qrOrderGroupId") long qrOrderGroupId,
             @Param("orderGroupId") String orderGroupId            
             );
 }
