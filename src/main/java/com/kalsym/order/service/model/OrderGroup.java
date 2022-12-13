@@ -102,6 +102,8 @@ public class OrderGroup implements Serializable {
     
     private String regionCountryId;
     
+    private Long orderQrGroupId;
+    
     @Enumerated(EnumType.STRING)
     private ServiceType serviceType;
     
