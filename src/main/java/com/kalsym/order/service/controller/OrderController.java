@@ -1332,6 +1332,7 @@ public class OrderController {
                 cartServiceType = orderCreated.getServiceType().name();
             }
             
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Consolidate Order:"+optStore.get().getDineInConsolidatedOrder());
             if (optStore.get().getDineInConsolidatedOrder()!=null && optStore.get().getDineInConsolidatedOrder()==true) {
                 consolidateOrder=true;
             }
@@ -1401,8 +1402,9 @@ public class OrderController {
             orderGroup.setChannel(Channel.DELIVERIN);
         
         Long qrGroupOrderId = null;
-        if (orderGroup.getServiceType()==ServiceType.DINEIN && consolidateOrder==true) {
+        if (orderGroup.getServiceType()==ServiceType.DINEIN && consolidateOrder==true) {            
             QrcodeOrderGroup qrOrder = qrcodeOrderGroupRepository.findByTableNoAndPaymentStatus(tableNo, PaymentStatus.PENDING);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Consolidate Order. Previous qrOrderGroup:"+qrOrder);
             if (qrOrder==null) {
                 //create new qr group order
                 qrOrder = new QrcodeOrderGroup();
@@ -1443,7 +1445,7 @@ public class OrderController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update OrderGroupId="+orderGroup.getId()+" for OrderId:"+orderCreatedList.get(x).getId());
             orderRepository.UpdateOrderGroupId(orderCreatedList.get(x).getId(), orderGroup.getId());            
         }  
-        if (orderGroup.getServiceType()==ServiceType.DINEIN && qrToken!=null && qrGroupOrderId!=null) {
+        if (orderGroup.getServiceType()==ServiceType.DINEIN && qrGroupOrderId!=null) {
             orderGroupRepository.UpdateQrcodeOrderGroupId(qrGroupOrderId, orderGroup.getId());
         }
         
