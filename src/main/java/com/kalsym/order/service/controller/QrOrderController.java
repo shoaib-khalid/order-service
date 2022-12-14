@@ -179,7 +179,7 @@ public class QrOrderController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "qrorder-update-put, URL:  " + request.getRequestURI());
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request tableNo:  " + bodyOrder.getTableNo());
         
-        QrcodeOrderGroup order = qrcodeOrderGroupRepository.findByQrToken(bodyOrder.getQrToken());
+        QrcodeOrderGroup order = qrcodeOrderGroupRepository.findByStoreIdAndTableNoAndPaymentStatus(bodyOrder.getStoreId(), bodyOrder.getTableNo(), PaymentStatus.PENDING);
         if (order==null) {
             //order not found
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "QrOrder with token: " + bodyOrder.getQrToken() + " not found");

@@ -1403,7 +1403,7 @@ public class OrderController {
         
         Long qrGroupOrderId = null;
         if (orderGroup.getServiceType()==ServiceType.DINEIN && consolidateOrder==true) {            
-            QrcodeOrderGroup qrOrder = qrcodeOrderGroupRepository.findByTableNoAndPaymentStatus(tableNo, PaymentStatus.PENDING);
+            QrcodeOrderGroup qrOrder = qrcodeOrderGroupRepository.findByStoreIdAndTableNoAndPaymentStatus(qrStoreId, tableNo, PaymentStatus.PENDING);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Consolidate Order. Previous qrOrderGroup:"+qrOrder);
             if (qrOrder==null) {
                 //create new qr group order

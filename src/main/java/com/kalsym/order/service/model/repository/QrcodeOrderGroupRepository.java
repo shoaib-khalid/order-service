@@ -26,5 +26,8 @@ public interface QrcodeOrderGroupRepository extends PagingAndSortingRepository<Q
                 
         QrcodeOrderGroup findByQrToken(@Param("qrToken") String qrToken);
         
-        QrcodeOrderGroup findByTableNoAndPaymentStatus(@Param("tableNo") String tableNo, @Param("paymentStatus") PaymentStatus paymentStatus);
+        QrcodeOrderGroup findByStoreIdAndTableNoAndPaymentStatus(
+                @Param("storeId") String storeId,
+                @Param("tableNo") String tableNo,
+                @Param("paymentStatus") PaymentStatus paymentStatus);
 }
