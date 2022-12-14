@@ -163,4 +163,34 @@ public class QrCodeController {
     }
     
     
+    @GetMapping(path = {"/preauth-generate"}, name = "qrcode-preauth-generate")
+    public ResponseEntity<HttpResponse> dynamicCheck(HttpServletRequest request, 
+            @RequestParam(required = true) String storeId
+            ) throws Exception {
+        String logprefix = request.getRequestURI() + " ";
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "qrcode-preauth-generate, URL:  " + request.getRequestURI());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request storeId:  " + storeId);
+        
+        List<Object[]> tagList = tagRepository.findByStoreId(storeId);
+        BigInteger tagId=null;
+        String tagKeyword="";
+        if (tagList!=null && tagList.size()>0) {
+            Object[] tag = tagList.get(0);            
+            tagId = (BigInteger)(tag[0]);
+            tagKeyword = String.valueOf(tag[1]);
+            response.setData(tagKeyword);
+        } else {
+            //cannot find tag for this store
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Tag with storeId: " + storeId + " not found");
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            response.setMessage("Tag not found");
+            return ResponseEntity.status(response.getStatus()).body(response);
+        }
+        
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    
+    
 }
