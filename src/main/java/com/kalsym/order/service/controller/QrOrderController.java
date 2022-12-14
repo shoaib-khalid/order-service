@@ -100,7 +100,7 @@ public class QrOrderController {
     
     @GetMapping(path = {"/search"}, name = "qrorder-search")
     public ResponseEntity<HttpResponse> search(HttpServletRequest request, 
-            @RequestParam(required = false) String storeId,
+            @RequestParam(required = true) String storeId,
             @RequestParam(required = false) String tableNo,
             @RequestParam(required = false) String invoiceNo,
             @RequestParam(required = false) PaymentStatus paymentStatus,
