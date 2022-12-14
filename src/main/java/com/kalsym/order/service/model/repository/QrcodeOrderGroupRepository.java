@@ -5,6 +5,7 @@
  */
 package com.kalsym.order.service.model.repository;
 
+import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.QrcodeOrderGroup;
 import java.util.List;
@@ -24,4 +25,6 @@ import org.springframework.stereotype.Repository;
 public interface QrcodeOrderGroupRepository extends PagingAndSortingRepository<QrcodeOrderGroup, String>, JpaRepository<QrcodeOrderGroup, String>, JpaSpecificationExecutor<QrcodeOrderGroup> {
                 
         QrcodeOrderGroup findByQrToken(@Param("qrToken") String qrToken);
+        
+        QrcodeOrderGroup findByTableNoAndPaymentStatus(@Param("tableNo") String tableNo, @Param("paymentStatus") PaymentStatus paymentStatus);
 }

@@ -1249,6 +1249,7 @@ public class OrderController {
         String regionCountryId="MYS";
         String cartVerticalCode="";
         String cartServiceType="";
+        boolean consolidateOrder=false;
         for (int i=0;i<codList.length;i++) {
             COD cod = codList[i];
             String cartId = cod.getCartId();
@@ -1330,6 +1331,10 @@ public class OrderController {
             if (orderCreated.getServiceType()!=null) {
                 cartServiceType = orderCreated.getServiceType().name();
             }
+            
+            if (optStore.get().getDineInConsolidatedOrder()!=null && optStore.get().getDineInConsolidatedOrder()==true) {
+                consolidateOrder=true;
+            }
         }       
         for (Map.Entry<String, Double> combinedDelivery :
             combinedDeliveryFeeMap.entrySet()) {
@@ -1396,8 +1401,8 @@ public class OrderController {
             orderGroup.setChannel(Channel.DELIVERIN);
         
         Long qrGroupOrderId = null;
-        if (orderGroup.getServiceType()==ServiceType.DINEIN && qrToken!=null) {
-            QrcodeOrderGroup qrOrder = qrcodeOrderGroupRepository.findByQrToken(qrToken);
+        if (orderGroup.getServiceType()==ServiceType.DINEIN && consolidateOrder==true) {
+            QrcodeOrderGroup qrOrder = qrcodeOrderGroupRepository.findByTableNoAndPaymentStatus(tableNo, PaymentStatus.PENDING);
             if (qrOrder==null) {
                 //create new qr group order
                 qrOrder = new QrcodeOrderGroup();
