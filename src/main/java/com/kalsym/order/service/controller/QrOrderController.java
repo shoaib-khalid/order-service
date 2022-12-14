@@ -100,7 +100,7 @@ public class QrOrderController {
     
     @GetMapping(path = {"/search"}, name = "qrorder-search")
     public ResponseEntity<HttpResponse> search(HttpServletRequest request, 
-            @RequestParam(required = true) String storeId,
+            @RequestParam(required = false) String storeId,
             @RequestParam(required = false) String tableNo,
             @RequestParam(required = false) String invoiceNo,
             @RequestParam(required = false) PaymentStatus paymentStatus,
@@ -139,6 +139,45 @@ public class QrOrderController {
         Example<QrcodeOrderGroup> example = Example.of(orderMatch, matcher);
                 
         Page<QrcodeOrderGroup> orderWithPage = qrcodeOrderGroupRepository.findAll(getSpecWithDatesBetweenMultipleStatus(from, to, orderGroupIds, example), pageable);
+        
+        //consolidate item
+        List<QrcodeOrderGroup> orderList = orderWithPage.getContent();
+        
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(orderWithPage);
+        
+        return ResponseEntity.status(response.getStatus()).body(response);
+        
+    }
+    
+    
+    @GetMapping(path = {"/pending"}, name = "qrorder-pending")
+    public ResponseEntity<HttpResponse> pending(HttpServletRequest request, 
+            @RequestParam(required = true) String storeId,
+            @RequestParam(required = true) String tableNo,
+            @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortingOrder,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize
+            ) throws Exception {
+        String logprefix = request.getRequestURI() + " ";
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "qrorder-search-get, URL:  " + request.getRequestURI());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request param:  storeId=" + storeId+" tableNo="+tableNo);
+       
+        QrcodeOrderGroup orderMatch = new QrcodeOrderGroup();
+        orderMatch.setStoreId(storeId);               
+        orderMatch.setTableNo(tableNo);                       
+        orderMatch.setPaymentStatus(PaymentStatus.PENDING);       
+        
+        Pageable pageable = PageRequest.of(page, pageSize);
+        ExampleMatcher matcher = ExampleMatcher
+                .matchingAll()
+                .withIgnoreCase()
+                .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
+        Example<QrcodeOrderGroup> example = Example.of(orderMatch, matcher);
+                
+        Page<QrcodeOrderGroup> orderWithPage = qrcodeOrderGroupRepository.findAll(getSpecWithDatesBetweenMultipleStatus(null, null, null, example), pageable);
         
         //consolidate item
         List<QrcodeOrderGroup> orderList = orderWithPage.getContent();
@@ -202,6 +241,7 @@ public class QrOrderController {
      *
      * @param from
      * @param to
+     * @param orderGroupIds
      * @param example
      * @return
      */
