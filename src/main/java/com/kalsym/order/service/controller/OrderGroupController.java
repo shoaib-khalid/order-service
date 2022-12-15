@@ -44,10 +44,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kalsym.order.service.model.DeliveryOrder;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.model.*;
+import com.kalsym.order.service.model.object.CustomPageable;
 import com.kalsym.order.service.model.object.OrderProcessResult;
 import com.kalsym.order.service.service.FCMService;
 import com.kalsym.order.service.utility.Logger;
 import java.util.Date;
+import java.util.HashMap;
 import javax.persistence.criteria.Predicate;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -168,6 +170,89 @@ public class OrderGroupController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
+    @GetMapping(path = {"/searchconsolidated"}, name = "orders-group-get-by-id", produces = "application/json")
+    @PreAuthorize("hasAnyAuthority('orders-group-get-by-id', 'all')")
+    public ResponseEntity<HttpResponse> searchOrderGroupConsolidated(HttpServletRequest request,
+            @RequestParam(required = false) String[] orderGroupIds,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize) {
+
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        
+        OrderGroup orderMatch = new OrderGroup();
+        ExampleMatcher matcher = ExampleMatcher
+                .matchingAll()
+                .withIgnoreCase()
+                .withIgnoreNullValues()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        Example<OrderGroup> orderExample = Example.of(orderMatch, matcher);
+        
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
+        
+        Page<OrderGroup> orderGroupPage = orderGroupRepository.findAll(getOrderGroupMultipleId(orderGroupIds, orderExample), pageable);
+        
+        //consolidate if under same orderQrGroupId
+        HashMap<String, OrderGroup> groupOrderMap = new HashMap<String, OrderGroup>();
+        List<OrderGroup> orderGroupList = orderGroupPage.getContent();
+        for (int i=0;i<orderGroupList.size();i++) {
+            OrderGroup orderGroup = orderGroupList.get(i);
+            if (orderGroup.getOrderQrGroupId()!=null) {
+                //find other order under same qrorder
+                if (groupOrderMap.containsKey(String.valueOf(orderGroup.getOrderQrGroupId()))) {
+                    OrderGroup existingData = groupOrderMap.get(String.valueOf(orderGroup.getOrderQrGroupId()));
+                    OrderWithDetails existingOrder = existingData.getOrderList().get(0);
+                    List<OrderItemWithDetails> existingOrderItem = existingOrder.getOrderItemWithDetails();
+                    //add item into existing order
+                    for (int x=0;x<orderGroup.getOrderList().size();x++) {
+                        OrderWithDetails order = orderGroup.getOrderList().get(x); 
+                        for (int z=0;z<order.getOrderItemWithDetails().size();z++) {                            
+                            existingOrderItem.add(order.getOrderItemWithDetails().get(z));
+                        }
+                    }   
+                    
+                    double newTotal = existingData.getTotal() + orderGroup.getTotal();
+                    double newSubTotal = existingData.getSubTotal() + orderGroup.getSubTotal();
+                    double newTotalOrderAmount = existingData.getTotalOrderAmount() + orderGroup.getTotalOrderAmount();
+                    existingData.setTotal(newTotal);
+                    existingData.setSubTotal(newSubTotal);
+                    existingData.setTotalOrderAmount(newTotalOrderAmount);
+                    groupOrderMap.put(String.valueOf(orderGroup.getOrderQrGroupId()), existingData);
+                } else {
+                    //create new group order
+                    groupOrderMap.put(String.valueOf(orderGroup.getOrderQrGroupId()), orderGroup);
+                }                
+            } else {
+                groupOrderMap.put(orderGroup.getId(), orderGroup);
+            }
+        }
+        
+        OrderGroup[] orderDetailsList = new OrderGroup[groupOrderMap.size()];
+        int b=0;
+        for (OrderGroup orderGroup : groupOrderMap.values()) {
+            orderDetailsList[b] = orderGroup;
+            b++;
+        }
+        
+        //create custom pageable object with modified content
+        CustomPageable customPageable = new CustomPageable();
+        customPageable.content = orderDetailsList;
+        customPageable.pageable = orderGroupPage.getPageable();
+        customPageable.totalPages = orderGroupPage.getTotalPages();
+        customPageable.totalElements = orderGroupPage.getTotalElements();
+        customPageable.last = orderGroupPage.isLast();
+        customPageable.size = orderGroupPage.getSize();
+        customPageable.number = orderGroupPage.getNumber();
+        customPageable.sort = orderGroupPage.getSort();        
+        customPageable.numberOfElements = orderGroupPage.getNumberOfElements();
+        customPageable.first  = orderGroupPage.isFirst();
+        customPageable.empty = orderGroupPage.isEmpty();
+        
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(customPageable);
+        
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    
     /**
      * Accept two dates and example matcher
      *
@@ -227,4 +312,63 @@ public class OrderGroupController {
         };
     }
     
+    
+     private void consolidateItem(List<QrcodeOrderGroup> qrOrderList) {
+        //consolidate item
+         
+        HashMap<String, OrderItemWithDetails> qrOrderItemMap = new HashMap<String, OrderItemWithDetails>();
+        
+        for (int i=0;i<qrOrderList.size();i++) {
+            QrcodeOrderGroup qrOrder = qrOrderList.get(i);
+            List<OrderGroup> orderGroupList = qrOrder.getOrderGroupList();
+            for (int x=0;x<orderGroupList.size();x++) {
+                OrderGroup orderGroup = orderGroupList.get(x);
+                List<OrderWithDetails> orderList = orderGroup.getOrderList();
+                for (int z=0;z<orderList.size();z++) {
+                    OrderWithDetails orderWithDetails = orderList.get(z);
+                    List<OrderItemWithDetails> orderItemList = orderWithDetails.getOrderItemWithDetails();
+                    for (int y=0;y<orderItemList.size();y++) {
+                        OrderItemWithDetails orderItemWithDetails = orderItemList.get(y);
+                        if (orderItemWithDetails.getOrderItemAddOn()!=null && orderItemWithDetails.getOrderItemAddOn().size()>0) {
+                            //create different item
+                            qrOrderItemMap.put(orderItemWithDetails.getId(), orderItemWithDetails);
+                        } else if (orderItemWithDetails.getOrderSubItem()!=null && orderItemWithDetails.getOrderSubItem().size()>0) {
+                           //create different item
+                            qrOrderItemMap.put(orderItemWithDetails.getId(), orderItemWithDetails);
+                        } else {
+                            String itemCode = orderItemWithDetails.getItemCode();
+                            int quantity = orderItemWithDetails.getQuantity();
+                            float price = orderItemWithDetails.getPrice();
+                            float productPrice = orderItemWithDetails.getProductPrice();
+                            Product product = orderItemWithDetails.getProduct();
+                            if (qrOrderItemMap.containsKey(itemCode)) {
+                                //update value
+                                OrderItemWithDetails existingData = qrOrderItemMap.get(itemCode);
+                                float newPrice = existingData.getPrice() + price;
+                                int newQuantity = existingData.getQuantity() + quantity;
+                                existingData.setPrice(newPrice);
+                                existingData.setQuantity(newQuantity);
+                                qrOrderItemMap.put(itemCode, existingData);
+                            } else {
+                                //create new item
+                                /*OrderItemWithDetails simpleData = new OrderItemWithDetails();
+                                simpleData.setItemCode(itemCode);
+                                simpleData.setPrice(price);
+                                simpleData.setQuantity(quantity);
+                                simpleData.setProductPrice(productPrice);
+                                simpleData.setProduct(product);*/
+                                qrOrderItemMap.put(itemCode, orderItemWithDetails);
+                            }
+                        }
+                    }
+                }
+            }  
+            
+            List<OrderItemWithDetails> qrOrderItem = new ArrayList();        
+            for (OrderItemWithDetails item : qrOrderItemMap.values()) {
+                qrOrderItem.add(item);
+            }
+            qrOrder.setOrderItemWithDetails(qrOrderItem);
+        }
+    }
 }
