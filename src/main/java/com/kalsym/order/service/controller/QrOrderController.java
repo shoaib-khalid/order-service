@@ -45,6 +45,8 @@ import java.util.Optional;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 
 import javax.servlet.http.HttpServletRequest;
@@ -250,7 +252,8 @@ public class QrOrderController {
 
         return (Specification<QrcodeOrderGroup>) (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
-
+            Join<QrcodeOrderGroup, OrderGroup> orderGroupList = root.join("orderGroupList", JoinType.INNER);
+            
             if (from != null && to != null) {
                 to.setDate(to.getDate() + 1);
                 predicates.add(builder.greaterThanOrEqualTo(root.get("created"), from));
@@ -263,14 +266,14 @@ public class QrOrderController {
                 int idCount = orderGroupIds.length;
                 List<Predicate> orderIdPredicatesList = new ArrayList<>();
                 for (int i=0;i<orderGroupIds.length;i++) {
-                    Predicate predicateForId = builder.equal(root.get("id"), orderGroupIds[i]);
+                    Predicate predicateForId = builder.equal(orderGroupList.get("id"), orderGroupIds[i]);
                     orderIdPredicatesList.add(predicateForId);                    
                 }
 
                 Predicate finalPredicate = builder.or(orderIdPredicatesList.toArray(new Predicate[idCount]));
                 predicates.add(finalPredicate);
             }
-            
+           
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
