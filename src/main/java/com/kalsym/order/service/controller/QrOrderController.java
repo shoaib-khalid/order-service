@@ -33,6 +33,7 @@ import com.kalsym.order.service.model.QrcodeGenerateRequest;
 import com.kalsym.order.service.model.QrcodeGenerateResponse;
 import com.kalsym.order.service.model.QrcodeValidateResponse;
 import com.kalsym.order.service.model.Voucher;
+import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.model.repository.TagRepository;
 import com.kalsym.order.service.model.repository.QrcodeSessionRepository;
 import com.kalsym.order.service.model.repository.QrcodeOrderGroupRepository;
@@ -42,6 +43,8 @@ import com.kalsym.order.service.service.FCMService;
 import com.kalsym.order.service.utility.HttpResponse;
 import com.kalsym.order.service.utility.Logger;
 import com.kalsym.order.service.utility.TxIdUtil;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.math.BigInteger;
@@ -145,7 +148,8 @@ public class QrOrderController {
         Page<QrcodeOrderGroup> orderWithPage = qrcodeOrderGroupRepository.findAll(getSpecWithDatesBetweenMultipleStatus(from, to, orderGroupIds, example), pageable);
         
         //consolidate item
-        List<QrcodeOrderGroup> orderList = orderWithPage.getContent();
+        List<QrcodeOrderGroup> qrOrderList = orderWithPage.getContent();
+        consolidateItem(qrOrderList);
         
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(orderWithPage);
@@ -185,36 +189,8 @@ public class QrOrderController {
         
         //consolidate item
         List<QrcodeOrderGroup> qrOrderList = orderWithPage.getContent();
+        consolidateItem(qrOrderList);
         
-        /*OrderDetails[] orderDetailsList = new OrderDetails[orderList.size()];
-        
-        for (int i=0;i<qrOrderList.size();i++) {
-            QrcodeOrderGroup qrOrder = qrOrderList.get(i);
-            List<OrderGroup> orderGroupList = qrOrder.getOrderGroupList();
-            for (int x=0;x<orderGroupList.size();x++) {
-                OrderGroup orderGroup = orderGroupList.get(x);
-                List<OrderWithDetails> orderList = orderGroup.getOrderList();
-                for (int z=0;z<orderList.size();z++) {
-                    OrderWithDetails orderWithDetails = orderList.get(z);
-                    List<OrderItemWithDetails> orderItem = orderWithDetails.getOrderItemWithDetails();
-                    orderItem
-                }
-            }
-            OrderDetails orderDetails = new OrderDetails();
-            orderDetails.setOrder(order);            
-            orderDetails.setCurrentCompletionStatus(order.getCompletionStatus().name());
-        
-            Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(order.getStoreId());
-            StoreWithDetails storeWithDetails = optStore.get();
-            String verticalId = storeWithDetails.getVerticalCode();
-            Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
-            String storeDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
-            if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN) {
-                storeDeliveryType = order.getDineInOption().name();
-            }
-        }*/
-        
-        //calculate grand total 
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(orderWithPage);
         
@@ -292,4 +268,63 @@ public class QrOrderController {
         };
     }
     
+    
+    private void consolidateItem(List<QrcodeOrderGroup> qrOrderList) {
+        //consolidate item
+         
+        HashMap<String, OrderItemWithDetails> qrOrderItemMap = new HashMap<String, OrderItemWithDetails>();
+        
+        for (int i=0;i<qrOrderList.size();i++) {
+            QrcodeOrderGroup qrOrder = qrOrderList.get(i);
+            List<OrderGroup> orderGroupList = qrOrder.getOrderGroupList();
+            for (int x=0;x<orderGroupList.size();x++) {
+                OrderGroup orderGroup = orderGroupList.get(x);
+                List<OrderWithDetails> orderList = orderGroup.getOrderList();
+                for (int z=0;z<orderList.size();z++) {
+                    OrderWithDetails orderWithDetails = orderList.get(z);
+                    List<OrderItemWithDetails> orderItemList = orderWithDetails.getOrderItemWithDetails();
+                    for (int y=0;y<orderItemList.size();y++) {
+                        OrderItemWithDetails orderItemWithDetails = orderItemList.get(y);
+                        if (orderItemWithDetails.getOrderItemAddOn()!=null && orderItemWithDetails.getOrderItemAddOn().size()>0) {
+                            //create different item
+                            qrOrderItemMap.put(orderItemWithDetails.getId(), orderItemWithDetails);
+                        } else if (orderItemWithDetails.getOrderSubItem()!=null && orderItemWithDetails.getOrderSubItem().size()>0) {
+                           //create different item
+                            qrOrderItemMap.put(orderItemWithDetails.getId(), orderItemWithDetails);
+                        } else {
+                            String itemCode = orderItemWithDetails.getItemCode();
+                            int quantity = orderItemWithDetails.getQuantity();
+                            float price = orderItemWithDetails.getPrice();
+                            float productPrice = orderItemWithDetails.getProductPrice();
+                            Product product = orderItemWithDetails.getProduct();
+                            if (qrOrderItemMap.containsKey(itemCode)) {
+                                //update value
+                                OrderItemWithDetails existingData = qrOrderItemMap.get(itemCode);
+                                float newPrice = existingData.getPrice() + price;
+                                int newQuantity = existingData.getQuantity() + quantity;
+                                existingData.setPrice(newPrice);
+                                existingData.setQuantity(newQuantity);
+                                qrOrderItemMap.put(itemCode, existingData);
+                            } else {
+                                //create new item
+                                /*OrderItemWithDetails simpleData = new OrderItemWithDetails();
+                                simpleData.setItemCode(itemCode);
+                                simpleData.setPrice(price);
+                                simpleData.setQuantity(quantity);
+                                simpleData.setProductPrice(productPrice);
+                                simpleData.setProduct(product);*/
+                                qrOrderItemMap.put(itemCode, orderItemWithDetails);
+                            }
+                        }
+                    }
+                }
+            }  
+            
+            List<OrderItemWithDetails> qrOrderItem = new ArrayList();        
+            for (OrderItemWithDetails item : qrOrderItemMap.values()) {
+                qrOrderItem.add(item);
+            }
+            qrOrder.setOrderItemWithDetails(qrOrderItem);
+        }
+    }
 }
