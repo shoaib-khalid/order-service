@@ -144,6 +144,7 @@ public class OrderGroupController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
+    /*
     @GetMapping(path = {"/search"}, name = "orders-group-get-by-id", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-group-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> searchOrderGroup(HttpServletRequest request,
@@ -168,9 +169,9 @@ public class OrderGroupController {
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(orderGroup);
         return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
+    }*/
     
-    @GetMapping(path = {"/searchconsolidated"}, name = "orders-group-get-by-id", produces = "application/json")
+    @GetMapping(path = {"/search"}, name = "orders-group-get-by-id", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-group-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> searchOrderGroupConsolidated(HttpServletRequest request,
             @RequestParam(required = false) String[] orderGroupIds,
