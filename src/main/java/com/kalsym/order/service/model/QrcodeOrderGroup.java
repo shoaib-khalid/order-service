@@ -107,5 +107,7 @@ public class QrcodeOrderGroup implements Serializable {
         }
     }
     
+    @Transient
+    private List<OrderItemWithDetails> orderItemWithDetails;
     
 }

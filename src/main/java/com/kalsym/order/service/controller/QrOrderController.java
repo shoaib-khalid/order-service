@@ -23,6 +23,8 @@ import com.kalsym.order.service.enums.OrderStatus;
 import com.kalsym.order.service.enums.PaymentStatus;
 import com.kalsym.order.service.enums.VoucherStatus;
 import com.kalsym.order.service.model.Order;
+import com.kalsym.order.service.model.OrderWithDetails;
+import com.kalsym.order.service.model.OrderItemWithDetails;
 import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.OrderGroup;
 import com.kalsym.order.service.model.QrcodeSession;
@@ -182,11 +184,22 @@ public class QrOrderController {
         Page<QrcodeOrderGroup> orderWithPage = qrcodeOrderGroupRepository.findAll(getSpecWithDatesBetweenMultipleStatus(null, null, null, example), pageable);
         
         //consolidate item
-        List<QrcodeOrderGroup> orderList = orderWithPage.getContent();
+        List<QrcodeOrderGroup> qrOrderList = orderWithPage.getContent();
         
         /*OrderDetails[] orderDetailsList = new OrderDetails[orderList.size()];
-        for (int i=0;i<orderList.size();i++) {
-            Order order = orderList.get(i);
+        
+        for (int i=0;i<qrOrderList.size();i++) {
+            QrcodeOrderGroup qrOrder = qrOrderList.get(i);
+            List<OrderGroup> orderGroupList = qrOrder.getOrderGroupList();
+            for (int x=0;x<orderGroupList.size();x++) {
+                OrderGroup orderGroup = orderGroupList.get(x);
+                List<OrderWithDetails> orderList = orderGroup.getOrderList();
+                for (int z=0;z<orderList.size();z++) {
+                    OrderWithDetails orderWithDetails = orderList.get(z);
+                    List<OrderItemWithDetails> orderItem = orderWithDetails.getOrderItemWithDetails();
+                    orderItem
+                }
+            }
             OrderDetails orderDetails = new OrderDetails();
             orderDetails.setOrder(order);            
             orderDetails.setCurrentCompletionStatus(order.getCompletionStatus().name());
@@ -273,7 +286,8 @@ public class QrOrderController {
                 Predicate finalPredicate = builder.or(orderIdPredicatesList.toArray(new Predicate[idCount]));
                 predicates.add(finalPredicate);
             }
-           
+            query.distinct(true);
+            
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
