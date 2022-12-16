@@ -144,7 +144,7 @@ public class OrderGroupController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
-    /*
+    
     @GetMapping(path = {"/search"}, name = "orders-group-get-by-id", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-group-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> searchOrderGroup(HttpServletRequest request,
@@ -169,14 +169,13 @@ public class OrderGroupController {
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(orderGroup);
         return ResponseEntity.status(HttpStatus.OK).body(response);
-    }*/
+    }
     
-    @GetMapping(path = {"/search"}, name = "orders-group-get-by-id", produces = "application/json")
+    @GetMapping(path = {"/searchconsolidated"}, name = "orders-group-get-by-id", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-group-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> searchOrderGroupConsolidated(HttpServletRequest request,
-            @RequestParam(required = false) String[] orderGroupIds,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int pageSize) {
+            @RequestParam(required = false) String[] orderGroupIds
+        ) {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
         
@@ -188,6 +187,8 @@ public class OrderGroupController {
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         Example<OrderGroup> orderExample = Example.of(orderMatch, matcher);
         
+        int page=0;
+        int pageSize=1000;
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
         
         Page<OrderGroup> orderGroupPage = orderGroupRepository.findAll(getOrderGroupMultipleId(orderGroupIds, orderExample), pageable);
