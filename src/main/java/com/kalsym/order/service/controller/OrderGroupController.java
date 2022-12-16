@@ -278,10 +278,11 @@ public class OrderGroupController {
         }
         
         OrderGroup[] orderDetailsList = new OrderGroup[groupOrderMap.size()];
-        int b=0;
+        int b=groupOrderMap.size()-1;        
         for (OrderGroup orderGroup : groupOrderMap.values()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "searchOrderGroupConsolidated", "OrderGroup:"+orderGroup.getId()+" created:"+orderGroup.getCreated());
             orderDetailsList[b] = orderGroup;
-            b++;
+            b--;
         }
         
         //create custom pageable object with modified content
