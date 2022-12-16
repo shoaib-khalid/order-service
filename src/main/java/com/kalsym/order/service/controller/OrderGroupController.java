@@ -200,28 +200,8 @@ public class OrderGroupController {
             if (orderGroup.getOrderQrGroupId()!=null) {
                 //find other order under same qrorder
                 if (groupOrderMap.containsKey(String.valueOf(orderGroup.getOrderQrGroupId()))) {
-                    /*OrderGroup existingData = groupOrderMap.get(String.valueOf(orderGroup.getOrderQrGroupId()));
-                    OrderWithDetails existingOrder = existingData.getOrderList().get(0);
-                    List<OrderItemWithDetails> existingOrderItem = existingOrder.getOrderItemWithDetails();
-                    //add item into existing order
-                    for (int x=0;x<orderGroup.getOrderList().size();x++) {
-                        OrderWithDetails order = orderGroup.getOrderList().get(x); 
-                        for (int z=0;z<order.getOrderItemWithDetails().size();z++) {                            
-                            existingOrderItem.add(order.getOrderItemWithDetails().get(z));
-                        }
-                    }   
-                    
-                    double newTotal = existingData.getTotal() + orderGroup.getTotal();
-                    double newSubTotal = existingData.getSubTotal() + orderGroup.getSubTotal();
-                    double newTotalOrderAmount = existingData.getTotalOrderAmount() + orderGroup.getTotalOrderAmount();
-                    existingData.setTotal(newTotal);
-                    existingData.setSubTotal(newSubTotal);
-                    existingData.setTotalOrderAmount(newTotalOrderAmount);
-                    groupOrderMap.put(String.valueOf(orderGroup.getOrderQrGroupId()), existingData);
-                    */
+                    //ignore because already combined                   
                 } else {
-                    //create new group order
-                    //groupOrderMap.put(String.valueOf(orderGroup.getOrderQrGroupId()), orderGroup);
                     //find other order under same qrorder
                     List<OrderGroup> otherOrderGroupList = orderGroupRepository.findByOrderQrGroupId(orderGroup.getOrderQrGroupId());
                     List<OrderItemWithDetails> combinedOrderItemList = new ArrayList();
@@ -231,18 +211,45 @@ public class OrderGroupController {
                     double newTotal=0;
                     double newSubTotal=0;
                     double newTotalOrderAmount=0;
+                    HashMap<String, OrderItemWithDetails> orderItemMap = new HashMap<String, OrderItemWithDetails>();
                     for (int j=0;j<otherOrderGroupList.size();j++) {
                         OrderGroup otherOrderGroup = otherOrderGroupList.get(j);
                         combinedOrderGroup = otherOrderGroup;
-                        //OrderGroup existingData = groupOrderMap.get(String.valueOf(orderGroup.getOrderQrGroupId()));
-                        //OrderWithDetails existingOrder = existingData.getOrderList().get(0);
-                        //List<OrderItemWithDetails> existingOrderItem = existingOrder.getOrderItemWithDetails();
                         //add item into existing order
                         for (int x=0;x<otherOrderGroup.getOrderList().size();x++) {
                             OrderWithDetails order = otherOrderGroup.getOrderList().get(x); 
                             combinedOrder = order;
                             for (int z=0;z<order.getOrderItemWithDetails().size();z++) {                            
-                                combinedOrderItemList.add(order.getOrderItemWithDetails().get(z));
+                                //combinedOrderItemList.add(order.getOrderItemWithDetails().get(z));
+                                
+                                OrderItemWithDetails orderItemWithDetails = order.getOrderItemWithDetails().get(z);
+                                
+                                if (orderItemWithDetails.getOrderItemAddOn()!=null && orderItemWithDetails.getOrderItemAddOn().size()>0) {
+                                    //create different item
+                                    orderItemMap.put(orderItemWithDetails.getId(), orderItemWithDetails);
+                                } else if (orderItemWithDetails.getOrderSubItem()!=null && orderItemWithDetails.getOrderSubItem().size()>0) {
+                                   //create different item
+                                    orderItemMap.put(orderItemWithDetails.getId(), orderItemWithDetails);
+                                } else {
+                                    String itemCode = orderItemWithDetails.getItemCode();
+                                    int quantity = orderItemWithDetails.getQuantity();
+                                    float price = orderItemWithDetails.getPrice();
+                                    float productPrice = orderItemWithDetails.getProductPrice();
+                                    Product product = orderItemWithDetails.getProduct();
+                                    if (orderItemMap.containsKey(itemCode)) {
+                                        //update value
+                                        OrderItemWithDetails existingData = orderItemMap.get(itemCode);
+                                        float newPrice = existingData.getPrice() + price;
+                                        int newQuantity = existingData.getQuantity() + quantity;
+                                        existingData.setPrice(newPrice);
+                                        existingData.setQuantity(newQuantity);
+                                        orderItemMap.put(itemCode, existingData);
+                                    } else {
+                                        //create new item
+                                        orderItemMap.put(itemCode, orderItemWithDetails);
+                                    }
+                                }
+                                
                             }
                         }   
 
@@ -250,6 +257,13 @@ public class OrderGroupController {
                         newSubTotal = newSubTotal + otherOrderGroup.getSubTotal();
                         newTotalOrderAmount = newTotalOrderAmount + otherOrderGroup.getTotalOrderAmount();                                              
                     }
+                    
+                    for (OrderItemWithDetails item : orderItemMap.values()) {
+                        combinedOrderItemList.add(item);
+                    }
+                    
+                    combinedOrder.setSubTotal(newSubTotal);
+                    combinedOrder.setTotal(newTotal);                    
                     combinedOrder.setOrderItemWithDetails(combinedOrderItemList);
                     combinedOrderList.add(combinedOrder);
                     combinedOrderGroup.setOrderList(combinedOrderList);
