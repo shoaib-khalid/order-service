@@ -28,4 +28,6 @@ public interface OrderGroupRepository extends PagingAndSortingRepository<OrderGr
             @Param("qrOrderGroupId") long qrOrderGroupId,
             @Param("orderGroupId") String orderGroupId            
             );
+    
+    List<OrderGroup> findByOrderQrGroupId(@Param("orderQrGroupId") long orderQrGroupId);
 }
