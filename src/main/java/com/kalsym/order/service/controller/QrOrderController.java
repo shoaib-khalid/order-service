@@ -162,7 +162,7 @@ public class QrOrderController {
     @GetMapping(path = {"/pending"}, name = "qrorder-pending")
     public ResponseEntity<HttpResponse> pending(HttpServletRequest request, 
             @RequestParam(required = true) String storeId,
-            @RequestParam(required = true) String tableNo,
+            @RequestParam(required = false) String tableNo,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortingOrder,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize
@@ -174,8 +174,10 @@ public class QrOrderController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Request param:  storeId=" + storeId+" tableNo="+tableNo);
        
         QrcodeOrderGroup orderMatch = new QrcodeOrderGroup();
-        orderMatch.setStoreId(storeId);               
-        orderMatch.setTableNo(tableNo);                       
+        orderMatch.setStoreId(storeId);    
+        if (tableNo!=null && !tableNo.equals("")) {
+            orderMatch.setTableNo(tableNo);            
+        }
         orderMatch.setPaymentStatus(PaymentStatus.PENDING);       
         
         Pageable pageable = PageRequest.of(page, pageSize);
