@@ -201,6 +201,7 @@ public class OrderGroupController {
         List<OrderGroup> orderGroupList = orderGroupPage.getContent();
         for (int i=0;i<orderGroupList.size();i++) {
             OrderGroup orderGroup = orderGroupList.get(i);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "searchOrderGroupConsolidated", "Original OrderGroup:"+orderGroup.getId()+" created:"+orderGroup.getCreated());            
             if (orderGroup.getOrderQrGroupId()!=null) {
                 //find payment status for qrGroupId
                 orderGroup.getOrderQrGroupId();
