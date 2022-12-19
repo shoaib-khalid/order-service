@@ -104,6 +104,9 @@ public class OrderGroup implements Serializable {
     
     private Long orderQrGroupId;
     
+    @Transient
+    private PaymentStatus orderQrPaymentStatus;
+    
     @Enumerated(EnumType.STRING)
     private ServiceType serviceType;
     

@@ -22,7 +22,7 @@ import org.springframework.stereotype.Repository;
  * @author taufik
  */
 @Repository
-public interface QrcodeOrderGroupRepository extends PagingAndSortingRepository<QrcodeOrderGroup, String>, JpaRepository<QrcodeOrderGroup, String>, JpaSpecificationExecutor<QrcodeOrderGroup> {
+public interface QrcodeOrderGroupRepository extends PagingAndSortingRepository<QrcodeOrderGroup, Long>, JpaRepository<QrcodeOrderGroup, Long>, JpaSpecificationExecutor<QrcodeOrderGroup> {
                 
         QrcodeOrderGroup findByQrToken(@Param("qrToken") String qrToken);
         

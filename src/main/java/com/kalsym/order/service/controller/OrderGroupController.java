@@ -76,6 +76,9 @@ public class OrderGroupController {
     @Autowired
     OrderGroupRepository orderGroupRepository;
     
+    @Autowired
+    QrcodeOrderGroupRepository qrcodeOrderGroupRepository;
+    
     @GetMapping(path = {"/{orderGroupId}"}, name = "orders-group-get-by-id", produces = "application/json")
     @PreAuthorize("hasAnyAuthority('orders-group-get-by-id', 'all')")
     public ResponseEntity<HttpResponse> getOrderGroupsById(HttpServletRequest request,
@@ -199,6 +202,13 @@ public class OrderGroupController {
         for (int i=0;i<orderGroupList.size();i++) {
             OrderGroup orderGroup = orderGroupList.get(i);
             if (orderGroup.getOrderQrGroupId()!=null) {
+                //find payment status for qrGroupId
+                orderGroup.getOrderQrGroupId();
+                Optional<QrcodeOrderGroup> qrOrderOpt = qrcodeOrderGroupRepository.findById(orderGroup.getOrderQrGroupId());
+                PaymentStatus qrOrderPaymentStatus=null;
+                if (qrOrderOpt.isPresent()) {
+                    qrOrderPaymentStatus = qrOrderOpt.get().getPaymentStatus();
+                }
                 //find other order under same qrorder
                 if (groupOrderMap.containsKey(String.valueOf(orderGroup.getOrderQrGroupId()))) {
                     //ignore because already combined                   
@@ -271,6 +281,7 @@ public class OrderGroupController {
                     combinedOrderGroup.setTotal(newTotal);
                     combinedOrderGroup.setSubTotal(newSubTotal);
                     combinedOrderGroup.setTotalOrderAmount(newTotalOrderAmount);
+                    combinedOrderGroup.setOrderQrPaymentStatus(qrOrderPaymentStatus);
                     groupOrderMap.put(String.valueOf(orderGroup.getOrderQrGroupId()), combinedOrderGroup);
                 }                
             } else {
