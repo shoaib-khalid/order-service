@@ -34,6 +34,8 @@ import com.kalsym.order.service.model.QrcodeGenerateResponse;
 import com.kalsym.order.service.model.QrcodeValidateResponse;
 import com.kalsym.order.service.model.Voucher;
 import com.kalsym.order.service.model.Product;
+import com.kalsym.order.service.model.repository.OrderGroupRepository;
+import com.kalsym.order.service.model.repository.OrderWithDetailsRepository;
 import com.kalsym.order.service.model.repository.TagRepository;
 import com.kalsym.order.service.model.repository.QrcodeSessionRepository;
 import com.kalsym.order.service.model.repository.QrcodeOrderGroupRepository;
@@ -95,6 +97,12 @@ public class QrOrderController {
     
     @Autowired
     QrcodeOrderGroupRepository qrcodeOrderGroupRepository;
+    
+    @Autowired
+    OrderGroupRepository orderGroupRepository;
+    
+    @Autowired
+    OrderWithDetailsRepository orderWithDetailsRepository;
     
     @Autowired
     StoreDetailsRepository storeDetailsRepository;
@@ -223,6 +231,20 @@ public class QrOrderController {
         //update paymentStatus to paid
         order.setPaymentStatus(PaymentStatus.PAID);
         order = qrcodeOrderGroupRepository.save(order);
+        
+        //update all ordergroup & order to paid
+        for (int i=0;i<order.getOrderGroupList().size();i++) {
+            OrderGroup orderGroup = order.getOrderGroupList().get(i);
+            orderGroup.setPaymentStatus(PaymentStatus.PAID.name());
+            orderGroupRepository.save(orderGroup);
+            List<OrderWithDetails> orderList = orderGroup.getOrderList();
+            for (int x=0;x<orderList.size();x++) {
+                OrderWithDetails orderWithDetails = orderList.get(x);
+                orderWithDetails.setPaymentStatus(PaymentStatus.PAID);
+                orderWithDetailsRepository.save(orderWithDetails);
+            }
+        }
+        
         response.setData(order);
         
         return ResponseEntity.status(HttpStatus.OK).body(response);
