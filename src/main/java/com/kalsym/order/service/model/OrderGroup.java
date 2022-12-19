@@ -45,7 +45,7 @@ import org.hibernate.annotations.FetchMode;
 @Setter
 @ToString
 @Table(name = "order_group")
-public class OrderGroup implements Serializable {
+public class OrderGroup implements Serializable, Comparable<OrderGroup> {
 
     @Id
     @GeneratedValue(generator = "uuid2")
@@ -138,6 +138,12 @@ public class OrderGroup implements Serializable {
         } else {
             return null;
         }
+    }
+    
+    
+    @Override
+    public int compareTo(OrderGroup o) {
+      return getCreated().compareTo(o.getCreated());
     }
         
 }

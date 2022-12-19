@@ -27,6 +27,7 @@ import com.kalsym.order.service.utility.DateTimeUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -290,12 +291,21 @@ public class OrderGroupController {
             }
         }
         
+        List<OrderGroup> orderTempList = new ArrayList();
         OrderGroup[] orderDetailsList = new OrderGroup[groupOrderMap.size()];
-        int b=groupOrderMap.size()-1;        
+               
         for (OrderGroup orderGroup : groupOrderMap.values()) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "searchOrderGroupConsolidated", "OrderGroup:"+orderGroup.getId()+" created:"+orderGroup.getCreated());
+            orderTempList.add(orderGroup);            
+        }
+               
+        Collections.sort(orderTempList, Collections.reverseOrder());
+        int b=0; 
+        for (int z=0;z<orderTempList.size();z++) {
+            OrderGroup orderGroup = orderTempList.get(z);
             orderDetailsList[b] = orderGroup;
-            b--;
+            b++;
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "searchOrderGroupConsolidated", "OrderGroupList:"+orderGroup.getId()+" created:"+orderGroup.getCreated());
         }
         
         //create custom pageable object with modified content
