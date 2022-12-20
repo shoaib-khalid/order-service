@@ -224,6 +224,7 @@ public class OrderGroupController {
                     double newTotal=0;
                     double newSubTotal=0;
                     double newTotalOrderAmount=0;
+                    double newServiceCharge=0;
                     HashMap<String, OrderItemWithDetails> orderItemMap = new HashMap<String, OrderItemWithDetails>();
                     for (int j=0;j<otherOrderGroupList.size();j++) {
                         OrderGroup otherOrderGroup = otherOrderGroupList.get(j);
@@ -268,7 +269,8 @@ public class OrderGroupController {
 
                         newTotal = newTotal + otherOrderGroup.getTotal();
                         newSubTotal = newSubTotal + otherOrderGroup.getSubTotal();
-                        newTotalOrderAmount = newTotalOrderAmount + otherOrderGroup.getTotalOrderAmount();                                              
+                        newTotalOrderAmount = newTotalOrderAmount + otherOrderGroup.getTotalOrderAmount(); 
+                        newServiceCharge = newServiceCharge + otherOrderGroup.getServiceCharges();
                     }
                     
                     for (OrderItemWithDetails item : orderItemMap.values()) {
@@ -281,6 +283,7 @@ public class OrderGroupController {
                     combinedOrderList.add(combinedOrder);
                     combinedOrderGroup.setOrderList(combinedOrderList);
                     combinedOrderGroup.setTotal(newTotal);
+                    combinedOrderGroup.setServiceCharges(newServiceCharge);
                     combinedOrderGroup.setSubTotal(newSubTotal);
                     combinedOrderGroup.setTotalOrderAmount(newTotalOrderAmount);
                     combinedOrderGroup.setOrderQrPaymentStatus(qrOrderPaymentStatus);
