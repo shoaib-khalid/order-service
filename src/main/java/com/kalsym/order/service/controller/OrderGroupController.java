@@ -278,7 +278,8 @@ public class OrderGroupController {
                     }
                     
                     combinedOrder.setSubTotal(newSubTotal);
-                    combinedOrder.setTotal(newTotal);                    
+                    combinedOrder.setTotal(newTotal);
+                    combinedOrder.setStoreServiceCharges(newServiceCharge);
                     combinedOrder.setOrderItemWithDetails(combinedOrderItemList);
                     combinedOrderList.add(combinedOrder);
                     combinedOrderGroup.setOrderList(combinedOrderList);
