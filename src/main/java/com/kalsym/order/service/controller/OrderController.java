@@ -1128,23 +1128,29 @@ public class OrderController {
                 cart.setServiceType(cod.getServiceType());
                 cart.setStage(CartStage.ORDER_PLACED);
                 cart.setIsOpen(false);
+                cart.setServiceType(ServiceType.DINEIN);
                 cart = cartRepository.save(cart);
                 String cartId = cart.getId();
                 cod.setCartId(cartId);
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Set cartId:"+cod.getCartId());
                 
                 //add item into cart
-                List<CartItem> cartItemList = cod.getCartItems();                
+                List<CartItem> cartItemList = cod.getCartItems(); 
+                List<CartItem> generatedCartItemList = new ArrayList(); 
                 for (int x=0;x<cartItemList.size();x++) {
                     CartItem inputCartItem = cartItemList.get(x);
                     
-                    addItemToCart(cod.getStoreId(), inputCartItem.getProductId(), 
+                    CartItem outputCartItem = addItemToCart(cod.getStoreId(), inputCartItem.getProductId(), 
                         inputCartItem.getItemCode(), inputCartItem.getQuantity(), 
                         cartId,
-                        ServiceType.DINEIN, inputCartItem.getSpecialInstruction());            
+                        ServiceType.DINEIN, inputCartItem.getSpecialInstruction()); 
+                    
+                    generatedCartItemList.add(outputCartItem);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Generated cartItem:"+outputCartItem);
                 }
-                
+                cod.setCartItems(generatedCartItemList);
             }
+            
            
         }
         
