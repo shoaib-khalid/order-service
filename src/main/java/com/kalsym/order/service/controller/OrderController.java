@@ -41,6 +41,7 @@ import com.kalsym.order.service.model.ProductInventory;
 import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.StoreDeliveryDetail;
 import com.kalsym.order.service.model.Cart;
+import com.kalsym.order.service.model.CartItemAddOn;
 import com.kalsym.order.service.model.CustomerVoucher;
 import com.kalsym.order.service.model.Customer;
 import com.kalsym.order.service.model.DeliveryOrder;
@@ -67,6 +68,7 @@ import com.kalsym.order.service.model.Voucher;
 import com.kalsym.order.service.model.VoucherStore;
 import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.OrderPaymentDetail;
+import com.kalsym.order.service.model.ProductAddOn;
 import com.kalsym.order.service.model.TagConfig;
 import com.kalsym.order.service.model.TagDetails;
 import com.kalsym.order.service.model.TagKeyword;
@@ -77,11 +79,13 @@ import com.kalsym.order.service.model.object.OrderDetails;
 import com.kalsym.order.service.model.object.ItemDiscount;
 import com.kalsym.order.service.model.QrcodeOrderGroup;
 import com.kalsym.order.service.model.object.OrderGroupObject;
+import com.kalsym.order.service.model.repository.CartItemAddOnRepository;
 import com.kalsym.order.service.model.repository.OrderItemRepository;
 import com.kalsym.order.service.model.repository.OrderSubItemRepository;
 import com.kalsym.order.service.model.repository.OrderItemAddOnRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
 import com.kalsym.order.service.model.repository.CartRepository;
+import com.kalsym.order.service.model.repository.CartSubItemRepository;
 import com.kalsym.order.service.model.repository.OrderCompletionStatusConfigRepository;
 import com.kalsym.order.service.model.repository.OrderCompletionStatusUpdateRepository;
 import com.kalsym.order.service.model.repository.OrderPaymentDetailRepository;
@@ -103,6 +107,7 @@ import com.kalsym.order.service.model.repository.CustomerVoucherRepository;
 import com.kalsym.order.service.model.repository.VoucherRepository;
 import com.kalsym.order.service.model.repository.CustomerRepository;
 import com.kalsym.order.service.model.repository.OrderGroupRepository;
+import com.kalsym.order.service.model.repository.ProductAddOnRepository;
 import com.kalsym.order.service.model.repository.TagRepository;
 import com.kalsym.order.service.model.repository.TagProductFeatureRepository;
 import com.kalsym.order.service.service.CustomerService;
@@ -205,6 +210,9 @@ public class OrderController {
     
     @Autowired
     CartItemRepository cartItemRepository;
+    
+    @Autowired
+    CartSubItemRepository cartSubItemRepository;
 
     @Autowired
     OrderShipmentDetailRepository orderShipmentDetailRepository;
@@ -265,6 +273,12 @@ public class OrderController {
     
     @Autowired
     QrcodeOrderGroupRepository qrcodeOrderGroupRepository;
+    
+    @Autowired
+    ProductAddOnRepository productAddOnRepository;
+    
+    @Autowired
+    CartItemAddOnRepository cartItemAddOnRepository;
     
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
@@ -1078,6 +1092,8 @@ public class OrderController {
      * @param channel
      * @param qrToken
      * @param tableNo
+     * @param isStaffOrder
+     * @param serviceType
      * @param codList
      * @return
      * @throws Exception
@@ -1091,6 +1107,7 @@ public class OrderController {
             @RequestParam(required = false) Channel channel,
             @RequestParam(required = false) String qrToken,
             @RequestParam(required = false) String tableNo,
+            @RequestParam(required = false) Boolean isStaffOrder,
             @RequestBody COD[] codList) throws Exception {
         String logprefix = request.getRequestURI() + " ";
        
@@ -1099,6 +1116,37 @@ public class OrderController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orders-push-group request body: " + codList.toString());
         
         HttpResponse response = new HttpResponse(request.getRequestURI());        
+        
+        if (isStaffOrder!=null && isStaffOrder) {
+            //create new cart and add item into cart
+            for (int z=0;z<codList.length;z++) {            
+                COD cod = codList[z];                
+                //create new cart
+                Cart cart = new Cart();
+                cart.setCustomerId(cod.getCustomerId());
+                cart.setStoreId(cod.getStoreId());
+                cart.setServiceType(cod.getServiceType());
+                cart.setStage(CartStage.ORDER_PLACED);
+                cart.setIsOpen(false);
+                cart = cartRepository.save(cart);
+                String cartId = cart.getId();
+                cod.setCartId(cartId);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Set cartId:"+cod.getCartId());
+                
+                //add item into cart
+                List<CartItem> cartItemList = cod.getCartItems();                
+                for (int x=0;x<cartItemList.size();x++) {
+                    CartItem inputCartItem = cartItemList.get(x);
+                    
+                    addItemToCart(cod.getStoreId(), inputCartItem.getProductId(), 
+                        inputCartItem.getItemCode(), inputCartItem.getQuantity(), 
+                        cartId,
+                        ServiceType.DINEIN, inputCartItem.getSpecialInstruction());            
+                }
+                
+            }
+           
+        }
         
         //get customer id from one of COD
         String customerId = null;
@@ -1157,6 +1205,7 @@ public class OrderController {
         //validate every cart in the group
         for (int z=0;z<codList.length;z++) {            
             COD cod = codList[z];
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cod["+z+"] : "+cod);
             String cartId = codList[z].getCartId();
             
             Optional<Cart> optCart = cartRepository.findById(cartId);
@@ -1250,6 +1299,7 @@ public class OrderController {
         String cartVerticalCode="";
         String cartServiceType="";
         boolean consolidateOrder=false;
+        String staffId=null;
         for (int i=0;i<codList.length;i++) {
             COD cod = codList[i];
             String cartId = cod.getCartId();
@@ -1336,6 +1386,8 @@ public class OrderController {
             if (optStore.get().getDineInConsolidatedOrder()!=null && optStore.get().getDineInConsolidatedOrder()==true) {
                 consolidateOrder=true;
             }
+            
+            staffId = cod.getStaffId();
         }       
         for (Map.Entry<String, Double> combinedDelivery :
             combinedDeliveryFeeMap.entrySet()) {
@@ -1400,6 +1452,10 @@ public class OrderController {
             orderGroup.setChannel(channel);
         else
             orderGroup.setChannel(Channel.DELIVERIN);
+        
+        if (isStaffOrder!=null && isStaffOrder) {
+            orderGroup.setStaffId(staffId);
+        }
         
         Long qrGroupOrderId = null;
         if (orderGroup.getServiceType()==ServiceType.DINEIN && consolidateOrder==true && tableNo!=null && !tableNo.equals("")) {            
@@ -1467,8 +1523,7 @@ public class OrderController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "placeGroupOrder completed");
          
         return ResponseEntity.status(response.getStatus()).body(response);
-    }    
-
+    }            
     
     @DeleteMapping(path = {"/{id}"}, name = "orders-delete-by-id")
     @PreAuthorize("hasAnyAuthority('orders-delete-by-id', 'all') and @customOwnerVerifier.VerifyOrder(#id)")
@@ -2460,5 +2515,144 @@ public class OrderController {
     * */
     
  
+    private CartItem addItemToCart(String storeId, String productId, 
+            String itemCode, int quantity, 
+            String cartId,
+            ServiceType serviceType,
+            String specialInstruction) {
+        
+        String logprefix = "addItemToCart()";
+        CartItem bodyCartItem = new CartItem();
+        bodyCartItem.setCartId(cartId);
+        bodyCartItem.setProductId(productId);
+        bodyCartItem.setItemCode(itemCode);
+        bodyCartItem.setQuantity(quantity);
+        bodyCartItem.setSpecialInstruction(specialInstruction);
+        
+        CartItem createdCartItem = new CartItem();
+        
+        //get product info
+        Optional<Product> optProduct = productRepository.findById(productId);
+        if (!optProduct.isPresent()) {
+            bodyCartItem.setCreateStatus(HttpStatus.CONFLICT);
+            return bodyCartItem;  
+        }
+        
+        ProductInventory productInventory = productService.getProductInventoryById(storeId, productId, itemCode);
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventory.toString());
+        
+            //check if enable product inventory
+            if (productInventory.getQuantity()<quantity && optProduct.get().isAllowOutOfStockPurchases()==false) {
+                //out of stock
+                bodyCartItem.setCreateStatus(HttpStatus.CONFLICT);
+                return bodyCartItem;                
+            }
+                    
+            //check for discount
+            double itemPrice = 0.00;
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceType:"+serviceType+" itemDiscount:"+productInventory.getItemDiscount());
+            if (productInventory.getItemDiscount()!=null && serviceType==ServiceType.DELIVERIN) {
+                if (productInventory.getItemDiscount().discountAmount>0) {
+                    //got discount
+                    ItemDiscount discountDetails = productInventory.getItemDiscount();
+                    itemPrice = discountDetails.discountedPrice;
+                    bodyCartItem.setDiscountId(discountDetails.discountId);
+                    bodyCartItem.setNormalPrice((float)discountDetails.normalPrice);
+                    bodyCartItem.setDiscountLabel(discountDetails.discountLabel);
+                }
+            } else if (serviceType==ServiceType.DELIVERIN) {
+                //no dicount for this item code
+                itemPrice = productInventory.getPrice();
+            } else if (productInventory.getItemDiscount()!=null && serviceType==ServiceType.DINEIN) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "dineInDiscountAmount:"+productInventory.getItemDiscount().dineInDiscountAmount);                    
+                if (productInventory.getItemDiscount().dineInDiscountAmount>0) {
+                    //got discount
+                    ItemDiscount discountDetails = productInventory.getItemDiscount();
+                    itemPrice = discountDetails.dineInDiscountedPrice;
+                    bodyCartItem.setDiscountId(discountDetails.discountId);
+                    bodyCartItem.setNormalPrice((float)discountDetails.dineInNormalPrice);
+                    bodyCartItem.setDiscountLabel(discountDetails.discountLabel);
+                } else {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "No discount for DineIn");
+                }
+            } else {
+                //use dine-in price
+                itemPrice = productInventory.getDineInPrice();
+            }
+            
+            bodyCartItem.setProductPrice((float)itemPrice);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "itemPrice:"+itemPrice);
+            //check if product is package            
+            boolean isPackage = optProduct.get().getIsPackage();            
+            if (isPackage) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Product is package");
+                bodyCartItem.setPrice(bodyCartItem.getQuantity() * bodyCartItem.getProductPrice());
+                bodyCartItem.setProductName(productInventory.getProduct().getName());
+                bodyCartItem.setSKU(productInventory.getSKU());
+                createdCartItem = cartItemRepository.save(bodyCartItem);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Saved cartItem id:"+createdCartItem.getId());
+                //save sub cart item
+                if (bodyCartItem.getCartSubItem()!=null) {
+                    for (int i=0;i<bodyCartItem.getCartSubItem().size();i++) {
+                        CartSubItem subItem = bodyCartItem.getCartSubItem().get(i);
+                        subItem.setCartItemId(createdCartItem.getId());
+                        cartSubItemRepository.save(subItem);
+                    }
+                }
+            } else {
+                
+                boolean gotAddOn=false;
+                if (bodyCartItem.getCartItemAddOn()!=null && !bodyCartItem.getCartItemAddOn().isEmpty() ) {
+                    gotAddOn=true;
+                }
+                
+                CartItem existingItem = null;
+                if (gotAddOn==false) {
+                    //find item in current cart & no add-on product, increase quantity if already exist
+                    existingItem = cartItemRepository.findByCartIdAndItemCodeAndSpecialInstruction(bodyCartItem.getCartId(), bodyCartItem.getItemCode(), bodyCartItem.getSpecialInstruction());
+                }
+                
+                if (existingItem != null) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "item already exist for cartId: " + bodyCartItem.getCartId());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "item already exist for itemCode: " + bodyCartItem.getItemCode());
+
+                    int newQty = existingItem.getQuantity() + bodyCartItem.getQuantity();
+                    existingItem.setQuantity(newQty);
+                    existingItem.setPrice(newQty * existingItem.getProductPrice());
+                    existingItem.setProductName(productInventory.getProduct().getName());
+                    createdCartItem = cartItemRepository.save(existingItem);
+                } else {
+                    bodyCartItem.setPrice(bodyCartItem.getQuantity() * bodyCartItem.getProductPrice());
+                    bodyCartItem.setProductName(productInventory.getProduct().getName());
+                    bodyCartItem.setSKU(productInventory.getSKU());
+                    createdCartItem = cartItemRepository.save(bodyCartItem);
+                    
+                    //save add-on if any
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item addOn: " + bodyCartItem.getCartItemAddOn());
+                    if (bodyCartItem.getCartItemAddOn()!=null && !bodyCartItem.getCartItemAddOn().isEmpty()) {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Save cart item addOn: " + bodyCartItem.getCartItemAddOn().toString());
+                        for (int x=0;x<bodyCartItem.getCartItemAddOn().size();x++) {
+                            CartItemAddOn cartItemAddOn = bodyCartItem.getCartItemAddOn().get(x);
+                            cartItemAddOn.setCartItemId(createdCartItem.getId());
+                            //get add-on price
+                            Optional<ProductAddOn> productAddOnOpt = productAddOnRepository.findById(cartItemAddOn.getProductAddOnId());
+                            if (productAddOnOpt.isPresent()) {
+                                if (serviceType!=null && serviceType==ServiceType.DINEIN){
+                                    cartItemAddOn.setPrice(productAddOnOpt.get().getDineInPrice().floatValue() * bodyCartItem.getQuantity());
+                                    cartItemAddOn.setProductPrice(productAddOnOpt.get().getDineInPrice().floatValue());
+                                } else {
+                                    cartItemAddOn.setPrice(productAddOnOpt.get().getPrice().floatValue() * bodyCartItem.getQuantity());
+                                    cartItemAddOn.setProductPrice(productAddOnOpt.get().getPrice().floatValue());
+                                }
+                            }
+                            cartItemAddOnRepository.save(cartItemAddOn);
+                        }
+                    }
+                } 
+            }
+            return createdCartItem;
+            
+    }
 }
 

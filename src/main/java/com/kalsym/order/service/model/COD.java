@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import com.kalsym.order.service.enums.DineInPack;
+import com.kalsym.order.service.enums.ServiceType;
 
 /**
  *
@@ -29,6 +30,9 @@ public class COD implements Serializable {
     private OrderPaymentDetail orderPaymentDetails;
     private List<CartItem> cartItems;
     private DineInPack dineInPack;
+    private String storeId;
+    private String staffId;
+    private ServiceType serviceType;
     
     public COD(String cartId, OrderShipmentDetail orderShipmentDetails, OrderPaymentDetail orderPaymentDetails) {
         this.cartId = cartId;

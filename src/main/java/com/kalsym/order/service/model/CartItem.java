@@ -21,6 +21,7 @@ import java.util.Date;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+import org.springframework.http.HttpStatus;
 
 /**
  *
@@ -75,8 +76,14 @@ public class CartItem implements Serializable {
     private ProductAsset productAsset;
   
     public void update(CartItem cartItem, float itemPrice) {
-        quantity = cartItem.getQuantity();
-        price = (Float.parseFloat(String.valueOf(quantity))) * itemPrice;
+        if (cartItem.getQuantity()>0) {
+            quantity = cartItem.getQuantity();
+            price = (Float.parseFloat(String.valueOf(quantity))) * itemPrice;
+        }
+        
+        if (cartItem.getSpecialInstruction()!=null) {
+            specialInstruction = cartItem.getSpecialInstruction();
+        }
 //        id = cartItem.getId();
 //        cartId = cartItem.getCartId();
 //        productId = cartItem.getProductId();
@@ -84,9 +91,13 @@ public class CartItem implements Serializable {
 //        productName = cartItem.getProductName();
 //        SKU = cartItem.getSKU();
     }
+       
 
     @Transient
     private Float totalPrice;
+    
+    @Transient
+    private HttpStatus createStatus;
     
     public Float getTotalPrice() {
         float totalItemPrice=0;

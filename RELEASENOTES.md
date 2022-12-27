@@ -1,4 +1,15 @@
 ##################################################
+# order-service-3.17.0-SNAPSHOT |27-Dec-2022
+##################################################
+
+Add new parameter in placeGroupOrder : isStaffOrder
+this field use for staff ordering feature. if isStaffOrder=yes, item need to be sent during placeGroupOrder
+
+##DB Changes:
+ALTER TABLE `order_group` ADD staffId varchar(50);
+
+
+##################################################
 # order-service-3.16.0-SNAPSHOT |13-Dec-2022
 ##################################################
 
@@ -22,7 +33,7 @@
 
 ##DB Changes:
 ALTER TABLE store ADD dineInConsolidatedOrder TINYINT(1) DEFAULT 0;
-ALTER TABLE store ADD qrInvoiceSeqNo INT(11);
+ALTER TABLE store ADD qrInvoiceSeqNo INT(11) DEFAULT 1;
 ALTER TABLE `order_group` ADD orderQrGroupId BIGINT;
 ALTER TABLE qrcode_session ADD status TINYINT(1) DEFAULT 0 COMMENT '0=new 1=scanned'
 CREATE TABLE `qrcode_order_group` (
@@ -36,6 +47,14 @@ CREATE TABLE `qrcode_order_group` (
 	updated datetime
 	);
 	
+ALTER TABLE qrcode_order_group ADD subTotal DECIMAL(10,2);
+ALTER TABLE qrcode_order_group ADD appliedDiscount DECIMAL(10,2);
+ALTER TABLE qrcode_order_group ADD deliveryCharges DECIMAL(10,2);
+ALTER TABLE qrcode_order_group ADD deliveryDiscount DECIMAL(10,2);
+ALTER TABLE qrcode_order_group ADD serviceCharges DECIMAL(10,2);
+ALTER TABLE qrcode_order_group ADD totalAmount DECIMAL(10,2);
+
+
 
 DELIMITER $$
 
