@@ -482,7 +482,7 @@ public class CartItemController {
             }            
         } else {
             //update product add-on price
-            if (cartItem.getCartItemAddOn()!=null) {
+            if (cartItem.getCartItemAddOn()!=null && bodyCartItem.getQuantity()>0) {
                 for (int i=0;i<cartItem.getCartItemAddOn().size();i++) {
                     CartItemAddOn addOnItem = cartItem.getCartItemAddOn().get(i);
                     //get add-on price
@@ -504,18 +504,20 @@ public class CartItemController {
         //update updated field for cart
         savedCart.get().setUpdated(new Date());
         cartRepository.save(savedCart.get());
-
-        String message = "{ "
-                + "\"operation\":\"updateCartItem\", "
-                + "\"cartId\":\""+cartId+"\", "
-                + "\"itemCode\":\""+bodyCartItem.getItemCode()+"\", "
-                + "\"cartItemId\":\""+bodyCartItem.getId()+"\", "
-                + "\"newQuantity\":\""+bodyCartItem.getQuantity()+"\", "
-                + "\"timestamp\":\""+new Date()+"\" "
-                + "}";
-        simpMessagingTemplate.convertAndSend("/topic/cart/"+savedCart.get().getId(), message);
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Message sent via websocket to /topic/cart/"+savedCart.get().getId() );        
-
+        
+        if (bodyCartItem.getQuantity()>0) {
+            String message = "{ "
+                    + "\"operation\":\"updateCartItem\", "
+                    + "\"cartId\":\""+cartId+"\", "
+                    + "\"itemCode\":\""+bodyCartItem.getItemCode()+"\", "
+                    + "\"cartItemId\":\""+bodyCartItem.getId()+"\", "
+                    + "\"newQuantity\":\""+bodyCartItem.getQuantity()+"\", "
+                    + "\"timestamp\":\""+new Date()+"\" "
+                    + "}";
+            simpMessagingTemplate.convertAndSend("/topic/cart/"+savedCart.get().getId(), message);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Message sent via websocket to /topic/cart/"+savedCart.get().getId() );        
+        }
+        
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem updated for cartItemId: " + id);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(cartItemRepository.save(cartItem));
