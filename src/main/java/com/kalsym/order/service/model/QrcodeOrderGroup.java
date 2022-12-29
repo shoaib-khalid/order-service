@@ -62,6 +62,7 @@ public class QrcodeOrderGroup implements Serializable {
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
     private String tableNo;
+    private String zone;
     
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)

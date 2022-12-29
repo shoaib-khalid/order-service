@@ -760,6 +760,7 @@ public class OrderController {
      * @param cod
      * @param qrToken
      * @param tableNo
+     * @param zone
      * @return
      * @throws Exception
      */
@@ -773,7 +774,8 @@ public class OrderController {
             @RequestParam(required = false) String storeId,
             @RequestParam(required = false) Channel channel,
             @RequestParam(required = false) String qrToken,
-            @RequestParam(required = false) String tableNo,                        
+            @RequestParam(required = false) String tableNo, 
+            @RequestParam(required = false) String zone, 
             @RequestBody COD cod) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         
@@ -942,6 +944,7 @@ public class OrderController {
                 saveCustomerInformation, 
                 sendReceiptToReceiver,
                 channel,
+                tableNo, zone,
                 onboardingOrderLink, orderInvoiceBaseUrl, logprefix, 
                 cartRepository, cartItemRepository, customerVoucherRepository, 
                 storeDetailsRepository, storeDeliveryDetailRepository, 
@@ -1091,9 +1094,10 @@ public class OrderController {
      * @param sendReceiptToReceiver
      * @param channel
      * @param qrToken
+     * @param zone
      * @param tableNo
      * @param isStaffOrder
-     * @param serviceType
+     * @param staffId
      * @param codList
      * @return
      * @throws Exception
@@ -1106,8 +1110,10 @@ public class OrderController {
             @RequestParam(required = false) Boolean sendReceiptToReceiver,
             @RequestParam(required = false) Channel channel,
             @RequestParam(required = false) String qrToken,
+            @RequestParam(required = false) String zone,
             @RequestParam(required = false) String tableNo,
             @RequestParam(required = false) Boolean isStaffOrder,
+            @RequestParam(required = false) String staffId,            
             @RequestBody COD[] codList) throws Exception {
         String logprefix = request.getRequestURI() + " ";
        
@@ -1305,7 +1311,6 @@ public class OrderController {
         String cartVerticalCode="";
         String cartServiceType="";
         boolean consolidateOrder=false;
-        String staffId=null;
         for (int i=0;i<codList.length;i++) {
             COD cod = codList[i];
             String cartId = cod.getCartId();
@@ -1347,6 +1352,7 @@ public class OrderController {
                     saveCustomerInformation, 
                     sendReceiptToReceiver,
                     channel,
+                    tableNo, zone,
                     onboardingOrderLink, orderInvoiceBaseUrl, logprefix, 
                     cartRepository, cartItemRepository, customerVoucherRepository, 
                     storeDetailsRepository, storeDeliveryDetailRepository, 
@@ -1392,8 +1398,7 @@ public class OrderController {
             if (optStore.get().getDineInConsolidatedOrder()!=null && optStore.get().getDineInConsolidatedOrder()==true) {
                 consolidateOrder=true;
             }
-            
-            staffId = cod.getStaffId();
+           
         }       
         for (Map.Entry<String, Double> combinedDelivery :
             combinedDeliveryFeeMap.entrySet()) {
@@ -1472,7 +1477,8 @@ public class OrderController {
                 qrOrder = new QrcodeOrderGroup();
                 String invoiceId = TxIdUtil.generateGroupInvoiceNo(qrStoreId, "DN", storeRepository);                
                 qrOrder.setQrToken(qrToken);
-                qrOrder.setTableNo(tableNo);                
+                qrOrder.setTableNo(tableNo);   
+                qrOrder.setZone(zone);   
                 qrOrder.setInvoiceNo(invoiceId);
                 qrOrder.setStoreId(qrStoreId); 
                 qrOrder.setPaymentStatus(PaymentStatus.PENDING);

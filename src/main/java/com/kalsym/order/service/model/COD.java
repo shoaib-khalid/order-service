@@ -31,7 +31,6 @@ public class COD implements Serializable {
     private List<CartItem> cartItems;
     private DineInPack dineInPack;
     private String storeId;
-    private String staffId;
     private ServiceType serviceType;
     
     public COD(String cartId, OrderShipmentDetail orderShipmentDetails, OrderPaymentDetail orderPaymentDetails) {

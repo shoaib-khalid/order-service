@@ -2,12 +2,15 @@
 # order-service-3.17.0-SNAPSHOT |27-Dec-2022
 ##################################################
 
-Add new parameter in placeGroupOrder : isStaffOrder
+Add new parameter in placeGroupOrder : isStaffOrder, staffId, tableNo, zone
 this field use for staff ordering feature. if isStaffOrder=yes, item need to be sent during placeGroupOrder
 
 ##DB Changes:
 ALTER TABLE `order_group` ADD staffId varchar(50);
+ALTER TABLE `qrcode_order_group` ADD zone VARCHAR(50);
 
+ALTER TABLE `order` ADD tableNo VARCHAR(50);
+ALTER TABLE `order` ADD zone VARCHAR(50);
 
 ##################################################
 # order-service-3.16.0-SNAPSHOT |13-Dec-2022

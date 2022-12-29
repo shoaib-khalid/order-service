@@ -64,6 +64,8 @@ public class Order implements Serializable {
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
     private String customerNotes;
+    private String tableNo;
+    private String zone;
     private String privateAdminNotes;
     private String cartId;
     private String customerId;

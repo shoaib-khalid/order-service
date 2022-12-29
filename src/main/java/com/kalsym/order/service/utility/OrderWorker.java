@@ -95,6 +95,8 @@ public class OrderWorker {
             Boolean saveCustomerInformation,
             Boolean sendReceiptToReceiver,  
             Channel channel,
+            String tableNo,
+            String zone,
             String onboardingOrderLink,
             String invoiceBaseUrl,
             String logprefix,
@@ -401,7 +403,9 @@ public class OrderWorker {
                     order.setPaymentType(storeWithDetials.getPaymentType());                
                 }
                 order.setCustomerNotes(cod.getCustomerNotes());
-
+                order.setTableNo(tableNo);
+                order.setZone(zone);
+                
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceChargesPercentage: " + storeWithDetials.getServiceChargesPercentage());
 
                 // setting invoice id

@@ -30,6 +30,7 @@ public class OrderPaymentDetail implements Serializable {
     @Id
     private String orderId;
     
+    private String paymentChannel;
     
     private String  deliveryQuotationReferenceId;
     private Double deliveryQuotationAmount;
