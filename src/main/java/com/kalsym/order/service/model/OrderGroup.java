@@ -103,9 +103,7 @@ public class OrderGroup implements Serializable, Comparable<OrderGroup> {
     private String regionCountryId;
     
     private Long orderQrGroupId;
-    
-    private String staffId;
-    
+   
     @Transient
     private PaymentStatus orderQrPaymentStatus;
     

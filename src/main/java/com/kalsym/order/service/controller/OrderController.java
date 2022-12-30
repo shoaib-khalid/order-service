@@ -778,6 +778,7 @@ public class OrderController {
             @RequestParam(required = false) String tableNo, 
             @RequestParam(required = false) String zone, 
             @RequestParam(required = false) String paymentChannel, 
+            @RequestParam(required = false) String staffId, 
             @RequestBody COD cod) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         
@@ -946,7 +947,7 @@ public class OrderController {
                 saveCustomerInformation, 
                 sendReceiptToReceiver,
                 channel,
-                tableNo, zone,  paymentChannel,
+                tableNo, zone,  paymentChannel, staffId,
                 onboardingOrderLink, orderInvoiceBaseUrl, logprefix, 
                 cartRepository, cartItemRepository, customerVoucherRepository, 
                 storeDetailsRepository, storeDeliveryDetailRepository, 
@@ -1356,7 +1357,7 @@ public class OrderController {
                     saveCustomerInformation, 
                     sendReceiptToReceiver,
                     channel,
-                    tableNo, zone, paymentChannel,
+                    tableNo, zone, paymentChannel, staffId,
                     onboardingOrderLink, orderInvoiceBaseUrl, logprefix, 
                     cartRepository, cartItemRepository, customerVoucherRepository, 
                     storeDetailsRepository, storeDeliveryDetailRepository, 
@@ -1467,11 +1468,7 @@ public class OrderController {
             orderGroup.setChannel(channel);
         else
             orderGroup.setChannel(Channel.DELIVERIN);
-        
-        if (isStaffOrder!=null && isStaffOrder) {
-            orderGroup.setStaffId(staffId);
-        }
-        
+       
         Long qrGroupOrderId = null;
         if (orderGroup.getServiceType()==ServiceType.DINEIN && consolidateOrder==true && tableNo!=null && !tableNo.equals("")) {            
             QrcodeOrderGroup qrOrder = qrcodeOrderGroupRepository.findByStoreIdAndTableNoAndPaymentStatus(qrStoreId, tableNo, PaymentStatus.PENDING);

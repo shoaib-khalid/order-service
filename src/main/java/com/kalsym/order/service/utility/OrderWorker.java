@@ -98,6 +98,7 @@ public class OrderWorker {
             String tableNo,
             String zone,
             String paymentChannel,
+            String staffId,
             String onboardingOrderLink,
             String invoiceBaseUrl,
             String logprefix,
@@ -415,7 +416,10 @@ public class OrderWorker {
 
                 // setting this empty
                 order.setPrivateAdminNotes("");
-
+                
+                //set staff id
+                order.setStaffId(staffId);
+                
                 OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission, 
                         cod.getOrderPaymentDetails().getDeliveryQuotationAmount(), cod.getOrderShipmentDetails().getDeliveryType(), null, customerStoreVoucher, storeWithDetials.getVerticalCode(), 
                         cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, cartItems);                
@@ -460,7 +464,7 @@ public class OrderWorker {
                     order.setChannel(channel);
                 } else {
                     order.setChannel(Channel.DELIVERIN);
-                }
+                }    
                 
                 // saving order object to get order Id
                 order = orderRepository.save(order);

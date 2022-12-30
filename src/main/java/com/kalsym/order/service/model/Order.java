@@ -132,6 +132,8 @@ public class Order implements Serializable {
     private String storeVoucherId;
     
     private String orderGroupId;       
+         
+    private String staffId;
     
     @Enumerated(EnumType.STRING)
     private ServiceType serviceType;
