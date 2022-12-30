@@ -97,6 +97,7 @@ public class OrderWorker {
             Channel channel,
             String tableNo,
             String zone,
+            String paymentChannel,
             String onboardingOrderLink,
             String invoiceBaseUrl,
             String logprefix,

@@ -761,6 +761,7 @@ public class OrderController {
      * @param qrToken
      * @param tableNo
      * @param zone
+     * @param paymentChannel
      * @return
      * @throws Exception
      */
@@ -776,6 +777,7 @@ public class OrderController {
             @RequestParam(required = false) String qrToken,
             @RequestParam(required = false) String tableNo, 
             @RequestParam(required = false) String zone, 
+            @RequestParam(required = false) String paymentChannel, 
             @RequestBody COD cod) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         
@@ -944,7 +946,7 @@ public class OrderController {
                 saveCustomerInformation, 
                 sendReceiptToReceiver,
                 channel,
-                tableNo, zone,
+                tableNo, zone,  paymentChannel,
                 onboardingOrderLink, orderInvoiceBaseUrl, logprefix, 
                 cartRepository, cartItemRepository, customerVoucherRepository, 
                 storeDetailsRepository, storeDeliveryDetailRepository, 
@@ -1098,6 +1100,7 @@ public class OrderController {
      * @param tableNo
      * @param isStaffOrder
      * @param staffId
+     * @param paymentChannel
      * @param codList
      * @return
      * @throws Exception
@@ -1113,7 +1116,8 @@ public class OrderController {
             @RequestParam(required = false) String zone,
             @RequestParam(required = false) String tableNo,
             @RequestParam(required = false) Boolean isStaffOrder,
-            @RequestParam(required = false) String staffId,            
+            @RequestParam(required = false) String staffId,   
+            @RequestParam(required = false) String paymentChannel,   
             @RequestBody COD[] codList) throws Exception {
         String logprefix = request.getRequestURI() + " ";
        
@@ -1352,7 +1356,7 @@ public class OrderController {
                     saveCustomerInformation, 
                     sendReceiptToReceiver,
                     channel,
-                    tableNo, zone,
+                    tableNo, zone, paymentChannel,
                     onboardingOrderLink, orderInvoiceBaseUrl, logprefix, 
                     cartRepository, cartItemRepository, customerVoucherRepository, 
                     storeDetailsRepository, storeDeliveryDetailRepository, 

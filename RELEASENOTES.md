@@ -11,6 +11,8 @@ ALTER TABLE `qrcode_order_group` ADD zone VARCHAR(50);
 
 ALTER TABLE `order` ADD tableNo VARCHAR(50);
 ALTER TABLE `order` ADD zone VARCHAR(50);
+ALTER TABLE `order` ADD paymentChannel VARCHAR(50);
+
 
 ##################################################
 # order-service-3.16.0-SNAPSHOT |13-Dec-2022
