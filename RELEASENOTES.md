@@ -12,6 +12,7 @@ ALTER TABLE `qrcode_order_group` ADD zone VARCHAR(50);
 ALTER TABLE `order` ADD tableNo VARCHAR(50);
 ALTER TABLE `order` ADD zone VARCHAR(50);
 ALTER TABLE `order` ADD paymentChannel VARCHAR(50);
+ALTER TABLE `order` ADD staffId varchar(50);
 
 
 ##################################################
