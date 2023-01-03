@@ -36,6 +36,8 @@ public class OrderPaymentDetail implements Serializable {
     @Column(columnDefinition = "TINYINT(1) default 0")
     private Boolean isCombinedDelivery;
     
+    private String paymentChannel;
+    
     public void update(OrderPaymentDetail orderPaymentDetail) {
 
     }

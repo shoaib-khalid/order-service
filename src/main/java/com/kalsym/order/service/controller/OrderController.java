@@ -1118,7 +1118,6 @@ public class OrderController {
             @RequestParam(required = false) String tableNo,
             @RequestParam(required = false) Boolean isStaffOrder,
             @RequestParam(required = false) String staffId,   
-            @RequestParam(required = false) String paymentChannel,   
             @RequestBody COD[] codList) throws Exception {
         String logprefix = request.getRequestURI() + " ";
        
@@ -1346,11 +1345,14 @@ public class OrderController {
                 orderShipmentDetails.setStorePickup(true);
                 cod.setOrderShipmentDetails(orderShipmentDetails);
             }
+            
+            String paymentChannel=null;
             if (cod.getOrderPaymentDetails()==null) {
                 OrderPaymentDetail orderPaymentDetails = new OrderPaymentDetail();
                 cod.setOrderPaymentDetails(orderPaymentDetails);
+                paymentChannel = cod.getOrderPaymentDetails().getPaymentChannel();
             }
-            
+                        
             HttpResponse orderResponse = OrderWorker.placeOrder(
                     request.getRequestURI(), optCart.get(), selectedCartItem, cod, optStore.get(), optStoreDeliveryDetail.get(),
                     customerStoreVoucher,

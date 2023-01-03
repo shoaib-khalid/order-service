@@ -14,6 +14,7 @@ ALTER TABLE `order` ADD zone VARCHAR(50);
 ALTER TABLE `order` ADD paymentChannel VARCHAR(50);
 ALTER TABLE `order` ADD staffId varchar(50);
 
+ALTER TABLE `order_payment_detail` ADD paymentChannel VARCHAR(50);
 
 ##################################################
 # order-service-3.16.0-SNAPSHOT |13-Dec-2022
