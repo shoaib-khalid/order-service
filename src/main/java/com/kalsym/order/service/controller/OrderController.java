@@ -1349,7 +1349,8 @@ public class OrderController {
             String paymentChannel=null;
             if (cod.getOrderPaymentDetails()==null) {
                 OrderPaymentDetail orderPaymentDetails = new OrderPaymentDetail();
-                cod.setOrderPaymentDetails(orderPaymentDetails);
+                cod.setOrderPaymentDetails(orderPaymentDetails);                
+            } else {
                 paymentChannel = cod.getOrderPaymentDetails().getPaymentChannel();
             }
                         
