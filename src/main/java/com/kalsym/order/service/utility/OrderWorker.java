@@ -420,6 +420,9 @@ public class OrderWorker {
                 //set staff id
                 order.setStaffId(staffId);
                 
+                //set payment channel
+                order.setPaymentChannel(paymentChannel);
+                
                 OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission, 
                         cod.getOrderPaymentDetails().getDeliveryQuotationAmount(), cod.getOrderShipmentDetails().getDeliveryType(), null, customerStoreVoucher, storeWithDetials.getVerticalCode(), 
                         cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, cartItems);                
