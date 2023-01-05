@@ -469,17 +469,19 @@ public class CartItemController {
             isPackage = optProduct.get().getIsPackage();
         }
         if (isPackage) {
-            cartItem.update(bodyCartItem, (float)itemPrice);
-            //clear sub item for previous item
-            cartSubItemRepository.clearCartSubItem(cartItem.getId());
+            cartItem.update(bodyCartItem, (float)itemPrice);            
              //save sub cart item
             if (bodyCartItem.getCartSubItem()!=null) {
+                //clear sub item for previous item
+                cartSubItemRepository.clearCartSubItem(cartItem.getId());
                 for (int i=0;i<bodyCartItem.getCartSubItem().size();i++) {
                     CartSubItem subItem = bodyCartItem.getCartSubItem().get(i);
                     subItem.setCartItemId(cartItem.getId());
                     cartSubItemRepository.save(subItem);
                 }
-            }            
+            } else {
+                //not clear subItem if not provide subItem
+            }           
         } else {
             //update product add-on price
             if (cartItem.getCartItemAddOn()!=null) {

@@ -1,4 +1,11 @@
 ##################################################
+# order-service-3.16.0-HOTFIX |5-Jan-2023
+##################################################
+1. Bug fix for update cart item price & specialInstruction
+2. Bug fix for PUT cartItem, not clear subItem if subItem not provided
+
+
+##################################################
 # order-service-3.16.0-SNAPSHOT |13-Dec-2022
 ##################################################
 

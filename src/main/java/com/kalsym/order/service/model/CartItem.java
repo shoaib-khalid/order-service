@@ -77,6 +77,14 @@ public class CartItem implements Serializable {
     public void update(CartItem cartItem, float itemPrice) {
         quantity = cartItem.getQuantity();
         price = (Float.parseFloat(String.valueOf(quantity))) * itemPrice;
+        if (cartItem.getQuantity()>0) {
+            quantity = cartItem.getQuantity();
+            price = (Float.parseFloat(String.valueOf(quantity))) * itemPrice;
+        }
+        
+        if (cartItem.getSpecialInstruction()!=null) {
+            specialInstruction = cartItem.getSpecialInstruction();
+        }
 //        id = cartItem.getId();
 //        cartId = cartItem.getCartId();
 //        productId = cartItem.getProductId();
