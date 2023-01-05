@@ -2,8 +2,10 @@
 # order-service-3.17.0-SNAPSHOT |27-Dec-2022
 ##################################################
 
-Add new parameter in placeGroupOrder : isStaffOrder, staffId, tableNo, zone
-this field use for staff ordering feature. if isStaffOrder=yes, item need to be sent during placeGroupOrder
+1. Add new parameter in placeGroupOrder : isStaffOrder, staffId, tableNo, zone
+   this field use for staff ordering feature. if isStaffOrder=yes, item need to be sent during placeGroupOrder
+
+2. Not clear subItem if subItem not provided during PUT cartItem
 
 ##DB Changes:
 ALTER TABLE `order_group` ADD staffId varchar(50);
@@ -13,6 +15,7 @@ ALTER TABLE `order` ADD tableNo VARCHAR(50);
 ALTER TABLE `order` ADD zone VARCHAR(50);
 ALTER TABLE `order` ADD paymentChannel VARCHAR(50);
 ALTER TABLE `order` ADD staffId varchar(50);
+ALTER TABLE `order` ADD FOREIGN KEY (staffId) REFERENCES store_user(id);
 
 ALTER TABLE `order_payment_detail` ADD paymentChannel VARCHAR(50);
 
