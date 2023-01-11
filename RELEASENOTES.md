@@ -1,5 +1,5 @@
 ##################################################
-# order-service-3.17.0-SNAPSHOT |27-Dec-2022
+# order-service-3.17.0-SNAPSHOT |11-Jan-2022
 ##################################################
 
 1. Add new parameter in placeGroupOrder : isStaffOrder, staffId, tableNo, zone
@@ -18,6 +18,13 @@ ALTER TABLE `order` ADD staffId varchar(50);
 ALTER TABLE `order` ADD FOREIGN KEY (staffId) REFERENCES store_user(id);
 
 ALTER TABLE `order_payment_detail` ADD paymentChannel VARCHAR(50);
+
+CREATE TABLE payment_channel (
+channelCode VARCHAR(20) PRIMARY KEY,
+channelName VARCHAR(100),
+imageUrl VARCHAR(200)
+);
+
 
 ##################################################
 # order-service-3.16.0-SNAPSHOT |13-Dec-2022

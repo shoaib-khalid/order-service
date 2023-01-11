@@ -34,6 +34,7 @@ import com.kalsym.order.service.model.QrcodeGenerateResponse;
 import com.kalsym.order.service.model.QrcodeValidateResponse;
 import com.kalsym.order.service.model.Voucher;
 import com.kalsym.order.service.model.Product;
+import com.kalsym.order.service.model.PaymentChannel;
 import com.kalsym.order.service.model.repository.OrderGroupRepository;
 import com.kalsym.order.service.model.repository.OrderWithDetailsRepository;
 import com.kalsym.order.service.model.repository.TagRepository;
@@ -41,6 +42,7 @@ import com.kalsym.order.service.model.repository.QrcodeSessionRepository;
 import com.kalsym.order.service.model.repository.QrcodeOrderGroupRepository;
 import com.kalsym.order.service.model.repository.StoreDetailsRepository;
 import com.kalsym.order.service.model.repository.VoucherSearchSpecs;
+import com.kalsym.order.service.model.repository.PaymentChannelRepository;
 import com.kalsym.order.service.service.FCMService;
 import com.kalsym.order.service.utility.HttpResponse;
 import com.kalsym.order.service.utility.Logger;
@@ -106,6 +108,9 @@ public class QrOrderController {
     
     @Autowired
     StoreDetailsRepository storeDetailsRepository;
+    
+    @Autowired
+    PaymentChannelRepository paymentChannelRepository;
     
     @Autowired
     FCMService fcmService;
@@ -350,5 +355,15 @@ public class QrOrderController {
             }
             qrOrder.setOrderItemWithDetails(qrOrderItem);
         }
+    }
+    
+    
+    @GetMapping(path = {"/paymentChannel"}, name = "qrorder-search")
+    public ResponseEntity<HttpResponse> paymentChannel(HttpServletRequest request) {   
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        List<PaymentChannel> paymentChannelList = paymentChannelRepository.findAll();
+        response.setSuccessStatus(HttpStatus.OK);        
+        response.setData(paymentChannelList);
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 }
