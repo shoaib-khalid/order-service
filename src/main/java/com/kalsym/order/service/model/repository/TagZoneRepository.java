@@ -20,6 +20,6 @@ import org.springframework.stereotype.Repository;
  * @author taufik
  */
 @Repository
-public interface TagZoneRepository extends PagingAndSortingRepository<TagZone, String>, JpaRepository<TagZone, String> {
+public interface TagZoneRepository extends PagingAndSortingRepository<TagZone, Integer>, JpaRepository<TagZone, Integer> {
   
 }
