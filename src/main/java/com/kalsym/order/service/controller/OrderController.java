@@ -72,6 +72,8 @@ import com.kalsym.order.service.model.ProductAddOn;
 import com.kalsym.order.service.model.TagConfig;
 import com.kalsym.order.service.model.TagDetails;
 import com.kalsym.order.service.model.TagKeyword;
+import com.kalsym.order.service.model.TagTable;
+import com.kalsym.order.service.model.TagZone;
 import com.kalsym.order.service.model.TagProductFeature;
 import com.kalsym.order.service.model.object.Discount;
 import com.kalsym.order.service.model.object.OrderObject;
@@ -110,6 +112,8 @@ import com.kalsym.order.service.model.repository.OrderGroupRepository;
 import com.kalsym.order.service.model.repository.ProductAddOnRepository;
 import com.kalsym.order.service.model.repository.TagRepository;
 import com.kalsym.order.service.model.repository.TagProductFeatureRepository;
+import com.kalsym.order.service.model.repository.TagTableRepository;
+import com.kalsym.order.service.model.repository.TagZoneRepository;
 import com.kalsym.order.service.service.CustomerService;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.FCMService;
@@ -267,6 +271,12 @@ public class OrderController {
     
     @Autowired
     TagRepository tagRepository;
+    
+    @Autowired
+    TagTableRepository tagTableRepository;
+     
+    @Autowired
+    TagZoneRepository tagZoneRepository;
     
     @Autowired
     TagProductFeatureRepository tagProductFeatureRepository;
@@ -1097,8 +1107,8 @@ public class OrderController {
      * @param sendReceiptToReceiver
      * @param channel
      * @param qrToken
-     * @param zone
-     * @param tableNo
+     * @param zoneId
+     * @param tableId
      * @param isStaffOrder
      * @param staffId
      * @param paymentChannel
@@ -1114,8 +1124,8 @@ public class OrderController {
             @RequestParam(required = false) Boolean sendReceiptToReceiver,
             @RequestParam(required = false) Channel channel,
             @RequestParam(required = false) String qrToken,
-            @RequestParam(required = false) String zone,
-            @RequestParam(required = false) String tableNo,
+            @RequestParam(required = false) String zoneId,
+            @RequestParam(required = false) String tableId,
             @RequestParam(required = false) Boolean isStaffOrder,
             @RequestParam(required = false) String staffId,   
             @RequestBody COD[] codList) throws Exception {
@@ -1175,6 +1185,24 @@ public class OrderController {
         }
         
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "CustomerId:"+customerId+" customerEmail:"+customerEmail);
+        
+        //get tableName & zoneName
+        String zone="";
+        if (zoneId!=null) {
+            Optional<TagZone> tagZoneOpt = tagZoneRepository.findById(zoneId);
+            if (tagZoneOpt.isPresent()) {
+                zone = tagZoneOpt.get().getZoneName();
+            }
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "ZoneId:"+zoneId+" zoneName:"+zone);
+        }
+        String tableNo="";
+        if (tableId!=null) {
+            Optional<TagTable> tagTableOpt = tagTableRepository.findById(tableId);
+            if (tagTableOpt.isPresent()) {
+                tableNo = tagTableOpt.get().getTableNumber();
+            }
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "TableId:"+tableId+" tableNo:"+tableNo);
+        }
         
         //check platform voucher code if provided
         CustomerVoucher customerPlatformVoucher = null;

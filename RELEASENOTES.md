@@ -11,8 +11,8 @@
 ALTER TABLE `order_group` ADD staffId varchar(50);
 ALTER TABLE `qrcode_order_group` ADD zone VARCHAR(50);
 
-ALTER TABLE `order` ADD tableNo VARCHAR(50);
-ALTER TABLE `order` ADD zone VARCHAR(50);
+ALTER TABLE `order` ADD tableNo VARCHAR(50) charset utf-8;
+ALTER TABLE `order` ADD zone VARCHAR(100) charset utf-8;
 ALTER TABLE `order` ADD paymentChannel VARCHAR(50);
 ALTER TABLE `order` ADD staffId varchar(50);
 ALTER TABLE `order` ADD FOREIGN KEY (staffId) REFERENCES store_user(id);
