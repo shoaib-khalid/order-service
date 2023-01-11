@@ -1124,8 +1124,8 @@ public class OrderController {
             @RequestParam(required = false) Boolean sendReceiptToReceiver,
             @RequestParam(required = false) Channel channel,
             @RequestParam(required = false) String qrToken,
-            @RequestParam(required = false) String zoneId,
-            @RequestParam(required = false) String tableId,
+            @RequestParam(required = false) Integer zoneId,
+            @RequestParam(required = false) Integer tableId,
             @RequestParam(required = false) Boolean isStaffOrder,
             @RequestParam(required = false) String staffId,   
             @RequestBody COD[] codList) throws Exception {
