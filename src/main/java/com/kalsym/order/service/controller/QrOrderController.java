@@ -213,6 +213,14 @@ public class QrOrderController {
         
     }
     
+    @GetMapping(path = {"/paymentChannel"}, name = "payment-channel")
+    public ResponseEntity<HttpResponse> paymentChannel(HttpServletRequest request) {   
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        List<PaymentChannel> paymentChannelList = paymentChannelRepository.findAll();
+        response.setSuccessStatus(HttpStatus.OK);        
+        response.setData(paymentChannelList);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
     
     @PutMapping(path = {"/update"}, name = "qrorder-update")
     public ResponseEntity<HttpResponse> update(HttpServletRequest request, 
@@ -296,7 +304,7 @@ public class QrOrderController {
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
-    
+        
     
     private void consolidateItem(List<QrcodeOrderGroup> qrOrderList) {
         //consolidate item
@@ -358,12 +366,5 @@ public class QrOrderController {
     }
     
     
-    @GetMapping(path = {"/paymentChannel"}, name = "qrorder-search")
-    public ResponseEntity<HttpResponse> paymentChannel(HttpServletRequest request) {   
-        HttpResponse response = new HttpResponse(request.getRequestURI());
-        List<PaymentChannel> paymentChannelList = paymentChannelRepository.findAll();
-        response.setSuccessStatus(HttpStatus.OK);        
-        response.setData(paymentChannelList);
-        return ResponseEntity.status(response.getStatus()).body(response);
-    }
+    
 }
