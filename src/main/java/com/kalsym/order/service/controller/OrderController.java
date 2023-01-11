@@ -1199,7 +1199,7 @@ public class OrderController {
         if (tableId!=null) {
             Optional<TagTable> tagTableOpt = tagTableRepository.findById(tableId);
             if (tagTableOpt.isPresent()) {
-                tableNo = tagTableOpt.get().getTableNumber();
+                tableNo = tagTableOpt.get().getTablePrefix() + tagTableOpt.get().getTableNumber();
             }
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "TableId:"+tableId+" tableNo:"+tableNo);
         }
