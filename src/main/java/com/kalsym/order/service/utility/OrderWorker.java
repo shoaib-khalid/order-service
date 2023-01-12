@@ -411,7 +411,11 @@ public class OrderWorker {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceChargesPercentage: " + storeWithDetials.getServiceChargesPercentage());
 
                 // setting invoice id
-                String invoiceId = TxIdUtil.generateInvoiceId(storeWithDetials.getId(), storeWithDetials.getNameAbreviation(), storeRepository);
+                String invoicePrefix = storeWithDetials.getNameAbreviation();
+                if (storeWithDetials.getStorePrefix()!=null) {
+                    invoicePrefix = storeWithDetials.getStorePrefix();
+                } 
+                String invoiceId = TxIdUtil.generateInvoiceId(storeWithDetials.getId(), invoicePrefix, storeRepository);
                 order.setInvoiceId(invoiceId);
 
                 // setting this empty

@@ -79,6 +79,8 @@ public class StoreWithDetails implements Serializable {
     
     private String dineInPaymentType;
     
+    private String storePrefix;
+    
     @Enumerated(EnumType.STRING)
     private DineInOption dineInOption;
     
