@@ -25,6 +25,8 @@ channelName VARCHAR(100),
 imageUrl VARCHAR(200)
 );
 
+alter table cart_subitem add productPackageOptionId varchar(50);
+
 
 ##################################################
 # order-service-3.16.0-SNAPSHOT |13-Dec-2022

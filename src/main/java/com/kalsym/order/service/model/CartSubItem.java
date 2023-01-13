@@ -44,7 +44,8 @@ public class CartSubItem implements Serializable {
     private String SKU;
     private String productName;
     private String specialInstruction;
-
+    private String productPackageOptionId;
+            
     /*@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cartId", insertable=false, updatable=false)
     private Cart cartMain;
