@@ -32,6 +32,7 @@ public class COD implements Serializable {
     private DineInPack dineInPack;
     private String storeId;
     private ServiceType serviceType;
+    private String paymentType;
     
     public COD(String cartId, OrderShipmentDetail orderShipmentDetails, OrderPaymentDetail orderPaymentDetails) {
         this.cartId = cartId;

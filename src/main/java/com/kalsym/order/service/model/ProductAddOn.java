@@ -39,6 +39,8 @@ public class ProductAddOn {
     private String addonTemplateItemId;
     private Double price;
     private Double dineInPrice;
+    private Integer sequenceNumber;
+    private String productAddonGroupId;
     
     public enum Status {
         AVAILABLE,

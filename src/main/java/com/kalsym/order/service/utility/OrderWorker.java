@@ -399,7 +399,10 @@ public class OrderWorker {
                     order.setDeliveryCharges(0.00);
                     order.setPaymentType(storeWithDetials.getDineInPaymentType()); 
                     order.setDineInOption(storeWithDetials.getDineInOption());
-                    order.setDineInPack(cod.getDineInPack());
+                    order.setDineInPack(cod.getDineInPack());                    
+                    if (cod.getPaymentType()!=null) {
+                        order.setPaymentType(cod.getPaymentType());
+                    }
                 } else {
                     order.setDeliveryCharges(cod.getOrderPaymentDetails().getDeliveryQuotationAmount());
                     order.setPaymentType(storeWithDetials.getPaymentType());                
