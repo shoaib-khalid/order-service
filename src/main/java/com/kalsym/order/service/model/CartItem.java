@@ -79,17 +79,33 @@ public class CartItem implements Serializable {
         if (cartItem.getQuantity()>0) {
             quantity = cartItem.getQuantity();
             price = (Float.parseFloat(String.valueOf(quantity))) * itemPrice;
+            productPrice = itemPrice;
         }
         
         if (cartItem.getSpecialInstruction()!=null) {
             specialInstruction = cartItem.getSpecialInstruction();
         }
-//        id = cartItem.getId();
-//        cartId = cartItem.getCartId();
-//        productId = cartItem.getProductId();
-//        itemCode = cartItem.getItemCode();
-//        productName = cartItem.getProductName();
-//        SKU = cartItem.getSKU();
+
+        if (cartItem.getProductId()!=null) {
+            productId = cartItem.getProductId();
+        }
+        
+        if (cartItem.getItemCode()!=null) {
+            itemCode = cartItem.getItemCode();
+        }
+        
+        if (cartItem.getDiscountId()!=null) {
+            discountId = cartItem.getDiscountId();
+        }
+        
+        if (cartItem.getNormalPrice()!=null) {
+            normalPrice = cartItem.getNormalPrice();
+        }
+        
+        if (cartItem.getDiscountLabel()!=null) {
+            discountLabel = cartItem.getDiscountLabel();
+        }
+       
     }
        
 
