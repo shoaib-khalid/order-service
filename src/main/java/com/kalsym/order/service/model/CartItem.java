@@ -91,7 +91,11 @@ public class CartItem implements Serializable {
         }
         
         if (cartItem.getItemCode()!=null) {
-            itemCode = cartItem.getItemCode();
+            itemCode = cartItem.getItemCode();                         
+        }
+        
+         if (cartItem.getSKU()!=null) {
+            SKU = cartItem.getSKU();                         
         }
         
         if (cartItem.getDiscountId()!=null) {
