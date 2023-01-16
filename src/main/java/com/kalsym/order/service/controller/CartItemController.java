@@ -520,7 +520,7 @@ public class CartItemController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Message sent via websocket to /topic/cart/"+savedCart.get().getId() );        
         }
         
-        cartItemRepository.save(cartItem);
+        cartItemRepository.saveAndFlush(cartItem);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem updated for cartItemId: " + id);
         
         //query back the info get completed details
