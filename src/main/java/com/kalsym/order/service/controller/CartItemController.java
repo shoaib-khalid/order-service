@@ -507,29 +507,29 @@ public class CartItemController {
                     cartItemAddOnRepository.refresh(cartItemAddOn);
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "saved cartItemAddOn Id:"+cartItemAddOn.getId());
                 }
-            } else {            
-                //update product add-on price
-                if (cartItem.getCartItemAddOn()!=null && bodyCartItem.getQuantity()>0) {
-                    for (int i=0;i<cartItem.getCartItemAddOn().size();i++) {
-                        CartItemAddOn addOnItem = cartItem.getCartItemAddOn().get(i);
-                        //get add-on price
-                        Optional<ProductAddOn> productAddOnOpt = productAddOnRepository.findById(addOnItem.getProductAddOnId());
-                        if (productAddOnOpt.isPresent()) {
-                            if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN){
-                                addOnItem.setPrice(productAddOnOpt.get().getDineInPrice().floatValue() * bodyCartItem.getQuantity());
-                            } else {
-                                addOnItem.setPrice(productAddOnOpt.get().getPrice().floatValue() * bodyCartItem.getQuantity());
-                            }
-                        } 
-                        cartItemAddOnRepository.saveAndFlush(addOnItem);
-                        cartItemAddOnRepository.refresh(addOnItem);
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "saved cartItemAddOn Id:"+addOnItem.getId());
-                    }
-                }
-                //find product invertory against itemcode to set sku
-                cartItem.update(bodyCartItem, (float)itemPrice);            
-            }
+            }   
             
+            //update product add-on price
+            if (cartItem.getCartItemAddOn()!=null && bodyCartItem.getQuantity()>0) {
+                for (int i=0;i<cartItem.getCartItemAddOn().size();i++) {
+                    CartItemAddOn addOnItem = cartItem.getCartItemAddOn().get(i);
+                    //get add-on price
+                    Optional<ProductAddOn> productAddOnOpt = productAddOnRepository.findById(addOnItem.getProductAddOnId());
+                    if (productAddOnOpt.isPresent()) {
+                        if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN){
+                            addOnItem.setPrice(productAddOnOpt.get().getDineInPrice().floatValue() * bodyCartItem.getQuantity());
+                        } else {
+                            addOnItem.setPrice(productAddOnOpt.get().getPrice().floatValue() * bodyCartItem.getQuantity());
+                        }
+                    } 
+                    cartItemAddOnRepository.saveAndFlush(addOnItem);
+                    cartItemAddOnRepository.refresh(addOnItem);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "saved cartItemAddOn Id:"+addOnItem.getId());
+                }
+            }
+            //find product invertory against itemcode to set sku
+            cartItem.update(bodyCartItem, (float)itemPrice);            
+                        
         }
         
         //update updated field for cart
