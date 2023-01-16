@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author 7cu
  */
 @Repository
-public interface CartItemAddOnRepository extends PagingAndSortingRepository<CartItemAddOn, String>, JpaRepository<CartItemAddOn, String> {
+public interface CartItemAddOnRepository extends PagingAndSortingRepository<CartItemAddOn, String>, JpaRepository<CartItemAddOn, String>, CustomRepository<CartItemAddOn, String> {
 
      /**
      * clear cart item

@@ -504,6 +504,7 @@ public class CartItemController {
                         }
                     }
                     cartItemAddOnRepository.saveAndFlush(cartItemAddOn);
+                    cartItemAddOnRepository.refresh(cartItemAddOn);
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "saved cartItemAddOn Id:"+cartItemAddOn.getId());
                 }
             } else {            
@@ -521,6 +522,7 @@ public class CartItemController {
                             }
                         } 
                         cartItemAddOnRepository.saveAndFlush(addOnItem);
+                        cartItemAddOnRepository.refresh(addOnItem);
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "saved cartItemAddOn Id:"+addOnItem.getId());
                     }
                 }
