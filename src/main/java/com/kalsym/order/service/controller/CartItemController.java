@@ -520,8 +520,11 @@ public class CartItemController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Message sent via websocket to /topic/cart/"+savedCart.get().getId() );        
         }
         
-        CartItem updatedCartItem = cartItemRepository.save(cartItem);
+        cartItemRepository.save(cartItem);
         
+        //query back the info get completed details
+        Optional<CartItem> cartItemOpt = cartItemRepository.findById(id);
+        CartItem updatedCartItem = cartItemOpt.get();
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem updated for cartItemId: " + id);
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(updatedCartItem);
