@@ -521,11 +521,12 @@ public class CartItemController {
         }
         
         cartItemRepository.save(cartItem);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem updated for cartItemId: " + id);
         
         //query back the info get completed details
-        Optional<CartItem> cartItemOpt = cartItemRepository.findById(id);
+        Optional<CartItem> cartItemOpt = cartItemRepository.findById(cartItem.getId());
         CartItem updatedCartItem = cartItemOpt.get();
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem updated for cartItemId: " + id);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "updated cartItem: " + updatedCartItem.toString());
         response.setSuccessStatus(HttpStatus.ACCEPTED);
         response.setData(updatedCartItem);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
