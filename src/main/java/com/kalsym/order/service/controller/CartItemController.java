@@ -523,12 +523,12 @@ public class CartItemController {
         cartItemRepository.saveAndFlush(cartItem);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem updated for cartItemId: " + id);
         
-        //query back the info get completed details
-        Optional<CartItem> cartItemOpt = cartItemRepository.findById(cartItem.getId());
-        CartItem updatedCartItem = cartItemOpt.get();
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "updated cartItem: " + updatedCartItem.toString());
+        //refresh the data to get latest from db
+        cartItemRepository.refresh(cartItem);
+        ProductInventory updatedProductInventory = cartItem.getProductInventory();
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "updated updatedProductInventory: " + updatedProductInventory.toString());
         response.setSuccessStatus(HttpStatus.ACCEPTED);
-        response.setData(updatedCartItem);
+        response.setData(cartItem);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
     
