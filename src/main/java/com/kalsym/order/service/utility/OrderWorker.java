@@ -653,7 +653,7 @@ public class OrderWorker {
                 if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN) {
                     storeDeliveryType = order.getDineInOption().name();
                 }
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Status:"+OrderStatus.RECEIVED_AT_STORE.name()+" VerticalId:"+verticalId+" storePickup:"+storePickup+" deliveryType:"+storeDeliveryType+" paymentType:"+order.getPaymentType());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "ServiceType:"+order.getServiceType()+" Status:"+OrderStatus.RECEIVED_AT_STORE.name()+" VerticalId:"+verticalId+" storePickup:"+storePickup+" deliveryType:"+storeDeliveryType+" paymentType:"+order.getPaymentType());
                 List<OrderCompletionStatusConfig> orderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, OrderStatus.RECEIVED_AT_STORE.name(), storePickup, storeDeliveryType, order.getPaymentType());
                 OrderCompletionStatusConfig orderCompletionStatusConfig = null;
                 if (orderCompletionStatusConfigs == null || orderCompletionStatusConfigs.isEmpty()) {

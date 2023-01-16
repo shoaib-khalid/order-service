@@ -422,9 +422,7 @@ public class CartItemController {
             response.setErrorStatus(HttpStatus.NOT_FOUND);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
-        
-           
-        
+
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem found with cartItemId: " + id);
         CartItem cartItem = optCartItem.get();
         cartItem.updateItemCode(bodyCartItem);
@@ -505,7 +503,7 @@ public class CartItemController {
                             cartItemAddOn.setProductPrice(productAddOnOpt.get().getPrice().floatValue());
                         }
                     }
-                    cartItemAddOnRepository.save(cartItemAddOn);
+                    cartItemAddOnRepository.saveAndFlush(cartItemAddOn);
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "saved cartItemAddOn Id:"+cartItemAddOn.getId());
                 }
             } else {            
@@ -522,7 +520,7 @@ public class CartItemController {
                                 addOnItem.setPrice(productAddOnOpt.get().getPrice().floatValue() * bodyCartItem.getQuantity());
                             }
                         } 
-                        cartItemAddOnRepository.save(addOnItem);
+                        cartItemAddOnRepository.saveAndFlush(addOnItem);
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "saved cartItemAddOn Id:"+addOnItem.getId());
                     }
                 }
