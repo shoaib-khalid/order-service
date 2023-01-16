@@ -19,5 +19,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface CartItemAddOnRepository extends PagingAndSortingRepository<CartItemAddOn, String>, JpaRepository<CartItemAddOn, String> {
 
-    
+     /**
+     * clear cart item
+     * @param queryCartItemId
+     */
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM CartItemAddOn m WHERE m.cartItemId = :queryCartItemId") 
+    public void clearCartAddOnItem(
+            @Param("queryCartItemId") String queryCartItemId
+    );
 }

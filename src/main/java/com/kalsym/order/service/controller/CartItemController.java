@@ -486,24 +486,50 @@ public class CartItemController {
                 //not clear subItem if subItem not provided
             }          
         } else {
-            //update product add-on price
-            if (cartItem.getCartItemAddOn()!=null && bodyCartItem.getQuantity()>0) {
-                for (int i=0;i<cartItem.getCartItemAddOn().size();i++) {
-                    CartItemAddOn addOnItem = cartItem.getCartItemAddOn().get(i);
+            //if itemAddOn being added
+            if (bodyCartItem.getCartItemAddOn()!=null && bodyCartItem.getCartItemAddOn().size()>0){
+                //clear sub item for previous item
+                cartItemAddOnRepository.clearCartAddOnItem(cartItem.getId());
+                //add new add-on item
+                for (int x=0;x<bodyCartItem.getCartItemAddOn().size();x++) {                     
+                    CartItemAddOn cartItemAddOn = bodyCartItem.getCartItemAddOn().get(x);
+                    cartItemAddOn.setCartItemId(cartItem.getId());
                     //get add-on price
-                    Optional<ProductAddOn> productAddOnOpt = productAddOnRepository.findById(addOnItem.getProductAddOnId());
+                    Optional<ProductAddOn> productAddOnOpt = productAddOnRepository.findById(cartItemAddOn.getProductAddOnId());
                     if (productAddOnOpt.isPresent()) {
                         if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN){
-                            addOnItem.setPrice(productAddOnOpt.get().getDineInPrice().floatValue() * bodyCartItem.getQuantity());
+                            cartItemAddOn.setPrice(productAddOnOpt.get().getDineInPrice().floatValue() * bodyCartItem.getQuantity());
+                            cartItemAddOn.setProductPrice(productAddOnOpt.get().getDineInPrice().floatValue());
                         } else {
-                            addOnItem.setPrice(productAddOnOpt.get().getPrice().floatValue() * bodyCartItem.getQuantity());
+                            cartItemAddOn.setPrice(productAddOnOpt.get().getPrice().floatValue() * bodyCartItem.getQuantity());
+                            cartItemAddOn.setProductPrice(productAddOnOpt.get().getPrice().floatValue());
                         }
                     }
-                    cartItemAddOnRepository.save(addOnItem);
+                    cartItemAddOnRepository.save(cartItemAddOn);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "saved cartItemAddOn Id:"+cartItemAddOn.getId());
                 }
+            } else {            
+                //update product add-on price
+                if (cartItem.getCartItemAddOn()!=null && bodyCartItem.getQuantity()>0) {
+                    for (int i=0;i<cartItem.getCartItemAddOn().size();i++) {
+                        CartItemAddOn addOnItem = cartItem.getCartItemAddOn().get(i);
+                        //get add-on price
+                        Optional<ProductAddOn> productAddOnOpt = productAddOnRepository.findById(addOnItem.getProductAddOnId());
+                        if (productAddOnOpt.isPresent()) {
+                            if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN){
+                                addOnItem.setPrice(productAddOnOpt.get().getDineInPrice().floatValue() * bodyCartItem.getQuantity());
+                            } else {
+                                addOnItem.setPrice(productAddOnOpt.get().getPrice().floatValue() * bodyCartItem.getQuantity());
+                            }
+                        } 
+                        cartItemAddOnRepository.save(addOnItem);
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "saved cartItemAddOn Id:"+addOnItem.getId());
+                    }
+                }
+                //find product invertory against itemcode to set sku
+                cartItem.update(bodyCartItem, (float)itemPrice);            
             }
-            //find product invertory against itemcode to set sku
-            cartItem.update(bodyCartItem, (float)itemPrice);
+            
         }
         
         //update updated field for cart
