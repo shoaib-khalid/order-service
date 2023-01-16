@@ -111,6 +111,23 @@ public class CartItem implements Serializable {
         }
        
     }
+    
+    
+    public void updateItemCode(CartItem cartItem) {
+       
+        if (cartItem.getProductId()!=null) {
+            productId = cartItem.getProductId();
+        }
+        
+        if (cartItem.getItemCode()!=null) {
+            itemCode = cartItem.getItemCode();                         
+        }
+        
+         if (cartItem.getSKU()!=null) {
+            SKU = cartItem.getSKU();                         
+        }              
+       
+    }
        
 
     @Transient

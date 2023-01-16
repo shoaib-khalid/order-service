@@ -423,8 +423,11 @@ public class CartItemController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         
+           
+        
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem found with cartItemId: " + id);
         CartItem cartItem = optCartItem.get();
+        cartItem.updateItemCode(bodyCartItem);
         
         ProductInventory productInventory = productService.getProductInventoryById(savedCart.get().getStoreId(), cartItem.getProductId(), cartItem.getItemCode());
             
@@ -446,7 +449,7 @@ public class CartItemController {
         } else if (serviceType==ServiceType.DELIVERIN) {
             //no dicount for this item code
             itemPrice = productInventory.getPrice();
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item no discount. price:"+itemPrice);            
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item no discount. deliverin price:"+itemPrice);            
         } else if (productInventory.getItemDiscount()!=null && serviceType==ServiceType.DINEIN) {
             if (productInventory.getItemDiscount().dineInDiscountAmount>0) {
                 //got discount
@@ -520,6 +523,7 @@ public class CartItemController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Message sent via websocket to /topic/cart/"+savedCart.get().getId() );        
         }
         
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "price:" + cartItem.getPrice()+" productPrice:"+cartItem.getProductPrice());
         cartItemRepository.saveAndFlush(cartItem);
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem updated for cartItemId: " + id);
         
