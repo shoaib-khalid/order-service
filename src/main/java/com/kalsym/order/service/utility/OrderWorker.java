@@ -397,7 +397,11 @@ public class OrderWorker {
                 
                 if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN) {
                     order.setDeliveryCharges(0.00);
-                    order.setPaymentType(storeWithDetials.getDineInPaymentType()); 
+                    if (cod.getPaymentType()!=null) {
+                        order.setPaymentType(cod.getPaymentType()); 
+                    } else {
+                        order.setPaymentType(storeWithDetials.getDineInPaymentType()); 
+                    }
                     order.setDineInOption(storeWithDetials.getDineInOption());
                     order.setDineInPack(cod.getDineInPack());                    
                     if (cod.getPaymentType()!=null) {
