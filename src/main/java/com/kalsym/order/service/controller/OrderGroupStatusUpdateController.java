@@ -213,6 +213,10 @@ public class OrderGroupStatusUpdateController {
             orderGroup.setPaidAmount(orderGroup.getTotal());
             orderGroupRepository.save(orderGroup);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Group paymentStatus updated to PAID for groupId:"+orderGroup.getId());
+        } else if (status==OrderStatus.PAYMENT_FAILED) {
+            orderGroup.setPaymentStatus("FAILED");
+            orderGroupRepository.save(orderGroup);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Group paymentStatus updated to FAILED for groupId:"+orderGroup.getId());
         }
         
         response.setData(orderGroup);
