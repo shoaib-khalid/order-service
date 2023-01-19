@@ -1378,7 +1378,11 @@ public class OrderController {
             if (cod.getOrderPaymentDetails()==null) {
                 OrderPaymentDetail orderPaymentDetails = new OrderPaymentDetail();
                 cod.setOrderPaymentDetails(orderPaymentDetails);
-                paymentChannel = cod.getPaymentType();
+                if (cod.getPaymentType()!=null && cod.getPaymentType().equalsIgnoreCase("COD")) {
+                    paymentChannel = "CASH";
+                } else {
+                    paymentChannel = cod.getPaymentType();
+                }
             } else {
                 paymentChannel = cod.getOrderPaymentDetails().getPaymentChannel();
             }
