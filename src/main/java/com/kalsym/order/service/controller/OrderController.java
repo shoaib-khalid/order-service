@@ -1376,13 +1376,14 @@ public class OrderController {
             
             String paymentChannel=null;
             if (cod.getOrderPaymentDetails()==null) {
-                OrderPaymentDetail orderPaymentDetails = new OrderPaymentDetail();
-                cod.setOrderPaymentDetails(orderPaymentDetails);
+                OrderPaymentDetail orderPaymentDetails = new OrderPaymentDetail();                
                 if (cod.getPaymentType()!=null && cod.getPaymentType().equalsIgnoreCase("COD")) {
                     paymentChannel = "CASH";
                 } else {
                     paymentChannel = cod.getPaymentType();
                 }
+                orderPaymentDetails.setPaymentChannel(paymentChannel);
+                cod.setOrderPaymentDetails(orderPaymentDetails);
             } else {
                 paymentChannel = cod.getOrderPaymentDetails().getPaymentChannel();
             }
