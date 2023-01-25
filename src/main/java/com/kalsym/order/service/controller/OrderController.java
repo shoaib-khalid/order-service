@@ -2648,7 +2648,7 @@ public class OrderController {
                 bodyCartItem.setPrice(bodyCartItem.getQuantity() * bodyCartItem.getProductPrice());
                 bodyCartItem.setProductName(productInventory.getProduct().getName());
                 bodyCartItem.setSKU(productInventory.getSKU());
-                createdCartItem = cartItemRepository.save(bodyCartItem);
+                createdCartItem = cartItemRepository.saveAndFlush(bodyCartItem);
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Saved cartItem id:"+createdCartItem.getId());
                 //save sub cart item
                 if (bodyCartItem.getCartSubItem()!=null) {
