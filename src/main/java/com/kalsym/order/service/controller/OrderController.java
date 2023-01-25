@@ -2644,11 +2644,15 @@ public class OrderController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Saved cartItem id:"+createdCartItem.getId());
                 //save sub cart item
                 if (bodyCartItem.getCartSubItem()!=null) {
+                    List<CartSubItem> cartSubItemList = new ArrayList();
                     for (int i=0;i<bodyCartItem.getCartSubItem().size();i++) {
                         CartSubItem subItem = bodyCartItem.getCartSubItem().get(i);
                         subItem.setCartItemId(createdCartItem.getId());
-                        cartSubItemRepository.save(subItem);
+                        CartSubItem createdSubItem = cartSubItemRepository.save(subItem);
+                        cartSubItemList.add(createdSubItem);
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Saved subItem id:"+createdSubItem.getId());
                     }
+                    createdCartItem.setCartSubItem(cartSubItemList);
                 }
             } else {
                 
@@ -2682,6 +2686,7 @@ public class OrderController {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item addOn: " + bodyCartItem.getCartItemAddOn());
                     if (bodyCartItem.getCartItemAddOn()!=null && !bodyCartItem.getCartItemAddOn().isEmpty()) {
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Save cart item addOn: " + bodyCartItem.getCartItemAddOn().toString());
+                        List<CartItemAddOn> cartItemAddOnList = new ArrayList();
                         for (int x=0;x<bodyCartItem.getCartItemAddOn().size();x++) {
                             CartItemAddOn cartItemAddOn = bodyCartItem.getCartItemAddOn().get(x);
                             cartItemAddOn.setCartItemId(createdCartItem.getId());
@@ -2696,8 +2701,11 @@ public class OrderController {
                                     cartItemAddOn.setProductPrice(productAddOnOpt.get().getPrice().floatValue());
                                 }
                             }
-                            cartItemAddOnRepository.save(cartItemAddOn);
+                            CartItemAddOn createdItemAddOn = cartItemAddOnRepository.save(cartItemAddOn);
+                            cartItemAddOnList.add(createdItemAddOn);
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Saved itemAddOn id:"+createdItemAddOn.getId());                            
                         }
+                        createdCartItem.setCartItemAddOn(cartItemAddOnList);
                     }
                 } 
             }
