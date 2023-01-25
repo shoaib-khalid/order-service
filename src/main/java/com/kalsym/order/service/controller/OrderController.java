@@ -1357,7 +1357,9 @@ public class OrderController {
             for (int x=0;x<cod.getCartItems().size();x++) {
                 String itemId = cod.getCartItems().get(x).getId();
                 Optional<CartItem> cartItemOpt = cartItemRepository.findById(itemId);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find cartItem by itemId:"+itemId);
                 if (cartItemOpt.isPresent()) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Found cartItem:"+cartItemOpt.get().toString());
                     selectedCartItem.add(cartItemOpt.get());
                     if (cartItemOpt.get().getDiscountId()!=null) {
                         gotCartItemDiscount=true;
