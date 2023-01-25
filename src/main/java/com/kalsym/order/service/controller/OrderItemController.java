@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -81,7 +82,7 @@ public class OrderItemController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
-        Pageable pageable = PageRequest.of(page, pageSize);
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").ascending());
 
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(orderItemRepository.findByOrderId(orderId, pageable));

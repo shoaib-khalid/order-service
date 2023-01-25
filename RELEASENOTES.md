@@ -1,5 +1,5 @@
 ##################################################
-# order-service-3.17.0-SNAPSHOT |11-Jan-2022
+# order-service-3.17.0-SNAPSHOT |25-Jan-2022
 ##################################################
 
 1. Add new parameter in placeGroupOrder : isStaffOrder, staffId, tableNo, zone
@@ -31,6 +31,16 @@ alter table order_group MODIFY COLUMN
     `paymentStatus` enum(
         'PENDING','PAID','REFUND','FAILED'
 );		
+
+
+ALTER TABLE order_item ADD created DATETIME;
+ALTER TABLE order_item ADD updated DATETIME;
+
+ALTER TABLE order_item_addon ADD created DATETIME;
+ALTER TABLE order_item_addon ADD updated DATETIME;
+
+ALTER TABLE order_subitem ADD created DATETIME;
+ALTER TABLE order_subitem ADD updated DATETIME;
 
 
 ##################################################
