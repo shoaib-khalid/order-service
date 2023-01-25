@@ -1163,7 +1163,9 @@ public class OrderController {
                     CartItem outputCartItem = addItemToCart(cod.getStoreId(), inputCartItem.getProductId(), 
                         inputCartItem.getItemCode(), inputCartItem.getQuantity(), 
                         cartId,
-                        ServiceType.DINEIN, inputCartItem.getSpecialInstruction()); 
+                        ServiceType.DINEIN, inputCartItem.getSpecialInstruction(),
+                        inputCartItem.getCartSubItem(),
+                        inputCartItem.getCartItemAddOn()); 
                     
                     generatedCartItemList.add(outputCartItem);
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Generated cartItem:"+outputCartItem);
@@ -2569,7 +2571,9 @@ public class OrderController {
             String itemCode, int quantity, 
             String cartId,
             ServiceType serviceType,
-            String specialInstruction) {
+            String specialInstruction,
+            List<CartSubItem> cartSubItems,
+            List<CartItemAddOn> cartItemAddOns) {
         
         String logprefix = "addItemToCart()";
         CartItem bodyCartItem = new CartItem();
@@ -2578,6 +2582,8 @@ public class OrderController {
         bodyCartItem.setItemCode(itemCode);
         bodyCartItem.setQuantity(quantity);
         bodyCartItem.setSpecialInstruction(specialInstruction);
+        bodyCartItem.setCartSubItem(cartSubItems);
+        bodyCartItem.setCartItemAddOn(cartItemAddOns);
         
         CartItem createdCartItem = new CartItem();
         
