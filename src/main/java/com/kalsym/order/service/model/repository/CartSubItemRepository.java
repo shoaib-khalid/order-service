@@ -1,5 +1,6 @@
 package com.kalsym.order.service.model.repository;
 
+import com.kalsym.order.service.model.CartItemAddOn;
 import com.kalsym.order.service.model.CartSubItem;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -17,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author 7cu
  */
 @Repository
-public interface CartSubItemRepository extends PagingAndSortingRepository<CartSubItem, String>, JpaRepository<CartSubItem, String> {
+public interface CartSubItemRepository extends PagingAndSortingRepository<CartSubItem, String>, JpaRepository<CartSubItem, String>, CustomRepository<CartSubItem, String> {
 
     Page<CartSubItem> findByCartItemId(@Param("cartItemId") String cartItemId,  Pageable pgbl);
     

@@ -2657,7 +2657,8 @@ public class OrderController {
                     for (int i=0;i<bodyCartItem.getCartSubItem().size();i++) {
                         CartSubItem subItem = bodyCartItem.getCartSubItem().get(i);
                         subItem.setCartItemId(createdCartItem.getId());
-                        CartSubItem createdSubItem = cartSubItemRepository.save(subItem);
+                        CartSubItem createdSubItem = cartSubItemRepository.saveAndFlush(subItem);
+                        cartSubItemRepository.refresh(createdSubItem);
                         cartSubItemList.add(createdSubItem);
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Saved subItem id:"+createdSubItem.getId());
                     }
@@ -2689,7 +2690,7 @@ public class OrderController {
                     bodyCartItem.setPrice(bodyCartItem.getQuantity() * bodyCartItem.getProductPrice());
                     bodyCartItem.setProductName(productInventory.getProduct().getName());
                     bodyCartItem.setSKU(productInventory.getSKU());
-                    createdCartItem = cartItemRepository.save(bodyCartItem);
+                    createdCartItem = cartItemRepository.saveAndFlush(bodyCartItem);
                     
                     //save add-on if any
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item addOn: " + bodyCartItem.getCartItemAddOn());
@@ -2710,7 +2711,8 @@ public class OrderController {
                                     cartItemAddOn.setProductPrice(productAddOnOpt.get().getPrice().floatValue());
                                 }
                             }
-                            CartItemAddOn createdItemAddOn = cartItemAddOnRepository.save(cartItemAddOn);
+                            CartItemAddOn createdItemAddOn = cartItemAddOnRepository.saveAndFlush(cartItemAddOn);
+                            cartItemAddOnRepository.refresh(createdItemAddOn);
                             cartItemAddOnList.add(createdItemAddOn);
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Saved itemAddOn id:"+createdItemAddOn.getId());                            
                         }
