@@ -2644,6 +2644,7 @@ public class OrderController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Saved cartItem id:"+createdCartItem.getId());
                 //save sub cart item
                 if (bodyCartItem.getCartSubItem()!=null) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Save cart subitem: " + bodyCartItem.getCartSubItem().toString());
                     List<CartSubItem> cartSubItemList = new ArrayList();
                     for (int i=0;i<bodyCartItem.getCartSubItem().size();i++) {
                         CartSubItem subItem = bodyCartItem.getCartSubItem().get(i);
