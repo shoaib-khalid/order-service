@@ -309,7 +309,6 @@ public class QrOrderController {
     private void consolidateItem(List<QrcodeOrderGroup> qrOrderList) {
         //consolidate item
          
-        HashMap<String, OrderItemWithDetails> qrOrderItemMap = new HashMap<String, OrderItemWithDetails>();
         String logprefix="consolidateItem()";
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "QrOrder size:"+qrOrderList.size());            
         for (int i=0;i<qrOrderList.size();i++) {
@@ -317,6 +316,8 @@ public class QrOrderController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find group order for qrOrder Id:"+qrOrder.getId());            
             List<OrderGroup> orderGroupList = qrOrder.getOrderGroupList();
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderGroupList size:"+orderGroupList.size());
+            
+            HashMap<String, OrderItemWithDetails> qrOrderItemMap = new HashMap<String, OrderItemWithDetails>();        
             for (int x=0;x<orderGroupList.size();x++) {
                 OrderGroup orderGroup = orderGroupList.get(x);
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find order for orderGroup id:"+orderGroup.getId());
