@@ -1570,15 +1570,20 @@ public class OrderController {
         if (orderGroup.getServiceType()==ServiceType.DINEIN && qrGroupOrderId!=null && tableNo!=null && !tableNo.equals("")) {            
             //get total order for this QR group
             List<OrderGroup> orderGroupList = orderGroupRepository.findByOrderQrGroupId(qrGroupOrderId);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderGroup found:"+orderGroupList.size()+" for qrOrderId:"+qrGroupOrderId);
             for (int c=0;c<orderGroupList.size();c++) {
                 OrderGroup orderGroupTemp = orderGroupList.get(c);
                 List<OrderWithDetails> orderList = orderGroupTemp.getOrderList();
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order found:"+orderList.size()+" for orderGroupId:"+orderGroupTemp.getId());
                 for (int b=0;b<orderList.size();b++) {
                     invoiceNo = orderList.get(b).getInvoiceId();
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order InvoiceNo:"+invoiceNo+" orderId:"+orderList.get(b).getId());
                     if (!orderIdList.contains(orderList.get(b).getId())) {
                         newOrderList.add(orderList.get(b).getId());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Is new order");
                     } else {
                         totalOrder++;
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Old order");
                     }
                 }
                 
