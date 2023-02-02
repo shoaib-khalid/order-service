@@ -1596,20 +1596,25 @@ public class OrderController {
         for (int x=0;x<orderCreatedList.size();x++) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update OrderGroupId="+orderGroup.getId()+" for OrderId:"+orderCreatedList.get(x).getId());
             if (orderGroup.getServiceType()==ServiceType.DINEIN && qrGroupOrderId!=null && tableNo!=null && !tableNo.equals("")) {            
-                String[] temp = invoiceNo.split("_");
-                String newInvoiceNo = "";
-                if (temp.length>0) {
-                    String originalInvoiceNo = temp[0];
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Original invoiceNo:"+originalInvoiceNo);
-                    newInvoiceNo = originalInvoiceNo + "_" + String.valueOf(sequenceNo);                            
-                    sequenceNo++;
-                } else {
-                    newInvoiceNo = invoiceNo + "_" + String.valueOf(sequenceNo);        
-                    sequenceNo++;
-                } 
-                if (!newInvoiceNo.equals("")) {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update InvoiceNo "+newInvoiceNo+" for orderId:"+orderCreatedList.get(x).getId());
-                    orderRepository.UpdateOrderGroupIdAndInvoiceNo(orderCreatedList.get(x).getId(), orderGroup.getId(), newInvoiceNo);                        
+                if (!invoiceNo.equals("")) {
+                    String[] temp = invoiceNo.split("_");
+                    String newInvoiceNo = "";
+                    if (temp.length>0) {
+                        String originalInvoiceNo = temp[0];
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Original invoiceNo:"+originalInvoiceNo);
+                        newInvoiceNo = originalInvoiceNo + "_" + String.valueOf(sequenceNo);                            
+                        sequenceNo++;
+                    } else {
+                        newInvoiceNo = invoiceNo + "_" + String.valueOf(sequenceNo);        
+                        sequenceNo++;
+                    } 
+
+                    if (!newInvoiceNo.equals("")) {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update InvoiceNo "+newInvoiceNo+" for orderId:"+orderCreatedList.get(x).getId());
+                        orderRepository.UpdateOrderGroupIdAndInvoiceNo(orderCreatedList.get(x).getId(), orderGroup.getId(), newInvoiceNo);                        
+                    } else {
+                        orderRepository.UpdateOrderGroupId(orderCreatedList.get(x).getId(), orderGroup.getId());                        
+                    }
                 } else {
                     orderRepository.UpdateOrderGroupId(orderCreatedList.get(x).getId(), orderGroup.getId());                        
                 }
