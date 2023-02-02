@@ -1578,7 +1578,7 @@ public class OrderController {
                 for (int b=0;b<orderList.size();b++) {
                     invoiceNo = orderList.get(b).getInvoiceId();
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order InvoiceNo:"+invoiceNo+" orderId:"+orderList.get(b).getId());
-                    if (!orderIdList.contains(orderList.get(b).getId())) {
+                    if (orderIdList.contains(orderList.get(b).getId())) {
                         newOrderList.add(orderList.get(b).getId());
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Is new order");
                     } else {
