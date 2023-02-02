@@ -1587,7 +1587,7 @@ public class OrderController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Total Previous Order:"+totalOrder);
         }
                 
-        int sequenceNo=totalOrder-1;
+        int sequenceNo=totalOrder;
         for (int x=0;x<orderCreatedList.size();x++) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update OrderGroupId="+orderGroup.getId()+" for OrderId:"+orderCreatedList.get(x).getId());
             if (orderGroup.getServiceType()==ServiceType.DINEIN && qrGroupOrderId!=null && tableNo!=null && !tableNo.equals("")) {            
@@ -1596,6 +1596,7 @@ public class OrderController {
                     String originalInvoiceNo = temp[0];
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Original invoiceNo:"+originalInvoiceNo);
                     String newInvoiceNo = originalInvoiceNo + "_" + String.valueOf(sequenceNo);        
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update InvoiceNo "+newInvoiceNo+" for orderId:"+orderCreatedList.get(x).getId());
                     orderRepository.UpdateOrderGroupIdAndInvoiceNo(orderCreatedList.get(x).getId(), orderGroup.getId(), newInvoiceNo);                        
                 }                
             } else {
