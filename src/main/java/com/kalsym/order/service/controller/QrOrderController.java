@@ -310,18 +310,26 @@ public class QrOrderController {
         //consolidate item
          
         HashMap<String, OrderItemWithDetails> qrOrderItemMap = new HashMap<String, OrderItemWithDetails>();
-        
+        String logprefix="consolidateItem()";
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "QrOrder size:"+qrOrderList.size());            
         for (int i=0;i<qrOrderList.size();i++) {
             QrcodeOrderGroup qrOrder = qrOrderList.get(i);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find group order for qrOrder Id:"+qrOrder.getId());            
             List<OrderGroup> orderGroupList = qrOrder.getOrderGroupList();
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderGroupList size:"+orderGroupList.size());
             for (int x=0;x<orderGroupList.size();x++) {
                 OrderGroup orderGroup = orderGroupList.get(x);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find order for orderGroup id:"+orderGroup.getId());
                 List<OrderWithDetails> orderList = orderGroup.getOrderList();
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderList size:"+orderList.size());
                 for (int z=0;z<orderList.size();z++) {
                     OrderWithDetails orderWithDetails = orderList.get(z);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find Item for Order Id:"+orderWithDetails.getId());
                     List<OrderItemWithDetails> orderItemList = orderWithDetails.getOrderItemWithDetails();
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderItemList size:"+orderItemList.size());
                     for (int y=0;y<orderItemList.size();y++) {
                         OrderItemWithDetails orderItemWithDetails = orderItemList.get(y);
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderItemWithDetails id:"+orderItemWithDetails.getId());
                         if (orderItemWithDetails.getOrderItemAddOn()!=null && orderItemWithDetails.getOrderItemAddOn().size()>0) {
                             //create different item
                             qrOrderItemMap.put(orderItemWithDetails.getId(), orderItemWithDetails);
