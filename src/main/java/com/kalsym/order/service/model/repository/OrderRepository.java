@@ -96,7 +96,17 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Strin
     void UpdateOrderGroupId(
             @Param("orderId") String orderId,
             @Param("orderGroupId") String orderGroupId
-            );        
+            );   
+    
+    
+    @Transactional 
+    @Modifying
+    @Query("UPDATE Order m SET m.orderGroupId=:orderGroupId, m.invoiceId=:invoiceId WHERE m.id = :orderId") 
+    void UpdateOrderGroupIdAndInvoiceNo(
+            @Param("orderId") String orderId,
+            @Param("orderGroupId") String orderGroupId,
+            @Param("invoiceId") String invoiceId
+            );   
     
     @Transactional 
     @Modifying

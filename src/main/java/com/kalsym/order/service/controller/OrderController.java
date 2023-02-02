@@ -1250,6 +1250,7 @@ public class OrderController {
         }
         
         String qrStoreId=null;
+        String qrOrderInvoiceId=null;
         
         //validate every cart in the group
         for (int z=0;z<codList.length;z++) {            
@@ -1332,6 +1333,7 @@ public class OrderController {
         //create new group order object
         OrderGroup orderGroup = new OrderGroup();
         List<Order> orderCreatedList = new ArrayList();
+        List<String> orderIdList = new ArrayList();
         double sumCartSubTotal=0.00;
         double sumDeliveryCharges=0.00;
         double sumTotal=0.00;
@@ -1434,6 +1436,7 @@ public class OrderController {
                 sumStoreVoucherDiscount = sumStoreVoucherDiscount + orderCreated.getStoreVoucherDiscount();
             }
             orderCreatedList.add(orderCreated);
+            orderIdList.add(orderCreated.getId());
             paymentType = orderCreated.getPaymentType();
             regionCountryId = optStore.get().getRegionCountryId();
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Created SubTotal:"+orderCreated.getSubTotal()+" deliverFee:"+orderCreated.getDeliveryCharges()+" svcCharge:"+orderCreated.getStoreServiceCharges()+" Total:"+orderCreated.getTotal());
@@ -1446,6 +1449,7 @@ public class OrderController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Consolidate Order:"+optStore.get().getDineInConsolidatedOrder());
             if (optStore.get().getDineInConsolidatedOrder()!=null && optStore.get().getDineInConsolidatedOrder()==true) {
                 consolidateOrder=true;
+                qrOrderInvoiceId=orderCreated.getInvoiceId();
             }
            
         }       
@@ -1520,7 +1524,13 @@ public class OrderController {
             if (qrOrder==null) {
                 //create new qr group order
                 qrOrder = new QrcodeOrderGroup();
-                String invoiceId = TxIdUtil.generateGroupInvoiceNo(qrStoreId, "DN", storeRepository);                
+                //use same invoiceId as order
+                String invoiceId="";
+                if (qrOrderInvoiceId!=null) {
+                    invoiceId = qrOrderInvoiceId;
+                } else {
+                    invoiceId = TxIdUtil.generateGroupInvoiceNo(qrStoreId, "DN", storeRepository);                
+                }
                 qrOrder.setQrToken(qrToken);
                 qrOrder.setTableNo(tableNo);   
                 qrOrder.setZone(zone);   
@@ -1554,9 +1564,44 @@ public class OrderController {
         orderGroupRepository.save(orderGroup);
                
         //update orderGroupId for each order
+        int totalOrder=0;
+        List<String> newOrderList = new ArrayList();
+        String invoiceNo="";
+        if (orderGroup.getServiceType()==ServiceType.DINEIN && qrGroupOrderId!=null && tableNo!=null && !tableNo.equals("")) {            
+            //get total order for this QR group
+            List<OrderGroup> orderGroupList = orderGroupRepository.findByOrderQrGroupId(qrGroupOrderId);
+            for (int c=0;c<orderGroupList.size();c++) {
+                OrderGroup orderGroupTemp = orderGroupList.get(c);
+                List<OrderWithDetails> orderList = orderGroupTemp.getOrderList();
+                for (int b=0;b<orderList.size();b++) {
+                    invoiceNo = orderList.get(b).getInvoiceId();
+                    if (!orderIdList.contains(orderList.get(b).getId())) {
+                        newOrderList.add(orderList.get(b).getId());
+                    } else {
+                        totalOrder++;
+                    }
+                }
+                
+            }
+            
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Total Previous Order:"+totalOrder);
+        }
+                
+        int sequenceNo=totalOrder;
         for (int x=0;x<orderCreatedList.size();x++) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update OrderGroupId="+orderGroup.getId()+" for OrderId:"+orderCreatedList.get(x).getId());
-            orderRepository.UpdateOrderGroupId(orderCreatedList.get(x).getId(), orderGroup.getId());            
+            if (orderGroup.getServiceType()==ServiceType.DINEIN && qrGroupOrderId!=null && tableNo!=null && !tableNo.equals("")) {            
+                String[] temp = invoiceNo.split("_");
+                if (temp.length>0) {
+                    String originalInvoiceNo = temp[0];
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Original invoiceNo:"+originalInvoiceNo);
+                    String newInvoiceNo = originalInvoiceNo + String.valueOf(sequenceNo);        
+                    orderRepository.UpdateOrderGroupIdAndInvoiceNo(orderCreatedList.get(x).getId(), orderGroup.getId(), newInvoiceNo);                        
+                }                
+            } else {
+                orderRepository.UpdateOrderGroupId(orderCreatedList.get(x).getId(), orderGroup.getId());                        
+            }
+            sequenceNo++;
         }  
         if (orderGroup.getServiceType()==ServiceType.DINEIN && qrGroupOrderId!=null && tableNo!=null && !tableNo.equals("")) {            
             orderGroupRepository.UpdateQrcodeOrderGroupId(qrGroupOrderId, orderGroup.getId());
