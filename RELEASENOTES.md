@@ -1,4 +1,11 @@
 ##################################################
+# order-service-3.17.1-SNAPSHOT |2-Feb-2022
+##################################################
+
+Bug fix for consolidate order from marketplace
+
+
+##################################################
 # order-service-3.17.0-SNAPSHOT |25-Jan-2022
 ##################################################
 
@@ -11,10 +18,10 @@
 ALTER TABLE `order_group` ADD staffId varchar(50);
 ALTER TABLE `qrcode_order_group` ADD zone VARCHAR(50);
 
-ALTER TABLE `order` ADD tableNo VARCHAR(50) charset utf-8;
-ALTER TABLE `order` ADD zone VARCHAR(100) charset utf-8;
+ALTER TABLE `order` ADD tableNo VARCHAR(50) charset utf8;
+ALTER TABLE `order` ADD zone VARCHAR(100) charset utf8;
 ALTER TABLE `order` ADD paymentChannel VARCHAR(50);
-ALTER TABLE `order` ADD staffId varchar(50);
+ALTER TABLE `order` ADD staffId varchar(50) charset utf8;
 ALTER TABLE `order` ADD FOREIGN KEY (staffId) REFERENCES store_user(id);
 
 ALTER TABLE `order_payment_detail` ADD paymentChannel VARCHAR(50);
@@ -33,14 +40,14 @@ alter table order_group MODIFY COLUMN
 );		
 
 
-ALTER TABLE order_item ADD created DATETIME;
-ALTER TABLE order_item ADD updated DATETIME;
+ALTER TABLE order_item ADD created timestamp(3);
+ALTER TABLE order_item ADD updated timestamp(3);
 
-ALTER TABLE order_item_addon ADD created DATETIME;
-ALTER TABLE order_item_addon ADD updated DATETIME;
+ALTER TABLE order_item_addon ADD created timestamp(3);
+ALTER TABLE order_item_addon ADD updated timestamp(3);
 
-ALTER TABLE order_subitem ADD created DATETIME;
-ALTER TABLE order_subitem ADD updated DATETIME;
+ALTER TABLE order_subitem ADD created timestamp(3);
+ALTER TABLE order_subitem ADD updated timestamp(3);
 
 
 ##################################################

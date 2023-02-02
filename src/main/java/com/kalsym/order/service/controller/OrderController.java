@@ -1126,6 +1126,7 @@ public class OrderController {
             @RequestParam(required = false) String qrToken,
             @RequestParam(required = false) Integer zoneId,
             @RequestParam(required = false) Integer tableId,
+            @RequestParam(required = false) String tableNo,
             @RequestParam(required = false) Boolean isStaffOrder,
             @RequestParam(required = false) String staffId,   
             @RequestBody COD[] codList) throws Exception {
@@ -1197,13 +1198,15 @@ public class OrderController {
             }
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "ZoneId:"+zoneId+" zoneName:"+zone);
         }
-        String tableNo="";
+        
         if (tableId!=null) {
             Optional<TagTable> tagTableOpt = tagTableRepository.findById(tableId);
             if (tagTableOpt.isPresent()) {
                 tableNo = tagTableOpt.get().getTablePrefix() + tagTableOpt.get().getTableNumber();
             }
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "TableId:"+tableId+" tableNo:"+tableNo);
+        } else {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "TableNo:"+tableNo);
         }
         
         //check platform voucher code if provided
