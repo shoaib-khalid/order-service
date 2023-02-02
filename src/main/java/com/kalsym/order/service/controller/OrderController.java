@@ -1587,7 +1587,7 @@ public class OrderController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Total Previous Order:"+totalOrder);
         }
                 
-        int sequenceNo=totalOrder;
+        int sequenceNo=totalOrder-1;
         for (int x=0;x<orderCreatedList.size();x++) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update OrderGroupId="+orderGroup.getId()+" for OrderId:"+orderCreatedList.get(x).getId());
             if (orderGroup.getServiceType()==ServiceType.DINEIN && qrGroupOrderId!=null && tableNo!=null && !tableNo.equals("")) {            
