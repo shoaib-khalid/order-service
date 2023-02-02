@@ -1595,7 +1595,7 @@ public class OrderController {
                 if (temp.length>0) {
                     String originalInvoiceNo = temp[0];
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Original invoiceNo:"+originalInvoiceNo);
-                    String newInvoiceNo = originalInvoiceNo + String.valueOf(sequenceNo);        
+                    String newInvoiceNo = originalInvoiceNo + "_" + String.valueOf(sequenceNo);        
                     orderRepository.UpdateOrderGroupIdAndInvoiceNo(orderCreatedList.get(x).getId(), orderGroup.getId(), newInvoiceNo);                        
                 }                
             } else {
