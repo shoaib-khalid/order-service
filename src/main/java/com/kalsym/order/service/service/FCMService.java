@@ -43,6 +43,7 @@ public class FCMService {
         String body = content.replace("$%storeName$%", storeName);
         body = body.replace("$%orderStatus$%", orderStatus.toString());
         body = body.replace("$%invoiceNo$%", order.getInvoiceId());
+        body = body.replace("$%orderId%", order.getId());
         fcmNotificationData.setBody(body);
         fcmNotification.setData(fcmNotificationData);
         

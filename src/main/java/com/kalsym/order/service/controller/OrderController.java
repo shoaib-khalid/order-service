@@ -536,6 +536,7 @@ public class OrderController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
             @RequestParam(required = false) String invoiceId,
+            @RequestParam(required = false) String orderId,
             @RequestParam(required = false) String accountName,
             @RequestParam(required = false) String deliveryQuotationReferenceId,
             @RequestParam(required = false) String receiverName,
@@ -571,6 +572,10 @@ public class OrderController {
 
         if (invoiceId != null && !invoiceId.isEmpty()) {
             orderMatch.setInvoiceId(invoiceId);
+        }
+        
+        if (orderId != null && !orderId.isEmpty()) {
+            orderMatch.setId(orderId);
         }
 
         if (serviceType != null) {

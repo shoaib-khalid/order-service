@@ -1,8 +1,9 @@
 ##################################################
-# order-service-3.17.1-SNAPSHOT |2-Feb-2022
+# order-service-3.17.1-SNAPSHOT |3-Feb-2022
 ##################################################
 
 Bug fix for consolidate order from marketplace
+Bug fix for push notification for consoliated order
 
 
 ##################################################
