@@ -112,6 +112,8 @@ public class FCMService {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "error not found : "+ex.getMessage());
             }
             
+            error = "TOPICS_MESSAGE_RATE_EXCEEDED";
+            
             String message_id = null;
             try {
                 message_id = jsonObject.get("message_id").toString();
