@@ -1,10 +1,22 @@
 ##################################################
+# order-service-3.17.2-SNAPSHOT |10-Feb-2022
+##################################################
+
+Make retry push FCM if google return TOPICS_MESSAGE_RATE_EXCEEDED
+
+##New Config 
+fcm.push.retry.count=3
+
+
+##################################################
 # order-service-3.17.1-SNAPSHOT |3-Feb-2022
 ##################################################
 
 Bug fix for consolidate order from marketplace
 Bug fix for push notification for consoliated order
 
+##DB Changes:
+Need to change notification template sent to Store during placeGroupOrder to add orderId:XXX
 
 ##################################################
 # order-service-3.17.0-SNAPSHOT |25-Jan-2022
