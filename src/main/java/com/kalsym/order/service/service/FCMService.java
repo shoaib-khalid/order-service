@@ -100,7 +100,6 @@ public class FCMService {
         
         //check the response
         if (res.getStatusCode() == HttpStatus.OK) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res body : " + res.getBody());
             
             JSONObject jsonObject = new JSONObject(res.getBody());
@@ -111,8 +110,6 @@ public class FCMService {
             } catch (Exception ex) {  
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "error not found : "+ex.getMessage());
             }
-            
-            error = "TOPICS_MESSAGE_RATE_EXCEEDED";
             
             String message_id = null;
             try {
