@@ -107,14 +107,14 @@ public class FCMService {
             
             String error = null;
             try {
-                error = jsonObject.getString("error");
+                error = jsonObject.get("error").toString();
             } catch (Exception ex) {  
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "error not found : "+ex.getMessage());
             }
             
             String message_id = null;
             try {
-                message_id = jsonObject.getString("message_id");
+                message_id = jsonObject.get("message_id").toString();
             } catch (Exception ex) {                
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "message_id not found : "+ex.getMessage());
             }
