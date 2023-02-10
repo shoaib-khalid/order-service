@@ -101,18 +101,22 @@ public class FCMService {
         //check the response
         if (res.getStatusCode() == HttpStatus.OK) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res : " + res);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res body : " + res.getBody());
+            
             JSONObject jsonObject = new JSONObject(res.getBody());
             
             String error = null;
             try {
                 error = jsonObject.getString("error");
-            } catch (Exception ex) {                
+            } catch (Exception ex) {  
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "error not found : "+ex.getMessage());
             }
             
             String message_id = null;
             try {
                 message_id = jsonObject.getString("message_id");
             } catch (Exception ex) {                
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "message_id not found : "+ex.getMessage());
             }
             
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "MessageId:"+message_id+" Error:"+error); 
