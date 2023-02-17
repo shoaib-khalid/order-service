@@ -1171,7 +1171,8 @@ public class OrderController {
                         cartId,
                         ServiceType.DINEIN, inputCartItem.getSpecialInstruction(),
                         inputCartItem.getCartSubItem(),
-                        inputCartItem.getCartItemAddOn()); 
+                        inputCartItem.getCartItemAddOn(),
+                        inputCartItem.getPrice()); 
                     
                     generatedCartItemList.add(outputCartItem);
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Generated cartItem:"+outputCartItem);
@@ -2647,7 +2648,8 @@ public class OrderController {
             ServiceType serviceType,
             String specialInstruction,
             List<CartSubItem> cartSubItems,
-            List<CartItemAddOn> cartItemAddOns) {
+            List<CartItemAddOn> cartItemAddOns,
+            Float customPrice) {
         
         String logprefix = "addItemToCart()";
         CartItem bodyCartItem = new CartItem();
@@ -2682,7 +2684,9 @@ public class OrderController {
             //check for discount
             double itemPrice = 0.00;
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceType:"+serviceType+" itemDiscount:"+productInventory.getItemDiscount());
-            if (productInventory.getItemDiscount()!=null && serviceType==ServiceType.DELIVERIN) {
+            if (optProduct.get().getIsCustomPrice() && customPrice!=null) {
+                itemPrice = customPrice;
+            } else if (productInventory.getItemDiscount()!=null && serviceType==ServiceType.DELIVERIN) {
                 if (productInventory.getItemDiscount().discountAmount>0) {
                     //got discount
                     ItemDiscount discountDetails = productInventory.getItemDiscount();

@@ -54,7 +54,8 @@ public class Product {
     private Boolean isPackage;
     private int shortId;
     private String packingSize;
-    
+    private Boolean isCustomPrice;
+            
     public enum Status {
         ACTIVE,
         DELETED,

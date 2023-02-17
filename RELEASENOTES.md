@@ -1,4 +1,14 @@
 ##################################################
+# order-service-3.18.0-SNAPSHOT |17-Feb-2022
+##################################################
+
+Allow to set price for open item during placeGroupOrder
+
+##DB Changes:
+ALTER TABLE product ADD isCustomPrice TINYINT(1) NOT NULL DEFAULT 0;
+
+
+##################################################
 # order-service-3.17.2-SNAPSHOT |10-Feb-2022
 ##################################################
 
