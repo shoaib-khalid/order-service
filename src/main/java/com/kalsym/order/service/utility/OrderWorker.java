@@ -231,9 +231,12 @@ public class OrderWorker {
                         double deliverinPrice = Utilities.Round2DecimalPoint(productInventory.getPrice());
                         double dineinPrice = Utilities.Round2DecimalPoint(productInventory.getDineInPrice());
                         double bezaDeliverIn = Math.abs(cartPrice - deliverinPrice);                        
-                        double bezaDineIn = Math.abs(cartPrice - dineinPrice);  
+                        double bezaDineIn = Math.abs(cartPrice - dineinPrice);
+                        Boolean isCustomPrice = productInventory.getProduct().getIsCustomPrice();
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item Cart price:"+cartPrice+" deliverinPrice:"+deliverinPrice+" dineinPrice:"+dineinPrice);
-                        if (cart.getServiceType()==ServiceType.DELIVERIN && bezaDeliverIn>0.5) {
+                        if (isCustomPrice!=null && isCustomPrice==true) {
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Dinein customPrice product, price got : cartPrice: " + cartItems.get(i).getProductPrice());
+                        } else if (cart.getServiceType()==ServiceType.DELIVERIN && bezaDeliverIn>0.5) {
                             // should return warning if prices are not same
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliverIn  prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
                             response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
