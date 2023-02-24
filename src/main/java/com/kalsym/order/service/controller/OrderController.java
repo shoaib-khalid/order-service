@@ -2684,7 +2684,7 @@ public class OrderController {
                     
             //check for discount
             double itemPrice = 0.00;
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceType:"+serviceType+" itemDiscount:"+productInventory.getItemDiscount());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceType:"+serviceType+" itemDiscount:"+productInventory.getItemDiscount()+" isCustomPrice:"+optProduct.get().getIsCustomPrice()+" customProductPrice:"+customProductPrice);
             if (optProduct.get().getIsCustomPrice() && customProductPrice!=null) {
                 itemPrice = customProductPrice;
             } else if (productInventory.getItemDiscount()!=null && serviceType==ServiceType.DELIVERIN) {
