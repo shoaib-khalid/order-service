@@ -1146,7 +1146,8 @@ public class OrderController {
         if (isStaffOrder!=null && isStaffOrder) {
             //create new cart and add item into cart
             for (int z=0;z<codList.length;z++) {            
-                COD cod = codList[z];                
+                COD cod = codList[z];
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cod["+z+"]="+cod.toString());
                 //create new cart
                 Cart cart = new Cart();
                 cart.setCustomerId(cod.getCustomerId());
@@ -1165,7 +1166,7 @@ public class OrderController {
                 List<CartItem> generatedCartItemList = new ArrayList(); 
                 for (int x=0;x<cartItemList.size();x++) {
                     CartItem inputCartItem = cartItemList.get(x);
-                    
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "inputCartItem="+inputCartItem.toString());
                     CartItem outputCartItem = addItemToCart(cod.getStoreId(), inputCartItem.getProductId(), 
                         inputCartItem.getItemCode(), inputCartItem.getQuantity(), 
                         cartId,
