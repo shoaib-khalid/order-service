@@ -1,5 +1,11 @@
 ##################################################
-# order-service-3.18.0-SNAPSHOT |17-Feb-2022
+# order-service-3.18.1-SNAPSHOT |10-Apr-2023
+##################################################
+Add order id in placeGroupOrder response
+
+
+##################################################
+# order-service-3.18.0-SNAPSHOT |17-Feb-2023
 ##################################################
 
 Allow to set price for open item during placeGroupOrder
@@ -9,7 +15,7 @@ ALTER TABLE product ADD isCustomPrice TINYINT(1) NOT NULL DEFAULT 0;
 
 
 ##################################################
-# order-service-3.17.2-SNAPSHOT |10-Feb-2022
+# order-service-3.17.2-SNAPSHOT |10-Feb-2023
 ##################################################
 
 Make retry push FCM if google return TOPICS_MESSAGE_RATE_EXCEEDED
@@ -19,7 +25,7 @@ fcm.push.retry.count=3
 
 
 ##################################################
-# order-service-3.17.1-SNAPSHOT |3-Feb-2022
+# order-service-3.17.1-SNAPSHOT |3-Feb-2023
 ##################################################
 
 Bug fix for consolidate order from marketplace
@@ -29,7 +35,7 @@ Bug fix for push notification for consoliated order
 Need to change notification template sent to Store during placeGroupOrder to add orderId:XXX
 
 ##################################################
-# order-service-3.17.0-SNAPSHOT |25-Jan-2022
+# order-service-3.17.0-SNAPSHOT |25-Jan-2023
 ##################################################
 
 1. Add new parameter in placeGroupOrder : isStaffOrder, staffId, tableNo, zone

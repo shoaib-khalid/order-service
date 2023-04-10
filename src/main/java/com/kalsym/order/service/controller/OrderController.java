@@ -1598,7 +1598,8 @@ public class OrderController {
             
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Total Previous Order:"+totalOrder);
         }
-                
+        
+        List<OrderWithDetails> tempOrderList = new ArrayList();
         int sequenceNo=totalOrder;
         for (int x=0;x<orderCreatedList.size();x++) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update OrderGroupId="+orderGroup.getId()+" for OrderId:"+orderCreatedList.get(x).getId());
@@ -1627,8 +1628,14 @@ public class OrderController {
                 }
             } else {
                 orderRepository.UpdateOrderGroupId(orderCreatedList.get(x).getId(), orderGroup.getId());                        
-            }            
+            }   
+            OrderWithDetails temp = new OrderWithDetails();
+            temp.setId(orderCreatedList.get(x).getId());
+            tempOrderList.add(temp);
         }  
+                
+        orderGroup.setOrderList(tempOrderList);
+       
         if (orderGroup.getServiceType()==ServiceType.DINEIN && qrGroupOrderId!=null && tableNo!=null && !tableNo.equals("")) {            
             orderGroupRepository.UpdateQrcodeOrderGroupId(qrGroupOrderId, orderGroup.getId());
         }
