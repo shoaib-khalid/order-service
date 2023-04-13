@@ -1,4 +1,12 @@
 ##################################################
+# order-service-3.18.2-SNAPSHOT |13-Apr-2023
+##################################################
+Changes for betterpay integration:
+set paymentChannel=INSTORE
+set paymentType = ONLINEPAYMENT if paymentChannel NOT CASH
+
+
+##################################################
 # order-service-3.18.1-SNAPSHOT |10-Apr-2023
 ##################################################
 Add order id in placeGroupOrder response

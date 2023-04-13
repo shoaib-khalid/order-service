@@ -1152,7 +1152,6 @@ public class OrderController {
                 Cart cart = new Cart();
                 cart.setCustomerId(cod.getCustomerId());
                 cart.setStoreId(cod.getStoreId());
-                cart.setServiceType(cod.getServiceType());
                 cart.setStage(CartStage.ORDER_PLACED);
                 cart.setIsOpen(false);
                 cart.setServiceType(ServiceType.DINEIN);
@@ -1181,7 +1180,7 @@ public class OrderController {
                 cod.setCartItems(generatedCartItemList);
             }
             
-           
+           channel=Channel.INSTORE;
         }
         
         //get customer id from one of COD
@@ -1402,6 +1401,16 @@ public class OrderController {
                 cod.setOrderPaymentDetails(orderPaymentDetails);
             } else {
                 paymentChannel = cod.getOrderPaymentDetails().getPaymentChannel();
+            }
+            
+            //set online payment for betterpay if order taker not sent
+            if (cod.getPaymentType()==null) {
+                if (paymentChannel.equals("CASH")) {
+                    cod.setPaymentType("COD");
+                } else {
+                    cod.setPaymentType("ONLINEPAYMENT");
+                }
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Payment channel is null. Set value to :"+cod.getPaymentType());
             }
                         
             HttpResponse orderResponse = OrderWorker.placeOrder(

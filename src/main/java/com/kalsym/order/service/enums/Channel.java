@@ -7,5 +7,6 @@ package com.kalsym.order.service.enums;
  */
 public enum Channel {
     DELIVERIN,
-    PAYHUB2U    
+    PAYHUB2U,
+    INSTORE
 }
