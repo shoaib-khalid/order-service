@@ -5,6 +5,9 @@ Changes for betterpay integration:
 set paymentChannel=INSTORE
 set paymentType = ONLINEPAYMENT if paymentChannel NOT CASH
 
+ALTER TABLE `order` MODIFY COLUMN channel ('INSTORE','DELIVERIN','PAYHUB2U');
+ALTER TABLE `order_group` MODIFY COLUMN channel ('INSTORE','DELIVERIN','PAYHUB2U');
+
 
 ##################################################
 # order-service-3.18.1-SNAPSHOT |10-Apr-2023
