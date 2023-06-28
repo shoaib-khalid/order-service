@@ -1640,6 +1640,7 @@ public class OrderController {
             }   
             OrderWithDetails temp = new OrderWithDetails();
             temp.setId(orderCreatedList.get(x).getId());
+            temp.setInvoiceId(orderCreatedList.get(x).getInvoiceId());
             tempOrderList.add(temp);
         }  
                 
