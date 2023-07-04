@@ -33,17 +33,12 @@ import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.OrderCompletionStatusUpdate;
 
+import com.kalsym.order.service.service.*;
 import com.kalsym.order.service.utility.DateTimeUtil;
 import com.kalsym.order.service.utility.Logger;
 import com.kalsym.order.service.utility.MessageGenerator;
 import com.kalsym.order.service.utility.Utilities;
 import com.kalsym.order.service.model.repository.*;
-import com.kalsym.order.service.service.ProductService;
-import com.kalsym.order.service.service.FCMService;
-import com.kalsym.order.service.service.DeliveryService;
-import com.kalsym.order.service.service.EmailService;
-import com.kalsym.order.service.service.OrderPostService;
-import com.kalsym.order.service.service.WhatsappService;
 import com.kalsym.order.service.model.object.OrderProcessResult;
 
 import java.util.ArrayList;
@@ -91,7 +86,9 @@ public class OrderProcessWorker {
     private WhatsappService whatsappService;
     private FCMService fcmService;
     private DeliveryService deliveryService;
-    private OrderPostService orderPostService;    
+    private OrderPostService orderPostService;
+
+    private NotificationService notificationService;
     
     private boolean proceedRequestDelivery;
     private String assetServiceBaseUrl;
@@ -130,7 +127,8 @@ public class OrderProcessWorker {
             DeliveryService deliveryService,
             OrderPostService orderPostService,
             boolean proceedRequestDelivery,
-            String assetServiceBaseUrl
+            String assetServiceBaseUrl,
+            NotificationService notificationService
             ) {
         
         this.logprefix = logprefix;
@@ -167,6 +165,7 @@ public class OrderProcessWorker {
         this.orderPostService = orderPostService;
         this.proceedRequestDelivery = proceedRequestDelivery;
         this.assetServiceBaseUrl = assetServiceBaseUrl;
+        this.notificationService = notificationService;
     }
     
     public OrderProcessResult startProcessOrder() {
@@ -873,7 +872,20 @@ public class OrderProcessWorker {
                     }
 
                 }
-            
+
+                // Send notification to HelloSim App
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToUser: " + orderCompletionStatusConfig.getPushNotificationToUser());
+                if (orderCompletionStatusConfig.getPushNotificationToUser()) {
+                    String notificationTitle = orderCompletionStatusConfig.getUserPushNotificationTitle();
+                    String notificationMessage = orderCompletionStatusConfig.getUserPushNotificationMessage();
+                    try {
+                        notificationService.sendOrderNotification(orderShipmentDetail.getPhoneNumber(), notificationTitle, notificationMessage);
+                    } catch (Exception e) {
+                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToUser error ", e);
+                    }
+
+                }
+
                 //send push notification to WA alert to admin
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getPushWAToAdmin to store: " + orderCompletionStatusConfig.getPushWAToAdmin());
                 if (orderCompletionStatusConfig.getPushWAToAdmin()) {

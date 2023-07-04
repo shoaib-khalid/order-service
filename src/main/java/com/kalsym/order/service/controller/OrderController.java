@@ -641,7 +641,7 @@ public class OrderController {
         
         Page<Order> orderWithPage = orderRepository.findAll(getSpecWithDatesBetweenMultipleStatus(from, to, completionStatus, orderExample), pageable);
         List<Order> orderList = orderWithPage.getContent();
-        
+
         OrderDetails[] orderDetailsList = new OrderDetails[orderList.size()];
         for (int i=0;i<orderList.size();i++) {
             Order order = orderList.get(i);

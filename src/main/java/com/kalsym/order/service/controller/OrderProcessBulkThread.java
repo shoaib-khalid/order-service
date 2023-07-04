@@ -29,12 +29,7 @@ import com.kalsym.order.service.model.repository.ProductInventoryRepository;
 import com.kalsym.order.service.model.repository.RegionCountriesRepository;
 import com.kalsym.order.service.model.repository.StoreDetailsRepository;
 import com.kalsym.order.service.model.repository.OrderPaymentDetailRepository;
-import com.kalsym.order.service.service.DeliveryService;
-import com.kalsym.order.service.service.EmailService;
-import com.kalsym.order.service.service.FCMService;
-import com.kalsym.order.service.service.OrderPostService;
-import com.kalsym.order.service.service.ProductService;
-import com.kalsym.order.service.service.WhatsappService;
+import com.kalsym.order.service.service.*;
 import com.kalsym.order.service.utility.DateTimeUtil;
 import com.kalsym.order.service.utility.Logger;
 import com.kalsym.order.service.utility.MessageGenerator;
@@ -91,6 +86,8 @@ public class OrderProcessBulkThread extends Thread {
     private FCMService fcmService;
     private DeliveryService deliveryService;
     private OrderPostService orderPostService;
+
+    private NotificationService notificationService;
     
     private OrderPaymentDetailRepository orderPaymentDetailRepository;
     private String easydukanOrdersEmailAddress;
@@ -133,7 +130,8 @@ public class OrderProcessBulkThread extends Thread {
             OrderPostService orderPostService,
             String easydukanOrdersEmailAddress,
             String deliverinOrdersEmailAddress,
-            String assetServiceBaseUrl
+            String assetServiceBaseUrl,
+            NotificationService notificationService
             ) {
         
             this.logprefix = logprefix;
@@ -170,6 +168,7 @@ public class OrderProcessBulkThread extends Thread {
             this.easydukanOrdersEmailAddress = easydukanOrdersEmailAddress;
             this.deliverinOrdersEmailAddress = deliverinOrdersEmailAddress;
             this.assetServiceBaseUrl = assetServiceBaseUrl;
+            this.notificationService = notificationService;
     }
         
     public void run(){
@@ -215,7 +214,7 @@ public class OrderProcessBulkThread extends Thread {
                         deliveryService,
                         orderPostService,
                         false,
-                        assetServiceBaseUrl
+                        assetServiceBaseUrl, notificationService
                         ) ;
                 OrderProcessResult result = worker.startProcessOrder();
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "result processOrder orderId:"+bodyOrderCompletionStatusUpdate.getOrderId()+" httpStatus:"+result.httpStatus+" message:"+result.errorMsg+" pendingRequestDelivery:"+result.pendingRequestDelivery);

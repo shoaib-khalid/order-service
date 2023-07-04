@@ -57,7 +57,11 @@ public class OrderCompletionStatusConfig implements Serializable {
     
     public Boolean pushWAToCustomer;
     public String pushWAToCustomerTemplateName;
-    public String pushWAToCustomerTemplateFormat;    
+    public String pushWAToCustomerTemplateFormat;
+
+    public Boolean pushNotificationToUser;
+    public String userPushNotificationTitle;
+    public String userPushNotificationMessage;
     
     @CreationTimestamp
     Date created;

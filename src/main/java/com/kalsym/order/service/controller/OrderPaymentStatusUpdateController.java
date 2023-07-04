@@ -16,10 +16,7 @@ import com.kalsym.order.service.model.repository.*;
 import com.kalsym.order.service.model.OrderCompletionStatusUpdate;
 import com.kalsym.order.service.model.OrderItem;
 import com.kalsym.order.service.model.OrderPaymentStatusUpdate;
-import com.kalsym.order.service.service.DeliveryService;
-import com.kalsym.order.service.service.EmailService;
-import com.kalsym.order.service.service.OrderPostService;
-import com.kalsym.order.service.service.WhatsappService;
+import com.kalsym.order.service.service.*;
 import com.kalsym.order.service.utility.HttpResponse;
 import com.kalsym.order.service.utility.MessageGenerator;
 import com.kalsym.order.service.utility.Utilities;
@@ -42,10 +39,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.kalsym.order.service.model.DeliveryOrder;
-import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.model.*;
 import com.kalsym.order.service.model.object.OrderProcessResult;
-import com.kalsym.order.service.service.FCMService;
 import com.kalsym.order.service.utility.Logger;
 import java.util.Date;
 
@@ -79,6 +74,9 @@ public class OrderPaymentStatusUpdateController {
 
     @Autowired
     OrderPostService orderPostService;
+
+    @Autowired
+    NotificationService notificationService;
 
     @Autowired
     OrderItemRepository orderItemRepository;
@@ -181,7 +179,7 @@ public class OrderPaymentStatusUpdateController {
             deliveryService,
             orderPostService,
             true,
-            assetServiceBaseUrl) ;
+            assetServiceBaseUrl, notificationService) ;
         OrderProcessResult result = worker.startProcessOrder();
         response.setData(result.data);
         response.setSuccessStatus(result.httpStatus);

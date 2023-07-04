@@ -40,12 +40,7 @@ import com.kalsym.order.service.model.repository.ProductInventoryRepository;
 import com.kalsym.order.service.model.repository.RegionCountriesRepository;
 import com.kalsym.order.service.model.repository.StoreDetailsRepository;
 import com.kalsym.order.service.model.repository.VoucherRepository;
-import com.kalsym.order.service.service.DeliveryService;
-import com.kalsym.order.service.service.EmailService;
-import com.kalsym.order.service.service.FCMService;
-import com.kalsym.order.service.service.OrderPostService;
-import com.kalsym.order.service.service.ProductService;
-import com.kalsym.order.service.service.WhatsappService;
+import com.kalsym.order.service.service.*;
 import com.kalsym.order.service.utility.DateTimeUtil;
 import com.kalsym.order.service.utility.HttpResponse;
 import com.kalsym.order.service.utility.Logger;
@@ -109,6 +104,9 @@ public class OrderCompletionStatusController {
 
     @Autowired
     OrderPostService orderPostService;
+
+    @Autowired
+    NotificationService notificationService;
 
     @Autowired
     OrderItemRepository orderItemRepository;
@@ -326,7 +324,7 @@ public class OrderCompletionStatusController {
               orderPostService,
               easydukanOrdersEmailAddress,
               deliverinOrdersEmailAddress,
-              assetServiceBaseUrl) ;
+              assetServiceBaseUrl, notificationService) ;
         processThread.start();
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderProcessThread started");
