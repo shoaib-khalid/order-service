@@ -17,54 +17,32 @@
 package com.kalsym.order.service.controller;
 
 import com.kalsym.order.service.OrderServiceApplication;
-import com.kalsym.order.service.model.Voucher;
-import com.kalsym.order.service.model.Customer;
-import com.kalsym.order.service.model.CustomerVoucher;
-import com.kalsym.order.service.model.VoucherVertical;
+import com.kalsym.order.service.model.*;
 import com.kalsym.order.service.enums.VoucherStatus;
 import com.kalsym.order.service.enums.VoucherType;
-import com.kalsym.order.service.model.VoucherStore;
-import com.kalsym.order.service.model.repository.VoucherSearchSpecs;
-import com.kalsym.order.service.model.repository.VoucherRepository;
-import com.kalsym.order.service.model.repository.CustomerRepository;
-import com.kalsym.order.service.model.repository.CustomerVoucherRepository;
-import com.kalsym.order.service.model.repository.CustomerVoucherSearchSpecs;
+import com.kalsym.order.service.model.repository.*;
 import com.kalsym.order.service.utility.HttpResponse;
 import com.kalsym.order.service.utility.Logger;
 import java.util.Optional;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Date;
-import java.time.LocalTime;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 
-import java.util.Collections;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  *
@@ -79,9 +57,25 @@ public class VoucherController {
     
     @Autowired
     CustomerRepository customerRepository;
+
+    @Autowired
+    StoreRepository storeRepository;
     
     @Autowired
-    CustomerVoucherRepository customerVoucherRepository;    
+    CustomerVoucherRepository customerVoucherRepository;
+
+    @Autowired
+    VoucherStoreRepository voucherStoreRepository;
+
+    @Autowired
+    VoucherVerticalRepository voucherVerticalRepository;
+
+    @Autowired
+    VoucherTermsRepository voucherTermsRepository;
+
+    @Autowired
+    VoucherServiceTypeRepository voucherServiceTypeRepository;
+
     
     @GetMapping(path = {"/available"})
     public ResponseEntity<HttpResponse> getAvailableVoucher(HttpServletRequest request,
@@ -99,7 +93,7 @@ public class VoucherController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "voucherType:" + voucherType+" storeId:"+storeId);
       
         Voucher voucherMatch = new Voucher();
-        voucherMatch.setStatus(VoucherStatus.ACTIVE);       
+        voucherMatch.setStatus(VoucherStatus.ACTIVE);
         Pageable pageable = PageRequest.of(page, pageSize);
         ExampleMatcher matcher = ExampleMatcher
                 .matchingAll()
@@ -107,12 +101,70 @@ public class VoucherController {
                 .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
         Example<Voucher> example = Example.of(voucherMatch, matcher);
         
-        Specification voucherSpec = VoucherSearchSpecs.getSpecWithDatesBetween(new Date(), voucherType, storeId, verticalCode, voucherCode, example );
+        Specification<Voucher> voucherSpec = VoucherSearchSpecs.getSpecWithDatesBetween(new Date(), voucherType, storeId, verticalCode, voucherCode, example );
         Page<Voucher> voucherWithPage = voucherRepository.findAll(voucherSpec, pageable);
-        
+
         response.setSuccessStatus(HttpStatus.OK);
         response.setData(voucherWithPage);
         
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    @GetMapping(path = {"/all-vouchers"})
+    public ResponseEntity<HttpResponse> getAllVouchers(HttpServletRequest request,
+            @RequestParam(required = false) VoucherType voucherType,
+            @RequestParam(required = false) String verticalCode,
+            @RequestParam(required = false) String voucherCode,
+            @RequestParam(required = false) String storeId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize
+            )
+    {
+
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        String logprefix = request.getRequestURI();
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "voucherType:" + voucherType+" storeId:"+storeId);
+
+        Voucher voucherMatch = new Voucher();
+//        voucherMatch.setStatus(VoucherStatus.ACTIVE);
+        Pageable pageable = PageRequest.of(page, pageSize);
+        ExampleMatcher matcher = ExampleMatcher
+                .matchingAll()
+                .withIgnoreCase()
+                .withStringMatcher(ExampleMatcher.StringMatcher.EXACT);
+        Example<Voucher> example = Example.of(voucherMatch, matcher);
+
+        Specification<Voucher> voucherSpec = VoucherSearchSpecs.getVouchersSpec(voucherType, storeId, verticalCode, voucherCode, example );
+        Page<Voucher> voucherWithPage = voucherRepository.findAll(voucherSpec, pageable);
+
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(voucherWithPage);
+
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    @GetMapping(path = {"/all-vouchers/{id}"})
+    public ResponseEntity<HttpResponse> getAllVouchersById(HttpServletRequest request,
+               @PathVariable String id)
+    {
+
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        String logprefix = request.getRequestURI();
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "id:" + id);
+
+        Optional<Voucher> voucherOptional = voucherRepository.findById(id);
+
+        if (!voucherOptional.isPresent()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "voucher NOT_FOUND: " + id);
+            response.setErrorStatus(HttpStatus.NOT_FOUND);
+            response.setError("Voucher not found");
+            return ResponseEntity.status(response.getStatus()).body(response);
+
+        }
+
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(voucherOptional.get());
+
         return ResponseEntity.status(response.getStatus()).body(response);
     }
     
@@ -462,5 +514,162 @@ public class VoucherController {
         response.setData(updatedVoucher.get());
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+    @ApiOperation(value = "Create voucher", notes = "Note: Include storeId for STORE voucher type.")
+    @PostMapping(path = {"/create"}, name = "voucher-post")
+    @PreAuthorize("hasAnyAuthority('voucher-post', 'all')")
+    public ResponseEntity<HttpResponse> postVoucher(HttpServletRequest request,
+         @RequestParam(required = false) String storeId,
+         @Valid @RequestBody Voucher voucherBody) throws Exception {
 
+        String logprefix = "postVoucher()";
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "bodyProduct: " + voucherBody.toString());
+
+        // Set voucher type to PLATFORM as default
+        voucherBody.setVoucherType(VoucherType.PLATFORM);
+
+        // Set total redeem to 0
+        voucherBody.setTotalRedeem(0);
+
+        if (storeId != null) {
+            Optional<Store> optionalStore = storeRepository.findById(storeId);
+
+            if (!optionalStore.isPresent()) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " NOT_FOUND storeId: " + storeId);
+                response.setErrorStatus(HttpStatus.NOT_FOUND);
+                response.setError("Store not found");
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
+            // Set voucher type to STORE whenever has storeId
+            voucherBody.setVoucherType(VoucherType.STORE);
+        }
+        Voucher savedVoucher = voucherRepository.save(voucherBody);
+
+        // If type is STORE, save to voucher_store table
+        if (savedVoucher.getVoucherType().equals(VoucherType.STORE) && !voucherBody.getVoucherStoreList().isEmpty()) {
+            for (VoucherStore voucherStore: voucherBody.getVoucherStoreList()) {
+                voucherStore.setVoucherId((savedVoucher.getId()));
+
+                voucherStoreRepository.save(voucherStore);
+            }
+        }
+        // Save to voucher_service_type table
+        if (!voucherBody.getVoucherServiceTypeList().isEmpty()) {
+            for (VoucherServiceType voucherServiceType: voucherBody.getVoucherServiceTypeList()) {
+                voucherServiceType.setVoucherId(savedVoucher.getId());
+
+                voucherServiceTypeRepository.save(voucherServiceType);
+            }
+        }
+
+        // Save to voucher_terms table
+        if (!voucherBody.getVoucherTerms().isEmpty()) {
+            for (VoucherTerms voucherTerms: voucherBody.getVoucherTerms()) {
+                voucherTerms.setVoucherId(savedVoucher.getId());
+
+                voucherTermsRepository.save(voucherTerms);
+            }
+        }
+
+        // Save to voucher_vertical table
+        if (!voucherBody.getVoucherVerticalList().isEmpty()) {
+            for (VoucherVertical voucherVertical: voucherBody.getVoucherVerticalList()) {
+                voucherVertical.setVoucherId(savedVoucher.getId());
+
+                voucherVerticalRepository.save(voucherVertical);
+            }
+        }
+
+        response.setSuccessStatus(HttpStatus.CREATED);
+        response.setData(savedVoucher);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PutMapping(path = {"/edit/{id}"}, name = "voucher-put")
+    @PreAuthorize("hasAnyAuthority('voucher-put', 'all')")
+    public ResponseEntity<HttpResponse> putVoucher(HttpServletRequest request,
+              @PathVariable String id,
+              @RequestBody Voucher bodyVoucher) {
+        String logprefix = request.getRequestURI();
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Logger.application.info(OrderServiceApplication.VERSION, logprefix, "id: " + id);
+
+        Optional<Voucher> voucherOptional = voucherRepository.findById(id);
+
+        if (!voucherOptional.isPresent()) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " NOT_FOUND voucher with ID: " + id);
+            response.setErrorStatus(HttpStatus.NOT_FOUND);
+            response.setError("Voucher not found");
+            return ResponseEntity.status(response.getStatus()).body(response);
+        }
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " FOUND voucher with ID: " + id);
+
+        Voucher voucher = voucherOptional.get();
+
+        VoucherType oriVoucherType = voucher.getVoucherType();
+
+        voucher.update(bodyVoucher);
+        Voucher updatedVoucher = voucherRepository.save(voucher);
+
+        // Check voucher type, delete data if change type from STORE to PLATFORM
+        if (oriVoucherType.equals(VoucherType.STORE) && bodyVoucher.getVoucherType().equals(VoucherType.PLATFORM) ) {
+            // Delete data from DB
+            voucherStoreRepository.deleteByVoucherId(updatedVoucher.getId());
+
+        }
+        // If body - voucher store list exist
+        if (!bodyVoucher.getVoucherStoreList().isEmpty() && bodyVoucher.getVoucherType().equals(VoucherType.STORE)) {
+            // Delete data from DB
+            voucherStoreRepository.deleteByVoucherId(updatedVoucher.getId());
+
+            for (VoucherStore voucherStore: bodyVoucher.getVoucherStoreList()) {
+                voucherStore.setVoucherId((updatedVoucher.getId()));
+
+                voucherStoreRepository.save(voucherStore);
+            }
+        }
+
+        // If exist
+        if (!bodyVoucher.getVoucherServiceTypeList().isEmpty()) {
+            // Delete data from DB
+            voucherServiceTypeRepository.deleteByVoucherId(updatedVoucher.getId());
+
+            // Save to voucher_service_type table
+            for (VoucherServiceType voucherServiceType: bodyVoucher.getVoucherServiceTypeList()) {
+                voucherServiceType.setVoucherId(updatedVoucher.getId());
+
+                voucherServiceTypeRepository.save(voucherServiceType);
+            }
+        }
+
+        if (!bodyVoucher.getVoucherTerms().isEmpty()) {
+            // Delete data from DB
+            voucherTermsRepository.deleteByVoucherId(updatedVoucher.getId());
+
+            // Save to voucher_terms table
+            for (VoucherTerms voucherTerms: bodyVoucher.getVoucherTerms()) {
+                voucherTerms.setVoucherId(updatedVoucher.getId());
+
+                voucherTermsRepository.save(voucherTerms);
+            }
+        }
+
+        if (!bodyVoucher.getVoucherVerticalList().isEmpty()) {
+            // Delete data from DB
+            voucherVerticalRepository.deleteByVoucherId(updatedVoucher.getId());
+
+            // Save to voucher_vertical table
+            for (VoucherVertical voucherVertical: bodyVoucher.getVoucherVerticalList()) {
+                voucherVertical.setVoucherId(updatedVoucher.getId());
+
+                voucherVerticalRepository.save(voucherVertical);
+            }
+        }
+
+        response.setData(voucherRepository.findById(id));
+        response.setSuccessStatus(HttpStatus.OK);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
 }

@@ -89,4 +89,35 @@ public class VoucherSearchSpecs {
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
+
+    public static Specification<Voucher> getVouchersSpec(
+            VoucherType voucherType, String storeId, String verticalCode,
+            String voucherCode,
+            Example<Voucher> example) {
+
+        return (Specification<Voucher>) (root, query, builder) -> {
+            final List<Predicate> predicates = new ArrayList<>();
+            Join<Voucher, VoucherVertical> voucherVertical = root.join("voucherVerticalList");
+
+            if (voucherType != null) {
+                predicates.add(builder.equal(root.get("voucherType"), voucherType));
+            }
+
+            if (storeId != null) {
+                predicates.add(builder.equal(root.get("storeId"), storeId));
+            }
+
+            if (verticalCode != null) {
+                predicates.add(builder.equal(voucherVertical.get("verticalCode"), verticalCode));
+            }
+
+            if (voucherCode != null) {
+                predicates.add(builder.equal(root.get("voucherCode"), voucherCode));
+            }
+
+            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
+
+            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
 }

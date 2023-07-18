@@ -60,6 +60,7 @@ public class Voucher implements Serializable {
     private Boolean allowDoubleDiscount;
     private Boolean requireToClaim;
     private Boolean allowMultipleRedeem;
+    private String storeId;
     
     @Enumerated(EnumType.STRING)
     private VoucherStatus status;
@@ -102,6 +103,87 @@ public class Voucher implements Serializable {
             return false;
         else 
             return allowMultipleRedeem;
+    }
+
+    public void update(Voucher voucher) {
+        if (null != voucher.getName()) {
+            name = voucher.getName();
+        }
+
+        if (null != voucher.getDiscountValue()) {
+            discountValue = voucher.getDiscountValue();
+        }
+
+        if (null != voucher.getMaxDiscountAmount()) {
+            maxDiscountAmount = voucher.getMaxDiscountAmount();
+        }
+
+        if (null != voucher.getMaxDiscountAmount()) {
+            maxDiscountAmount = voucher.getMaxDiscountAmount();
+        }
+
+        if (null != voucher.getVoucherCode()) {
+            voucherCode = voucher.getVoucherCode();
+        }
+
+        if (null != voucher.getTotalQuantity()) {
+            totalQuantity = voucher.getTotalQuantity();
+        }
+
+//        if (null != voucher.getTotalRedeem()) {
+//            totalRedeem = voucher.getTotalRedeem();
+//        }
+
+        if (null != voucher.getCurrencyLabel()) {
+            currencyLabel = voucher.getCurrencyLabel();
+        }
+
+        if (null != voucher.getIsNewUserVoucher()) {
+            isNewUserVoucher = voucher.getIsNewUserVoucher();
+        }
+
+        if (null != voucher.getCheckTotalRedeem()) {
+            checkTotalRedeem = voucher.getCheckTotalRedeem();
+        }
+
+        if (null != voucher.getMinimumSpend()) {
+            minimumSpend = voucher.getMinimumSpend();
+        }
+
+        if (null != voucher.getAllowDoubleDiscount()) {
+            allowDoubleDiscount = voucher.getAllowDoubleDiscount();
+        }
+
+        if (null != voucher.getRequireToClaim()) {
+            requireToClaim = voucher.getRequireToClaim();
+        }
+
+        allowMultipleRedeem = voucher.getAllowMultipleRedeem();
+
+        if (null != voucher.getStatus()) {
+            status = voucher.getStatus();
+        }
+
+        if (null != voucher.getVoucherType()) {
+            voucherType = voucher.getVoucherType();
+        }
+
+        if (null != voucher.getDiscountType()) {
+            discountType = voucher.getDiscountType();
+        }
+
+        if (null != voucher.getCalculationType()) {
+            calculationType = voucher.getCalculationType();
+        }
+
+        if (null != voucher.getStartDate()) {
+            startDate = voucher.getStartDate();
+        }
+
+        if (null != voucher.getEndDate()) {
+            endDate = voucher.getEndDate();
+        }
+
     }
 
 }
