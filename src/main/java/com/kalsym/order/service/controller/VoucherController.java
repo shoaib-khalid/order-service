@@ -17,32 +17,26 @@
 package com.kalsym.order.service.controller;
 
 import com.kalsym.order.service.OrderServiceApplication;
-import com.kalsym.order.service.model.*;
 import com.kalsym.order.service.enums.VoucherStatus;
 import com.kalsym.order.service.enums.VoucherType;
+import com.kalsym.order.service.model.*;
 import com.kalsym.order.service.model.repository.*;
 import com.kalsym.order.service.utility.HttpResponse;
 import com.kalsym.order.service.utility.Logger;
-import java.util.Optional;
-import java.util.List;
-import java.util.Date;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus;
-
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.access.prepost.PreAuthorize;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -167,6 +161,101 @@ public class VoucherController {
 
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+    @GetMapping(path = {"/check-availability/{voucherCode}/guest/{customerEmail}"}, name = "voucher-post")
+    @PreAuthorize("hasAnyAuthority('voucher-post', 'all')")
+    public ResponseEntity<HttpResponse> getVoucherAvailability(HttpServletRequest request,
+                                                              @PathVariable(required = true) String customerEmail,
+                                                              @PathVariable(required = true) String voucherCode,
+                                                               @RequestParam(required = false) String storeId
+    ) {
+        String logprefix = request.getRequestURI();
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Logger.application.info(OrderServiceApplication.VERSION, logprefix, "customerEmail: " + customerEmail+" voucherCode:"+voucherCode);
+
+        if (customerEmail == null) {
+            Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerEmail is null");
+            response.setSuccessStatus(HttpStatus.NOT_FOUND);
+            response.setError("email is null");
+            response.setMessage("Email address is null");
+            return ResponseEntity.status(response.getStatus()).body(response);
+        }
+
+        Voucher voucher = voucherRepository.findByVoucherCode(voucherCode);
+        if (voucher==null) {
+            Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, " NOT_FOUND voucherCode: " + voucherCode);
+            response.setSuccessStatus(HttpStatus.NOT_FOUND);
+            response.setError("Voucher not found");
+            response.setMessage("Sorry, invalid voucher code! Please check for typing errors or try a different code.");
+            return ResponseEntity.status(response.getStatus()).body(response);
+        } else {
+            //check status
+            if (voucher.getStatus()!=VoucherStatus.ACTIVE) {
+                response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
+                response.setError("Voucher not active");
+                response.setMessage("Sorry, this voucher is currently unavailable.");
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
+            //check total redeem
+            if (voucher.getTotalRedeem()>=voucher.getTotalQuantity()) {
+                response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
+                response.setError("Voucher fully redeemed");
+                response.setMessage("Sorry, this voucher has already been fully redeemed.");
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
+            //check expiry date
+            Date currentDate = new Date();
+            if (currentDate.compareTo(voucher.getStartDate()) < 0 || currentDate.compareTo(voucher.getEndDate()) > 0) {
+                response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
+                response.setError("Voucher has expired");
+                response.setMessage("Sorry, this voucher has expired.");
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
+        }
+
+        // Find guest voucher
+        List<CustomerVoucher> usedVoucherList = null;
+        if (storeId!=null) {
+            usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherIdAndStoreId(customerEmail, voucher.getId(), storeId);
+        } else {
+            usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(customerEmail, voucher.getId());
+        }
+
+        if (!usedVoucherList.isEmpty()) {
+            CustomerVoucher existingVoucher =usedVoucherList.get(0);
+            if (existingVoucher!=null && existingVoucher.getIsUsed()) {
+                Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Voucher already exist email: " + customerEmail+" voucherId:"+voucher.getId());
+                response.setSuccessStatus(HttpStatus.CONFLICT);
+                response.setError("Voucher already exist");
+                response.setMessage("You have redeemed this voucher.");
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
+        }
+
+        if (storeId!=null && voucher.getVoucherType()==VoucherType.STORE) {
+            //check store id
+            boolean storeValid=false;
+            List<VoucherStore> storeList = voucher.getVoucherStoreList();
+            for (VoucherStore voucherStore : storeList) {
+                if (storeId.equals(voucherStore.getStoreId())) {
+                    storeValid = true;
+                    break;
+                }
+            }
+            if (!storeValid) {
+                Logger.application.warn(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Voucher not valid for this store storeId: " + storeId+" voucherId:"+voucher.getId());
+                response.setSuccessStatus(HttpStatus.CONFLICT);
+                response.setError("Voucher not valid for this store");
+                response.setMessage("Sorry, this voucher cannot be used for this store.");
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
+        }
+
+        response.setSuccessStatus(HttpStatus.OK);
+        response.setData(voucher);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
     
     @GetMapping(path = {"/verify/{customerEmail}/{voucherCode}/{storeId}"}, name = "voucher-post")
     @PreAuthorize("hasAnyAuthority('voucher-post', 'all')")
