@@ -1,12 +1,7 @@
 package com.kalsym.order.service.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Column;
-import javax.persistence.Enumerated;
-import javax.persistence.EnumType;
+import javax.persistence.*;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -14,7 +9,6 @@ import org.hibernate.annotations.GenericGenerator;
 
 import com.kalsym.order.service.enums.VehicleType;
 import com.kalsym.order.service.OrderServiceApplication;
-import javax.persistence.Transient;
 
 /**
  *
@@ -83,5 +77,11 @@ public class Product {
     public String getSeoNameMarketplace() {
         return shortId+"-"+seoName;
     }
+
+    private String voucherId;
+
+    @OneToOne()
+    @JoinColumn(name = "voucherId", referencedColumnName="id", insertable = false, updatable = false)
+    private Voucher voucher;
    
 }
