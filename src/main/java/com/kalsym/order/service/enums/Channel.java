@@ -8,5 +8,6 @@ package com.kalsym.order.service.enums;
 public enum Channel {
     DELIVERIN,
     PAYHUB2U,
-    INSTORE
+    INSTORE,
+    EKEDAI
 }

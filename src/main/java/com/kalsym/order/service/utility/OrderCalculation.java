@@ -302,7 +302,7 @@ public class OrderCalculation {
         orderTotal.setStoreShare(Round2DecimalPoint(orderTotal.getSubTotal() - orderTotal.getAppliedDiscount() + orderTotal.getStoreServiceCharge() - commission - storeVoucherDiscountAmount));
         
         if (deliveryType!=null) {
-            if (deliveryType.equals(DeliveryType.SELF.name())) {
+            if (deliveryType.equals(DeliveryType.SELF.toString())) {
                 double storeShare = orderTotal.getStoreShare() + deliveryCharge;
                 orderTotal.setStoreShare(Round2DecimalPoint(storeShare));
             } 

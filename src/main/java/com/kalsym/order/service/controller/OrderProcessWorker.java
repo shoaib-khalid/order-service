@@ -366,7 +366,8 @@ public class OrderProcessWorker {
             
             //check current status if in correct sequence
             OrderCompletionStatusConfig prevOrderCompletionStatusConfig = null;
-            
+
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "CHECK STATUS CONFIG VALUE::::" +verticalId+ ","+ previousStatus.name()+ ","+ storePickup+ ","+ orderDeliveryType+ ","+ order.getPaymentType());
             List<OrderCompletionStatusConfig> prevOrderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, previousStatus.name(), storePickup, orderDeliveryType, order.getPaymentType());
             if (prevOrderCompletionStatusConfigs == null || prevOrderCompletionStatusConfigs.isEmpty()) {
                 Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "prevOrderCompletionStatusConfigs not found!");                

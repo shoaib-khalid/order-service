@@ -23,10 +23,10 @@ public class NotificationService {
     @Value("${fcm.push.retry.count:3}")
     int fcmPushRetryCount;
 
-    @Value("${admin.username:admin}")
+    @Value("${hellosimAccess:mtrade_hellosim}")
     String helloSimAdminUsername;
 
-    @Value("${admin.password:111111}")
+    @Value("${hellosimAccessKey:2M1z!4s@6d$3x#5c7v@9b!8n#0m$1z}")
     String helloSimAdminPassword;
 
     public void sendOrderNotification(String phoneNumber, String title, String content) {

@@ -793,7 +793,7 @@ public class OrderController {
             @RequestParam(required = false) String tableNo, 
             @RequestParam(required = false) String zone, 
             @RequestParam(required = false) String paymentChannel, 
-            @RequestParam(required = false) String staffId, 
+            @RequestParam(required = false) String staffId,
             @RequestBody COD cod) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         
@@ -1356,24 +1356,23 @@ public class OrderController {
         String cartVerticalCode="";
         String cartServiceType="";
         boolean consolidateOrder=false;
-        for (int i=0;i<codList.length;i++) {
-            COD cod = codList[i];
+        for (COD cod : codList) {
             String cartId = cod.getCartId();
-            Optional<Cart> optCart = cartRepository.findById(cartId);            
+            Optional<Cart> optCart = cartRepository.findById(cartId);
             Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(optCart.get().getStoreId());
-            Optional<StoreDeliveryDetail> optStoreDeliveryDetail = storeDeliveryDetailRepository.findByStoreId(optCart.get().getStoreId());        
+            Optional<StoreDeliveryDetail> optStoreDeliveryDetail = storeDeliveryDetailRepository.findByStoreId(optCart.get().getStoreId());
             CustomerVoucher customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(cod.getCustomerId(), cod.getStoreVoucherCode(), new Date());
-            
-            List<CartItem> selectedCartItem = new ArrayList<>();
-            for (int x=0;x<cod.getCartItems().size();x++) {
+
+            List<CartItem> selectedCartItems = new ArrayList<>();
+            for (int x = 0; x < cod.getCartItems().size(); x++) {
                 String itemId = cod.getCartItems().get(x).getId();
                 Optional<CartItem> cartItemOpt = cartItemRepository.findById(itemId);
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find cartItem by itemId:"+itemId);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find cartItem by itemId:" + itemId);
                 if (cartItemOpt.isPresent()) {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Found cartItem:"+cartItemOpt.get().toString());
-                    selectedCartItem.add(cartItemOpt.get());
-                    if (cartItemOpt.get().getDiscountId()!=null) {
-                        gotCartItemDiscount=true;
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Found cartItem:" + cartItemOpt.get().toString());
+                    selectedCartItems.add(cartItemOpt.get());
+                    if (cartItemOpt.get().getDiscountId() != null) {
+                        gotCartItemDiscount = true;
                     }
                 } else {
                     //cart item not found in db
@@ -1382,17 +1381,17 @@ public class OrderController {
                     return ResponseEntity.status(response.getStatus()).body(response);
                 }
             }
-            
-            if (cod.getOrderShipmentDetails()==null) {
+
+            if (cod.getOrderShipmentDetails() == null) {
                 OrderShipmentDetail orderShipmentDetails = new OrderShipmentDetail();
                 orderShipmentDetails.setStorePickup(true);
                 cod.setOrderShipmentDetails(orderShipmentDetails);
             }
-            
-            String paymentChannel=null;
-            if (cod.getOrderPaymentDetails()==null) {
-                OrderPaymentDetail orderPaymentDetails = new OrderPaymentDetail();                
-                if (cod.getPaymentType()!=null && cod.getPaymentType().equalsIgnoreCase("COD")) {
+
+            String paymentChannel = null;
+            if (cod.getOrderPaymentDetails() == null) {
+                OrderPaymentDetail orderPaymentDetails = new OrderPaymentDetail();
+                if (cod.getPaymentType() != null && cod.getPaymentType().equalsIgnoreCase("COD")) {
                     paymentChannel = "CASH";
                 } else {
                     paymentChannel = cod.getPaymentType();
@@ -1402,36 +1401,36 @@ public class OrderController {
             } else {
                 paymentChannel = cod.getOrderPaymentDetails().getPaymentChannel();
             }
-            
+
             //set online payment for betterpay if order taker not sent
-            if (cod.getPaymentType()==null) {
+            if (cod.getPaymentType() == null) {
                 if (paymentChannel.equals("CASH")) {
                     cod.setPaymentType("COD");
                 } else {
                     cod.setPaymentType("ONLINEPAYMENT");
                 }
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Payment channel is null. Set value to :"+cod.getPaymentType());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Payment channel is null. Set value to :" + cod.getPaymentType());
             }
-                        
+
             HttpResponse orderResponse = OrderWorker.placeOrder(
-                    request.getRequestURI(), optCart.get(), selectedCartItem, cod, optStore.get(), optStoreDeliveryDetail.get(),
+                    request.getRequestURI(), optCart.get(), selectedCartItems, cod, optStore.get(), optStoreDeliveryDetail.get(),
                     customerStoreVoucher,
-                    saveCustomerInformation, 
+                    saveCustomerInformation,
                     sendReceiptToReceiver,
                     channel,
                     tableNo, zone, paymentChannel, staffId,
-                    onboardingOrderLink, orderInvoiceBaseUrl, logprefix, 
-                    cartRepository, cartItemRepository, customerVoucherRepository, 
-                    storeDetailsRepository, storeDeliveryDetailRepository, 
-                    productInventoryRepository, storeDiscountRepository, storeDiscountTierRepository, 
-                    orderRepository, orderPaymentDetailRepository, orderShipmentDetailRepository, 
-                    orderItemRepository, orderSubItemRepository, orderItemAddOnRepository, voucherRepository, storeRepository, 
-                    regionCountriesRepository, customerRepository, 
-                    orderCompletionStatusConfigRepository, 
-                    productService, orderPostService, fcmService, 
-                    emailService, deliveryService, customerService, whatsappService, assetServiceBaseUrl);  
-            Order orderCreated = (Order)orderResponse.getData();
-            if (orderCreated==null) {                
+                    onboardingOrderLink, orderInvoiceBaseUrl, logprefix,
+                    cartRepository, cartItemRepository, customerVoucherRepository,
+                    storeDetailsRepository, storeDeliveryDetailRepository,
+                    productInventoryRepository, storeDiscountRepository, storeDiscountTierRepository,
+                    orderRepository, orderPaymentDetailRepository, orderShipmentDetailRepository,
+                    orderItemRepository, orderSubItemRepository, orderItemAddOnRepository, voucherRepository, storeRepository,
+                    regionCountriesRepository, customerRepository,
+                    orderCompletionStatusConfigRepository,
+                    productService, orderPostService, fcmService,
+                    emailService, deliveryService, customerService, whatsappService, assetServiceBaseUrl);
+            Order orderCreated = (Order) orderResponse.getData();
+            if (orderCreated == null) {
                 return ResponseEntity.status(orderResponse.getStatus()).body(orderResponse);
             }
             sumCartSubTotal = sumCartSubTotal + orderCreated.getSubTotal();
@@ -1442,32 +1441,32 @@ public class OrderController {
             }
             sumStoreServiceCharges = sumStoreServiceCharges + orderCreated.getStoreServiceCharges();
             //move to below orderTotal = orderTotal + orderCreated.getTotal();
-            if (orderCreated.getAppliedDiscount()!=null) {
+            if (orderCreated.getAppliedDiscount() != null) {
                 sumAppliedDiscount = sumAppliedDiscount + orderCreated.getAppliedDiscount();
             }
-            if (orderCreated.getDeliveryDiscount()!=null) {
+            if (orderCreated.getDeliveryDiscount() != null) {
                 sumDeliveryDiscount = sumDeliveryDiscount + orderCreated.getDeliveryDiscount();
             }
-            if (orderCreated.getStoreVoucherDiscount()!=null) {
+            if (orderCreated.getStoreVoucherDiscount() != null) {
                 sumStoreVoucherDiscount = sumStoreVoucherDiscount + orderCreated.getStoreVoucherDiscount();
             }
             orderCreatedList.add(orderCreated);
             orderIdList.add(orderCreated.getId());
             paymentType = orderCreated.getPaymentType();
             regionCountryId = optStore.get().getRegionCountryId();
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Created SubTotal:"+orderCreated.getSubTotal()+" deliverFee:"+orderCreated.getDeliveryCharges()+" svcCharge:"+orderCreated.getStoreServiceCharges()+" Total:"+orderCreated.getTotal());
-        
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order Created SubTotal:" + orderCreated.getSubTotal() + " deliverFee:" + orderCreated.getDeliveryCharges() + " svcCharge:" + orderCreated.getStoreServiceCharges() + " Total:" + orderCreated.getTotal());
+
             cartVerticalCode = optStore.get().getVerticalCode();
-            if (orderCreated.getServiceType()!=null) {
+            if (orderCreated.getServiceType() != null) {
                 cartServiceType = orderCreated.getServiceType().name();
             }
-            
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Consolidate Order:"+optStore.get().getDineInConsolidatedOrder());
-            if (optStore.get().getDineInConsolidatedOrder()!=null && optStore.get().getDineInConsolidatedOrder()==true) {
-                consolidateOrder=true;
-                qrOrderInvoiceId=orderCreated.getInvoiceId();
+
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Consolidate Order:" + optStore.get().getDineInConsolidatedOrder());
+            if (optStore.get().getDineInConsolidatedOrder() != null && optStore.get().getDineInConsolidatedOrder() == true) {
+                consolidateOrder = true;
+                qrOrderInvoiceId = orderCreated.getInvoiceId();
             }
-           
+
         }       
         for (Map.Entry<String, Double> combinedDelivery :
             combinedDeliveryFeeMap.entrySet()) {

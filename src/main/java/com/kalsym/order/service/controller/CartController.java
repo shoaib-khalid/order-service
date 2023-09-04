@@ -621,41 +621,41 @@ public class CartController {
                     }
                     double itemWeight = cartItem.getQuantity() * singleItemWeight;
                     totalWeight = totalWeight + itemWeight;
-                    
+
 
                     //check if any of item need a bigger vehicle
                     Optional<Product> productInfoOpt = productRepository.findById(cartItem.getProductId());
                     Product productInfo = productInfoOpt.get();
-                    
+
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Product ["+productInfo.getName()+"] packing size:"+productInfo.getPackingSize());
                     int itemPcs = cartItem.getQuantity();
                     if (productInfo.getPackingSize()!=null && productInfo.getPackingSize().equalsIgnoreCase("XS")) {
                         itemPcs = 1;
                     }
                     totalPcs = totalPcs + itemPcs;
-                    
+
                     if (productInfo.getVehicleType()==VehicleType.CAR && vehicleSize<2) {
                         vehicleType=VehicleType.CAR;
                         vehicleSize=2;
                     } else if (productInfo.getVehicleType()==VehicleType.PICKUP && vehicleSize<3) {
                         vehicleType=VehicleType.PICKUP;
-                        vehicleSize=3; 
+                        vehicleSize=3;
                     } else if (productInfo.getVehicleType()==VehicleType.VAN && vehicleSize<4) {
                         vehicleType=VehicleType.VAN;
-                        vehicleSize=4; 
+                        vehicleSize=4;
                     } else if (productInfo.getVehicleType()==VehicleType.LARGEVAN && vehicleSize<5) {
                         vehicleType=VehicleType.LARGEVAN;
-                        vehicleSize=5; 
+                        vehicleSize=5;
                     } else if (productInfo.getVehicleType()==VehicleType.SMALLLORRY && vehicleSize<6) {
                         vehicleType=VehicleType.SMALLLORRY;
-                        vehicleSize=6; 
+                        vehicleSize=6;
                     } else if (productInfo.getVehicleType()==VehicleType.MEDIUMLORRY && vehicleSize<7) {
                         vehicleType=VehicleType.MEDIUMLORRY;
                         vehicleSize=7;
                     } else if (productInfo.getVehicleType()==VehicleType.LARGELORRY && vehicleSize<8) {
                         vehicleType=VehicleType.LARGELORRY;
                         vehicleSize=8;
-                    } 
+                    }
                 }
             }
 
@@ -681,6 +681,16 @@ public class CartController {
                 Double totalWeight;
                 VehicleType vehicleType;
                 Integer totalPcs;
+
+                public String getProductType() {
+                    return productType;
+                }
+
+                public void setProductType(String productType) {
+                    this.productType = productType;
+                }
+
+                String productType;
 
                 public Weight() {
                 }
@@ -715,6 +725,9 @@ public class CartController {
             w.setTotalWeight(totalWeight);
             w.setVehicleType(vehicleType);
             w.setTotalPcs(totalPcs);
+
+            // TODO: Get from product object, if voucherId not null, set to "DIGITAL"
+            w.setProductType("");
             response.setSuccessStatus(HttpStatus.OK);
             response.setData(w);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "TotalWeight : "+totalWeight+" Pcs:"+totalPcs+" Vehicle:"+vehicleType);
@@ -1012,80 +1025,80 @@ public class CartController {
         Map<String, Double> combinedDeliveryFeeMap = new HashMap<String, Double>();
         String cartVerticalCode="";
         String cartServiceType="";
-        for (int i=0;i<cartList.length;i++) {            
-            String cartId = cartList[i].getCartId();
+        for (CartWithItem cartWithItem : cartList) {
+            String cartId = cartWithItem.getCartId();
             Optional<Cart> cartOptional = cartRepository.findById(cartId);
             Cart cart = cartOptional.get();
-            String deliveryQuotationId = cartList[i].getDeliveryQuotationId();
-            String deliveryType = cartList[i].getDeliveryType();
-            String storeVoucherCode = cartList[i].getStoreVoucherCode();
-             
+            String deliveryQuotationId = cartWithItem.getDeliveryQuotationId();
+            String deliveryType = cartWithItem.getDeliveryType();
+            String storeVoucherCode = cartWithItem.getStoreVoucherCode();
+
             //get delivery charges from delivery-service
-            double deliveryCharge=0;
-            if (deliveryQuotationId!=null) {
+            double deliveryCharge = 0;
+            if (deliveryQuotationId != null) {
                 DeliveryQuotation deliveryQuotation = deliveryService.getDeliveryQuotation(deliveryQuotationId);
                 deliveryCharge = deliveryQuotation.getAmount();
-                if (deliveryQuotation.getCombinedDelivery()!=null && deliveryQuotation.getCombinedDelivery()) {
-                   combinedDeliveryFeeMap.put(deliveryQuotationId, deliveryCharge); 
+                if (deliveryQuotation.getCombinedDelivery() != null && deliveryQuotation.getCombinedDelivery()) {
+                    combinedDeliveryFeeMap.put(deliveryQuotationId, deliveryCharge);
                 } else {
                     groupDeliveryCharge = groupDeliveryCharge + deliveryCharge;
                 }
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliveryCharge from delivery-service:"+deliveryCharge);
-            }            
-            
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliveryCharge from delivery-service:" + deliveryCharge);
+            }
+
             //check store voucher if provided
             CustomerVoucher customerStoreVoucher = null;
-            if (storeVoucherCode!=null && customerId!=null) {
+            if (storeVoucherCode != null && customerId != null) {
                 customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(customerId, storeVoucherCode, new Date());
-                if (customerStoreVoucher==null) {
+                if (customerStoreVoucher == null) {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
                     response.setMessage("Voucher code " + storeVoucherCode + " not found");
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-                } 
-            }        
-        
+                }
+            }
+
             //getting store details for cart if from product service
             StoreWithDetails storeWithDetials = productService.getStoreById(cart.getStoreId());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store details of cartId: " + cart.getId() + ", and storeId: " + cart.getStoreId());
 
             StoreCommission storeCommission = productService.getStoreCommissionByStoreId(cart.getStoreId());
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store commission: " + storeCommission);
-            
+
             List<CartItem> selectedCartItem = new ArrayList<>();
-            for (int x=0;x<cartList[i].getSelectedItemId().size();x++) {
-                String itemId = cartList[i].getSelectedItemId().get(x);
+            for (int x = 0; x < cartWithItem.getSelectedItemId().size(); x++) {
+                String itemId = cartWithItem.getSelectedItemId().get(x);
                 Optional<CartItem> cartItemOpt = cartItemRepository.findById(itemId);
                 if (cartItemOpt.isPresent()) {
                     selectedCartItem.add(cartItemOpt.get());
-                    if (cartItemOpt.get().getDiscountId()!=null) {
-                        gotCartItemDiscount=true;
+                    if (cartItemOpt.get().getDiscountId() != null) {
+                        gotCartItemDiscount = true;
                     }
                 }
             }
-            
-            Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, selectedCartItem);        
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:"+cartId+" subTotal:"+discount.getCartSubTotal()+" deliveryCharge:"+deliveryCharge+" totalSubTotalDiscount:"+discount.getSubTotalDiscount()+" totalShipmentDiscount:"+discount.getDeliveryDiscount());
-            
+
+            Discount discount = StoreDiscountCalculation.CalculateStoreDiscount(cart, deliveryCharge, cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, selectedCartItem);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartId:" + cartId + " subTotal:" + discount.getCartSubTotal() + " deliveryCharge:" + deliveryCharge + " totalSubTotalDiscount:" + discount.getSubTotalDiscount() + " totalShipmentDiscount:" + discount.getDeliveryDiscount());
+
             //not check platform voucher here since it's group order
-            OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission,  
-                            deliveryCharge, deliveryType, null, customerStoreVoucher, storeWithDetials.getVerticalCode(),
-                            cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, selectedCartItem);                
-            
+            OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission,
+                    deliveryCharge, deliveryType, null, customerStoreVoucher, storeWithDetials.getVerticalCode(),
+                    cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, selectedCartItem);
+
             if (orderTotalObject.getGotError()) {
                 // should return warning if got error
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while calculating discount:"+orderTotalObject.getErrorMessage());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while calculating discount:" + orderTotalObject.getErrorMessage());
                 response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
                 response.setMessage(orderTotalObject.getErrorMessage());
                 return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
             }
-            
+
             discount.setCartId(cartId);
-            discount.setCartGrandTotal(Utilities.roundDouble(orderTotalObject.getTotal(),2));
-            discount.setCartDeliveryCharge(Utilities.roundDouble(deliveryCharge,2));
-            discount.setStoreServiceCharge(Utilities.roundDouble(orderTotalObject.getStoreServiceCharge(),2));
-            discount.setStoreServiceChargePercentage(Utilities.roundDouble(storeWithDetials.getServiceChargesPercentage(),2));
-            
-            if (customerStoreVoucher!=null) {
+            discount.setCartGrandTotal(Utilities.roundDouble(orderTotalObject.getTotal(), 2));
+            discount.setCartDeliveryCharge(Utilities.roundDouble(deliveryCharge, 2));
+            discount.setStoreServiceCharge(Utilities.roundDouble(orderTotalObject.getStoreServiceCharge(), 2));
+            discount.setStoreServiceChargePercentage(Utilities.roundDouble(storeWithDetials.getServiceChargesPercentage(), 2));
+
+            if (customerStoreVoucher != null) {
                 discount.setStoreVoucherSubTotalDiscount(orderTotalObject.getStoreVoucherSubTotalDiscount());
                 discount.setStoreVoucherSubTotalDiscountDescription(orderTotalObject.getStoreVoucherSubTotalDiscountDescription());
                 discount.setStoreVoucherDeliveryDiscount(orderTotalObject.getStoreVoucherDeliveryDiscount());
@@ -1096,15 +1109,15 @@ public class CartController {
                 discount.setStoreVoucherDiscountCalculationType(orderTotalObject.getStoreVoucherDiscountCalculationType());
                 discount.setStoreVoucherDiscountCalculationValue(orderTotalObject.getStoreVoucherDiscountCalculationValue());
             }
-            storeDiscountList.add(discount); 
-            
+            storeDiscountList.add(discount);
+
             groupCartSubTotal = groupCartSubTotal + Utilities.convertToDouble(discount.getCartSubTotal());
             groupServiceCharge = groupServiceCharge + Utilities.convertToDouble(discount.getStoreServiceCharge());
-            groupDeliveryDiscount = groupDeliveryDiscount + Utilities.convertToDouble(discount.getDeliveryDiscount());            
+            groupDeliveryDiscount = groupDeliveryDiscount + Utilities.convertToDouble(discount.getDeliveryDiscount());
             groupSubTotalDiscount = groupSubTotalDiscount + Utilities.convertToDouble(discount.getSubTotalDiscount());
-        
+
             cartVerticalCode = storeWithDetials.getVerticalCode();
-            if (cart.getServiceType()!=null) {
+            if (cart.getServiceType() != null) {
                 cartServiceType = cart.getServiceType().name();
             }
         }
@@ -1155,9 +1168,7 @@ public class CartController {
             groupDiscount.setPlatformVoucherDiscountCalculationValue(groupOrderTotalObject.getVoucherDiscountCalculationValue());
             groupDiscount.setPlatformVoucherId(groupOrderTotalObject.getVoucherId());
             Optional<Voucher> voucherOpt = voucherRepository.findById(groupOrderTotalObject.getVoucherId());
-            if (voucherOpt.isPresent()) {
-                groupDiscount.setPlatformVoucherName(voucherOpt.get().getName());
-            }
+            voucherOpt.ifPresent(voucher -> groupDiscount.setPlatformVoucherName(voucher.getName()));
         }
         
         response.setSuccessStatus(HttpStatus.OK);
