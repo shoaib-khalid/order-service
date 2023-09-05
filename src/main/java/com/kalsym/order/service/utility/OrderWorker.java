@@ -841,6 +841,420 @@ public class OrderWorker {
         }
         
     }
+
+    //TODO
+    //create coupon creation  response
+    public static HttpResponse placeCoupon(
+            String requestUri, Cart cart,
+            List<CartItem> cartItems, COD cod,
+            StoreWithDetails storeWithDetials,
+            CustomerVoucher customerStoreVoucher,
+            String groupOrderId,
+            Channel channel,
+            String logprefix,
+            CartItemRepository cartItemRepository,
+            ProductInventoryRepository productInventoryRepository,
+            StoreDiscountRepository storeDiscountRepository,
+            StoreDiscountTierRepository storeDiscountTierRepository,
+            OrderRepository orderRepository,
+            OrderPaymentDetailRepository orderPaymentDetailRepository,
+            StoreRepository storeRepository,
+            CustomerRepository customerRepository,
+            ProductService productService,
+            CustomerService customerService
+            ){
+
+        HttpResponse response = new HttpResponse(requestUri);
+        // create order object
+        Order order = new Order();
+        String cartId = cart.getId();
+
+        try{
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cart exists against cartId: " + cartId);
+
+            StoreCommission storeCommission = productService.getStoreCommissionByStoreId(cart.getStoreId());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got store commission: " + storeCommission);
+
+            Double subTotal = 0.0;
+            List<OrderItem> orderItems = new ArrayList<OrderItem>();
+            try {
+                // check store payment type
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix,
+                        "Store with payment type: " + storeWithDetials.getPaymentType());
+                order.setStoreId(storeWithDetials.getId());
+
+                for (int i = 0; i < cartItems.size(); i++) {
+                    // check every items price in product service
+                    ProductInventory productInventory = productService.getProductInventoryById(
+                            cart.getStoreId(), cartItems.get(i).getProductId(),
+                            cartItems.get(i).getItemCode());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got productinventory against itemcode:" + cartItems.get(i).getItemCode());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got productinventory: " + cartItems.get(i).getItemCode(), productInventory);
+
+                    //get product variant
+                    ProductInventory productInventoryDB = productInventoryRepository.findByItemCode(cartItems.get(i).getItemCode());
+                    String variantList = null;
+                    if (!productInventory.getProductInventoryItems().isEmpty()) {
+                        for (int x=0;x<productInventoryDB.getProductInventoryItems().size();x++) {
+                            ProductInventoryItem productInventoryItem = productInventory.getProductInventoryItems().get(x);
+                            ProductVariantAvailable productVariantAvailable = productInventoryItem.getProductVariantAvailable();
+                            String variant = productVariantAvailable.getValue();
+                            if (variantList==null)
+                                variantList = variant;
+                            else
+                                variantList = variantList + "," + variant;
+                        }
+                    }
+
+                    //check for stock
+                    if (productInventory.getQuantity()<cartItems.get(i).getQuantity()
+                            && !productInventory.getProduct().isAllowOutOfStockPurchases()) {
+                        //out of stock
+                        response.setMessage(productInventory.getProduct().getName()+" is out of stock");
+                        response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+                        return response;
+                    }
+
+                    double itemPrice=0.00;
+
+                    //check for discounted item
+                    if (cartItems.get(i).getDiscountId()!=null) {
+                        //check if discount still valid
+                        ItemDiscount discountDetails = productInventory.getItemDiscount();
+                        if (discountDetails!=null) {
+
+                            double discountPrice = Utilities.Round2DecimalPoint(discountDetails.discountedPrice);
+                            double dineInDiscountPrice = Utilities.Round2DecimalPoint(discountDetails.dineInDiscountedPrice);
+                            double cartItemPrice = Utilities.Round2DecimalPoint(cartItems.get(i).getProductPrice().doubleValue());
+
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "productInventory discountId:["+discountDetails.discountId+"] discountedPrice:"+discountPrice);
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem discountId:["+cartItems.get(i).getDiscountId()+"] price:"+cartItemPrice);
+
+                            double beza = 0.00;
+                            if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN) {
+                                beza = Math.abs(dineInDiscountPrice - cartItemPrice);
+                            } else {
+                                beza = Math.abs(discountPrice - cartItemPrice);
+                            }
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "cartItem discountId:["+cartItems.get(i).getDiscountId()+"] beza:"+beza);
+
+                            if (discountDetails.discountId.equals(cartItems.get(i).getDiscountId()) &&
+                                    beza < 0.5) {
+                                //dicount still valid
+                                subTotal += cartItems.get(i).getPrice() ;
+                                if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN) {
+                                    itemPrice = dineInDiscountPrice;
+                                } else {
+                                    itemPrice = discountPrice;
+                                }
+                            } else {
+                                //discount no more valid
+                                // should return warning if prices are not same
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Discount not valid");
+                                response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+                                response.setMessage("Discount not valid");
+                                return response;
+                            }
+                        } else {
+                            //discount no more valid
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Discount not valid");
+                            response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+                            response.setMessage("Discount not valid");
+                            return response;
+                        }
+                    } else {
+                        double cartPrice = Utilities.Round2DecimalPoint(cartItems.get(i).getProductPrice().doubleValue());
+                        double deliverinPrice = Utilities.Round2DecimalPoint(0.0);
+                        double dineinPrice = Utilities.Round2DecimalPoint(productInventory.getDineInPrice());
+                        double bezaDeliverIn = Math.abs(cartPrice - deliverinPrice);
+                        double bezaDineIn = Math.abs(cartPrice - dineinPrice);
+                        Boolean isCustomPrice = productInventory.getProduct().getIsCustomPrice();
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item Cart price:"+cartPrice+" deliverinPrice:"+deliverinPrice+" dineinPrice:"+dineinPrice);
+                        if (isCustomPrice!=null && isCustomPrice==true) {
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Dinein customPrice product, price got : cartPrice: " + cartItems.get(i).getProductPrice());
+                        } else if (cart.getServiceType()==ServiceType.DELIVERIN && bezaDeliverIn>0.5) {
+                            // should return warning if prices are not same
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliverIn  prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
+                            response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+                            response.setMessage("Ops! The product price for "+cartItems.get(i).getProductName()+" has been updated. Please refresh the Checkout page.");
+                            return response;
+                        } else if (cart.getServiceType()==ServiceType.DINEIN && bezaDineIn>0.5) {
+                            // should return warning if prices are not same
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DineIn prices are not same, price got : oldPrice: " + cartItems.get(i).getProductPrice() + ", newPrice: " + String.valueOf(productInventory.getPrice()));
+                            response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+                            response.setMessage("Ops! The product price for "+cartItems.get(i).getProductName()+" has been updated. Please refresh the Checkout page.");
+                            return response;
+                        }
+                        subTotal += cartItems.get(i).getPrice() ;
+                        itemPrice = cartItems.get(i).getProductPrice();
+                    }
+
+                    //check for addOn price
+                    if (cartItems.get(i).getCartItemAddOn()!=null && !cartItems.get(i).getCartItemAddOn().isEmpty()) {
+                        for (int z=0;z<cartItems.get(i).getCartItemAddOn().size();z++) {
+                            ProductAddOn productAddOn = cartItems.get(i).getCartItemAddOn().get(z).getProductAddOn();
+                            double cartPrice = Utilities.Round2DecimalPoint(cartItems.get(i).getCartItemAddOn().get(z).getProductPrice().doubleValue());
+                            double deliverinPrice = Utilities.Round2DecimalPoint(0.0);
+                            double dineinPrice = Utilities.Round2DecimalPoint(productAddOn.getDineInPrice());
+                            double bezaDeliverIn = Math.abs(cartPrice - deliverinPrice);
+                            double bezaDineIn = Math.abs(cartPrice - dineinPrice);
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "AddOn Cart price:"+cartPrice+" deliverinPrice:"+deliverinPrice+" dineinPrice:"+dineinPrice);
+                            if (cart.getServiceType()==ServiceType.DELIVERIN && bezaDeliverIn>0.5 ) {
+                                // should return warning if prices are not same
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliverIn AddOn prices are not same, price got : cartPrice:" + cartPrice + ", deliverinPrice:" + deliverinPrice);
+                                response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+                                response.setMessage("Ops! The Add-On price for "+cartItems.get(i).getProductName()+" has been updated. Please refresh the Checkout page.");
+                                return response;
+                            } else if (cart.getServiceType()==ServiceType.DINEIN && bezaDineIn>0.5) {
+                                // should return warning if prices are not same
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DineIn AddOn prices are not same, price got : cartPrice:" + cartPrice + ", dineinPrice:" + dineinPrice);
+                                response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+                                response.setMessage("Ops! The Add-On price for "+cartItems.get(i).getProductName()+" has been updated. Please refresh the Checkout page.");
+                                return response;
+                            }
+                            subTotal += cartItems.get(i).getCartItemAddOn().get(z).getPrice() ;
+                            itemPrice = itemPrice + cartItems.get(i).getCartItemAddOn().get(z).getProductPrice() ;
+                        }
+                    }
+
+                    //creating orderItem
+                    OrderItem orderItem = new OrderItem();
+                    orderItem.setItemCode(cartItems.get(i).getItemCode());
+                    orderItem.setProductId(cartItems.get(i).getProductId());
+                    orderItem.setProductName((productInventory.getProduct() != null) ? productInventory.getProduct().getName() : "");
+                    orderItem.setProductPrice((float)itemPrice);
+                    orderItem.setQuantity(cartItems.get(i).getQuantity());
+                    orderItem.setSKU(productInventory.getSKU());
+                    orderItem.setSpecialInstruction(cartItems.get(i).getSpecialInstruction());
+                    orderItem.setWeight(cartItems.get(i).getWeight());
+                    orderItem.setPrice(cartItems.get(i).getQuantity() * (float)itemPrice);
+                    if (variantList!=null) {
+                        orderItem.setProductVariant(variantList);
+                    }
+                    if (cartItems.get(i).getDiscountId()!=null) {
+                        orderItem.setDiscountId(cartItems.get(i).getDiscountId());
+                        orderItem.setNormalPrice(cartItems.get(i).getNormalPrice());
+                        orderItem.setDiscountLabel(cartItems.get(i).getDiscountLabel());
+                        orderItem.setDiscountCalculationType(cartItems.get(i).getDiscountCalculationType());
+                        orderItem.setDiscountCalculationValue(cartItems.get(i).getDiscountCalculationValue());
+                    }
+                    //orderPostService.postOrderLink(order.getId(), order.getStoreId(), orderItems);
+
+
+                    //add cart sub-item if any
+                    List<OrderSubItem> orderSubItemList=null;
+                    if (cartItems.get(i).getCartSubItem()!=null) {
+                        orderSubItemList = new ArrayList();
+                        for (int x=0;x<cartItems.get(i).getCartSubItem().size();x++) {
+                            CartSubItem cartSubItem = cartItems.get(i).getCartSubItem().get(x);
+
+                            // check every items price in product service
+                            ProductInventory subProductInventory = productService.getProductInventoryById(cart.getStoreId(), cartSubItem.getProductId(), cartSubItem.getItemCode());
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got subproductinventory against itemcode:" + cartSubItem.getItemCode());
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got subproductinventory: " + cartSubItem.getItemCode(), subProductInventory);
+
+                            //get product variant
+                            ProductInventory subProductInventoryDB = productInventoryRepository.findByItemCode(cartItems.get(i).getItemCode());
+                            String subVariantList = null;
+                            if (!productInventory.getProductInventoryItems().isEmpty()) {
+                                for (int y=0;y<subProductInventoryDB.getProductInventoryItems().size();y++) {
+                                    ProductInventoryItem productInventoryItem = productInventory.getProductInventoryItems().get(y);
+                                    ProductVariantAvailable productVariantAvailable = productInventoryItem.getProductVariantAvailable();
+                                    String variant = productVariantAvailable.getValue();
+                                    if (subVariantList==null)
+                                        subVariantList = variant;
+                                    else
+                                        subVariantList = subVariantList + "," + variant;
+                                }
+                            }
+
+                            OrderSubItem orderSubItem = new OrderSubItem();
+                            orderSubItem.setItemCode(cartSubItem.getItemCode());
+                            orderSubItem.setProductId(cartSubItem.getProductId());
+                            orderSubItem.setProductName(cartSubItem.getProductName());
+                            orderSubItem.setProductName((subProductInventory.getProduct() != null) ? subProductInventory.getProduct().getName() : "");
+                            if (subVariantList!=null) {
+                                orderSubItem.setProductVariant(subVariantList);
+                            }
+                            orderSubItem.setQuantity(cartSubItem.getQuantity());
+                            orderSubItem.setSpecialInstruction(cartSubItem.getSpecialInstruction());
+                            orderSubItem.setSKU(subProductInventory.getSKU());
+                            orderSubItem.setWeight(cartSubItem.getWeight());
+                            orderSubItemList.add(orderSubItem);
+                        }
+                        orderItem.setOrderSubItem(orderSubItemList);
+                    }
+
+                    //add addOn if any
+                    List<OrderItemAddOn> orderItemAddOnList=null;
+                    if (cartItems.get(i).getCartItemAddOn()!=null && !cartItems.get(i).getCartItemAddOn().isEmpty()) {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cart item addOn size:"+cartItems.get(i).getCartItemAddOn().size());
+                        orderItemAddOnList = new ArrayList();
+                        for (int z=0;z<cartItems.get(i).getCartItemAddOn().size();z++) {
+                            OrderItemAddOn orderItemAddOn = new OrderItemAddOn();
+                            orderItemAddOn.setOrderItemId(cartItems.get(i).getId());
+                            orderItemAddOn.setProductAddOnId(cartItems.get(i).getCartItemAddOn().get(z).getProductAddOnId());
+                            orderItemAddOn.setPrice(cartItems.get(i).getCartItemAddOn().get(z).getPrice());
+                            orderItemAddOn.setProductPrice(cartItems.get(i).getCartItemAddOn().get(z).getProductPrice());
+                            orderItemAddOnList.add(orderItemAddOn);
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Added AddOnItem:"+orderItemAddOn.toString());
+                        }
+                        orderItem.setOrderItemAddOn(orderItemAddOnList);
+                    }
+
+                    //adding new orderItem to orderItems list
+                    orderItems.add(orderItem);
+
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added orderItem to order list: " + orderItem.toString());
+                }
+
+                // setting order object
+                order.setCartId(cartId);
+                order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE);
+                order.setPaymentStatus(PaymentStatus.PENDING);
+                order.setCustomerId(cod.getCustomerId());
+
+                if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN) {
+                    order.setDeliveryCharges(0.00);
+                    if (cod.getPaymentType()!=null) {
+                        order.setPaymentType(cod.getPaymentType());
+                    } else {
+                        order.setPaymentType(storeWithDetials.getDineInPaymentType());
+                    }
+                    order.setDineInOption(storeWithDetials.getDineInOption());
+                    order.setDineInPack(cod.getDineInPack());
+                    if (cod.getPaymentType()!=null) {
+                        order.setPaymentType(cod.getPaymentType());
+                    }
+                } else {
+                    order.setDeliveryCharges(cod.getOrderPaymentDetails().getDeliveryQuotationAmount());
+                    order.setPaymentType(storeWithDetials.getPaymentType());
+                }
+
+
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "serviceChargesPercentage: " + storeWithDetials.getServiceChargesPercentage());
+
+                // setting invoice id
+                String invoicePrefix = storeWithDetials.getNameAbreviation();
+                if (storeWithDetials.getStorePrefix()!=null) {
+                    invoicePrefix = storeWithDetials.getStorePrefix();
+                }
+                String invoiceId = TxIdUtil.generateInvoiceId(storeWithDetials.getId(), invoicePrefix, storeRepository);
+                order.setInvoiceId(invoiceId);
+
+
+                OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(cart, storeWithDetials.getServiceChargesPercentage(), storeCommission,
+                        cod.getOrderPaymentDetails().getDeliveryQuotationAmount(), cod.getOrderShipmentDetails().getDeliveryType(), null, customerStoreVoucher, storeWithDetials.getVerticalCode(),
+                        cartItemRepository, storeDiscountRepository, storeDiscountTierRepository, logprefix, cartItems);
+
+                if (orderTotalObject.getGotError()) {
+                    // should return warning if got error
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while calculating discount:"+orderTotalObject.getErrorMessage());
+                    response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+                    response.setMessage(orderTotalObject.getErrorMessage());
+                    return response;
+                }
+
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order platform voucherId:"+orderTotalObject.getVoucherId());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order platform voucherDiscount:"+orderTotalObject.getVoucherDiscount());
+
+                order.setSubTotal(orderTotalObject.getSubTotal());
+                order.setAppliedDiscount(orderTotalObject.getAppliedDiscount());
+                order.setAppliedDiscountDescription(orderTotalObject.getAppliedDiscountDescription());
+                order.setCustomerNotes(cod.getCustomerNotes());
+                order.setStoreServiceCharges(orderTotalObject.getStoreServiceCharge());
+                order.setTotal(orderTotalObject.getTotal());
+                order.setKlCommission(orderTotalObject.getKlCommission());
+                order.setStoreShare(orderTotalObject.getStoreShare());
+                order.setDiscountId(orderTotalObject.getDiscountId());
+                order.setDiscountCalculationType(orderTotalObject.getDiscountCalculationType());
+                order.setDiscountCalculationValue(orderTotalObject.getDiscountCalculationValue());
+                order.setDiscountMaxAmount(orderTotalObject.getDiscountMaxAmount());
+                order.setDeliveryDiscountMaxAmount(orderTotalObject.getDeliveryDiscountMaxAmount());
+
+                order.setVoucherDiscount(orderTotalObject.getVoucherDiscount());
+                order.setVoucherId(orderTotalObject.getVoucherId());
+                order.setStoreVoucherDiscount(orderTotalObject.getStoreVoucherDiscount());
+                order.setStoreVoucherId(orderTotalObject.getStoreVoucherId());
+                order.setTotalDataObject(orderTotalObject);
+
+
+                // Not required for Coupon
+                order.setStaffId("NOT APPICABLE");
+                order.setTableNo("NOT APPLICABLE");
+                order.setZone("NOT APPLICABLE");
+                order.setPrivateAdminNotes("");
+                order.setTotalReminderSent(0);
+                order.setDeliveryDiscount(0.0);
+                order.setDeliveryDiscountDescription("NOT APPLICABLE");
+
+                if (cart.getServiceType()!=null) {
+                    order.setServiceType(cart.getServiceType());
+                } else {
+                    order.setServiceType(ServiceType.DELIVERIN);
+                }
+                if (channel!=null) {
+                    order.setChannel(channel);
+                } else {
+                    order.setChannel(Channel.DELIVERIN);
+                }
+
+                // saving order object to get order Id
+                order = orderRepository.save(order);
+
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order posted successfully orderId: " + order.getId());
+                // save payment details
+                cod.getOrderPaymentDetails().setOrderId(order.getId());
+                order.setOrderPaymentDetail(orderPaymentDetailRepository.save(cod.getOrderPaymentDetails()));
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order payment details inserted successfully: " + order.getOrderPaymentDetail().toString());
+
+                //register user if not registered
+                if (cod.getCustomerId()==null) {
+                    //check if email already registered
+                    List<Customer> existingCustomer = customerRepository.findByEmail(cod.getOrderShipmentDetails().getEmail());
+                    if (!existingCustomer.isEmpty()) {
+                        //email already registered
+                        String customerId = existingCustomer.get(0).getId();
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Existing customer with id: " + customerId);
+                        order.setCustomerId(customerId);
+                        orderRepository.save(order);
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "updated customerId: " + customerId + " to order: " + order.getId());
+                    } else {
+                        //register new user
+                        String customerId = customerService.addCustomer(cod.getOrderShipmentDetails(), order.getStoreId());
+
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customerId: " + customerId);
+
+                        if (customerId != null) {
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "customer created with id: " + customerId);
+                            order.setCustomerId(customerId);
+                            orderRepository.save(order);
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "updated customerId: " + customerId + " to order: " + order.getId());
+                        } else {
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Fail to generate customerId to order: " + order.getId());
+                        }
+                    }
+                }
+
+
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Everything is fine thanks for using this API for placing order");
+                response.setStatus(HttpStatus.CREATED.value());
+                response.setData(order);
+                return response;
+
+            } catch (Exception ex) {
+                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "exception occur while creating order ", ex);
+                response.setMessage(ex.getMessage());
+                response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+                return response;
+            }
+        } catch (Exception exp) {
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error saving order", exp);
+            response.setMessage(exp.getMessage());
+            response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+            return response;
+        }
+    }
     
     
     public static boolean ProcessOrder(String orderId, String action, String logprefix, String processOrderUrl) {
