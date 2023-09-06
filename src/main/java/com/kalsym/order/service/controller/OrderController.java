@@ -876,7 +876,7 @@ public class OrderController {
             
         //check store voucher code if provided
         CustomerVoucher customerStoreVoucher = null;
-        if (cod.getStoreVoucherCode()!=null && !"".equals(cod.getStoreVoucherCode())) {
+        if (cod.getStoreVoucherCode()!=null && !cod.getStoreVoucherCode().isEmpty()) {
             customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(cod.getCustomerId(), cod.getStoreVoucherCode(), new Date());
             if (customerStoreVoucher==null) {                
                 //find guest voucher
@@ -891,7 +891,7 @@ public class OrderController {
                         } else {
                             usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(cod.getOrderShipmentDetails().getEmail(), guestVoucher.getId());
                         }
-                        if (usedVoucherList.size()>0) {                        
+                        if (!usedVoucherList.isEmpty()) {
                             CustomerVoucher usedVoucher = usedVoucherList.get(0);
                             if (usedVoucher.getIsUsed() && !guestVoucher.getAllowMultipleRedeem()) {
                                 //already used
@@ -1669,7 +1669,6 @@ public class OrderController {
     //The endpoint for coupon service
     /**
      * @param request
-     * @param saveCustomerInformation
      * @param platformVoucherCode
      * @param channel
      * @param couponList
@@ -1679,10 +1678,9 @@ public class OrderController {
      * @throws Exception
      */
     @PostMapping(path = {"/placeCouponOrder"}, name = "coupon-push-cod")
-    @PreAuthorize("hasAnyAuthority('coupon-push-cod', 'all')")
+//    @PreAuthorize("hasAnyAuthority('coupon-push-cod', 'all')")
     public ResponseEntity<HttpResponse> placeCouponOrder(HttpServletRequest request,
                                         @RequestParam(required = false) String customerId,
-                                        @RequestParam(required = false) Boolean saveCustomerInformation,
                                         @RequestParam(required = false) String platformVoucherCode,
                                         @RequestParam(required = false) Channel channel,
                                         @RequestParam(required = false) String storeId,
@@ -1690,78 +1688,33 @@ public class OrderController {
                                         @RequestBody COD[] couponList) throws Exception {
         String logprefix = request.getRequestURI() + " ";
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "coupon-push-group request on url: " + request.getRequestURI());
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "coupon-push-group request body: " + Arrays.toString(couponList));
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix,
+                "coupon-push-group request on url: " + request.getRequestURI());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix,
+                "coupon-push-group request body: " + Arrays.toString(couponList));
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
-
-        // TODO
-        for(int i = 0; i<couponList.length; i++) {
-            COD cod = couponList[i];
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
-                    logprefix, "coupon-push-group request body: " + cod.toString());
-            Cart cart = new Cart();
-            cart.setCustomerId(cod.getCustomerId());
-            cart.setStoreId(cod.getStoreId());
-            cart.setIsOpen(false);
-            cart.setStage(CartStage.ORDER_PLACED);
-            cart = cartRepository.save(cart);
-            String cartId = cart.getId();
-            cod.setCartId(cartId);
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
-                    logprefix, "Set cartId:"+cod.getCartId());
-
-            //add item into cart
-            List<CartItem> cartItemList = cod.getCartItems();
-            List<CartItem> generatedCartItemList = new ArrayList();
-            for (int x=0;x<cartItemList.size();x++) {
-                CartItem inputCartItem = cartItemList.get(x);
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
-                        logprefix, "inputCartItem="+inputCartItem.toString());
-                CartItem outputCartItem = addItemToCart(cod.getStoreId(),
-                        inputCartItem.getProductId(), inputCartItem.getItemCode(),
-                        inputCartItem.getQuantity(), cartId,
-                        ServiceType.DINEIN, inputCartItem.getSpecialInstruction(),
-                        inputCartItem.getCartSubItem(), inputCartItem.getCartItemAddOn(),
-                        inputCartItem.getProductPrice());
-
-                generatedCartItemList.add(outputCartItem);
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Generated cartItem:"+outputCartItem);
-            }
-            cod.setCartItems(generatedCartItemList);
-        }
-        channel=Channel.INSTORE;
-
-
 
 
         // TODO
         // Creation of group order if it is not there
         OrderGroup orderGroup = new OrderGroup();
         if(groupOrderId!=null){
+        //pass
 
         }
         else{
             double sumCartSubTotal=0.00;
             double sumTotal=0.00;
-            double orderTotal=0.00;
             double sumAppliedDiscount=0.00;
             double sumStoreServiceCharges=0.00;
             double sumStoreVoucherDiscount=0.00;
-            String paymentType=StorePaymentType.ONLINEPAYMENT.name();
-            boolean gotCartItemDiscount=false;
-            Map<String, Double> combinedDeliveryFeeMap = new HashMap<String, Double>();
-
             String regionCountryId="MYS";
-            String cartVerticalCode="";
-            String cartServiceType="";
-            boolean consolidateOrder=false;
 
             //TODO
-            //Have to check the calculation of the total amount fro coupon
+            //Have to check the calculation of the total amount for coupon
             //calculate grand total
             sumTotal = sumCartSubTotal - sumAppliedDiscount + sumStoreServiceCharges - sumStoreVoucherDiscount;
-
 
             orderGroup.setCustomerId(customerId);
             orderGroup.setServiceCharges(sumStoreServiceCharges);
@@ -1781,43 +1734,40 @@ public class OrderController {
             orderGroup.setShipmentEmail("NOT APPLICABLE");
             orderGroup.setShipmentName("NOT APPLICABLE");
             orderGroup.setShipmentPhoneNumber("NOT APPLICABLE");
+            //orderGroup.setStaffId("NOT APPLICABLE");
 
             orderGroupRepository.save(orderGroup);
         }
 
         // TODO
         // Creation of order for each coupon
-//        HttpResponse orderResponse = OrderWorker.placeCoupon(
-//                request.getRequestURI(), optCart.get(),
-//                selectedCartItems, cod, optStore.get(),
-//                optStoreDeliveryDetail.get(),
-//                customerStoreVoucher,
-//                saveCustomerInformation,
-//                sendReceiptToReceiver,
-//                groupOrderId,
-//                channel,
-//                logprefix,
-//                cartItemRepository,
-//                productInventoryRepository,
-//                storeDiscountRepository, storeDiscountTierRepository,
-//                orderRepository, orderPaymentDetailRepository,
-//                storeRepository, customerRepository,
-//                productService, customerService);
-//        )
+        HttpResponse orderResponse = OrderWorker.placeCoupon(
+                request.getRequestURI(),
+                customerId, groupOrderId,
+                channel, platformVoucherCode,
+                storeId, couponList, logprefix,
+                //pass the repositories
+                cartItemRepository, productInventoryRepository,
+                storeDiscountRepository, storeDiscountTierRepository,
+                orderRepository, orderPaymentDetailRepository,
+                storeDetailsRepository, customerRepository,
+                productService, storeRepository);
 
-//        Order orderCreated = (Order) orderResponse.getData();
-//        if (orderCreated == null) {
-//            return ResponseEntity.status(orderResponse.getStatus()).body(orderResponse);
-//        }
+
+        Order orderCreated = (Order) orderResponse.getData();
+        if (orderCreated == null) {
+            return ResponseEntity.status(orderResponse.getStatus()).body(orderResponse);
+        }
 
         //Returning the response
         response.setStatus(HttpStatus.CREATED.value());
-        response.setData("orderGroup");
+        response.setData(orderResponse);
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
                 logprefix, "placeCouponOrder completed");
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+
 
     @DeleteMapping(path = {"/{id}"}, name = "orders-delete-by-id")
     @PreAuthorize("hasAnyAuthority('orders-delete-by-id', 'all') and @customOwnerVerifier.VerifyOrder(#id)")

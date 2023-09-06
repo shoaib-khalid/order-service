@@ -35,4 +35,6 @@ public interface StoreRepository extends PagingAndSortingRepository<Store, Strin
     void ResetQrInvoiceSeqNo(
             @Param("storeId") String storeId
             );
+
+
 }

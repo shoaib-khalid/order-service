@@ -88,7 +88,18 @@ public class Cart implements Serializable {
         storeId = cart.getStoreId();
         isOpen = cart.getIsOpen();
     }
-    
+
+//    TODO
+//    maybe add more fields here
+    public void updateFromCOD(COD cod) {
+        this.customerId = cod.getCustomerId();
+        this.storeId = cod.getStoreId();
+        this.isOpen = true;
+        this.storeVoucherCode = cod.getStoreVoucherCode();
+        ;
+    }
+
+
     @Enumerated(EnumType.STRING)
     private CartStage stage;
     
