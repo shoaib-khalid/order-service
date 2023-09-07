@@ -836,6 +836,7 @@ public class OrderWorker {
             StoreDiscountRepository storeDiscountRepository,
             StoreDiscountTierRepository storeDiscountTierRepository,
             OrderRepository orderRepository,
+            OrderItemRepository orderItemRepository,
             OrderPaymentDetailRepository orderPaymentDetailRepository,
             StoreDetailsRepository storeDetailsRepository,
             CustomerRepository customerRepository,
@@ -1204,6 +1205,39 @@ public class OrderWorker {
                 // saving order object to get order Id
                 order = orderRepository.save(order);
 
+                OrderItem orderItem = null;
+
+                // inserting order items now
+                for (int i = 0; i < orderItems.size(); i++) {
+                    // insert orderItem
+                    orderItems.get(i).setOrderId(order.getId());
+                    orderItem = orderItemRepository.save(orderItems.get(i));
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderItem created with id: " + orderItem.getId() + ", orderId: " + orderItem.getOrderId());
+
+                    //add cart subitem if any
+                    List<OrderSubItem> orderSubItemList = null;
+                    if (orderItem.getOrderSubItem() != null) {
+                        orderSubItemList = new ArrayList();
+                        for (int x = 0; x < orderItem.getOrderSubItem().size(); x++) {
+                            OrderSubItem orderSubItem = orderItem.getOrderSubItem().get(x);
+                            orderSubItem.setOrderItemId(orderItem.getId());
+//                            orderSubItemRepository.save(orderSubItem);
+                        }
+                    }
+
+                    //add cart add-on if any
+                    List<OrderItemAddOn> orderAddOnItemList = null;
+                    if (orderItem.getOrderItemAddOn() != null) {
+                        orderAddOnItemList = new ArrayList();
+                        for (int x = 0; x < orderItem.getOrderItemAddOn().size(); x++) {
+                            OrderItemAddOn orderItemAddOn = orderItem.getOrderItemAddOn().get(x);
+                            orderItemAddOn.setOrderItemId(orderItem.getId());
+//                            orderItemAddOnRepository.save(orderItemAddOn);
+                        }
+                    }
+                }
+
+
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
                         logprefix, "order posted successfully orderId: " + order.getId());
                 // save payment details
@@ -1251,6 +1285,7 @@ public class OrderWorker {
         }
         return variantList;
     }
+
 
 
     public static boolean ProcessOrder(String orderId, String action, String logprefix, String processOrderUrl) {

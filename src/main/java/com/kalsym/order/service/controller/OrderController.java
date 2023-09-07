@@ -1749,7 +1749,8 @@ public class OrderController {
                 //pass the repositories
                 cartItemRepository, productInventoryRepository,
                 storeDiscountRepository, storeDiscountTierRepository,
-                orderRepository, orderPaymentDetailRepository,
+                orderRepository, orderItemRepository,
+                orderPaymentDetailRepository,
                 storeDetailsRepository, customerRepository,
                 productService, storeRepository);
 
