@@ -19,6 +19,8 @@ import com.kalsym.order.service.model.Body;
 import com.kalsym.order.service.model.OrderPaymentDetail;
 import com.kalsym.order.service.model.object.CustomPageable;
 import javax.servlet.http.HttpServletRequest;
+
+import lombok.Getter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -1363,7 +1365,7 @@ public class OrderController {
                 Optional<CartItem> cartItemOpt = cartItemRepository.findById(itemId);
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Find cartItem by itemId:" + itemId);
                 if (cartItemOpt.isPresent()) {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Found cartItem:" + cartItemOpt.get().toString());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Found cartItem:" + cartItemOpt.get());
                     selectedCartItems.add(cartItemOpt.get());
                     if (cartItemOpt.get().getDiscountId() != null) {
                         gotCartItemDiscount = true;
@@ -1458,7 +1460,7 @@ public class OrderController {
             }
 
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Consolidate Order:" + optStore.get().getDineInConsolidatedOrder());
-            if (optStore.get().getDineInConsolidatedOrder() != null && optStore.get().getDineInConsolidatedOrder() == true) {
+            if (optStore.get().getDineInConsolidatedOrder() != null && optStore.get().getDineInConsolidatedOrder()) {
                 consolidateOrder = true;
                 qrOrderInvoiceId = orderCreated.getInvoiceId();
             }
@@ -1529,7 +1531,7 @@ public class OrderController {
             orderGroup.setChannel(Channel.DELIVERIN);
        
         Long qrGroupOrderId = null;
-        if (orderGroup.getServiceType()==ServiceType.DINEIN && consolidateOrder==true && tableNo!=null && !tableNo.equals("")) {            
+        if (orderGroup.getServiceType()==ServiceType.DINEIN && consolidateOrder && tableNo!=null && !tableNo.equals("")) {
             QrcodeOrderGroup qrOrder = qrcodeOrderGroupRepository.findByStoreIdAndTableNoAndPaymentStatus(qrStoreId, tableNo, PaymentStatus.PENDING);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Consolidate Order. Previous qrOrderGroup:"+qrOrder);
             if (qrOrder==null) {
@@ -1614,10 +1616,10 @@ public class OrderController {
                     if (temp.length>0) {
                         String originalInvoiceNo = temp[0];
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Original invoiceNo:"+originalInvoiceNo);
-                        newInvoiceNo = originalInvoiceNo + "_" + String.valueOf(sequenceNo);                            
+                        newInvoiceNo = originalInvoiceNo + "_" + sequenceNo;
                         sequenceNo++;
                     } else {
-                        newInvoiceNo = invoiceNo + "_" + String.valueOf(sequenceNo);        
+                        newInvoiceNo = invoiceNo + "_" + sequenceNo;
                         sequenceNo++;
                     } 
 
@@ -1674,7 +1676,6 @@ public class OrderController {
      * @param couponList
      * @param groupOrderId
      * @return
-     * @throws Exception
      */
     @PostMapping(path = {"/placeCouponOrder"}, name = "coupon-push-cod")
 //    @PreAuthorize("hasAnyAuthority('coupon-push-cod', 'all')")
@@ -1682,7 +1683,7 @@ public class OrderController {
                                         @RequestParam(required = false) String platformVoucherCode,
                                         @RequestParam(required = false) Channel channel,
                                         @RequestParam(required = false) String groupOrderId,
-                                        @RequestBody COD[] couponList) throws Exception {
+                                        @RequestBody COD[] couponList) {
         String logprefix = request.getRequestURI() + " ";
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix,
@@ -1692,17 +1693,11 @@ public class OrderController {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-
-        //TODO
         // Creation of group order if it is not there
         OrderGroup orderGroup = new OrderGroup();
-        if(groupOrderId!=null){
-        //pass
-
-        }
-        else{
+        if(groupOrderId==null){
             double sumCartSubTotal=0.00;
-            double sumTotal=0.00;
+            double sumTotal;
             double sumAppliedDiscount=0.00;
             double sumStoreServiceCharges=0.00;
             double sumStoreVoucherDiscount=0.00;
@@ -1734,7 +1729,7 @@ public class OrderController {
 
             orderGroupRepository.save(orderGroup);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix,
-                    "coupon-push-group orderGroup created: " + orderGroup.toString());
+                    "coupon-push-group orderGroup created: " + orderGroup);
             groupOrderId = orderGroup.getId();
         }
 
@@ -1750,6 +1745,7 @@ public class OrderController {
                 cartItemRepository, productInventoryRepository,
                 storeDiscountRepository, storeDiscountTierRepository,
                 orderRepository, orderItemRepository,
+                orderSubItemRepository, orderItemAddOnRepository,
                 orderPaymentDetailRepository,
                 storeDetailsRepository, customerRepository,
                 productService, storeRepository);
@@ -1772,7 +1768,7 @@ public class OrderController {
     @DeleteMapping(path = {"/{id}"}, name = "orders-delete-by-id")
     @PreAuthorize("hasAnyAuthority('orders-delete-by-id', 'all') and @customOwnerVerifier.VerifyOrder(#id)")
     public ResponseEntity<HttpResponse> deleteOrdersById(HttpServletRequest request,
-            @PathVariable(required = true) String id) {
+            @PathVariable() String id) {
         String logprefix = request.getRequestURI() + " ";
         String location = Thread.currentThread().getStackTrace()[1].getMethodName();
         HttpResponse response = new HttpResponse(request.getRequestURI());
@@ -1853,7 +1849,7 @@ public class OrderController {
     public Specification<Order> getSpecWithDatesBetween(
             Date from, Date to, OrderStatus completionStatus, Example<Order> example) {
 
-        return (Specification<Order>) (root, query, builder) -> {
+        return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
 
             if (from != null && to != null) {
@@ -1889,7 +1885,7 @@ public class OrderController {
     public Specification<OrderWithDetails> getOrderDetailsSpecWithDatesBetween(
             Date from, Date to, OrderStatus completionStatus, Example<OrderWithDetails> example) {
 
-        return (Specification<OrderWithDetails>) (root, query, builder) -> {
+        return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
 
             if (from != null && to != null) {
@@ -1925,7 +1921,7 @@ public class OrderController {
     public Specification<Order> getSpecWithDatesBetweenMultipleStatus(
             Date from, Date to, OrderStatus[] completionStatusList, Example<Order> example) {
 
-        return (Specification<Order>) (root, query, builder) -> {
+        return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
 
             if (from != null && to != null) {
@@ -1986,7 +1982,7 @@ public class OrderController {
     public Specification<OrderWithDetails> getOrderWithDetailsSpecWithDatesBetweenMultipleStatus(
             Date from, Date to, OrderStatus[] completionStatusList, String[] idList, String[] orderGroupIds, Example<OrderWithDetails> example) {
 
-        return (Specification<OrderWithDetails>) (root, query, builder) -> {
+        return (root, query, builder) -> {
             final List<Predicate> predicates = new ArrayList<>();
 
             if (from != null && to != null) {
@@ -2044,7 +2040,7 @@ public class OrderController {
                        
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, builder, example));
             
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "getOrderWithDetailsSpecWithDatesBetweenMultipleStatus", "Predicates:"+predicates.toString());
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "getOrderWithDetailsSpecWithDatesBetweenMultipleStatus", "Predicates:"+ predicates);
             return builder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
@@ -2069,17 +2065,11 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         
+        @Getter
         class DataSummary {
             String completionStatus;
             Long count;
-            
-            public String getCompletionStatus() {
-                return completionStatus;
-            }
-            
-             public Long getCount() {
-                return count;
-            }
+
         }
         
         Store store = optStore.get();
@@ -2265,7 +2255,7 @@ public class OrderController {
                     float itemPrice = originalItem.getProductPrice();
                     originalItem.setOriginalQuantity(originalItem.getQuantity());
                     originalItem.setQuantity(orderItem.getQuantity());
-                    originalItem.setPrice(orderItem.getQuantity() * (float)itemPrice);
+                    originalItem.setPrice(orderItem.getQuantity() * itemPrice);
                     orderNewItemList.add(originalItem);
                     //price is already discounted price (if any)
                 }
@@ -2793,7 +2783,7 @@ public class OrderController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "got product inventory details: " + productInventory.toString());
         
             //check if enable product inventory
-            if (productInventory.getQuantity()<quantity && optProduct.get().isAllowOutOfStockPurchases()==false) {
+            if (productInventory.getQuantity()<quantity && !optProduct.get().isAllowOutOfStockPurchases()) {
                 //out of stock
                 bodyCartItem.setCreateStatus(HttpStatus.CONFLICT);
                 return bodyCartItem;                
@@ -2846,7 +2836,7 @@ public class OrderController {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Saved cartItem id:"+createdCartItem.getId());
                 //save sub cart item
                 if (bodyCartItem.getCartSubItem()!=null) {
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Save cart subitem: " + bodyCartItem.getCartSubItem().toString());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Save cart subitem: " + bodyCartItem.getCartSubItem());
                     List<CartSubItem> cartSubItemList = new ArrayList();
                     for (int i=0;i<bodyCartItem.getCartSubItem().size();i++) {
                         CartSubItem subItem = bodyCartItem.getCartSubItem().get(i);
@@ -2860,13 +2850,10 @@ public class OrderController {
                 }
             } else {
                 
-                boolean gotAddOn=false;
-                if (bodyCartItem.getCartItemAddOn()!=null && !bodyCartItem.getCartItemAddOn().isEmpty() ) {
-                    gotAddOn=true;
-                }
-                
+                boolean gotAddOn= bodyCartItem.getCartItemAddOn() != null && !bodyCartItem.getCartItemAddOn().isEmpty();
+
                 CartItem existingItem = null;
-                if (gotAddOn==false) {
+                if (!gotAddOn) {
                     //find item in current cart & no add-on product, increase quantity if already exist
                     existingItem = cartItemRepository.findByCartIdAndItemCodeAndSpecialInstruction(bodyCartItem.getCartId(), bodyCartItem.getItemCode(), bodyCartItem.getSpecialInstruction());
                 }
@@ -2889,7 +2876,7 @@ public class OrderController {
                     //save add-on if any
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item addOn: " + bodyCartItem.getCartItemAddOn());
                     if (bodyCartItem.getCartItemAddOn()!=null && !bodyCartItem.getCartItemAddOn().isEmpty()) {
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Save cart item addOn: " + bodyCartItem.getCartItemAddOn().toString());
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Save cart item addOn: " + bodyCartItem.getCartItemAddOn());
                         List<CartItemAddOn> cartItemAddOnList = new ArrayList();
                         for (int x=0;x<bodyCartItem.getCartItemAddOn().size();x++) {
                             CartItemAddOn cartItemAddOn = bodyCartItem.getCartItemAddOn().get(x);
