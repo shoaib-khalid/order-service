@@ -2,6 +2,7 @@ package com.kalsym.order.service.model;
 
 import javax.persistence.*;
 
+import com.kalsym.order.service.enums.ProductType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -83,5 +84,7 @@ public class Product {
     @OneToOne()
     @JoinColumn(name = "voucherId", referencedColumnName="id", insertable = false, updatable = false)
     private Voucher voucher;
-   
+
+    @Enumerated(EnumType.STRING)
+    private ProductType productType;
 }

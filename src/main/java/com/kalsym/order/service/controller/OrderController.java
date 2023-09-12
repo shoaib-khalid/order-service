@@ -1,25 +1,12 @@
 package com.kalsym.order.service.controller;
 
 import com.kalsym.order.service.OrderServiceApplication;
-import com.kalsym.order.service.enums.OrderStatus;
-import com.kalsym.order.service.enums.PaymentStatus;
-import com.kalsym.order.service.enums.ProductStatus;
-import com.kalsym.order.service.enums.StorePaymentType;
-import com.kalsym.order.service.enums.DeliveryType;
-import com.kalsym.order.service.enums.DiscountCalculationType;
-import com.kalsym.order.service.enums.DiscountType;
-import com.kalsym.order.service.enums.RefundType;
-import com.kalsym.order.service.enums.RefundStatus;
-import com.kalsym.order.service.enums.VehicleType;
-import com.kalsym.order.service.enums.CartStage;
-import com.kalsym.order.service.enums.ServiceType;
-import com.kalsym.order.service.enums.DineInOption;
-import com.kalsym.order.service.enums.Channel;
-import com.kalsym.order.service.model.Body;
-import com.kalsym.order.service.model.OrderPaymentDetail;
+import com.kalsym.order.service.enums.*;
+import com.kalsym.order.service.model.*;
 import com.kalsym.order.service.model.object.CustomPageable;
 import javax.servlet.http.HttpServletRequest;
 
+import com.kalsym.order.service.model.repository.*;
 import lombok.Getter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,105 +22,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import com.kalsym.order.service.service.EmailService;
 import com.kalsym.order.service.model.Order;
-import com.kalsym.order.service.model.OrderWithDetails;
-import com.kalsym.order.service.model.COD;
-import com.kalsym.order.service.model.CartItem;
-import com.kalsym.order.service.model.CartSubItem;
-import com.kalsym.order.service.model.ProductInventory;
-import com.kalsym.order.service.model.StoreWithDetails;
-import com.kalsym.order.service.model.StoreDeliveryDetail;
-import com.kalsym.order.service.model.Cart;
-import com.kalsym.order.service.model.CartItemAddOn;
-import com.kalsym.order.service.model.CustomerVoucher;
-import com.kalsym.order.service.model.Customer;
-import com.kalsym.order.service.model.DeliveryOrder;
-import com.kalsym.order.service.model.DeliveryQuotation;
-import com.kalsym.order.service.model.Email;
-import com.kalsym.order.service.model.OrderCompletionStatusConfig;
-import com.kalsym.order.service.model.Product;
-import com.kalsym.order.service.model.OrderCompletionStatusUpdate;
-import com.kalsym.order.service.model.OrderPaymentStatusUpdate;
-import com.kalsym.order.service.model.Store;
-import com.kalsym.order.service.model.StoreCommission;
-import com.kalsym.order.service.model.OrderItem;
-import com.kalsym.order.service.model.OrderSubItem;
-import com.kalsym.order.service.model.OrderShipmentDetail;
-import com.kalsym.order.service.model.OrderRefund;
-import com.kalsym.order.service.model.Order;
-import com.kalsym.order.service.model.OrderGroup;
-import com.kalsym.order.service.model.ProductInventoryItem;
-import com.kalsym.order.service.model.ProductVariantAvailable;
-import com.kalsym.order.service.model.RegionCountry;
-import com.kalsym.order.service.model.PaymentOrder;
-import com.kalsym.order.service.model.StoreDiscount;
-import com.kalsym.order.service.model.Voucher;
-import com.kalsym.order.service.model.VoucherStore;
 import com.kalsym.order.service.model.OrderShipmentDetail;
 import com.kalsym.order.service.model.OrderPaymentDetail;
-import com.kalsym.order.service.model.ProductAddOn;
-import com.kalsym.order.service.model.TagConfig;
-import com.kalsym.order.service.model.TagDetails;
-import com.kalsym.order.service.model.TagKeyword;
-import com.kalsym.order.service.model.TagTable;
-import com.kalsym.order.service.model.TagZone;
-import com.kalsym.order.service.model.TagProductFeature;
-import com.kalsym.order.service.model.object.Discount;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.object.OrderDetails;
 import com.kalsym.order.service.model.object.ItemDiscount;
-import com.kalsym.order.service.model.QrcodeOrderGroup;
 import com.kalsym.order.service.model.object.OrderGroupObject;
-import com.kalsym.order.service.model.repository.CartItemAddOnRepository;
-import com.kalsym.order.service.model.repository.OrderItemRepository;
-import com.kalsym.order.service.model.repository.OrderSubItemRepository;
-import com.kalsym.order.service.model.repository.OrderItemAddOnRepository;
-import com.kalsym.order.service.model.repository.CartItemRepository;
-import com.kalsym.order.service.model.repository.CartRepository;
-import com.kalsym.order.service.model.repository.CartSubItemRepository;
-import com.kalsym.order.service.model.repository.OrderCompletionStatusConfigRepository;
-import com.kalsym.order.service.model.repository.OrderCompletionStatusUpdateRepository;
-import com.kalsym.order.service.model.repository.OrderPaymentDetailRepository;
-import com.kalsym.order.service.model.repository.OrderPaymentStatusUpdateRepository;
-import com.kalsym.order.service.model.repository.OrderRepository;
-import com.kalsym.order.service.model.repository.OrderWithDetailsRepository;
-import com.kalsym.order.service.model.repository.OrderRefundRepository;
-import com.kalsym.order.service.model.repository.ProductRepository;
-import com.kalsym.order.service.model.repository.StoreRepository;
-import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
-import com.kalsym.order.service.model.repository.ProductInventoryRepository;
-import com.kalsym.order.service.model.repository.RegionCountriesRepository;
-import com.kalsym.order.service.model.repository.StoreDetailsRepository;
-import com.kalsym.order.service.model.repository.StoreDiscountRepository;
-import com.kalsym.order.service.model.repository.StoreDiscountTierRepository;
-import com.kalsym.order.service.model.repository.StoreDeliveryDetailRepository;
-import com.kalsym.order.service.model.repository.PaymentOrderRepository;
-import com.kalsym.order.service.model.repository.CustomerVoucherRepository;
-import com.kalsym.order.service.model.repository.VoucherRepository;
-import com.kalsym.order.service.model.repository.CustomerRepository;
-import com.kalsym.order.service.model.repository.OrderGroupRepository;
-import com.kalsym.order.service.model.repository.ProductAddOnRepository;
-import com.kalsym.order.service.model.repository.TagRepository;
-import com.kalsym.order.service.model.repository.TagProductFeatureRepository;
-import com.kalsym.order.service.model.repository.TagTableRepository;
-import com.kalsym.order.service.model.repository.TagZoneRepository;
 import com.kalsym.order.service.service.CustomerService;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.FCMService;
 import com.kalsym.order.service.service.OrderPostService;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.service.WhatsappService;
-import com.kalsym.order.service.utility.DateTimeUtil;
 import com.kalsym.order.service.utility.Logger;
 import com.kalsym.order.service.utility.MessageGenerator;
 import com.kalsym.order.service.utility.OrderCalculation;
 import static com.kalsym.order.service.utility.OrderCalculation.calculateStoreServiceCharges;
 import com.kalsym.order.service.utility.OrderWorker;
-import com.kalsym.order.service.utility.StoreDiscountCalculation;
 import com.kalsym.order.service.utility.TxIdUtil;
 import com.kalsym.order.service.utility.Utilities;
 import com.kalsym.order.service.utility.GeneratePdfReport;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+
 import java.util.*;
 import javax.validation.Valid;
 import javax.persistence.criteria.Predicate;
@@ -153,7 +62,6 @@ import org.springframework.http.MediaType;
 import org.springframework.core.io.InputStreamResource;
 import java.io.ByteArrayInputStream;
 import org.springframework.http.HttpHeaders;
-import com.kalsym.order.service.model.repository.QrcodeOrderGroupRepository;
 
 /**
  *
@@ -1683,7 +1591,7 @@ public class OrderController {
                                         @RequestParam(required = false) String platformVoucherCode,
                                         @RequestParam(required = false) Channel channel,
                                         @RequestParam(required = false) String groupOrderId,
-                                        @RequestBody COD[] couponList) {
+                                        @RequestBody CouponBody[] couponList) {
         String logprefix = request.getRequestURI() + " ";
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix,
@@ -1693,32 +1601,24 @@ public class OrderController {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
+        //Details for Group Order
+        //The update is done after the creation of order
+        double sumCartSubTotal=0.00;
+        double sumTotal;
+        double sumAppliedDiscount=0.00;
+        double sumStoreServiceCharges=0.00;
+        double sumStoreVoucherDiscount=0.00;
+
         // Creation of group order if it is not there
         OrderGroup orderGroup = new OrderGroup();
         if(groupOrderId==null){
-            double sumCartSubTotal=0.00;
-            double sumTotal;
-            double sumAppliedDiscount=0.00;
-            double sumStoreServiceCharges=0.00;
-            double sumStoreVoucherDiscount=0.00;
+
             String regionCountryId="MYS";
-
-            //TODO
-            // Have to check the calculation of the total amount for coupon
-            // calculate grand total
-            sumTotal = sumCartSubTotal - sumAppliedDiscount + sumStoreServiceCharges - sumStoreVoucherDiscount;
-
             orderGroup.setCustomerId(couponList[0].getCustomerId());
-            orderGroup.setServiceCharges(sumStoreServiceCharges);
-            orderGroup.setSubTotal(sumCartSubTotal);
-            orderGroup.setPaidAmount(sumTotal);
-            orderGroup.setTotal(sumTotal);
-            orderGroup.setAppliedDiscount(sumAppliedDiscount);
             orderGroup.setRegionCountryId(regionCountryId);
             orderGroup.setServiceType(ServiceType.DINEIN);
             orderGroup.setChannel(channel);
             orderGroup.setPaymentStatus("PENDING");
-
 
             //Not Applicable for coupon
             orderGroup.setDeliveryCharges(0.0);
@@ -1733,31 +1633,82 @@ public class OrderController {
             groupOrderId = orderGroup.getId();
         }
 
-        //TODO
-        // Creation of order for each coupon
-        String customerId = couponList[0].getCustomerId();
-        HttpResponse orderResponse = OrderWorker.placeCoupon(
-                request.getRequestURI(),
-                customerId, groupOrderId,
-                channel, platformVoucherCode,
-                couponList, logprefix,
-                //pass the repositories
-                cartItemRepository, productInventoryRepository,
-                storeDiscountRepository, storeDiscountTierRepository,
-                orderRepository, orderItemRepository,
-                orderSubItemRepository, orderItemAddOnRepository,
-                orderPaymentDetailRepository,
-                storeDetailsRepository, customerRepository,
-                productService, storeRepository);
+        for (CouponBody cod : couponList) {
+            // Creation of order for each coupon
+            String customerId = cod.getCustomerId();
+            String cartId = cod.getCartId();
 
-        Order orderCreated = (Order) orderResponse.getData();
-        if (orderCreated == null) {
-            return ResponseEntity.status(orderResponse.getStatus()).body(orderResponse);
+            COD cart = new COD();
+            //set cart details from cart id
+            Optional<Cart> optCart = cartRepository.findById(cartId);
+            if (!optCart.isPresent()) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix,
+                        "coupon-push-group cart not found with cartId: " + cartId);
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Cart not found with cartId: " + cartId);
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
+            cart.setCartId(cartId);
+            cart.setCustomerId(optCart.get().getCustomerId());
+            cart.setStoreId(optCart.get().getStoreId());
+            cart.setStoreVoucherCode(optCart.get().getStoreVoucherCode());
+            cart.setServiceType(optCart.get().getServiceType());
+            //get COD body from optCart
+            List<CartItem> cartItems = cartItemRepository.findByCartId(cartId);
+            cart.setCartItems(cartItems);
+            cart.setOrderPaymentDetails(cod.getOrderPaymentDetails());
+            cart.setOrderShipmentDetails(cod.getOrderShipmentDetails());
+            cart.setPaymentType(cod.getPaymentType());
+
+
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix,
+                    "coupon-push-group cart " + cart);
+
+            HttpResponse orderResponse = OrderWorker.placeCoupon(
+                    request.getRequestURI(),
+                    customerId, groupOrderId,
+                    channel, platformVoucherCode,
+                    cart, logprefix,
+                    //pass the repositories
+                    cartItemRepository, productInventoryRepository,
+                    storeDiscountRepository, storeDiscountTierRepository,
+                    orderRepository, orderItemRepository,
+                    orderSubItemRepository, orderItemAddOnRepository,
+                    orderPaymentDetailRepository,
+                    storeDetailsRepository, customerRepository,
+                    productService, storeRepository);
+
+            Order orderCreated = (Order) orderResponse.getData();
+            if (orderCreated == null) {
+                return ResponseEntity.status(orderResponse.getStatus()).body(orderResponse);
+            }
+
+            sumCartSubTotal = sumCartSubTotal + orderCreated.getSubTotal();
+            sumStoreServiceCharges = sumStoreServiceCharges + orderCreated.getStoreServiceCharges();
+            //move to below orderTotal = orderTotal + orderCreated.getTotal();
+            if (orderCreated.getAppliedDiscount() != null) {
+                sumAppliedDiscount = sumAppliedDiscount + orderCreated.getAppliedDiscount();
+            }
+            if (orderCreated.getStoreVoucherDiscount() != null) {
+                sumStoreVoucherDiscount = sumStoreVoucherDiscount + orderCreated.getStoreVoucherDiscount();
+            }
         }
 
+        //TODO
+        // Have to check the calculation of the total amount for coupon
+        // calculate grand total
+        sumTotal = sumCartSubTotal - sumAppliedDiscount +
+                sumStoreServiceCharges - sumStoreVoucherDiscount;
+        orderGroup.setServiceCharges(sumStoreServiceCharges);
+        orderGroup.setSubTotal(sumCartSubTotal);
+        orderGroup.setPaidAmount(sumTotal);
+        orderGroup.setTotal(sumTotal);
+        orderGroup.setAppliedDiscount(sumAppliedDiscount);
+
+        orderGroupRepository.save(orderGroup);
         //Returning the response
         response.setStatus(HttpStatus.CREATED.value());
-        response.setData(orderResponse);
+        response.setData("orderResponse");
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
                 logprefix, "placeCouponOrder completed");
