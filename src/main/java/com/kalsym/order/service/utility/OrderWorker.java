@@ -842,7 +842,6 @@ public class OrderWorker {
         DineInPack dineInPack = cart.getDineInPack();
         OrderPaymentDetail orderPaymentDetail = cart.getOrderPaymentDetails();
 
-
         try{
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
                     logprefix, "cart exists against cartId: " + cartId);
@@ -1091,13 +1090,11 @@ public class OrderWorker {
                 order.setStoreId(cart.getStoreId());
                 order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE);
                 order.setPaymentStatus(PaymentStatus.PENDING);
-                //TODO
-                // Uncomment the code in production
-//                if (customerId != null) {
-//                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
-//                            logprefix, "customer created with id: " + customerId);
-//                    order.setCustomerId(customerId);
-//                }
+                if (customerId != null) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                            logprefix, "customer created with id: " + customerId);
+                    order.setCustomerId(customerId);
+                }
 
                 if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN) {
                     order.setDeliveryCharges(0.00);
@@ -1128,8 +1125,7 @@ public class OrderWorker {
 
                 OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(
                         newCart, storeWithDetials.getServiceChargesPercentage(), storeCommission,
-                        orderPaymentDetail.getDeliveryQuotationAmount(),
-                        cart.getOrderShipmentDetails().getDeliveryType(),
+                        null, cart.getOrderShipmentDetails().getDeliveryType(),
                         null, null,
                         storeWithDetials.getVerticalCode(),
                         cartItemRepository, storeDiscountRepository,
@@ -1168,13 +1164,15 @@ public class OrderWorker {
                 order.setStoreVoucherDiscount(orderTotalObject.getStoreVoucherDiscount());
                 order.setStoreVoucherId(orderTotalObject.getStoreVoucherId());
                 order.setTotalDataObject(orderTotalObject);
-
+                order.setDeliveryType(String.valueOf(DeliveryType.SELF));
+                order.setPaymentType(cart.getPaymentType());
 
                 // Not required for Coupon
                 order.setTableNo("NOT APPLICABLE");
                 order.setZone("NOT APPLICABLE");
                 order.setPrivateAdminNotes("");
                 order.setTotalReminderSent(0);
+                order.setDeliveryCharges(0.0);
                 order.setDeliveryDiscount(0.0);
                 order.setDeliveryDiscountMaxAmount(0.0);
                 order.setDeliveryDiscountDescription("NOT APPLICABLE");
@@ -1200,11 +1198,12 @@ public class OrderWorker {
                     // insert orderItem
                     orderItems.get(i).setOrderId(order.getId());
                     orderItem = orderItemRepository.save(orderItems.get(i));
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderItem created with id: " + orderItem.getId() + ", orderId: " + orderItem.getOrderId());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                            logprefix, "orderItem created with id: " + orderItem.getId()
+                                    + ", orderId: " + orderItem.getOrderId());
 
                     //add cart sub-item if any
                     if (orderItem.getOrderSubItem() != null) {
-
                         for (int x = 0; x < orderItem.getOrderSubItem().size(); x++) {
                             OrderSubItem orderSubItem = orderItem.getOrderSubItem().get(x);
                             orderSubItem.setOrderItemId(orderItem.getId());
@@ -1221,7 +1220,6 @@ public class OrderWorker {
                         }
                     }
                 }
-
 
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
                         logprefix, "order posted successfully orderId: " + order.getId());

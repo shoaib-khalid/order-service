@@ -1612,7 +1612,6 @@ public class OrderController {
         // Creation of group order if it is not there
         OrderGroup orderGroup = new OrderGroup();
         if(groupOrderId==null){
-
             String regionCountryId="MYS";
             orderGroup.setCustomerId(couponList[0].getCustomerId());
             orderGroup.setRegionCountryId(regionCountryId);
@@ -1650,20 +1649,25 @@ public class OrderController {
             }
             cart.setCartId(cartId);
             cart.setCustomerId(optCart.get().getCustomerId());
+            cart.setCustomerNotes(cod.getCustomerNotes());
             cart.setStoreId(optCart.get().getStoreId());
             cart.setStoreVoucherCode(optCart.get().getStoreVoucherCode());
             cart.setServiceType(optCart.get().getServiceType());
-            //get COD body from optCart
-            List<CartItem> cartItems = cartItemRepository.findByCartId(cartId);
-            cart.setCartItems(cartItems);
+
+            // get cart items based on selected item
+            List<CartItem> selectedCartItems = new ArrayList<>();
+            for (int i = 0; i < cod.getCartItems().size(); i++) {
+                String itemId = cod.getCartItems().get(i);
+                Optional<CartItem> optionalCartItem = cartItemRepository.findById(itemId);
+                optionalCartItem.ifPresent(selectedCartItems::add);
+            }
+            cart.setCartItems(selectedCartItems);
+
             cart.setOrderPaymentDetails(cod.getOrderPaymentDetails());
             cart.setOrderShipmentDetails(cod.getOrderShipmentDetails());
             cart.setPaymentType(cod.getPaymentType());
 
-
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix,
-                    "coupon-push-group cart " + cart);
-
+            // Creation of order for each coupon
             HttpResponse orderResponse = OrderWorker.placeCoupon(
                     request.getRequestURI(),
                     customerId, groupOrderId,
@@ -1694,8 +1698,6 @@ public class OrderController {
             }
         }
 
-        //TODO
-        // Have to check the calculation of the total amount for coupon
         // calculate grand total
         sumTotal = sumCartSubTotal - sumAppliedDiscount +
                 sumStoreServiceCharges - sumStoreVoucherDiscount;
@@ -1706,6 +1708,18 @@ public class OrderController {
         orderGroup.setAppliedDiscount(sumAppliedDiscount);
 
         orderGroupRepository.save(orderGroup);
+
+        //TODO
+        // take care of platformVoucherCode
+        // save customer voucher in account
+//        if (customerPlatformVoucher!=null && customerPlatformVoucher.getGuestVoucher()!=null && customerPlatformVoucher.getGuestVoucher()) {
+//            if (orderCreatedList.get(0).getPaymentType().equals(StorePaymentType.COD.name())) {
+//                customerPlatformVoucher.setIsUsed(true);
+//                voucherRepository.deductVoucherBalance(customerPlatformVoucher.getVoucherId());
+//            }
+//            customerVoucherRepository.save(customerPlatformVoucher);
+//        }
+
         //Returning the response
         response.setStatus(HttpStatus.CREATED.value());
         response.setData("orderResponse");

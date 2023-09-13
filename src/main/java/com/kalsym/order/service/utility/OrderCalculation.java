@@ -35,9 +35,11 @@ import org.springframework.http.ResponseEntity;
  */
 public class OrderCalculation {
     
-    public static OrderObject CalculateOrderTotal(Cart cart, Double storeSvcChargePercentage, StoreCommission storeCommission, 
+    public static OrderObject CalculateOrderTotal(Cart cart,
+            Double storeSvcChargePercentage, StoreCommission storeCommission,
             Double deliveryCharge, String deliveryType, 
-            CustomerVoucher customerPlatformVoucher, CustomerVoucher customerStoreVoucher, String storeVerticalCode,
+            CustomerVoucher customerPlatformVoucher,
+            CustomerVoucher customerStoreVoucher, String storeVerticalCode,
             CartItemRepository cartItemRepository, 
             StoreDiscountRepository storeDiscountRepository, 
             StoreDiscountTierRepository storeDiscountTierRepository, String logprefix,
