@@ -1581,39 +1581,43 @@ public class OrderController {
      * @param request
      * @param platformVoucherCode
      * @param channel
-     * @param couponList
+     * @param couponBody
      * @param groupOrderId
      * @return
      */
-    @PostMapping(path = {"/placeCouponOrder"}, name = "coupon-push-cod")
-//    @PreAuthorize("hasAnyAuthority('coupon-push-cod', 'all')")
+    @PostMapping(path = {"/placeCouponOrder"}, name = "coupon-push-couponBody")
+//    @PreAuthorize("hasAnyAuthority('coupon-push-couponBody', 'all')")
     public ResponseEntity<HttpResponse> placeCouponOrder(HttpServletRequest request,
                                         @RequestParam(required = false) String platformVoucherCode,
                                         @RequestParam(required = false) Channel channel,
                                         @RequestParam(required = false) String groupOrderId,
-                                        @RequestBody CouponBody[] couponList) {
+                                        @RequestBody CouponBody[] couponBody) {
         String logprefix = request.getRequestURI() + " ";
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix,
                 "coupon-push-group request on url: " + request.getRequestURI());
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix,
-                "coupon-push-group request body: " + Arrays.toString(couponList));
+                "coupon-push-group request body: " + Arrays.toString(couponBody));
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         //Details for Group Order
         //The update is done after the creation of order
-        double sumCartSubTotal=0.00;
+        double sumCartSubTotal = 0.00;
         double sumTotal;
-        double sumAppliedDiscount=0.00;
-        double sumStoreServiceCharges=0.00;
-        double sumStoreVoucherDiscount=0.00;
+        double sumAppliedDiscount = 0.00;
+        double sumStoreServiceCharges = 0.00;
+        double sumStoreVoucherDiscount = 0.00;
+        CustomerVoucher customerPlatformVoucher = null;
 
+
+        //----------------------------------------------
         // Creation of group order if it is not there
+        //----------------------------------------------
         OrderGroup orderGroup = new OrderGroup();
-        if(groupOrderId==null){
-            String regionCountryId="MYS";
-            orderGroup.setCustomerId(couponList[0].getCustomerId());
+        if (groupOrderId == null) {
+            String regionCountryId = "MYS";
+            orderGroup.setCustomerId(couponBody[0].getCustomerId());
             orderGroup.setRegionCountryId(regionCountryId);
             orderGroup.setServiceType(ServiceType.DINEIN);
             orderGroup.setChannel(channel);
@@ -1632,8 +1636,11 @@ public class OrderController {
             groupOrderId = orderGroup.getId();
         }
 
-        for (CouponBody cod : couponList) {
-            // Creation of order for each coupon
+        //------------------------------------------------
+        // Creation of order for each coupon from the cart
+        //------------------------------------------------
+        HttpResponse orderResponse = null;
+        for (CouponBody cod : couponBody) {
             String customerId = cod.getCustomerId();
             String cartId = cod.getCartId();
 
@@ -1662,16 +1669,83 @@ public class OrderController {
                 optionalCartItem.ifPresent(selectedCartItems::add);
             }
             cart.setCartItems(selectedCartItems);
-
+            cart.setServiceType(optCart.get().getServiceType());
             cart.setOrderPaymentDetails(cod.getOrderPaymentDetails());
             cart.setOrderShipmentDetails(cod.getOrderShipmentDetails());
             cart.setPaymentType(cod.getPaymentType());
 
-            // Creation of order for each coupon
-            HttpResponse orderResponse = OrderWorker.placeCoupon(
+            //------------------------------------------------
+            //check platform voucher code if provided
+            //------------------------------------------------
+            if (platformVoucherCode != null && !platformVoucherCode.isEmpty()) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                        logprefix, "PlatformVoucherCode provided : " + platformVoucherCode);
+                customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode
+                        (customerId, platformVoucherCode, new Date());
+                if (customerPlatformVoucher == null) {
+                    //find guest voucher
+                    Voucher guestVoucher = customerVoucherRepository.findGuestPlatformVoucherByCode
+                            (platformVoucherCode, new Date());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                            logprefix, "Guest Voucher found : " + guestVoucher);
+                    if (guestVoucher != null) {
+                        //check if already redeem
+                        List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(
+                                cod.getOrderShipmentDetails().getEmail(), guestVoucher.getId());
+                        if (!usedVoucherList.isEmpty()) {
+                            CustomerVoucher usedVoucher = usedVoucherList.get(0);
+                            if (usedVoucher.getIsUsed()
+                                    && !guestVoucher.getAllowMultipleRedeem()) {
+                                //already used
+                                response.setStatus(HttpStatus.NOT_FOUND.value());
+                                response.setMessage("Voucher code " + platformVoucherCode
+                                        + " already used");
+                                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                            }
+                            customerPlatformVoucher = usedVoucher;
+                        } else {
+                            customerPlatformVoucher = new CustomerVoucher();
+                            customerPlatformVoucher.setCreated(new Date());
+                        }
+                        customerPlatformVoucher.setGuestEmail(cod.getOrderShipmentDetails().getEmail());
+                        customerPlatformVoucher.setIsUsed(false);
+                        customerPlatformVoucher.setVoucherId(guestVoucher.getId());
+                        customerPlatformVoucher.setVoucher(guestVoucher);
+                        customerPlatformVoucher.setGuestVoucher(true);
+                        customerPlatformVoucher.setStoreId(cart.getStoreId());
+                    } else {
+                        response.setStatus(HttpStatus.NOT_FOUND.value());
+                        response.setMessage("Voucher code " + platformVoucherCode + " not found");
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                    }
+                } else {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                            logprefix, "Platform Voucher found : " + customerPlatformVoucher.getId());
+                }
+            } else {
+                if (cod.getStoreVoucherCode() != null && !cod.getStoreVoucherCode().isEmpty()) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                            logprefix, "Coupon VoucherCode provided : " + cod.getStoreVoucherCode());
+                    customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(
+                            customerId, cod.getStoreVoucherCode(), new Date());
+                    if (customerPlatformVoucher == null) {
+                        response.setStatus(HttpStatus.NOT_FOUND.value());
+                        response.setMessage("Voucher code " + cod.getStoreVoucherCode() + " not found");
+                        return ResponseEntity.status(response.getStatus()).body(response);
+                    }
+                }
+            }
+
+            //TODO
+            // take care of storeVoucherCode
+
+            //---------------------------------------------------------------
+            // Creation of order for each coupon Process Worker
+            //---------------------------------------------------------------
+            orderResponse = OrderWorker.placeCoupon(
                     request.getRequestURI(),
                     customerId, groupOrderId,
-                    channel, platformVoucherCode,
+                    channel, customerPlatformVoucher,
                     cart, logprefix,
                     //pass the repositories
                     cartItemRepository, productInventoryRepository,
@@ -1689,16 +1763,25 @@ public class OrderController {
 
             sumCartSubTotal = sumCartSubTotal + orderCreated.getSubTotal();
             sumStoreServiceCharges = sumStoreServiceCharges + orderCreated.getStoreServiceCharges();
-            //move to below orderTotal = orderTotal + orderCreated.getTotal();
+
             if (orderCreated.getAppliedDiscount() != null) {
                 sumAppliedDiscount = sumAppliedDiscount + orderCreated.getAppliedDiscount();
             }
             if (orderCreated.getStoreVoucherDiscount() != null) {
                 sumStoreVoucherDiscount = sumStoreVoucherDiscount + orderCreated.getStoreVoucherDiscount();
             }
+
+            // save customer voucher in account
+            if (customerPlatformVoucher != null && customerPlatformVoucher.getGuestVoucher() != null && customerPlatformVoucher.getGuestVoucher()) {
+                if (orderCreated.getPaymentType().equals(StorePaymentType.COD.name())) {
+                    customerPlatformVoucher.setIsUsed(true);
+                    voucherRepository.deductVoucherBalance(customerPlatformVoucher.getVoucherId());
+                }
+                customerVoucherRepository.save(customerPlatformVoucher);
+            }
         }
 
-        // calculate grand total
+        // calculate grand total to save in Group repository
         sumTotal = sumCartSubTotal - sumAppliedDiscount +
                 sumStoreServiceCharges - sumStoreVoucherDiscount;
         orderGroup.setServiceCharges(sumStoreServiceCharges);
@@ -1709,20 +1792,9 @@ public class OrderController {
 
         orderGroupRepository.save(orderGroup);
 
-        //TODO
-        // take care of platformVoucherCode
-        // save customer voucher in account
-//        if (customerPlatformVoucher!=null && customerPlatformVoucher.getGuestVoucher()!=null && customerPlatformVoucher.getGuestVoucher()) {
-//            if (orderCreatedList.get(0).getPaymentType().equals(StorePaymentType.COD.name())) {
-//                customerPlatformVoucher.setIsUsed(true);
-//                voucherRepository.deductVoucherBalance(customerPlatformVoucher.getVoucherId());
-//            }
-//            customerVoucherRepository.save(customerPlatformVoucher);
-//        }
-
         //Returning the response
         response.setStatus(HttpStatus.CREATED.value());
-        response.setData("orderResponse");
+        response.setData(orderResponse);
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
                 logprefix, "placeCouponOrder completed");

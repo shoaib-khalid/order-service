@@ -126,9 +126,11 @@ public class OrderCalculation {
             
             //check serviceType 
             boolean serviceTypeValid=false;
-            if (customerPlatformVoucher.getVoucher().getVoucherServiceTypeList()!=null && customerPlatformVoucher.getVoucher().getVoucherServiceTypeList().size()>0) {
+            if (customerPlatformVoucher.getVoucher().getVoucherServiceTypeList()!=null && !customerPlatformVoucher.getVoucher().getVoucherServiceTypeList().isEmpty()) {
                 for (int i=0;i<customerPlatformVoucher.getVoucher().getVoucherServiceTypeList().size();i++) {
                     VoucherServiceType voucherServiceType = customerPlatformVoucher.getVoucher().getVoucherServiceTypeList().get(i);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                            logprefix, "voucherServiceType:"+voucherServiceType.getServiceType().name()+" cartServiceType:"+cart.getServiceType());
                     if (voucherServiceType.getServiceType().equals(cart.getServiceType())) {
                         serviceTypeValid=true;
                     }
