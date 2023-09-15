@@ -9,5 +9,7 @@ public enum DeliveryType {
     SCHEDULED,
     ADHOC,
     SELF,
-    PICKUP
+    PICKUP,
+
+    DIGITAL
 }

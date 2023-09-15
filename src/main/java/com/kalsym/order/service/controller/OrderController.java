@@ -558,6 +558,8 @@ public class OrderController {
             StoreWithDetails storeWithDetails = optStore.get();
             String verticalId = storeWithDetails.getVerticalCode();
             Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
+            //TODO
+            // Override the Delivery type to DIGITAL for Coupons
             String storeDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
             if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN) {
                 storeDeliveryType = order.getDineInOption().name();
@@ -1640,12 +1642,12 @@ public class OrderController {
         // Creation of order for each coupon from the cart
         //------------------------------------------------
         HttpResponse orderResponse = null;
-        for (CouponBody cod : couponBody) {
-            String customerId = cod.getCustomerId();
-            String cartId = cod.getCartId();
+        for (CouponBody body : couponBody) {
+            String customerId = body.getCustomerId();
+            String cartId = body.getCartId();
 
-            COD cart = new COD();
-            //set cart details from cart id
+            COD cod = new COD();
+            //set cod details from cart id
             Optional<Cart> optCart = cartRepository.findById(cartId);
             if (!optCart.isPresent()) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix,
@@ -1654,25 +1656,29 @@ public class OrderController {
                 response.setMessage("Cart not found with cartId: " + cartId);
                 return ResponseEntity.status(response.getStatus()).body(response);
             }
-            cart.setCartId(cartId);
-            cart.setCustomerId(optCart.get().getCustomerId());
-            cart.setCustomerNotes(cod.getCustomerNotes());
-            cart.setStoreId(optCart.get().getStoreId());
-            cart.setStoreVoucherCode(optCart.get().getStoreVoucherCode());
-            cart.setServiceType(optCart.get().getServiceType());
+            //Getting cart details
+            Cart cart = optCart.get();
 
-            // get cart items based on selected item
+            cod.setCartId(cartId);
+            cod.setCustomerId(optCart.get().getCustomerId());
+            cod.setCustomerNotes(body.getCustomerNotes());
+            cod.setStoreId(optCart.get().getStoreId());
+            cod.setStoreVoucherCode(optCart.get().getStoreVoucherCode());
+            cod.setServiceType(optCart.get().getServiceType());
+
+            // get cod items based on selected item
             List<CartItem> selectedCartItems = new ArrayList<>();
-            for (int i = 0; i < cod.getCartItems().size(); i++) {
-                String itemId = cod.getCartItems().get(i);
+            for (int i = 0; i < body.getCartItems().size(); i++) {
+                String itemId = body.getCartItems().get(i);
                 Optional<CartItem> optionalCartItem = cartItemRepository.findById(itemId);
                 optionalCartItem.ifPresent(selectedCartItems::add);
             }
-            cart.setCartItems(selectedCartItems);
-            cart.setServiceType(optCart.get().getServiceType());
-            cart.setOrderPaymentDetails(cod.getOrderPaymentDetails());
-            cart.setOrderShipmentDetails(cod.getOrderShipmentDetails());
-            cart.setPaymentType(cod.getPaymentType());
+            cod.setCartItems(selectedCartItems);
+            cod.setServiceType(optCart.get().getServiceType());
+            cod.setOrderPaymentDetails(body.getOrderPaymentDetails());
+            cod.setOrderShipmentDetails(body.getOrderShipmentDetails());
+            cod.setPaymentType(body.getPaymentType());
+
 
             //------------------------------------------------
             //check platform voucher code if provided
@@ -1691,7 +1697,7 @@ public class OrderController {
                     if (guestVoucher != null) {
                         //check if already redeem
                         List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(
-                                cod.getOrderShipmentDetails().getEmail(), guestVoucher.getId());
+                                body.getOrderShipmentDetails().getEmail(), guestVoucher.getId());
                         if (!usedVoucherList.isEmpty()) {
                             CustomerVoucher usedVoucher = usedVoucherList.get(0);
                             if (usedVoucher.getIsUsed()
@@ -1707,12 +1713,12 @@ public class OrderController {
                             customerPlatformVoucher = new CustomerVoucher();
                             customerPlatformVoucher.setCreated(new Date());
                         }
-                        customerPlatformVoucher.setGuestEmail(cod.getOrderShipmentDetails().getEmail());
+                        customerPlatformVoucher.setGuestEmail(body.getOrderShipmentDetails().getEmail());
                         customerPlatformVoucher.setIsUsed(false);
                         customerPlatformVoucher.setVoucherId(guestVoucher.getId());
                         customerPlatformVoucher.setVoucher(guestVoucher);
                         customerPlatformVoucher.setGuestVoucher(true);
-                        customerPlatformVoucher.setStoreId(cart.getStoreId());
+                        customerPlatformVoucher.setStoreId(cod.getStoreId());
                     } else {
                         response.setStatus(HttpStatus.NOT_FOUND.value());
                         response.setMessage("Voucher code " + platformVoucherCode + " not found");
@@ -1722,22 +1728,42 @@ public class OrderController {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
                             logprefix, "Platform Voucher found : " + customerPlatformVoucher.getId());
                 }
-            } else {
-                if (cod.getStoreVoucherCode() != null && !cod.getStoreVoucherCode().isEmpty()) {
+            }
+            //TODO
+            // test storeVoucherCode
+            //------------------------------------------------
+            //check store voucher code if provided
+            //------------------------------------------------
+            else {
+                //check store voucher code if provided
+                CustomerVoucher customerStoreVoucher = null;
+                if (body.getStoreVoucherCode() != null && !body.getStoreVoucherCode().isEmpty()) {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
-                            logprefix, "Coupon VoucherCode provided : " + cod.getStoreVoucherCode());
-                    customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(
-                            customerId, cod.getStoreVoucherCode(), new Date());
-                    if (customerPlatformVoucher == null) {
+                            logprefix, "Coupon VoucherCode provided : " + body.getStoreVoucherCode());
+                    customerStoreVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(
+                            customerId, body.getStoreVoucherCode(), new Date());
+                    if (customerStoreVoucher == null) {
                         response.setStatus(HttpStatus.NOT_FOUND.value());
-                        response.setMessage("Voucher code " + cod.getStoreVoucherCode() + " not found");
+                        response.setMessage("Voucher code " + body.getStoreVoucherCode() + " not found");
                         return ResponseEntity.status(response.getStatus()).body(response);
+                    } else {
+                        //check store
+                        boolean storeValid=false;
+                        for (int i=0;i<customerStoreVoucher.getVoucher().getVoucherStoreList().size();i++) {
+                            VoucherStore voucherStore = customerStoreVoucher.getVoucher().getVoucherStoreList().get(i);
+                            if (voucherStore.getStoreId().equals(cart.getStoreId())) {
+                                storeValid=true;
+                            }
+                        }
+                        if (!storeValid) {
+                            //error, not allow for this store
+                            response.setMessage("Voucher code " + cod.getStoreVoucherCode() + " cannot be used for this store");
+                            return ResponseEntity.status(response.getStatus()).body(response);
+                        }
                     }
                 }
             }
 
-            //TODO
-            // take care of storeVoucherCode
 
             //---------------------------------------------------------------
             // Creation of order for each coupon Process Worker
@@ -1746,7 +1772,7 @@ public class OrderController {
                     request.getRequestURI(),
                     customerId, groupOrderId,
                     channel, customerPlatformVoucher,
-                    cart, logprefix,
+                    cod, logprefix,
                     //pass the repositories
                     cartItemRepository, productInventoryRepository,
                     storeDiscountRepository, storeDiscountTierRepository,
@@ -1779,6 +1805,9 @@ public class OrderController {
                 }
                 customerVoucherRepository.save(customerPlatformVoucher);
             }
+
+            cart.setStage(CartStage.ORDER_PLACED);
+            cartRepository.save(cart);
         }
 
         // calculate grand total to save in Group repository
