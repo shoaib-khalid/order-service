@@ -825,6 +825,7 @@ public class OrderWorker {
             StoreDetailsRepository storeDetailsRepository,
             CustomerRepository customerRepository,
             ProductService productService,
+            OrderShipmentDetailRepository orderShipmentDetailRepository,
             StoreRepository storeRepository
             ){
 
@@ -1165,8 +1166,10 @@ public class OrderWorker {
                 order.setStoreVoucherDiscount(orderTotalObject.getStoreVoucherDiscount());
                 order.setStoreVoucherId(orderTotalObject.getStoreVoucherId());
                 order.setTotalDataObject(orderTotalObject);
-                order.setDeliveryType(String.valueOf(DeliveryType.DIGITAL));
                 order.setPaymentType(cart.getPaymentType());
+                //Must be set Digital for coupon to filter out all the delivery and other functionalities later
+                order.setDeliveryType(String.valueOf(DeliveryType.DIGITAL));
+
 
                 // Not required for Coupon
                 order.setTableNo("NOT APPLICABLE");
@@ -1191,6 +1194,23 @@ public class OrderWorker {
 
                 // saving order object to get order Id
                 order = orderRepository.save(order);
+
+                // save shipment detials
+                Boolean storePickup = cart.getOrderShipmentDetails().getStorePickup();
+
+                if (newCart.getServiceType()!=null && newCart.getServiceType()==ServiceType.DINEIN) {
+                    storePickup=true;
+                }
+
+
+                cart.getOrderShipmentDetails().setOrderId(order.getId());
+                if (cart.getOrderShipmentDetails().getPhoneNumber()!=null && cart.getOrderShipmentDetails().getPhoneNumber().startsWith("0")) {
+                    String countryCode = newCart.getStore().getRegionCountry().getCountryCode();
+                    String customerMsisdn = countryCode + cart.getOrderShipmentDetails().getPhoneNumber().substring(1);
+                    cart.getOrderShipmentDetails().setPhoneNumber(customerMsisdn);
+                }
+                order.setOrderShipmentDetail(orderShipmentDetailRepository.save(cart.getOrderShipmentDetails()));
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order shipment details inserted successfully: " + order.getOrderShipmentDetail().toString());
 
                 OrderItem orderItem = null;
 
