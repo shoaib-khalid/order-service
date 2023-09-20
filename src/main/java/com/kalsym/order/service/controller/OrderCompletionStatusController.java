@@ -22,24 +22,7 @@ import com.kalsym.order.service.model.ProductInventory;
 import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.model.object.OrderProcessResult;
-import com.kalsym.order.service.model.repository.CartItemRepository;
-import com.kalsym.order.service.model.repository.CustomerRepository;
-import com.kalsym.order.service.model.repository.CustomerVoucherRepository;
-import com.kalsym.order.service.model.repository.OrderCompletionStatusConfigRepository;
-import com.kalsym.order.service.model.repository.OrderCompletionStatusRepository;
-import com.kalsym.order.service.model.repository.OrderCompletionStatusUpdateRepository;
-import com.kalsym.order.service.model.repository.OrderItemRepository;
-import com.kalsym.order.service.model.repository.OrderPaymentDetailRepository;
-import com.kalsym.order.service.model.repository.OrderPaymentStatusUpdateRepository;
-import com.kalsym.order.service.model.repository.OrderRefundRepository;
-import com.kalsym.order.service.model.repository.OrderRepository;
-import com.kalsym.order.service.model.repository.OrderGroupRepository;
-import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
-import com.kalsym.order.service.model.repository.PaymentOrderRepository;
-import com.kalsym.order.service.model.repository.ProductInventoryRepository;
-import com.kalsym.order.service.model.repository.RegionCountriesRepository;
-import com.kalsym.order.service.model.repository.StoreDetailsRepository;
-import com.kalsym.order.service.model.repository.VoucherRepository;
+import com.kalsym.order.service.model.repository.*;
 import com.kalsym.order.service.service.*;
 import com.kalsym.order.service.utility.DateTimeUtil;
 import com.kalsym.order.service.utility.HttpResponse;
@@ -119,6 +102,9 @@ public class OrderCompletionStatusController {
 
     @Autowired
     OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository;
+
+    @Autowired
+    VoucherSerialNumberRepository voucherSerialNumberRepository;
 
     @Autowired
     StoreDetailsRepository storeDetailsRepository;
@@ -314,6 +300,7 @@ public class OrderCompletionStatusController {
               orderPaymentDetailRepository,
               customerRepository, 
               voucherRepository,
+              voucherSerialNumberRepository,
               customerVoucherRepository,
                 
               productService,

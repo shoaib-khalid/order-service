@@ -110,6 +110,9 @@ public class OrderGroupStatusUpdateController {
     
     @Autowired
     OrderRefundRepository orderRefundRepository;
+
+    @Autowired
+    VoucherSerialNumberRepository voucherSerialNumberRepository;
     
     @Autowired
     PaymentOrderRepository paymentOrderRepository;
@@ -191,6 +194,7 @@ public class OrderGroupStatusUpdateController {
                 orderCompletionStatusUpdateRepository,
                 customerRepository, 
                 voucherRepository,
+                voucherSerialNumberRepository,
                 customerVoucherRepository,
 
                 productService,

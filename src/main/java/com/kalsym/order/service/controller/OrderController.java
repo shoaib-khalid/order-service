@@ -1781,7 +1781,8 @@ public class OrderController {
                     orderPaymentDetailRepository,
                     storeDetailsRepository, customerRepository,
                     productService, orderShipmentDetailRepository,
-                    storeRepository);
+                    storeRepository, voucherRepository,
+                    productRepository);
 
             Order orderCreated = (Order) orderResponse.getData();
             if (orderCreated == null) {
@@ -1824,7 +1825,6 @@ public class OrderController {
         // Uncomment the code for prefix
         //append prefix to differentiate between single & multiple
 //        orderGroup.setId("G"+orderGroup.getId());
-
 
         orderGroupRepository.save(orderGroup);
 

@@ -7,26 +7,7 @@ package com.kalsym.order.service.controller;
 
 import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.enums.*;
-import com.kalsym.order.service.model.Body;
-import com.kalsym.order.service.model.Customer;
-import com.kalsym.order.service.model.CustomerVoucher;
-import com.kalsym.order.service.model.DeliveryOrder;
-import com.kalsym.order.service.model.DeliveryResponse;
-import com.kalsym.order.service.model.Email;
-import com.kalsym.order.service.model.Order;
-import com.kalsym.order.service.model.OrderGroup;
-import com.kalsym.order.service.model.OrderCompletionStatusConfig;
-import com.kalsym.order.service.model.OrderItem;
-import com.kalsym.order.service.model.OrderPaymentStatusUpdate;
-import com.kalsym.order.service.model.OrderRefund;
-import com.kalsym.order.service.model.OrderShipmentDetail;
-import com.kalsym.order.service.model.OrderPaymentDetail;
-import com.kalsym.order.service.model.PaymentOrder;
-import com.kalsym.order.service.model.Product;
-import com.kalsym.order.service.model.ProductInventory;
-import com.kalsym.order.service.model.RegionCountry;
-import com.kalsym.order.service.model.StoreWithDetails;
-import com.kalsym.order.service.model.OrderCompletionStatusUpdate;
+import com.kalsym.order.service.model.*;
 
 import com.kalsym.order.service.service.*;
 import com.kalsym.order.service.utility.DateTimeUtil;
@@ -41,8 +22,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
+
 
 /**
  *
@@ -74,6 +54,7 @@ public class OrderProcessWorker {
     private final OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository;
     private final CustomerRepository customerRepository;
     private final VoucherRepository voucherRepository;
+    private final VoucherSerialNumberRepository voucherSerialNumberRepository;
     private final CustomerVoucherRepository customerVoucherRepository;
     
     private final ProductService productService;
@@ -113,6 +94,7 @@ public class OrderProcessWorker {
             OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository,
             CustomerRepository customerRepository,
             VoucherRepository voucherRepository,
+            VoucherSerialNumberRepository voucherSerialNumberRepository,
             CustomerVoucherRepository customerVoucherRepository,
             
             ProductService productService,
@@ -150,6 +132,7 @@ public class OrderProcessWorker {
         this.orderCompletionStatusUpdateRepository = orderCompletionStatusUpdateRepository;
         this.customerRepository = customerRepository;
         this.voucherRepository = voucherRepository;
+        this.voucherSerialNumberRepository = voucherSerialNumberRepository;
         this.customerVoucherRepository = customerVoucherRepository;
         
         this.productService = productService;
@@ -227,11 +210,6 @@ public class OrderProcessWorker {
         //To get the delivery type of the order
         DeliveryType deliveryType = DeliveryType.valueOf(order.getDeliveryType());
 
-        //String[] url = deliveryResponse.data.trackingUrl;
-
-
-//        String receiver = order.getOrderShipmentDetail().getEmail();
-//        OrderPaymentStatusUpdate orderPaymentStatusUpdate = new OrderPaymentStatusUpdate();
         Body body = new Body();
 
         body.setCurrency(storeWithDetails.getRegionCountry().getCurrencyCode());
@@ -258,13 +236,7 @@ public class OrderProcessWorker {
         Email email = new Email();
         email.setBody(body);
         ArrayList<String> tos = new ArrayList<>();
-//        tos.add(order.getOrderShipmentDetail().getEmail());
-//        String[] to = Utilities.convertArrayListToStringArray(tos);
-//        email.setTo(to);
-//        email.setFrom(storeWithDetails.getRegionVertical().getSenderEmailAdress());
-//        email.setFromName(storeWithDetails.getRegionVertical().getSenderEmailName());
-//        email.setDomain(storeWithDetails.getRegionVertical().getDomain());
-        
+
         String verticalId = storeWithDetails.getVerticalCode();
         Boolean storePickup;
         String orderDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
@@ -389,7 +361,7 @@ public class OrderProcessWorker {
             }
             
             //check current status if in correct sequence
-            OrderCompletionStatusConfig prevOrderCompletionStatusConfig = null;
+            OrderCompletionStatusConfig prevOrderCompletionStatusConfig;
 
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "CHECK STATUS CONFIG VALUE::::" +verticalId+ ","+ previousStatus.name()+ ","+ storePickup+ ","+ orderDeliveryType+ ","+ order.getPaymentType());
             List<OrderCompletionStatusConfig> prevOrderCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, previousStatus.name(), storePickup, orderDeliveryType, order.getPaymentType());
@@ -420,7 +392,7 @@ public class OrderProcessWorker {
         }
         //update order to being process
         orderRepository.UpdateOrderBeingProcess(orderId);
-        double refundAmount=0.00;
+        double refundAmount;
         
         switch (status) {
             case PAYMENT_CONFIRMED:
@@ -511,7 +483,7 @@ public class OrderProcessWorker {
                             }
 
                             if (!product.isAllowOutOfStockPurchases() && reduceQuantityProductInventory.getQuantity() <= 0) {
-                                // making this product variant outof stock
+                                // making this product variant out of stock
                                 //productInventory = productService.changeProductStatus(order.getStoreId(), orderItems.get(i).getProductId(), orderItems.get(i).getItemCode(), ProductStatus.OUTOFSTOCK);
                                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "this product variant is out of stock now storeId: " + order.getStoreId() + ", productId: " + orderItem.getProductId() + ", itemCode: " + orderItem.getItemCode());
                             }
@@ -598,7 +570,7 @@ public class OrderProcessWorker {
                     orderRefund.setOrderId(order.getId());
                     orderRefund.setRefundType(RefundType.ORDER_CANCELLED);
                     orderRefund.setPaymentChannel(optPayment.get().getPaymentChannel());
-                    orderRefund.setRefundAmount(order.getTotal());
+                    orderRefund.setRefundAmount(refundAmount);
                     orderRefund.setRefundStatus(RefundStatus.PENDING);
                     orderRefundRepository.save(orderRefund);
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "refund record created for orderId: " + order.getId());
@@ -680,7 +652,7 @@ public class OrderProcessWorker {
         if (orderCompletionStatusConfig!=null) {
 
             //To get the payment type of the order
-            Optional<PaymentOrder> optPaymentDetails = Optional.empty();
+            Optional<PaymentOrder> optPaymentDetails;
             if (order.getOrderGroupId()!=null) {
                 optPaymentDetails = paymentOrderRepository.findByClientTransactionId("G"+order.getOrderGroupId());
                 if (!optPaymentDetails.isPresent()) {
@@ -710,59 +682,64 @@ public class OrderProcessWorker {
                                 bodyOrderCompletionStatusUpdate.getTime());
 
                         if (deliveryResponse!=null) {
-                            if (deliveryResponse.getStatus().equals("ASSIGNING_DRIVER") || deliveryResponse.getStatus().equals("NEW_ORDER") || deliveryResponse.getStatus().equals("ASSIGNING_RIDER")) {
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderCreated:"+deliveryResponse.getOrderCreated().toString());
-                                DeliveryOrder deliveryOrder = deliveryResponse.getOrderCreated();
-                                status = OrderStatus.AWAITING_PICKUP;
-                                email.getBody().setOrderStatus(status);
-                                email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
-                                email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
+                            switch (deliveryResponse.getStatus()) {
+                                case "ASSIGNING_DRIVER":
+                                case "NEW_ORDER":
+                                case "ASSIGNING_RIDER":
+                                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                                            logprefix, "OrderCreated:" + deliveryResponse.getOrderCreated().toString());
+                                    DeliveryOrder deliveryOrder = deliveryResponse.getOrderCreated();
+                                    status = OrderStatus.AWAITING_PICKUP;
+                                    email.getBody().setOrderStatus(status);
+                                    email.getBody().setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
+                                    email.getBody().setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
+                                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
 
-                                orderShipmentDetail.setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
-                                orderShipmentDetail.setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
-                                orderShipmentDetail.setTrackingNumber(deliveryOrder.getSpOrderId());
-                                orderShipmentDetailRepository.save(orderShipmentDetail);
+                                    orderShipmentDetail.setMerchantTrackingUrl(deliveryOrder.getMerchantTrackingUrl());
+                                    orderShipmentDetail.setCustomerTrackingUrl(deliveryOrder.getCustomerTrackingUrl());
+                                    orderShipmentDetail.setTrackingNumber(deliveryOrder.getSpOrderId());
+                                    orderShipmentDetailRepository.save(orderShipmentDetail);
 
-                                //if order is combined delivery
-                                if (deliveryOrder.getCustomerTrackingUrl()!=null && order.getOrderPaymentDetail()!=null && order.getOrderPaymentDetail().getIsCombinedDelivery()) {
-                                    List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
-                                    for (int z=0;z<orderPaymentDetailList.size();z++) {
-                                        String relatedOrderId = orderPaymentDetailList.get(z).getOrderId();
-                                        //check order status, if cancel no need to update tracking url
-                                        Optional<Order> optOrderRelated = orderRepository.findById(relatedOrderId);
-                                        if (optOrderRelated.isPresent() && optOrderRelated.get().getCompletionStatus()!=OrderStatus.CANCELED_BY_MERCHANT) {
-                                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update same tracking url for orderId:"+relatedOrderId+" : "+deliveryOrder.getCustomerTrackingUrl());
-                                            orderShipmentDetailRepository.UpdateTrackingUrlAndSpOrderId(deliveryOrder.getCustomerTrackingUrl(), bodyOrderCompletionStatusUpdate.getSpOrderId(), relatedOrderId);
+                                    //if order is combined delivery
+                                    if (deliveryOrder.getCustomerTrackingUrl() != null && order.getOrderPaymentDetail() != null && order.getOrderPaymentDetail().getIsCombinedDelivery()) {
+                                        List<OrderPaymentDetail> orderPaymentDetailList = orderPaymentDetailRepository.findByDeliveryQuotationReferenceId(order.getOrderPaymentDetail().getDeliveryQuotationReferenceId());
+                                        for (OrderPaymentDetail orderPaymentDetail : orderPaymentDetailList) {
+                                            String relatedOrderId = orderPaymentDetail.getOrderId();
+                                            //check order status, if cancel no need to update tracking url
+                                            Optional<Order> optOrderRelated = orderRepository.findById(relatedOrderId);
+                                            if (optOrderRelated.isPresent() && optOrderRelated.get().getCompletionStatus() != OrderStatus.CANCELED_BY_MERCHANT) {
+                                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update same tracking url for orderId:" + relatedOrderId + " : " + deliveryOrder.getCustomerTrackingUrl());
+                                                orderShipmentDetailRepository.UpdateTrackingUrlAndSpOrderId(deliveryOrder.getCustomerTrackingUrl(), bodyOrderCompletionStatusUpdate.getSpOrderId(), relatedOrderId);
+                                            }
                                         }
                                     }
-                                }
 
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added tracking urls to orderId:" + orderId);
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
-                            } else if (deliveryResponse.getStatus().equals("FAILED")) {
-                                //failed
-                                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while confirming order Delivery. deliveryOrder is null ");
-                                insertOrderCompletionStatusUpdate(OrderStatus.REQUESTING_DELIVERY_FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
-                                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Revert to previous status:"+previousStatus);
-                                order.setCompletionStatus(previousStatus);
-                                //update order to finish process
-                                orderRepository.UpdateOrderFinishProcess(orderId);
+                                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "added tracking urls to orderId:" + orderId);
+                                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "delivery confirmed for order: " + orderId + "awaiting for pickup");
+                                    break;
+                                case "FAILED":
+                                    //failed
+                                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while confirming order Delivery. deliveryOrder is null ");
+                                    insertOrderCompletionStatusUpdate(OrderStatus.REQUESTING_DELIVERY_FAILED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
+                                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Revert to previous status:" + previousStatus);
+                                    order.setCompletionStatus(previousStatus);
+                                    //update order to finish process
+                                    orderRepository.UpdateOrderFinishProcess(orderId);
 
-                                orderProcessResult.httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-                                orderProcessResult.errorMsg = "Requesting delivery failed";
-                                return orderProcessResult;
-                            } else if (deliveryResponse.getStatus().equals("PENDING")) {
-                                //pending
-                                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Confirming order Delivery is still pending");
-                                orderProcessResult.httpStatus = HttpStatus.ACCEPTED;
-                                orderProcessResult.errorMsg = "Requesting delivery is pending";
-                                orderProcessResult.data = order;
-                                orderProcessResult.previousStatus = previousStatus;
-                                orderProcessResult.orderCompletionStatusConfig = orderCompletionStatusConfig;
-                                orderProcessResult.email = email;
-                                orderProcessResult.storeWithDetails = storeWithDetails;
-                                return orderProcessResult;
+                                    orderProcessResult.httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+                                    orderProcessResult.errorMsg = "Requesting delivery failed";
+                                    return orderProcessResult;
+                                case "PENDING":
+                                    //pending
+                                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Confirming order Delivery is still pending");
+                                    orderProcessResult.httpStatus = HttpStatus.ACCEPTED;
+                                    orderProcessResult.errorMsg = "Requesting delivery is pending";
+                                    orderProcessResult.data = order;
+                                    orderProcessResult.previousStatus = previousStatus;
+                                    orderProcessResult.orderCompletionStatusConfig = orderCompletionStatusConfig;
+                                    orderProcessResult.email = email;
+                                    orderProcessResult.storeWithDetails = storeWithDetails;
+                                    return orderProcessResult;
                             }
                         } else {
                             Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error while confirming order Delivery. deliveryOrder is null ");
@@ -891,14 +868,14 @@ public class OrderProcessWorker {
                     }
 
                     //send push notification to DCM message
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat to store: " + orderCompletionStatusConfig.getPushNotificationToMerchat());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchant to store: " + orderCompletionStatusConfig.getPushNotificationToMerchat());
                     if (orderCompletionStatusConfig.getPushNotificationToMerchat()) {
                         String pushNotificationTitle = orderCompletionStatusConfig.getStorePushNotificationTitle();
                         String pushNotificationContent = orderCompletionStatusConfig.getStorePushNotificationContent();
                         try {
                             fcmService.sendPushNotification(order, storeWithDetails.getId(), storeWithDetails.getName(), pushNotificationTitle, pushNotificationContent, status, storeWithDetails.getRegionVertical().getDomain());
                         } catch (Exception e) {
-                            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
+                            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchant error ", e);
                         }
 
                     }
@@ -923,7 +900,7 @@ public class OrderProcessWorker {
                             //String storeName, String invoiceNo, String orderId, String merchantToken
                             whatsappService.sendAdminAlert(status.name(), storeWithDetails.getName(), order.getInvoiceId(), order.getId(), DateTimeUtil.currentTimestamp());
                         } catch (Exception e) {
-                            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
+                            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchant error ", e);
                         }
 
                     }
@@ -952,12 +929,42 @@ public class OrderProcessWorker {
                                 Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order shipment details not found");
                             }
                         } catch (Exception e) {
-                            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchat error ", e);
+                            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "pushNotificationToMerchant error ", e);
                         }
 
                     }
                 } else {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Not done with RequestDelivery");
+                }
+            }
+
+            if (deliveryType == DeliveryType.DIGITAL && newStatus.equals("PAYMENT_CONFIRMED")) {
+                String voucherId = order.getVoucherId();
+                if (voucherId != null) {
+                    Optional<Voucher> voucher = voucherRepository.findById(voucherId);
+                    if (voucher.isPresent()) {
+                        Voucher voucherObj = voucher.get();
+                        //TODO
+                        // Decrease actual quantity for order
+                        voucherObj.setTotalQuantity(voucher.get().getTotalQuantity() - 1);
+//                        voucherRepository.save(voucherObj);
+                    }
+                    // Now, call the custom query method to get available voucher serial numbers
+                    List<VoucherSerialNumber> availableVoucherSerialNumbers = voucherSerialNumberRepository.findAvailableVoucherSerialNumbers(voucherId);
+
+                    if (!availableVoucherSerialNumbers.isEmpty()) {
+                        // You have available voucher serial numbers to work with
+                        for (VoucherSerialNumber voucherSerialNumber : availableVoucherSerialNumbers) {
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                                    logprefix, "availableVoucherSerialNumber: " + voucherSerialNumber);
+
+                            // Process each voucher serial number as needed
+                        }
+                    } else {
+                        // No available voucher serial numbers found
+                        // Handle this case accordingly
+                    }
+
                 }
             }
 
@@ -986,10 +993,14 @@ public class OrderProcessWorker {
                             " NextSequence:"+nextSequence+" storePickup:"+storePickup+
                             " deliveryType:"+orderDeliveryType+
                             " paymentType:"+order.getPaymentType());
-            List<OrderCompletionStatusConfig> nextActionCompletionStatusConfigs = orderCompletionStatusConfigRepository.findByVerticalIdAndStatusSequenceAndStorePickupAndStoreDeliveryTypeAndPaymentType(verticalId, nextSequence, storePickup, orderDeliveryType, order.getPaymentType());
+            List<OrderCompletionStatusConfig> nextActionCompletionStatusConfigs = orderCompletionStatusConfigRepository.
+                    findByVerticalIdAndStatusSequenceAndStorePickupAndStoreDeliveryTypeAndPaymentType
+                        (verticalId, nextSequence, storePickup, orderDeliveryType, order.getPaymentType());
             if (nextActionCompletionStatusConfigs != null && !nextActionCompletionStatusConfigs.isEmpty()) {           
                 nextCompletionStatusConfig = nextActionCompletionStatusConfigs.get(0);
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Next action status: " + nextCompletionStatusConfig.getStatus()+" sequence:"+nextCompletionStatusConfig.getStatusSequence());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                        logprefix, "Next action status: " + nextCompletionStatusConfig.getStatus()
+                                +" sequence:"+nextCompletionStatusConfig.getStatusSequence());
                 order.setNextCompletionStatus(nextCompletionStatusConfig.status);
                 order.setNextActionText(nextCompletionStatusConfig.nextActionText);                
             }
@@ -997,7 +1008,6 @@ public class OrderProcessWorker {
         orderProcessResult.data = order;
         
         return orderProcessResult;
-        
     }
     
     void insertOrderPaymentStatusUpdate(PaymentStatus paymentStatus, String comments, String modifiedBy, String orderId) {

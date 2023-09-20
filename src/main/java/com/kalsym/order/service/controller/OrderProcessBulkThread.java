@@ -15,20 +15,7 @@ import com.kalsym.order.service.model.Order;
 import com.kalsym.order.service.model.object.OrderProcessResult;
 import com.kalsym.order.service.model.object.DeliveryServiceBulkConfirmRequest;
 import com.kalsym.order.service.model.object.DeliveryServiceBulkConfirmResponse;
-import com.kalsym.order.service.model.repository.CartItemRepository;
-import com.kalsym.order.service.model.repository.OrderCompletionStatusConfigRepository;
-import com.kalsym.order.service.model.repository.OrderCompletionStatusUpdateRepository;
-import com.kalsym.order.service.model.repository.OrderItemRepository;
-import com.kalsym.order.service.model.repository.OrderPaymentStatusUpdateRepository;
-import com.kalsym.order.service.model.repository.OrderRefundRepository;
-import com.kalsym.order.service.model.repository.OrderRepository;
-import com.kalsym.order.service.model.repository.OrderGroupRepository;
-import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
-import com.kalsym.order.service.model.repository.PaymentOrderRepository;
-import com.kalsym.order.service.model.repository.ProductInventoryRepository;
-import com.kalsym.order.service.model.repository.RegionCountriesRepository;
-import com.kalsym.order.service.model.repository.StoreDetailsRepository;
-import com.kalsym.order.service.model.repository.OrderPaymentDetailRepository;
+import com.kalsym.order.service.model.repository.*;
 import com.kalsym.order.service.service.*;
 import com.kalsym.order.service.utility.DateTimeUtil;
 import com.kalsym.order.service.utility.Logger;
@@ -41,9 +28,6 @@ import com.kalsym.order.service.model.StoreWithDetails;
 import com.kalsym.order.service.utility.Utilities;
 import com.kalsym.order.service.enums.DeliveryType;
 import com.kalsym.order.service.model.Customer;
-import com.kalsym.order.service.model.repository.CustomerRepository;
-import com.kalsym.order.service.model.repository.CustomerVoucherRepository;
-import com.kalsym.order.service.model.repository.VoucherRepository;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -78,6 +62,7 @@ public class OrderProcessBulkThread extends Thread {
     private OrderCompletionStatusUpdateRepository orderCompletionStatusUpdateRepository;
     private CustomerRepository customerRepository;
     private VoucherRepository voucherRepository;
+    private VoucherSerialNumberRepository voucherSerialNumberRepository;
     private CustomerVoucherRepository customerVoucherRepository;
     
     private ProductService productService;
@@ -120,6 +105,7 @@ public class OrderProcessBulkThread extends Thread {
             OrderPaymentDetailRepository orderPaymentDetailRepository,
             CustomerRepository customerRepository,
             VoucherRepository voucherRepository,
+            VoucherSerialNumberRepository voucherSerialNumberRepository,
             CustomerVoucherRepository customerVoucherRepository,
             
             ProductService productService,
@@ -157,6 +143,7 @@ public class OrderProcessBulkThread extends Thread {
             this.orderPaymentDetailRepository = orderPaymentDetailRepository;
             this.customerRepository = customerRepository;
             this.voucherRepository = voucherRepository;
+            this.voucherSerialNumberRepository = voucherSerialNumberRepository;
             this.customerVoucherRepository = customerVoucherRepository;
         
             this.productService = productService;
@@ -205,6 +192,7 @@ public class OrderProcessBulkThread extends Thread {
                         orderCompletionStatusUpdateRepository,
                         customerRepository,
                         voucherRepository,
+                        voucherSerialNumberRepository,
                         customerVoucherRepository,
                         
                         productService,
