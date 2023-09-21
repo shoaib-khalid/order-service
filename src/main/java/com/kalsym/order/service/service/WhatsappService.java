@@ -32,7 +32,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import com.kalsym.order.service.utility.Logger;
-import com.kalsym.order.service.utility.Utilities;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -257,9 +256,9 @@ public class WhatsappService {
         String templateNameUser = customerTemplateName;
         String templateNameDeliverin = customerTemplateName;
         String templateNameDinein = customerTemplateName;
-        String[] templateNameList = customerTemplateName.split(";"); 
-        for (int z=0;z<templateNameList.length;z++) {
-            String[] temp=templateNameList[z].split("=");
+        String[] templateNameList = customerTemplateName.split(";");
+        for (String s : templateNameList) {
+            String[] temp = s.split("=");
             if (temp[0].equalsIgnoreCase("guest")) {
                 templateNameGuest = temp[1];
             } else if (temp[0].equalsIgnoreCase("user")) {
@@ -267,8 +266,8 @@ public class WhatsappService {
             } else if (temp[0].equalsIgnoreCase("deliverin")) {
                 templateNameDeliverin = temp[1];
             } else if (temp[0].equalsIgnoreCase("dinein")) {
-                templateNameDinein = temp[1];            
-            } 
+                templateNameDinein = temp[1];
+            }
         }
         
         if (isRegisteredUser)
@@ -330,6 +329,80 @@ public class WhatsappService {
             return false;
         }
 
+    }
+
+    // For ekedai
+    public void sendWAToCustomer(
+            String customerMsisdn, String status, String storeName,
+            String invoiceNo, String orderId, String updatedTime,
+            String customerTemplateName, String WATemplateFormat, String storeCity,
+            String invoicePdf, boolean isRegisteredUser, ServiceType serviceType) {
+
+        String logprefix = "sendCustomerAlert";
+
+        ResponseEntity<String> res;
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        WhatsappMessage request = new WhatsappMessage();
+        request.setGuest(false);
+        String[] recipients = {customerMsisdn};
+        request.setRecipientIds(recipients);
+        request.setRefId(recipients[0]);
+        request.setReferenceId(adminAlertRefId);
+        request.setOrderId(orderId);
+
+        Template template = new Template();
+
+        String templateNameEkedai = customerTemplateName;
+        String[] templateNameList = customerTemplateName.split(";");
+        for (String templateName : templateNameList) {
+            String[] temp = templateName.split("=");
+            if (temp[0].equalsIgnoreCase("ekedai")) {
+                templateNameEkedai = temp[1];
+            }
+        }
+
+        template.setName(templateNameEkedai);
+
+        WATemplateFormat = WATemplateFormat.replaceAll("%invoiceNo%", invoiceNo);
+        WATemplateFormat = WATemplateFormat.replaceAll("%storeName%", storeName);
+        WATemplateFormat = WATemplateFormat.replaceAll("%orderStatus%", status);
+        WATemplateFormat = WATemplateFormat.replaceAll("%timestamp%", updatedTime);
+        WATemplateFormat = WATemplateFormat.replaceAll("%orderId%", orderId);
+        WATemplateFormat = WATemplateFormat.replaceAll("%storeCity%", storeCity);
+        WATemplateFormat = WATemplateFormat.replaceAll("%invoicePdf%", invoicePdf);
+        String[] parameterTypeList = WATemplateFormat.split(";");
+        for (String s : parameterTypeList) {
+            String[] temp = s.split("=");
+            if (temp[0].equalsIgnoreCase("body")) {
+                String[] parameterList = temp[1].split(",");
+                template.setParameters(parameterList);
+            } else if (temp[0].equalsIgnoreCase("button")) {
+                String[] parameterList = temp[1].split(",");
+                template.setParametersButton(parameterList);
+            } else if (temp[0].equalsIgnoreCase("document")) {
+                String parameterDoc = temp[1];
+                template.setParametersDocument(parameterDoc);
+                template.setParametersDocumentFileName(invoiceNo + ".pdf");
+            }
+        }
+        request.setTemplate(template);
+        HttpEntity<WhatsappMessage> httpEntity = new HttpEntity<>(request, headers);
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
+
+        try {
+            res = restTemplate.postForEntity(whatsappServiceUrl, httpEntity, String.class);
+
+            if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "res: " + res.getBody(), "");
+            } else {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendCustomerAlert res: " + res, "");
+            }
+
+        } catch (Exception ex) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "could not send sendCustomerAlert res: " + ex.getMessage(), "");
+        }
     }
     
     
