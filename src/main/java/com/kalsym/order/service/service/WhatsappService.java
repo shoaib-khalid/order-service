@@ -338,7 +338,7 @@ public class WhatsappService {
             String customerTemplateName, String WATemplateFormat, String storeCity,
             String invoicePdf, boolean isRegisteredUser, ServiceType serviceType) {
 
-        String logprefix = "sendCustomerAlert";
+        String logprefix = "sendWAToCustomer";
 
         ResponseEntity<String> res;
         RestTemplate restTemplate = new RestTemplate();
