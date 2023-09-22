@@ -940,15 +940,17 @@ public class OrderProcessWorker {
 
             //TODO
             // DIGITAL Logic comes here
+            // Check if the order is digital and Payment is confirmed
             if (deliveryType == DeliveryType.DIGITAL && newStatus.equals("PAYMENT_CONFIRMED")) {
                 String voucherId = order.getVoucherId();
                 if (voucherId != null) {
-                    Optional<Voucher> voucher = voucherRepository.findById(voucherId);
-                    if (voucher.isPresent()) {
-                        Voucher voucherObj = voucher.get();
-                        voucherObj.setTotalQuantity(voucher.get().getTotalQuantity() - 1);
-                        voucherRepository.save(voucherObj);
-                    }
+                    //uncomment if only quantity needs to be decreased
+//                    Optional<Voucher> voucher = voucherRepository.findById(voucherId);
+//                    if (voucher.isPresent()) {
+//                        Voucher voucherObj = voucher.get();
+//                        voucherObj.setTotalQuantity(voucher.get().getTotalQuantity() - 1);
+//                        voucherRepository.save(voucherObj);
+//                    }
                     // Now, call the custom query method to get available voucher serial numbers
                     List<VoucherSerialNumber> availableVoucherSerialNumber
                             = voucherSerialNumberRepository.findAvailableVoucherSerialNumbers(voucherId);
@@ -957,16 +959,50 @@ public class OrderProcessWorker {
 
                     // Check if an available voucher serial number was found
                     if (availableVoucherSerialNumber != null) {
-                        // Update voucher details
-                        availableVoucherSerialNumber.get(0).setCurrentStatus(VoucherSerialStatus.BOUGHT);
-                        availableVoucherSerialNumber.get(0).setCustomer(orderShipmentDetail.getPhoneNumber());
+                        StringBuilder concatenatedSerialNumbers;
+                        concatenatedSerialNumbers = new StringBuilder();
+                        int totalCount = 0;
+                        for(OrderItem orderItem : orderItems) {
+                            if(orderItem.getQuantity() > totalCount) {
+                                // Update voucher details
+                                availableVoucherSerialNumber.
+                                        get(totalCount).setCurrentStatus(VoucherSerialStatus.BOUGHT);
+                                availableVoucherSerialNumber.
+                                        get(totalCount).setCustomer(orderShipmentDetail.getPhoneNumber());
 
-                        // Save the updated voucher serial number
-                        voucherSerialNumberRepository.save(availableVoucherSerialNumber.get(0));
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
-                                logprefix, "Voucher serial number updated for voucherId: "
-                                        + voucherId + ", with serial number: "
-                                        + availableVoucherSerialNumber.get(0).getSerialNumber());
+                                // Save the updated voucher serial number
+                                voucherSerialNumberRepository.save(availableVoucherSerialNumber.get(totalCount));
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                                        logprefix, "Voucher serial number updated for voucherId: "
+                                                + voucherId + ", with redeem code: "
+                                                +availableVoucherSerialNumber.get(totalCount).getVoucherRedeemCode());
+
+                                // Append the serial number to the StringBuilder
+                                concatenatedSerialNumbers.append(availableVoucherSerialNumber.
+                                        get(totalCount).getVoucherRedeemCode());
+                                // Append the semicolon for more items
+                                concatenatedSerialNumbers.append(";");
+
+                                // Check if there are concatenated serial numbers to append
+                                if (concatenatedSerialNumbers.length() > 0) {
+                                    // Initialize or update the voucher redeem code based on the existing value
+                                    String existingVoucherRedeemCode = orderItem.getVoucherRedeemCode();
+                                    if (existingVoucherRedeemCode != null) {
+                                        orderItem.setVoucherRedeemCode(existingVoucherRedeemCode + concatenatedSerialNumbers.toString());
+                                    } else {
+                                        orderItem.setVoucherRedeemCode(concatenatedSerialNumbers.toString());
+                                    }
+                                }
+
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                                    logprefix, "Voucher redeem code updated for orderItemId: "
+                                            + orderItem.getId() + ", with redeem code: "
+                                            + orderItem.getVoucherRedeemCode());
+                                orderItemRepository.save(orderItem);
+                                totalCount +=1;
+                            }
+                        }
+
                     } else {
                         // Handle the case where no available voucher serial number was found
                         Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
