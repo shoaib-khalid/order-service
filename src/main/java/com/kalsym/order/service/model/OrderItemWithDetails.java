@@ -53,6 +53,7 @@ public class OrderItemWithDetails implements Serializable {
     private Integer originalQuantity;
     private DiscountCalculationType discountCalculationType;
     private Float discountCalculationValue;
+    private String voucherRedeemCode;
     
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "orderItemId", insertable = false, updatable = false, nullable = true)

@@ -666,7 +666,6 @@ public class OrderProcessWorker {
                 paymentDetails = optPaymentDetails.get();
             }
 
-            //TODO
             // Handle for Digital part
             if(!(deliveryType ==DeliveryType.DIGITAL)){
                 OrderShipmentDetail orderShipmentDetail = orderShipmentDetailRepository.findByOrderId(orderId);
@@ -938,19 +937,18 @@ public class OrderProcessWorker {
                 }
             }
 
-            //TODO
             // DIGITAL Logic comes here
             // Check if the order is digital and Payment is confirmed
             if (deliveryType == DeliveryType.DIGITAL && newStatus.equals("PAYMENT_CONFIRMED")) {
                 String voucherId = order.getVoucherId();
                 if (voucherId != null) {
                     //uncomment if only quantity needs to be decreased
-//                    Optional<Voucher> voucher = voucherRepository.findById(voucherId);
-//                    if (voucher.isPresent()) {
-//                        Voucher voucherObj = voucher.get();
-//                        voucherObj.setTotalQuantity(voucher.get().getTotalQuantity() - 1);
-//                        voucherRepository.save(voucherObj);
-//                    }
+                    Optional<Voucher> voucher = voucherRepository.findById(voucherId);
+                    if (voucher.isPresent()) {
+                        Voucher voucherObj = voucher.get();
+                        voucherObj.setTotalQuantity(voucher.get().getTotalRedeem() + 1);
+                        voucherRepository.save(voucherObj);
+                    }
                     // Now, call the custom query method to get available voucher serial numbers
                     List<VoucherSerialNumber> availableVoucherSerialNumber
                             = voucherSerialNumberRepository.findAvailableVoucherSerialNumbers(voucherId);
