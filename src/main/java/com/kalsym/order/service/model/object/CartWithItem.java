@@ -20,6 +20,12 @@ public class CartWithItem {
     String storeVoucherCode;
     List<String> selectedItemId;
 
+    public List<SelectedItem> getSelectedItems() {
+        return selectedItems;
+    }
+
+    List<SelectedItem> selectedItems;
+
     public CartWithItem() {
     }
 

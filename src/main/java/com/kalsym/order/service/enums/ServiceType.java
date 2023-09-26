@@ -9,5 +9,6 @@ public enum ServiceType {
     DINEIN,
     DELIVERIN,
     VOUCHER,
-    TICKET
+    TICKET,
+    DIGITAL
 }
