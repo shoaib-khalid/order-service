@@ -939,14 +939,14 @@ public class OrderProcessWorker {
                 }
             }
 
+            //TODO
+            // DIGITAL Logic comes here
             if (deliveryType == DeliveryType.DIGITAL && newStatus.equals("PAYMENT_CONFIRMED")) {
                 String voucherId = order.getVoucherId();
                 if (voucherId != null) {
                     Optional<Voucher> voucher = voucherRepository.findById(voucherId);
                     if (voucher.isPresent()) {
                         Voucher voucherObj = voucher.get();
-                        //TODO
-                        // Decrease actual quantity for order
                         voucherObj.setTotalQuantity(voucher.get().getTotalQuantity() - 1);
                         voucherRepository.save(voucherObj);
                     }
@@ -954,11 +954,13 @@ public class OrderProcessWorker {
                     List<VoucherSerialNumber> availableVoucherSerialNumber
                             = voucherSerialNumberRepository.findAvailableVoucherSerialNumbers(voucherId);
 
+                    OrderShipmentDetail orderShipmentDetail = orderShipmentDetailRepository.findByOrderId(orderId);
+
                     // Check if an available voucher serial number was found
                     if (availableVoucherSerialNumber != null) {
                         // Update voucher details
                         availableVoucherSerialNumber.get(0).setCurrentStatus(VoucherSerialStatus.BOUGHT);
-                        availableVoucherSerialNumber.get(0).setCustomer(order.getCustomerId());
+                        availableVoucherSerialNumber.get(0).setCustomer(orderShipmentDetail.getPhoneNumber());
 
                         // Save the updated voucher serial number
                         voucherSerialNumberRepository.save(availableVoucherSerialNumber.get(0));
