@@ -62,6 +62,9 @@ public class OrderCompletionStatusConfig implements Serializable {
     public Boolean pushNotificationToUser;
     public String userPushNotificationTitle;
     public String userPushNotificationMessage;
+
+    public Boolean smsToCustomer;
+    public String smsToCustomerMessage;
     
     @CreationTimestamp
     Date created;

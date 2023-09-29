@@ -5,6 +5,7 @@ import com.kalsym.order.service.enums.CartStage;
 import com.kalsym.order.service.enums.DeliveryType;
 import com.kalsym.order.service.enums.ServiceType;
 import com.kalsym.order.service.enums.DineInOption;
+import com.kalsym.order.service.model.object.*;
 import com.kalsym.order.service.model.repository.CartRepository;
 import com.kalsym.order.service.model.repository.CartWithDetailsRepository;
 import com.kalsym.order.service.model.repository.CartItemRepository;
@@ -46,9 +47,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.kalsym.order.service.model.repository.OrderRepository;
 import com.kalsym.order.service.utility.Logger;
-import com.kalsym.order.service.model.object.Discount;
-import com.kalsym.order.service.model.object.GroupDiscount;
-import com.kalsym.order.service.model.object.SubTotalDiscount;
 import com.kalsym.order.service.model.StoreDiscount;
 import com.kalsym.order.service.model.StoreDiscountTier;
 import com.kalsym.order.service.enums.DiscountType;
@@ -61,15 +59,11 @@ import com.kalsym.order.service.model.DeliveryQuotation;
 import com.kalsym.order.service.model.StoreCommission;
 import com.kalsym.order.service.model.StoreDeliveryDetail;
 import com.kalsym.order.service.model.StoreWithDetails;
-import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.Product;
 import com.kalsym.order.service.model.Voucher;
 import com.kalsym.order.service.model.RegionCountry;
 import com.kalsym.order.service.model.repository.VoucherSearchSpecs;
 import com.kalsym.order.service.model.repository.RegionCountriesRepository;
-import com.kalsym.order.service.model.object.CartWithItem;
-import com.kalsym.order.service.model.object.CustomPageable;
-import com.kalsym.order.service.model.object.StoreSnooze;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.utility.OrderCalculation;
 import static com.kalsym.order.service.utility.OrderCalculation.calculateStoreServiceCharges;
@@ -612,9 +606,9 @@ public class CartController {
             VehicleType vehicleType = VehicleType.MOTORCYCLE;
             int vehicleSize=1;
             int totalPcs=0;
+            boolean allDigital = true;
             if (null != cartItems) {
-                for (int i = 0; i < cartItems.size(); i++) {
-                    CartItem cartItem = cartItems.get(i);
+                for (CartItem cartItem : cartItems) {
                     double singleItemWeight = 0;
                     if (null == cartItem.getWeight()) {
                         singleItemWeight = 1;
@@ -627,34 +621,39 @@ public class CartController {
                     Optional<Product> productInfoOpt = productRepository.findById(cartItem.getProductId());
                     Product productInfo = productInfoOpt.get();
 
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Product ["+productInfo.getName()+"] packing size:"+productInfo.getPackingSize());
+                    //check if any of item is digital
+                    if (productInfo.getVoucherId() == null) {
+                        allDigital = false;
+                    }
+
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Product [" + productInfo.getName() + "] packing size:" + productInfo.getPackingSize());
                     int itemPcs = cartItem.getQuantity();
-                    if (productInfo.getPackingSize()!=null && productInfo.getPackingSize().equalsIgnoreCase("XS")) {
+                    if (productInfo.getPackingSize() != null && productInfo.getPackingSize().equalsIgnoreCase("XS")) {
                         itemPcs = 1;
                     }
                     totalPcs = totalPcs + itemPcs;
 
-                    if (productInfo.getVehicleType()==VehicleType.CAR && vehicleSize<2) {
-                        vehicleType=VehicleType.CAR;
-                        vehicleSize=2;
-                    } else if (productInfo.getVehicleType()==VehicleType.PICKUP && vehicleSize<3) {
-                        vehicleType=VehicleType.PICKUP;
-                        vehicleSize=3;
-                    } else if (productInfo.getVehicleType()==VehicleType.VAN && vehicleSize<4) {
-                        vehicleType=VehicleType.VAN;
-                        vehicleSize=4;
-                    } else if (productInfo.getVehicleType()==VehicleType.LARGEVAN && vehicleSize<5) {
-                        vehicleType=VehicleType.LARGEVAN;
-                        vehicleSize=5;
-                    } else if (productInfo.getVehicleType()==VehicleType.SMALLLORRY && vehicleSize<6) {
-                        vehicleType=VehicleType.SMALLLORRY;
-                        vehicleSize=6;
-                    } else if (productInfo.getVehicleType()==VehicleType.MEDIUMLORRY && vehicleSize<7) {
-                        vehicleType=VehicleType.MEDIUMLORRY;
-                        vehicleSize=7;
-                    } else if (productInfo.getVehicleType()==VehicleType.LARGELORRY && vehicleSize<8) {
-                        vehicleType=VehicleType.LARGELORRY;
-                        vehicleSize=8;
+                    if (productInfo.getVehicleType() == VehicleType.CAR && vehicleSize < 2) {
+                        vehicleType = VehicleType.CAR;
+                        vehicleSize = 2;
+                    } else if (productInfo.getVehicleType() == VehicleType.PICKUP && vehicleSize < 3) {
+                        vehicleType = VehicleType.PICKUP;
+                        vehicleSize = 3;
+                    } else if (productInfo.getVehicleType() == VehicleType.VAN && vehicleSize < 4) {
+                        vehicleType = VehicleType.VAN;
+                        vehicleSize = 4;
+                    } else if (productInfo.getVehicleType() == VehicleType.LARGEVAN && vehicleSize < 5) {
+                        vehicleType = VehicleType.LARGEVAN;
+                        vehicleSize = 5;
+                    } else if (productInfo.getVehicleType() == VehicleType.SMALLLORRY && vehicleSize < 6) {
+                        vehicleType = VehicleType.SMALLLORRY;
+                        vehicleSize = 6;
+                    } else if (productInfo.getVehicleType() == VehicleType.MEDIUMLORRY && vehicleSize < 7) {
+                        vehicleType = VehicleType.MEDIUMLORRY;
+                        vehicleSize = 7;
+                    } else if (productInfo.getVehicleType() == VehicleType.LARGELORRY && vehicleSize < 8) {
+                        vehicleType = VehicleType.LARGELORRY;
+                        vehicleSize = 8;
                     }
                 }
             }
@@ -682,15 +681,15 @@ public class CartController {
                 VehicleType vehicleType;
                 Integer totalPcs;
 
-                public String getProductType() {
-                    return productType;
+                public Boolean getAllDigital() {
+                    return allDigital;
                 }
 
-                public void setProductType(String productType) {
-                    this.productType = productType;
+                public void setAllDigital(Boolean digital) {
+                    allDigital = digital;
                 }
 
-                String productType;
+                Boolean allDigital;
 
                 public Weight() {
                 }
@@ -725,9 +724,8 @@ public class CartController {
             w.setTotalWeight(totalWeight);
             w.setVehicleType(vehicleType);
             w.setTotalPcs(totalPcs);
+            w.setAllDigital(allDigital);
 
-            // TODO: Get from product object, if voucherId not null, set to "DIGITAL"
-            w.setProductType("");
             response.setSuccessStatus(HttpStatus.OK);
             response.setData(w);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "TotalWeight : "+totalWeight+" Pcs:"+totalPcs+" Vehicle:"+vehicleType);
@@ -963,9 +961,9 @@ public class CartController {
         
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "getDiscountOfCartGroup request. CartList count:"+cartList.length);
         HttpResponse response = new HttpResponse(request.getRequestURI());
-        
-        for (int i=0;i<cartList.length;i++) {
-            String cartId = cartList[i].getCartId();
+
+        for (CartWithItem withItem : cartList) {
+            String cartId = withItem.getCartId();
             Optional<Cart> cartOptional = cartRepository.findById(cartId);
             if (!cartOptional.isPresent()) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Cart not found with cartId: " + cartId);
@@ -1033,9 +1031,22 @@ public class CartController {
             String deliveryType = cartWithItem.getDeliveryType();
             String storeVoucherCode = cartWithItem.getStoreVoucherCode();
 
-            //get delivery charges from delivery-service
+            boolean allDigital = false;
             double deliveryCharge = 0;
-            if (deliveryQuotationId != null) {
+
+            // If got selected item, check if all digital
+            if (cartWithItem.getSelectedItems() != null) {
+                // Check if all selectedItems are digital
+                List<SelectedItem> selectedItems = cartWithItem.getSelectedItems();
+                allDigital = selectedItems.stream().allMatch(SelectedItem::getIsDigital);
+            }
+
+            // If digital, delivery charge is 0
+            if (allDigital) {
+                groupDeliveryCharge = groupDeliveryCharge + deliveryCharge;
+            }
+            //get delivery charges from delivery-service
+            else if (deliveryQuotationId != null) {
                 DeliveryQuotation deliveryQuotation = deliveryService.getDeliveryQuotation(deliveryQuotationId);
                 deliveryCharge = deliveryQuotation.getAmount();
                 if (deliveryQuotation.getCombinedDelivery() != null && deliveryQuotation.getCombinedDelivery()) {
