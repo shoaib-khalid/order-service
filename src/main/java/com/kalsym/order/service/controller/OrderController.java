@@ -1672,7 +1672,6 @@ public class OrderController {
      * @param platformVoucherCode
      * @param channel
      * @param couponList
-     * @param storeId
      * @param groupOrderId
      * @return
      * @throws Exception
@@ -1680,10 +1679,8 @@ public class OrderController {
     @PostMapping(path = {"/placeCouponOrder"}, name = "coupon-push-cod")
 //    @PreAuthorize("hasAnyAuthority('coupon-push-cod', 'all')")
     public ResponseEntity<HttpResponse> placeCouponOrder(HttpServletRequest request,
-                                        @RequestParam(required = false) String customerId,
                                         @RequestParam(required = false) String platformVoucherCode,
                                         @RequestParam(required = false) Channel channel,
-                                        @RequestParam(required = false) String storeId,
                                         @RequestParam(required = false) String groupOrderId,
                                         @RequestBody COD[] couponList) throws Exception {
         String logprefix = request.getRequestURI() + " ";
@@ -1696,7 +1693,7 @@ public class OrderController {
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
 
-        // TODO
+        //TODO
         // Creation of group order if it is not there
         OrderGroup orderGroup = new OrderGroup();
         if(groupOrderId!=null){
@@ -1712,11 +1709,11 @@ public class OrderController {
             String regionCountryId="MYS";
 
             //TODO
-            //Have to check the calculation of the total amount for coupon
-            //calculate grand total
+            // Have to check the calculation of the total amount for coupon
+            // calculate grand total
             sumTotal = sumCartSubTotal - sumAppliedDiscount + sumStoreServiceCharges - sumStoreVoucherDiscount;
 
-            orderGroup.setCustomerId(customerId);
+            orderGroup.setCustomerId(couponList[0].getCustomerId());
             orderGroup.setServiceCharges(sumStoreServiceCharges);
             orderGroup.setSubTotal(sumCartSubTotal);
             orderGroup.setPaidAmount(sumTotal);
@@ -1734,25 +1731,27 @@ public class OrderController {
             orderGroup.setShipmentEmail("NOT APPLICABLE");
             orderGroup.setShipmentName("NOT APPLICABLE");
             orderGroup.setShipmentPhoneNumber("NOT APPLICABLE");
-            //orderGroup.setStaffId("NOT APPLICABLE");
 
             orderGroupRepository.save(orderGroup);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix,
+                    "coupon-push-group orderGroup created: " + orderGroup.toString());
+            groupOrderId = orderGroup.getId();
         }
 
-        // TODO
+        //TODO
         // Creation of order for each coupon
+        String customerId = couponList[0].getCustomerId();
         HttpResponse orderResponse = OrderWorker.placeCoupon(
                 request.getRequestURI(),
                 customerId, groupOrderId,
                 channel, platformVoucherCode,
-                storeId, couponList, logprefix,
+                couponList, logprefix,
                 //pass the repositories
                 cartItemRepository, productInventoryRepository,
                 storeDiscountRepository, storeDiscountTierRepository,
                 orderRepository, orderPaymentDetailRepository,
                 storeDetailsRepository, customerRepository,
                 productService, storeRepository);
-
 
         Order orderCreated = (Order) orderResponse.getData();
         if (orderCreated == null) {
