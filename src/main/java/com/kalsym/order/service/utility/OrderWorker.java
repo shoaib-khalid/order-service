@@ -1166,7 +1166,7 @@ public class OrderWorker {
                 order.setStoreVoucherDiscount(orderTotalObject.getStoreVoucherDiscount());
                 order.setStoreVoucherId(orderTotalObject.getStoreVoucherId());
                 order.setTotalDataObject(orderTotalObject);
-                order.setDeliveryType(String.valueOf(DeliveryType.SELF));
+                order.setDeliveryType(String.valueOf(DeliveryType.DIGITAL));
                 order.setPaymentType(cart.getPaymentType());
 
                 // Not required for Coupon
