@@ -27,7 +27,7 @@ public class CouponBody implements Serializable {
     private OrderPaymentDetail orderPaymentDetails;
     private OrderShipmentDetail orderShipmentDetails;
 
-    private String voucherCode;
+    private String storeVoucherCode;
 
     public CouponBody(String cartId, String paymentType,
                       List<String> cartItems, String customerId,
@@ -40,10 +40,8 @@ public class CouponBody implements Serializable {
         this.customerNotes = customerNotes;
         this.orderPaymentDetails = orderPaymentDetails;
         this.orderShipmentDetails = orderShipmentDetails;
-        this.voucherCode = voucherCode;
+        this.storeVoucherCode = voucherCode;
     }
-
-
 
 }
 

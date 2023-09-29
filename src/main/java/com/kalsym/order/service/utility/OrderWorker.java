@@ -811,7 +811,7 @@ public class OrderWorker {
             String customerId,
             String groupOrderId,
             Channel channel,
-            String platformVoucherCode,
+            CustomerVoucher platformVoucherCode,
             COD cart,
             String logprefix,
             CartItemRepository cartItemRepository,
@@ -836,6 +836,7 @@ public class OrderWorker {
         Cart newCart = new Cart();
         newCart.updateFromCOD(cart);
         newCart.setId(cart.getCartId());
+        newCart.setServiceType(cart.getServiceType());
 
         List<CartItem> cartItems = cart.getCartItems();
         String cartId = cart.getCartId();
@@ -1127,7 +1128,7 @@ public class OrderWorker {
                 OrderObject orderTotalObject = OrderCalculation.CalculateOrderTotal(
                         newCart, storeWithDetials.getServiceChargesPercentage(), storeCommission,
                         null, cart.getOrderShipmentDetails().getDeliveryType(),
-                        null, null,
+                        platformVoucherCode, null,
                         storeWithDetials.getVerticalCode(),
                         cartItemRepository, storeDiscountRepository,
                         storeDiscountTierRepository, logprefix, cartItems);
