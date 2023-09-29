@@ -15,6 +15,9 @@ import org.springframework.stereotype.Repository;
 public interface StoreDetailsRepository extends PagingAndSortingRepository<StoreWithDetails, String>, JpaRepository<StoreWithDetails, String> {
 
 //    List<Order> findByCustomerId(@Param("customerId") String customerId);
-    
+
+//    create a function to get the store Details from storeId
+
+
 
 }
