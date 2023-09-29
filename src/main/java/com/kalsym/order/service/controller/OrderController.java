@@ -1566,7 +1566,7 @@ public class OrderController {
             customerVoucherRepository.save(customerPlatformVoucher);
         }
             
-        //append prefix to differnetiate between single & multiple
+        //append prefix to differentiate between single & multiple
         orderGroup.setId("G"+orderGroup.getId());
         
         response.setStatus(HttpStatus.CREATED.value());
@@ -1818,6 +1818,8 @@ public class OrderController {
         orderGroup.setPaidAmount(sumTotal);
         orderGroup.setTotal(sumTotal);
         orderGroup.setAppliedDiscount(sumAppliedDiscount);
+        //append prefix to differentiate between single & multiple
+        orderGroup.setId("G"+orderGroup.getId());
 
         orderGroupRepository.save(orderGroup);
 
