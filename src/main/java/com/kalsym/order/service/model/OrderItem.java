@@ -94,6 +94,8 @@ public class OrderItem implements Serializable {
         SKU = orderitem.getSKU();
         quantity = orderitem.getQuantity();
         itemCode = orderitem.getItemCode();
+        productName = orderitem.getProductName();
+        voucherRedeemCode = orderitem.getVoucherRedeemCode();
     }
 
 }
