@@ -200,7 +200,6 @@ public class OrderWorker {
                         double cartPrice = Utilities.Round2DecimalPoint(cartItems.get(i).getProductPrice().doubleValue());
                         double deliverinPrice = Utilities.Round2DecimalPoint(productInventory.getPrice());
                         double dineinPrice = Utilities.Round2DecimalPoint(productInventory.getDineInPrice());
-                        double bezaDeliverIn = Math.abs(cartPrice - deliverinPrice);                        
                         double bezaDineIn = Math.abs(cartPrice - dineinPrice);
                         Boolean isCustomPrice = productInventory.getProduct().getIsCustomPrice();
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
@@ -209,16 +208,6 @@ public class OrderWorker {
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
                                     logprefix, "Dinein customPrice product, price got : cartPrice: " +
                                             cartItems.get(i).getProductPrice());
-                        } else if (cart.getServiceType()==ServiceType.DELIVERIN && bezaDeliverIn>0.5) {
-                            // should return warning if prices are not same
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
-                                    logprefix, "DeliverIn  prices are not same, price got : oldPrice: "
-                                            + cartItems.get(i).getProductPrice() + ", newPrice: "
-                                            + String.valueOf(productInventory.getPrice()));
-                            response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
-                            response.setMessage("Ops! The product price for "+cartItems.get(i).getProductName()
-                                    +" has been updated. Please refresh the Checkout page.");
-                            return response;
                         } else if (cart.getServiceType()==ServiceType.DINEIN && bezaDineIn>0.5) {
                             // should return warning if prices are not same
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
@@ -242,13 +231,7 @@ public class OrderWorker {
                             double bezaDeliverIn = Math.abs(cartPrice - deliverinPrice);                        
                             double bezaDineIn = Math.abs(cartPrice - dineinPrice);   
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "AddOn Cart price:"+cartPrice+" deliverinPrice:"+deliverinPrice+" dineinPrice:"+dineinPrice);
-                            if (cart.getServiceType()==ServiceType.DELIVERIN && bezaDeliverIn>0.5 ) {
-                                // should return warning if prices are not same
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliverIn AddOn prices are not same, price got : cartPrice:" + cartPrice + ", deliverinPrice:" + deliverinPrice);
-                                response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
-                                response.setMessage("Ops! The Add-On price for "+cartItems.get(i).getProductName()+" has been updated. Please refresh the Checkout page.");                            
-                                return response;
-                            } else if (cart.getServiceType()==ServiceType.DINEIN && bezaDineIn>0.5) {
+                            if (cart.getServiceType()==ServiceType.DINEIN && bezaDineIn>0.5) {
                                 // should return warning if prices are not same
                                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DineIn AddOn prices are not same, price got : cartPrice:" + cartPrice + ", dineinPrice:" + dineinPrice);
                                 response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
@@ -829,7 +812,7 @@ public class OrderWorker {
             String groupOrderId,
             Channel channel,
             String platformVoucherCode,
-            COD[] couponList,
+            COD cart,
             String logprefix,
             CartItemRepository cartItemRepository,
             ProductInventoryRepository productInventoryRepository,
@@ -849,10 +832,10 @@ public class OrderWorker {
         HttpResponse response = new HttpResponse(requestUri);
         // create order object
         Order order = new Order();
-        COD cart = couponList[0];
 
         Cart newCart = new Cart();
         newCart.updateFromCOD(cart);
+        newCart.setId(cart.getCartId());
 
         List<CartItem> cartItems = cart.getCartItems();
         String cartId = cart.getCartId();
@@ -910,7 +893,6 @@ public class OrderWorker {
                         //check if discount still valid
                         ItemDiscount discountDetails = productInventory.getItemDiscount();
                         if (discountDetails != null) {
-
                             double discountPrice = Utilities.Round2DecimalPoint(discountDetails.discountedPrice);
                             double dineInDiscountPrice = Utilities.Round2DecimalPoint(discountDetails.dineInDiscountedPrice);
                             double cartItemPrice = Utilities.Round2DecimalPoint(cartItem.getProductPrice().doubleValue());
@@ -944,26 +926,25 @@ public class OrderWorker {
                             } else {
                                 //discount no more valid
                                 // should return warning if prices are not same
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Discount no more valid");
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                                        logprefix, "Discount no more valid");
                                 response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
                                 response.setMessage("Discount no more valid");
                                 return response;
                             }
                         } else {
-                            //TODO
-                            // Uncomment the code while in production
                             // discount no more valid
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Discount not valid");
-//                            response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
-//                            response.setMessage("Discount not valid");
-//                            return response;
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                                    logprefix, "Discount not valid");
+                            response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+                            response.setMessage("Discount not valid");
+                            return response;
                         }
                     } else {
                         // to check if the price is same as in product service
                         double cartPrice = Utilities.Round2DecimalPoint(cartItem.getProductPrice().doubleValue());
                         double deliverinPrice = Utilities.Round2DecimalPoint(0.0);
                         double dineinPrice = Utilities.Round2DecimalPoint(productInventory.getDineInPrice());
-                        double bezaDeliverIn = Math.abs(cartPrice - deliverinPrice);
                         double bezaDineIn = Math.abs(cartPrice - dineinPrice);
                         Boolean isCustomPrice = productInventory.getProduct().getIsCustomPrice();
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
@@ -974,17 +955,7 @@ public class OrderWorker {
                                     logprefix, "Dinein customPrice product, price got : cartPrice: "
                                             + cartItem.getProductPrice());
                         } else
-                            if (cart.getServiceType() == ServiceType.DELIVERIN && bezaDeliverIn > 0.5) {
-                            // should return warning if prices are not same
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
-                                    logprefix, "DeliverIn  prices are not same, price got : oldPrice: "
-                                            + cartItem.getProductPrice() + ", newPrice: "
-                                            + productInventory.getPrice());
-                            response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
-                            response.setMessage("Ops! The product price for " + cartItem.getProductName()
-                                    + " has been updated. Please refresh the Checkout page.");
-                            return response;
-                        } else if (cart.getServiceType() == ServiceType.DINEIN && bezaDineIn > 0.5) {
+                            if (cart.getServiceType() == ServiceType.DINEIN && bezaDineIn > 0.5) {
                             // should return warning if prices are not same
                             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
                                     logprefix, "DineIn prices are not same, price got : oldPrice: "
@@ -1009,18 +980,25 @@ public class OrderWorker {
                             double dineinPrice = Utilities.Round2DecimalPoint(productAddOn.getDineInPrice());
                             double bezaDeliverIn = Math.abs(cartPrice - deliverinPrice);
                             double bezaDineIn = Math.abs(cartPrice - dineinPrice);
-                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "AddOn Cart price:" + cartPrice + " deliverinPrice:" + deliverinPrice + " dineinPrice:" + dineinPrice);
-                            if (cart.getServiceType() == ServiceType.DELIVERIN && bezaDeliverIn > 0.5) {
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                                    logprefix, "AddOn Cart price:" + cartPrice + " deliverinPrice:" + deliverinPrice + " dineinPrice:" + dineinPrice);
+                            if (cart.getServiceType() == ServiceType.DELIVERIN) {
                                 // should return warning if prices are not same
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DeliverIn AddOn prices are not same, price got : cartPrice:" + cartPrice + ", deliverinPrice:" + deliverinPrice);
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                                        logprefix, "DeliverIn AddOn prices are not same, price got : cartPrice:"
+                                                + cartPrice + ", deliverinPrice:" + deliverinPrice);
                                 response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
-                                response.setMessage("Ops! The Add-On price for " + cartItem.getProductName() + " has been updated. Please refresh the Checkout page.");
+                                response.setMessage("Ops! The Add-On price for " + cartItem.getProductName()
+                                        + " has been updated. Please refresh the Checkout page.");
                                 return response;
                             } else if (cart.getServiceType() == ServiceType.DINEIN && bezaDineIn > 0.5) {
                                 // should return warning if prices are not same
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "DineIn AddOn prices are not same, price got : cartPrice:" + cartPrice + ", dineinPrice:" + dineinPrice);
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                                        logprefix, "DineIn AddOn prices are not same, price got : cartPrice:" +
+                                                cartPrice + ", dineinPrice:" + dineinPrice);
                                 response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
-                                response.setMessage("Ops! The Add-On price for " + cartItem.getProductName() + " has been updated. Please refresh the Checkout page.");
+                                response.setMessage("Ops! The Add-On price for " + cartItem.getProductName()
+                                        + " has been updated. Please refresh the Checkout page.");
                                 return response;
                             }
                             subTotal += cartItem.getCartItemAddOn().get(z).getPrice();
@@ -1072,11 +1050,9 @@ public class OrderWorker {
                             orderSubItem.setItemCode(cartSubItem.getItemCode());
                             orderSubItem.setProductId(cartSubItem.getProductId());
                             orderSubItem.setProductName(cartSubItem.getProductName());
-                            //TODO
-                            // Uncomment the code in production
-//                            orderSubItem.setProductName((subProductInventory.getProduct() != null)
-//                                    ? subProductInventory.getProduct().getName() : "");
-//                            orderSubItem.setSKU(subProductInventory.getSKU());
+                            orderSubItem.setProductName((subProductInventory.getProduct() != null)
+                                    ? subProductInventory.getProduct().getName() : "");
+                            orderSubItem.setSKU(subProductInventory.getSKU());
                             orderSubItem.setQuantity(cartSubItem.getQuantity());
                             orderSubItem.setSpecialInstruction(cartSubItem.getSpecialInstruction());
                             orderSubItem.setWeight(cartSubItem.getWeight());
@@ -1116,7 +1092,13 @@ public class OrderWorker {
                 order.setStoreId(cart.getStoreId());
                 order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE);
                 order.setPaymentStatus(PaymentStatus.PENDING);
-                order.setCustomerId(customerId);
+                //TODO
+                // Uncomment the code in production
+//                if (customerId != null) {
+//                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+//                            logprefix, "customer created with id: " + customerId);
+//                    order.setCustomerId(customerId);
+//                }
 
                 if (cart.getServiceType()!=null && cart.getServiceType()==ServiceType.DINEIN) {
                     order.setDeliveryCharges(0.00);
@@ -1190,7 +1172,6 @@ public class OrderWorker {
 
 
                 // Not required for Coupon
-//                order.setStaffId("NOT APPLICABLE");
                 order.setTableNo("NOT APPLICABLE");
                 order.setZone("NOT APPLICABLE");
                 order.setPrivateAdminNotes("");
@@ -1237,9 +1218,7 @@ public class OrderWorker {
                         for (int x = 0; x < orderItem.getOrderItemAddOn().size(); x++) {
                             OrderItemAddOn orderItemAddOn = orderItem.getOrderItemAddOn().get(x);
                             orderItemAddOn.setOrderItemId(orderItem.getId());
-                            //TODO
-                            // Uncomment the code in production
-//                            orderItemAddOnRepository.save(orderItemAddOn);
+                            orderItemAddOnRepository.save(orderItemAddOn);
                         }
                     }
                 }
