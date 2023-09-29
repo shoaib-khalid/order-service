@@ -10,25 +10,7 @@ import com.kalsym.order.service.enums.*;
 import com.kalsym.order.service.model.*;
 import com.kalsym.order.service.model.object.ItemDiscount;
 import com.kalsym.order.service.model.object.OrderObject;
-import com.kalsym.order.service.model.repository.CartItemRepository;
-import com.kalsym.order.service.model.repository.CartRepository;
-import com.kalsym.order.service.model.repository.CustomerVoucherRepository;
-import com.kalsym.order.service.model.repository.StoreDetailsRepository;
-import com.kalsym.order.service.model.repository.StoreDeliveryDetailRepository;
-import com.kalsym.order.service.model.repository.ProductInventoryRepository;
-import com.kalsym.order.service.model.repository.StoreDiscountRepository;
-import com.kalsym.order.service.model.repository.OrderRepository;
-import com.kalsym.order.service.model.repository.StoreDiscountTierRepository;
-import com.kalsym.order.service.model.repository.OrderPaymentDetailRepository;
-import com.kalsym.order.service.model.repository.VoucherRepository;
-import com.kalsym.order.service.model.repository.OrderShipmentDetailRepository;
-import com.kalsym.order.service.model.repository.OrderItemRepository;
-import com.kalsym.order.service.model.repository.OrderSubItemRepository;
-import com.kalsym.order.service.model.repository.OrderItemAddOnRepository;
-import com.kalsym.order.service.model.repository.StoreRepository;
-import com.kalsym.order.service.model.repository.RegionCountriesRepository;
-import com.kalsym.order.service.model.repository.CustomerRepository;
-import com.kalsym.order.service.model.repository.OrderCompletionStatusConfigRepository;
+import com.kalsym.order.service.model.repository.*;
 import com.kalsym.order.service.service.ProductService;
 import com.kalsym.order.service.service.OrderPostService;
 import com.kalsym.order.service.service.DeliveryService;
@@ -827,7 +809,9 @@ public class OrderWorker {
             CustomerRepository customerRepository,
             ProductService productService,
             OrderShipmentDetailRepository orderShipmentDetailRepository,
-            StoreRepository storeRepository
+            StoreRepository storeRepository,
+            VoucherRepository voucherRepository,
+            ProductRepository productRepository
             ){
 
         HttpResponse response = new HttpResponse(requestUri);
@@ -860,11 +844,15 @@ public class OrderWorker {
                     logprefix, "got store commission: " + storeCommission);
 
             Double subTotal = 0.0;
+            String productId = null;
             List<OrderItem> orderItems = new ArrayList<>();
             try {
                 order.setStoreId(cart.getStoreId());
 
                 for (CartItem cartItem : cartItems) {
+                    productId = cartItem.getProductId();
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                            logprefix, "productId: " + productId);
                     // check every items price in product service
                     ProductInventory productInventory = productService.getProductInventoryById(
                             cart.getStoreId(), cartItem.getProductId(),
@@ -1171,6 +1159,18 @@ public class OrderWorker {
                 //Must be set Digital for coupon to filter out all the delivery and other functionalities later
                 order.setDeliveryType(String.valueOf(DeliveryType.DIGITAL));
 
+                Optional<Product> optProduct = productRepository.findById(productId);
+
+                if(!(optProduct.isPresent())){
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                            logprefix, "product not found against productId: " + productId);
+                    response.setMessage("product not found against productId: " + productId);
+                    response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+                    return response;
+                }
+                order.setVoucherId(optProduct.get().getVoucherId());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                        logprefix, "voucherId: " + optProduct.get().getVoucherId());
 
                 // Not required for Coupon
                 order.setTableNo("NOT APPLICABLE");
