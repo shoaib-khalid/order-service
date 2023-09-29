@@ -132,13 +132,8 @@ import com.kalsym.order.service.utility.Utilities;
 import com.kalsym.order.service.utility.GeneratePdfReport;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 import javax.validation.Valid;
-import java.util.Optional;
 import javax.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.ExampleMatcher;
@@ -1102,7 +1097,6 @@ public class OrderController {
                 
     }    
 
-    
      /**
      *
      *
@@ -1116,7 +1110,6 @@ public class OrderController {
      * @param tableId
      * @param isStaffOrder
      * @param staffId
-     * @param paymentChannel
      * @param codList
      * @return
      * @throws Exception
@@ -1139,7 +1132,8 @@ public class OrderController {
        
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orders-push-group request on url: " + request.getRequestURI());
 
-        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orders-push-group request body: " + codList.toString());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix,
+                "orders-push-group request body: " + codList.toString());
         
         HttpResponse response = new HttpResponse(request.getRequestURI());        
         
@@ -1413,7 +1407,9 @@ public class OrderController {
             }
 
             HttpResponse orderResponse = OrderWorker.placeOrder(
-                    request.getRequestURI(), optCart.get(), selectedCartItems, cod, optStore.get(), optStoreDeliveryDetail.get(),
+                    request.getRequestURI(), optCart.get(),
+                    selectedCartItems, cod, optStore.get(),
+                    optStoreDeliveryDetail.get(),
                     customerStoreVoucher,
                     saveCustomerInformation,
                     sendReceiptToReceiver,
@@ -1667,8 +1663,162 @@ public class OrderController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "placeGroupOrder completed");
          
         return ResponseEntity.status(response.getStatus()).body(response);
-    }            
-    
+    }
+
+
+    //The endpoint for coupon service
+    /**
+     * @param request
+     * @param saveCustomerInformation
+     * @param platformVoucherCode
+     * @param channel
+     * @param couponList
+     * @param storeId
+     * @param groupOrderId
+     * @return
+     * @throws Exception
+     */
+    @PostMapping(path = {"/placeCouponOrder"}, name = "coupon-push-cod")
+    @PreAuthorize("hasAnyAuthority('coupon-push-cod', 'all')")
+    public ResponseEntity<HttpResponse> placeCouponOrder(HttpServletRequest request,
+                                        @RequestParam(required = false) String customerId,
+                                        @RequestParam(required = false) Boolean saveCustomerInformation,
+                                        @RequestParam(required = false) String platformVoucherCode,
+                                        @RequestParam(required = false) Channel channel,
+                                        @RequestParam(required = false) String storeId,
+                                        @RequestParam(required = false) String groupOrderId,
+                                        @RequestBody COD[] couponList) throws Exception {
+        String logprefix = request.getRequestURI() + " ";
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "coupon-push-group request on url: " + request.getRequestURI());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "coupon-push-group request body: " + Arrays.toString(couponList));
+
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        // TODO
+        for(int i = 0; i<couponList.length; i++) {
+            COD cod = couponList[i];
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                    logprefix, "coupon-push-group request body: " + cod.toString());
+            Cart cart = new Cart();
+            cart.setCustomerId(cod.getCustomerId());
+            cart.setStoreId(cod.getStoreId());
+            cart.setIsOpen(false);
+            cart.setStage(CartStage.ORDER_PLACED);
+            cart = cartRepository.save(cart);
+            String cartId = cart.getId();
+            cod.setCartId(cartId);
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                    logprefix, "Set cartId:"+cod.getCartId());
+
+            //add item into cart
+            List<CartItem> cartItemList = cod.getCartItems();
+            List<CartItem> generatedCartItemList = new ArrayList();
+            for (int x=0;x<cartItemList.size();x++) {
+                CartItem inputCartItem = cartItemList.get(x);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                        logprefix, "inputCartItem="+inputCartItem.toString());
+                CartItem outputCartItem = addItemToCart(cod.getStoreId(),
+                        inputCartItem.getProductId(), inputCartItem.getItemCode(),
+                        inputCartItem.getQuantity(), cartId,
+                        ServiceType.DINEIN, inputCartItem.getSpecialInstruction(),
+                        inputCartItem.getCartSubItem(), inputCartItem.getCartItemAddOn(),
+                        inputCartItem.getProductPrice());
+
+                generatedCartItemList.add(outputCartItem);
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Generated cartItem:"+outputCartItem);
+            }
+            cod.setCartItems(generatedCartItemList);
+        }
+        channel=Channel.INSTORE;
+
+
+
+
+        // TODO
+        // Creation of group order if it is not there
+        OrderGroup orderGroup = new OrderGroup();
+        if(groupOrderId!=null){
+
+        }
+        else{
+            double sumCartSubTotal=0.00;
+            double sumTotal=0.00;
+            double orderTotal=0.00;
+            double sumAppliedDiscount=0.00;
+            double sumStoreServiceCharges=0.00;
+            double sumStoreVoucherDiscount=0.00;
+            String paymentType=StorePaymentType.ONLINEPAYMENT.name();
+            boolean gotCartItemDiscount=false;
+            Map<String, Double> combinedDeliveryFeeMap = new HashMap<String, Double>();
+
+            String regionCountryId="MYS";
+            String cartVerticalCode="";
+            String cartServiceType="";
+            boolean consolidateOrder=false;
+
+            //TODO
+            //Have to check the calculation of the total amount fro coupon
+            //calculate grand total
+            sumTotal = sumCartSubTotal - sumAppliedDiscount + sumStoreServiceCharges - sumStoreVoucherDiscount;
+
+
+            orderGroup.setCustomerId(customerId);
+            orderGroup.setServiceCharges(sumStoreServiceCharges);
+            orderGroup.setSubTotal(sumCartSubTotal);
+            orderGroup.setPaidAmount(sumTotal);
+            orderGroup.setTotal(sumTotal);
+            orderGroup.setAppliedDiscount(sumAppliedDiscount);
+            orderGroup.setRegionCountryId(regionCountryId);
+            orderGroup.setServiceType(ServiceType.DINEIN);
+            orderGroup.setChannel(channel);
+            orderGroup.setPaymentStatus("PENDING");
+
+
+            //Not Applicable for coupon
+            orderGroup.setDeliveryCharges(0.0);
+            orderGroup.setDeliveryDiscount(0.0);
+            orderGroup.setShipmentEmail("NOT APPLICABLE");
+            orderGroup.setShipmentName("NOT APPLICABLE");
+            orderGroup.setShipmentPhoneNumber("NOT APPLICABLE");
+
+            orderGroupRepository.save(orderGroup);
+        }
+
+        // TODO
+        // Creation of order for each coupon
+//        HttpResponse orderResponse = OrderWorker.placeCoupon(
+//                request.getRequestURI(), optCart.get(),
+//                selectedCartItems, cod, optStore.get(),
+//                optStoreDeliveryDetail.get(),
+//                customerStoreVoucher,
+//                saveCustomerInformation,
+//                sendReceiptToReceiver,
+//                groupOrderId,
+//                channel,
+//                logprefix,
+//                cartItemRepository,
+//                productInventoryRepository,
+//                storeDiscountRepository, storeDiscountTierRepository,
+//                orderRepository, orderPaymentDetailRepository,
+//                storeRepository, customerRepository,
+//                productService, customerService);
+//        )
+
+//        Order orderCreated = (Order) orderResponse.getData();
+//        if (orderCreated == null) {
+//            return ResponseEntity.status(orderResponse.getStatus()).body(orderResponse);
+//        }
+
+        //Returning the response
+        response.setStatus(HttpStatus.CREATED.value());
+        response.setData("orderGroup");
+
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                logprefix, "placeCouponOrder completed");
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
     @DeleteMapping(path = {"/{id}"}, name = "orders-delete-by-id")
     @PreAuthorize("hasAnyAuthority('orders-delete-by-id', 'all') and @customOwnerVerifier.VerifyOrder(#id)")
     public ResponseEntity<HttpResponse> deleteOrdersById(HttpServletRequest request,
