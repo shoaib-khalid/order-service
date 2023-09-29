@@ -1780,7 +1780,8 @@ public class OrderController {
                     orderSubItemRepository, orderItemAddOnRepository,
                     orderPaymentDetailRepository,
                     storeDetailsRepository, customerRepository,
-                    productService, storeRepository);
+                    productService, orderShipmentDetailRepository,
+                    storeRepository);
 
             Order orderCreated = (Order) orderResponse.getData();
             if (orderCreated == null) {
@@ -1818,8 +1819,12 @@ public class OrderController {
         orderGroup.setPaidAmount(sumTotal);
         orderGroup.setTotal(sumTotal);
         orderGroup.setAppliedDiscount(sumAppliedDiscount);
+
+        //TODO
+        // Uncomment the code for prefix
         //append prefix to differentiate between single & multiple
-        orderGroup.setId("G"+orderGroup.getId());
+//        orderGroup.setId("G"+orderGroup.getId());
+
 
         orderGroupRepository.save(orderGroup);
 
