@@ -1149,6 +1149,10 @@ public class OrderWorker {
                 order.setDiscountCalculationValue(orderTotalObject.getDiscountCalculationValue());
                 order.setDiscountMaxAmount(orderTotalObject.getDiscountMaxAmount());
 
+                if (groupOrderId != null && groupOrderId.startsWith("G")) {
+                    // Remove the 'G' prefix
+                    groupOrderId = groupOrderId.substring(1);
+                }
                 order.setOrderGroupId(groupOrderId);
                 order.setVoucherDiscount(orderTotalObject.getVoucherDiscount());
                 order.setVoucherId(orderTotalObject.getVoucherId());
