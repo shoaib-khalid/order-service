@@ -1634,7 +1634,18 @@ public class OrderController {
             groupOrderId = orderGroup.getId();
         }
         else{
-            orderGroup = orderGroupRepository.findById(groupOrderId).get();
+            if (groupOrderId.startsWith("G")) {
+                // Remove the 'G' prefix
+                groupOrderId = groupOrderId.substring(1);
+            }
+            Optional<OrderGroup> optionalOrderGroup = orderGroupRepository.findById(groupOrderId);
+
+            if (!optionalOrderGroup.isPresent()) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Group order ID: " + groupOrderId + " not found");
+                return ResponseEntity.status(response.getStatus()).body(response);
+            }
+            orderGroup = optionalOrderGroup.get();
         }
 
         //------------------------------------------------
