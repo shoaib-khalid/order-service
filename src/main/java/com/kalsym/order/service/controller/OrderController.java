@@ -735,7 +735,7 @@ public class OrderController {
             
         //check platform voucher code if provided
         CustomerVoucher customerPlatformVoucher = null;
-        if (platformVoucherCode!=null && !"".equals(platformVoucherCode)) {
+        if (platformVoucherCode!=null && !platformVoucherCode.isEmpty()) {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "PlatformVoucherCode provided : "+platformVoucherCode);
             customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(cod.getCustomerId(), platformVoucherCode, new Date());
             if (customerPlatformVoucher==null) {                
@@ -775,7 +775,7 @@ public class OrderController {
                 //check double discount allowed
             }            
         } else {
-            if (cod.getVoucherCode()!=null && !"".equals(cod.getVoucherCode())) {
+            if (cod.getVoucherCode()!=null && !cod.getVoucherCode().isEmpty()) {
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "COD VoucherCode provided : "+cod.getVoucherCode());
                 customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(cod.getCustomerId(), cod.getVoucherCode(), new Date());
                 if (customerPlatformVoucher==null) {
@@ -892,10 +892,10 @@ public class OrderController {
             
             double orderTotal=0.00;
             boolean gotItemDiscount=false;
-            for (int z=0;z<cartItems.size();z++) {
-                CartItem cartItem = cartItems.get(z);
-                if (cartItem.getDiscountId()!=null) {
-                    gotItemDiscount=true;
+            for (CartItem cartItem : cartItems) {
+                if (cartItem.getDiscountId() != null) {
+                    gotItemDiscount = true;
+
                 }
             }
             String cartServiceType = "";
@@ -960,7 +960,7 @@ public class OrderController {
             
             orderRepository.UpdateOrderGroupId(orderCreated.getId(), orderGroup.getId());
                                   
-            if (orderGroup.getServiceType()==ServiceType.DINEIN && qrToken!=null  && tableNo!=null && !tableNo.equals("")) {            
+            if (orderGroup.getServiceType()==ServiceType.DINEIN && qrToken!=null  && tableNo!=null && !tableNo.isEmpty()) {
                 QrcodeOrderGroup qrOrder = qrcodeOrderGroupRepository.findByQrToken(qrToken);
                 if (qrOrder==null) {
                     //create new qr group order
@@ -994,7 +994,7 @@ public class OrderController {
                     qrcodeOrderGroupRepository.save(qrOrder);
                 }
                 
-                if (orderGroup.getServiceType()==ServiceType.DINEIN && qrToken!=null) {
+                if (orderGroup.getServiceType() == ServiceType.DINEIN) {
                   orderGroupRepository.UpdateQrcodeOrderGroupId(qrOrder.getId(), orderGroup.getId());
                 }
                 
@@ -1045,7 +1045,7 @@ public class OrderController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orders-push-group request on url: " + request.getRequestURI());
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix,
-                "orders-push-group request body: " + codList.toString());
+                "orders-push-group request body: " + Arrays.toString(codList));
         
         HttpResponse response = new HttpResponse(request.getRequestURI());        
         
@@ -1068,20 +1068,19 @@ public class OrderController {
                 
                 //add item into cart
                 List<CartItem> cartItemList = cod.getCartItems(); 
-                List<CartItem> generatedCartItemList = new ArrayList(); 
-                for (int x=0;x<cartItemList.size();x++) {
-                    CartItem inputCartItem = cartItemList.get(x);
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "inputCartItem="+inputCartItem.toString());
-                    CartItem outputCartItem = addItemToCart(cod.getStoreId(), inputCartItem.getProductId(), 
-                        inputCartItem.getItemCode(), inputCartItem.getQuantity(), 
-                        cartId,
-                        ServiceType.DINEIN, inputCartItem.getSpecialInstruction(),
-                        inputCartItem.getCartSubItem(),
-                        inputCartItem.getCartItemAddOn(),
-                        inputCartItem.getProductPrice()); 
-                    
+                List<CartItem> generatedCartItemList = new ArrayList<>();
+                for (CartItem inputCartItem : cartItemList) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "inputCartItem=" + inputCartItem.toString());
+                    CartItem outputCartItem = addItemToCart(cod.getStoreId(), inputCartItem.getProductId(),
+                            inputCartItem.getItemCode(), inputCartItem.getQuantity(),
+                            cartId,
+                            ServiceType.DINEIN, inputCartItem.getSpecialInstruction(),
+                            inputCartItem.getCartSubItem(),
+                            inputCartItem.getCartItemAddOn(),
+                            inputCartItem.getProductPrice());
+
                     generatedCartItemList.add(outputCartItem);
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Generated cartItem:"+outputCartItem);
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Generated cartItem:" + outputCartItem);
                 }
                 cod.setCartItems(generatedCartItemList);
             }
@@ -1123,7 +1122,7 @@ public class OrderController {
         
         //check platform voucher code if provided
         CustomerVoucher customerPlatformVoucher = null;
-        if (platformVoucherCode!=null && !"".equals(platformVoucherCode)) {
+        if (platformVoucherCode!=null && !platformVoucherCode.isEmpty()) {
             customerPlatformVoucher = customerVoucherRepository.findCustomerPlatformVoucherByCode(customerId, platformVoucherCode, new Date());
             if (customerPlatformVoucher==null) {
                 //find guest voucher
@@ -1131,7 +1130,7 @@ public class OrderController {
                 if (guestVoucher!=null) {
                     //check if already redeem
                     List<CustomerVoucher> usedVoucherList = customerVoucherRepository.findByGuestEmailAndVoucherId(customerEmail, guestVoucher.getId());
-                    if (usedVoucherList.size()>0) {  
+                    if (!usedVoucherList.isEmpty()) {
                         CustomerVoucher usedVoucher = usedVoucherList.get(0);
                         if (usedVoucher.getIsUsed()) {
                             //already used
@@ -1196,7 +1195,7 @@ public class OrderController {
  
             //check store voucher code if provided
             CustomerVoucher customerStoreVoucher = null;
-            if (cod.getStoreVoucherCode()!=null && !"".equals(cod.getStoreVoucherCode())) {
+            if (cod.getStoreVoucherCode()!=null && !cod.getStoreVoucherCode().isEmpty()) {
                 customerStoreVoucher = customerVoucherRepository.findCustomerStoreVoucherByCode(cod.getCustomerId(), cod.getStoreVoucherCode(), new Date());
                 if (customerStoreVoucher==null) {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
@@ -1244,8 +1243,8 @@ public class OrderController {
 
         //create new group order object
         OrderGroup orderGroup = new OrderGroup();
-        List<Order> orderCreatedList = new ArrayList();
-        List<String> orderIdList = new ArrayList();
+        List<Order> orderCreatedList = new ArrayList<>();
+        List<String> orderIdList = new ArrayList<>();
         double sumCartSubTotal=0.00;
         double sumDeliveryCharges=0.00;
         double sumTotal=0.00;
@@ -1441,7 +1440,7 @@ public class OrderController {
             orderGroup.setChannel(Channel.DELIVERIN);
        
         Long qrGroupOrderId = null;
-        if (orderGroup.getServiceType()==ServiceType.DINEIN && consolidateOrder && tableNo!=null && !tableNo.equals("")) {
+        if (orderGroup.getServiceType()==ServiceType.DINEIN && consolidateOrder && tableNo!=null && !tableNo.isEmpty()) {
             QrcodeOrderGroup qrOrder = qrcodeOrderGroupRepository.findByStoreIdAndTableNoAndPaymentStatus(qrStoreId, tableNo, PaymentStatus.PENDING);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Consolidate Order. Previous qrOrderGroup:"+qrOrder);
             if (qrOrder==null) {
@@ -1488,72 +1487,67 @@ public class OrderController {
                
         //update orderGroupId for each order
         int totalOrder=0;
-        List<String> newOrderList = new ArrayList();
+        List<String> newOrderList = new ArrayList<>();
         String invoiceNo="";
-        if (orderGroup.getServiceType()==ServiceType.DINEIN && qrGroupOrderId!=null && tableNo!=null && !tableNo.equals("")) {            
+        if (orderGroup.getServiceType() == ServiceType.DINEIN && qrGroupOrderId != null) {
             //get total order for this QR group
             List<OrderGroup> orderGroupList = orderGroupRepository.findByOrderQrGroupId(qrGroupOrderId);
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "OrderGroup found:"+orderGroupList.size()+" for qrOrderId:"+qrGroupOrderId);
-            for (int c=0;c<orderGroupList.size();c++) {
-                OrderGroup orderGroupTemp = orderGroupList.get(c);
+            for (OrderGroup orderGroupTemp : orderGroupList) {
                 List<OrderWithDetails> orderList = orderGroupTemp.getOrderList();
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order found:"+orderList.size()+" for orderGroupId:"+orderGroupTemp.getId());
-                for (int b=0;b<orderList.size();b++) {
-                    invoiceNo = orderList.get(b).getInvoiceId();
-                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order InvoiceNo:"+invoiceNo+" orderId:"+orderList.get(b).getId());
-                    if (orderIdList.contains(orderList.get(b).getId())) {
-                        newOrderList.add(orderList.get(b).getId());
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order found:" + orderList.size() + " for orderGroupId:" + orderGroupTemp.getId());
+                for (OrderWithDetails orderWithDetails : orderList) {
+                    invoiceNo = orderWithDetails.getInvoiceId();
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Order InvoiceNo:" + invoiceNo + " orderId:" + orderWithDetails.getId());
+                    if (orderIdList.contains(orderWithDetails.getId())) {
+                        newOrderList.add(orderWithDetails.getId());
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Is new order");
                     } else {
                         totalOrder++;
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Old order");
                     }
                 }
-                
+
             }
             
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Total Previous Order:"+totalOrder);
         }
         
-        List<OrderWithDetails> tempOrderList = new ArrayList();
+        List<OrderWithDetails> tempOrderList = new ArrayList<>();
         int sequenceNo=totalOrder;
-        for (int x=0;x<orderCreatedList.size();x++) {
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update OrderGroupId="+orderGroup.getId()+" for OrderId:"+orderCreatedList.get(x).getId());
-            if (orderGroup.getServiceType()==ServiceType.DINEIN && qrGroupOrderId!=null && tableNo!=null && !tableNo.equals("")) {            
-                if (!invoiceNo.equals("")) {
+        for (Order order : orderCreatedList) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update OrderGroupId=" + orderGroup.getId() + " for OrderId:" + order.getId());
+            if (orderGroup.getServiceType() == ServiceType.DINEIN && qrGroupOrderId != null) {
+                if (!invoiceNo.isEmpty()) {
                     String[] temp = invoiceNo.split("_");
                     String newInvoiceNo = "";
-                    if (temp.length>0) {
+                    if (temp.length > 0) {
                         String originalInvoiceNo = temp[0];
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Original invoiceNo:"+originalInvoiceNo);
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Original invoiceNo:" + originalInvoiceNo);
                         newInvoiceNo = originalInvoiceNo + "_" + sequenceNo;
                         sequenceNo++;
                     } else {
                         newInvoiceNo = invoiceNo + "_" + sequenceNo;
                         sequenceNo++;
-                    } 
-
-                    if (!newInvoiceNo.equals("")) {
-                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update InvoiceNo "+newInvoiceNo+" for orderId:"+orderCreatedList.get(x).getId());
-                        orderRepository.UpdateOrderGroupIdAndInvoiceNo(orderCreatedList.get(x).getId(), orderGroup.getId(), newInvoiceNo);                        
-                    } else {
-                        orderRepository.UpdateOrderGroupId(orderCreatedList.get(x).getId(), orderGroup.getId());                        
                     }
+
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update InvoiceNo " + newInvoiceNo + " for orderId:" + order.getId());
+                    orderRepository.UpdateOrderGroupIdAndInvoiceNo(order.getId(), orderGroup.getId(), newInvoiceNo);
                 } else {
-                    orderRepository.UpdateOrderGroupId(orderCreatedList.get(x).getId(), orderGroup.getId());                        
+                    orderRepository.UpdateOrderGroupId(order.getId(), orderGroup.getId());
                 }
             } else {
-                orderRepository.UpdateOrderGroupId(orderCreatedList.get(x).getId(), orderGroup.getId());                        
-            }   
+                orderRepository.UpdateOrderGroupId(order.getId(), orderGroup.getId());
+            }
             OrderWithDetails temp = new OrderWithDetails();
-            temp.setId(orderCreatedList.get(x).getId());
-            temp.setInvoiceId(orderCreatedList.get(x).getInvoiceId());
+            temp.setId(order.getId());
+            temp.setInvoiceId(order.getInvoiceId());
             tempOrderList.add(temp);
         }  
                 
         orderGroup.setOrderList(tempOrderList);
        
-        if (orderGroup.getServiceType()==ServiceType.DINEIN && qrGroupOrderId!=null && tableNo!=null && !tableNo.equals("")) {            
+        if (orderGroup.getServiceType() == ServiceType.DINEIN && qrGroupOrderId != null) {
             orderGroupRepository.UpdateQrcodeOrderGroupId(qrGroupOrderId, orderGroup.getId());
         }
         
@@ -1610,6 +1604,8 @@ public class OrderController {
         double sumAppliedDiscount = 0.00;
         double sumStoreServiceCharges = 0.00;
         double sumStoreVoucherDiscount = 0.00;
+        List<String> orderIdList = new ArrayList<>();
+        List<Order> orderCreatedList = new ArrayList<>();
         CustomerVoucher customerPlatformVoucher = null;
 
 
@@ -1636,6 +1632,9 @@ public class OrderController {
             Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix,
                     "coupon-push-group orderGroup created: " + orderGroup);
             groupOrderId = orderGroup.getId();
+        }
+        else{
+            orderGroup = orderGroupRepository.findById(groupOrderId).get();
         }
 
         //------------------------------------------------
@@ -1785,10 +1784,12 @@ public class OrderController {
                     productRepository);
 
             Order orderCreated = (Order) orderResponse.getData();
+
             if (orderCreated == null) {
                 return ResponseEntity.status(orderResponse.getStatus()).body(orderResponse);
             }
-
+            orderCreatedList.add(orderCreated);
+            orderIdList.add(orderCreated.getId());
             sumCartSubTotal = sumCartSubTotal + orderCreated.getSubTotal();
             sumStoreServiceCharges = sumStoreServiceCharges + orderCreated.getStoreServiceCharges();
 
@@ -1812,6 +1813,10 @@ public class OrderController {
             cartRepository.save(cart);
         }
 
+
+        OrderShipmentDetail orderShipmentDetail = orderCreatedList.get(0).getOrderShipmentDetail();
+        ServiceType serviceType = orderCreatedList.get(0).getServiceType();
+
         // calculate grand total to save in Group repository
         sumTotal = sumCartSubTotal - sumAppliedDiscount +
                 sumStoreServiceCharges - sumStoreVoucherDiscount;
@@ -1820,17 +1825,39 @@ public class OrderController {
         orderGroup.setPaidAmount(sumTotal);
         orderGroup.setTotal(sumTotal);
         orderGroup.setAppliedDiscount(sumAppliedDiscount);
+        orderGroup.setCustomerId(orderCreatedList.get(0).getCustomerId());
+        orderGroup.setShipmentEmail(orderShipmentDetail.getEmail());
+        orderGroup.setShipmentName(orderShipmentDetail.getReceiverName());
+        orderGroup.setShipmentPhoneNumber(orderShipmentDetail.getPhoneNumber());
+        orderGroup.setServiceType(serviceType);
 
         //TODO
         // Uncomment the code for prefix
         //append prefix to differentiate between single & multiple
 //        orderGroup.setId("G"+orderGroup.getId());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                logprefix, "coupon-push-group orderCreatedList: " + orderCreatedList);
+
 
         orderGroupRepository.save(orderGroup);
 
+        List<OrderWithDetails> tempOrderList = new ArrayList<>();
+
+        for (Order order : orderCreatedList) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update OrderGroupId=" + orderGroup.getId() + " for OrderId:" + order.getId());
+            OrderWithDetails temp = new OrderWithDetails();
+            temp.setId(order.getId());
+            temp.setInvoiceId(order.getInvoiceId());
+            tempOrderList.add(temp);
+        }
+
+        orderGroup.setOrderList(tempOrderList);
+        //append prefix to differentiate between single & multiple
+        orderGroup.setId("G"+orderGroup.getId());
+
         //Returning the response
         response.setStatus(HttpStatus.CREATED.value());
-        response.setData(orderResponse);
+        response.setData(orderGroup);
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
                 logprefix, "placeCouponOrder completed");
@@ -2006,15 +2033,15 @@ public class OrderController {
             if (completionStatusList!=null) {
                 int statusCount = completionStatusList.length;
                 List<Predicate> statusPredicatesList = new ArrayList<>();
-                for (int i=0;i<completionStatusList.length;i++) {
-                    Predicate predicateForCompletionStatus = builder.equal(root.get("completionStatus"), completionStatusList[i]);
-                                        
-                    if (completionStatusList[i]==OrderStatus.RECEIVED_AT_STORE) {
+                for (OrderStatus orderStatus : completionStatusList) {
+                    Predicate predicateForCompletionStatus = builder.equal(root.get("completionStatus"), orderStatus);
+
+                    if (orderStatus == OrderStatus.RECEIVED_AT_STORE) {
                         Predicate predicateForStatus = builder.equal(root.get("completionStatus"), OrderStatus.RECEIVED_AT_STORE);
                         Predicate predicateForPaymentType = builder.equal(root.get("paymentType"), "COD");
                         Predicate predicateForCOD = builder.and(predicateForStatus, predicateForPaymentType);
-                        statusPredicatesList.add(predicateForCOD);            
-                    } else if (completionStatusList[i]!=null) {
+                        statusPredicatesList.add(predicateForCOD);
+                    } else if (orderStatus != null) {
                         statusPredicatesList.add(predicateForCompletionStatus);
                     }
                 }
@@ -2067,15 +2094,15 @@ public class OrderController {
             if (completionStatusList!=null) {
                 int statusCount = completionStatusList.length;
                 List<Predicate> statusPredicatesList = new ArrayList<>();
-                for (int i=0;i<completionStatusList.length;i++) {
-                    Predicate predicateForCompletionStatus = builder.equal(root.get("completionStatus"), completionStatusList[i]);
-                                        
-                    if (completionStatusList[i]==OrderStatus.RECEIVED_AT_STORE) {
+                for (OrderStatus orderStatus : completionStatusList) {
+                    Predicate predicateForCompletionStatus = builder.equal(root.get("completionStatus"), orderStatus);
+
+                    if (orderStatus == OrderStatus.RECEIVED_AT_STORE) {
                         Predicate predicateForStatus = builder.equal(root.get("completionStatus"), OrderStatus.RECEIVED_AT_STORE);
                         Predicate predicateForPaymentType = builder.equal(root.get("paymentType"), "COD");
                         Predicate predicateForCOD = builder.and(predicateForStatus, predicateForPaymentType);
-                        statusPredicatesList.add(predicateForCOD);            
-                    } else if (completionStatusList[i]!=null) {
+                        statusPredicatesList.add(predicateForCOD);
+                    } else if (orderStatus != null) {
                         statusPredicatesList.add(predicateForCompletionStatus);
                     }
                 }
@@ -2087,9 +2114,9 @@ public class OrderController {
             if (idList!=null) {
                 int idCount = idList.length;
                 List<Predicate> orderIdPredicatesList = new ArrayList<>();
-                for (int i=0;i<idList.length;i++) {
-                    Predicate predicateForId = builder.equal(root.get("id"), idList[i]);
-                    orderIdPredicatesList.add(predicateForId);                    
+                for (String s : idList) {
+                    Predicate predicateForId = builder.equal(root.get("id"), s);
+                    orderIdPredicatesList.add(predicateForId);
                 }
 
                 Predicate finalPredicate = builder.or(orderIdPredicatesList.toArray(new Predicate[idCount]));
@@ -2148,7 +2175,7 @@ public class OrderController {
         Store store = optStore.get();
         List<Object> dataSummaryList = new ArrayList<Object>();
         List<Object[]> countSummaryList = null;
-        if (serviceType!=null && !serviceType.equals("")) {
+        if (serviceType != null) {
             if (store.getPaymentType().equals("COD") || serviceType==ServiceType.DINEIN) {
                 countSummaryList = orderRepository.getCountSummaryCODByServiceType(storeId, serviceType);
             } else {
@@ -2161,11 +2188,10 @@ public class OrderController {
                 countSummaryList = orderRepository.getCountSummaryOnlinePayment(storeId);
             }
         }
-        for (int i=0;i<countSummaryList.size();i++) {
-            Object[] summary = countSummaryList.get(i);
+        for (Object[] summary : countSummaryList) {
             DataSummary dataSummary = new DataSummary();
             dataSummary.completionStatus = String.valueOf(summary[0]);
-            dataSummary.count = (Long)summary[1];
+            dataSummary.count = (Long) summary[1];
             dataSummaryList.add(dataSummary);
         }
         response.setSuccessStatus(HttpStatus.OK);
@@ -2313,16 +2339,15 @@ public class OrderController {
             
             //get original order item
             List<OrderItem> orderNewItemList = new ArrayList<OrderItem>();
-            
-            for (int i=0;i<bodyOrderItemList.length;i++) {
-                OrderItem orderItem = bodyOrderItemList[i];
+
+            for (OrderItem orderItem : bodyOrderItemList) {
                 Optional<OrderItem> originalOrderItem = orderItemRepository.findById(orderItem.getId());
                 if (originalOrderItem.isPresent()) {
                     OrderItem originalItem = originalOrderItem.get();
-                    if (orderItem.getQuantity()>originalItem.getQuantity()) {
+                    if (orderItem.getQuantity() > originalItem.getQuantity()) {
                         //return error if item to increase quantity
                         response.setMessage("Cannot increase item quantity");
-                        response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);            
+                        response.setSuccessStatus(HttpStatus.EXPECTATION_FAILED);
                         return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
                     }
                     float itemPrice = originalItem.getProductPrice();
@@ -2335,16 +2360,14 @@ public class OrderController {
             }
                         
             //save new quantity
-            for (int i=0;i<orderNewItemList.size();i++) {
-                OrderItem orderNewItem = orderNewItemList.get(i);                
+            for (OrderItem orderNewItem : orderNewItemList) {
                 orderItemRepository.save(orderNewItem);
             }
             
             //get new sales total amount
             double newSalesAmount=0.00;
             List<OrderItem> orderItemList = orderItemRepository.findByOrderId(orderId);
-            for (int i=0;i<orderItemList.size();i++) {
-                OrderItem orderItem = orderItemList.get(i);
+            for (OrderItem orderItem : orderItemList) {
                 newSalesAmount = newSalesAmount + orderItem.getPrice();
             }
             
@@ -2530,10 +2553,9 @@ public class OrderController {
             
             //check if still got item
             boolean gotItem=false;
-            for (int i=0;i<orderItems.size();i++) {
-                OrderItem orderItem = orderItems.get(i);
-                if (orderItem.getQuantity()>0) {
-                    gotItem=true;
+            for (OrderItem orderItem : orderItems) {
+                if (orderItem.getQuantity() > 0) {
+                    gotItem = true;
                     break;
                 }
             }
@@ -2647,7 +2669,7 @@ public class OrderController {
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "order-items-famous, tagKeyword: " + tagKeyword);
         
         TagKeyword tag = tagRepository.findByKeyword(tagKeyword);
-        List<Product> famousProductList = new ArrayList();
+        List<Product> famousProductList = new ArrayList<>();
         
         if (tag!=null) {                            
             String tagType="foodcourt";
@@ -2669,24 +2691,23 @@ public class OrderController {
                 String storeId = tagDetails.getStoreId();
                 if (storeId!=null) {
                  List<Object[]> productList = orderItemRepository.getFamousItemByStoreId(storeId, limit);
-                 for (int z=0;z<productList.size();z++) {
-                       Object[] product = productList.get(z);
-                       java.math.BigInteger count = (java.math.BigInteger)product[0];
-                       String itemCode = (String)product[1];
-                       String productId = (String)product[2];
-                       String productName = (String)product[3];
-                       String seoUrl = (String)product[4];
-                       String categoryId = (String)product[5];
-                       String thumnailUrl = (String)product[6];
-                       Product productInfo = new Product();
-                       productInfo.setId(productId);
-                       productInfo.setName(productName);
-                       productInfo.setSeoUrl(seoUrl);
-                       productInfo.setStoreId(storeId);
-                       productInfo.setCategoryId(categoryId);
-                       productInfo.setThumbnailUrl(thumnailUrl);
-                       famousProductList.add(productInfo);
-                 }
+                    for (Object[] product : productList) {
+                        java.math.BigInteger count = (java.math.BigInteger) product[0];
+                        String itemCode = (String) product[1];
+                        String productId = (String) product[2];
+                        String productName = (String) product[3];
+                        String seoUrl = (String) product[4];
+                        String categoryId = (String) product[5];
+                        String thumnailUrl = (String) product[6];
+                        Product productInfo = new Product();
+                        productInfo.setId(productId);
+                        productInfo.setName(productName);
+                        productInfo.setSeoUrl(seoUrl);
+                        productInfo.setStoreId(storeId);
+                        productInfo.setCategoryId(categoryId);
+                        productInfo.setThumbnailUrl(thumnailUrl);
+                        famousProductList.add(productInfo);
+                    }
                 }
             }
         } else {
@@ -2694,23 +2715,22 @@ public class OrderController {
             String storeId = tagKeyword;
             int limit=30;
             List<Object[]> productList = orderItemRepository.getFamousItemByStoreId(storeId, limit);
-            for (int z=0;z<productList.size();z++) {
-                  Object[] product = productList.get(z);
-                  java.math.BigInteger count = (java.math.BigInteger)product[0];
-                  String itemCode = (String)product[1];
-                  String productId = (String)product[2];
-                  String productName = (String)product[3];
-                  String seoUrl = (String)product[4];
-                  String categoryId = (String)product[5];
-                  String thumnailUrl = (String)product[6];
-                  Product productInfo = new Product();
-                  productInfo.setId(productId);
-                  productInfo.setName(productName);
-                  productInfo.setSeoUrl(seoUrl);
-                  productInfo.setStoreId(storeId);
-                  productInfo.setCategoryId(categoryId);
-                  productInfo.setThumbnailUrl(thumnailUrl);
-                  famousProductList.add(productInfo);
+            for (Object[] product : productList) {
+                java.math.BigInteger count = (java.math.BigInteger) product[0];
+                String itemCode = (String) product[1];
+                String productId = (String) product[2];
+                String productName = (String) product[3];
+                String seoUrl = (String) product[4];
+                String categoryId = (String) product[5];
+                String thumnailUrl = (String) product[6];
+                Product productInfo = new Product();
+                productInfo.setId(productId);
+                productInfo.setName(productName);
+                productInfo.setSeoUrl(seoUrl);
+                productInfo.setStoreId(storeId);
+                productInfo.setCategoryId(categoryId);
+                productInfo.setThumbnailUrl(thumnailUrl);
+                famousProductList.add(productInfo);
             }
         }
 
@@ -2910,7 +2930,7 @@ public class OrderController {
                 //save sub cart item
                 if (bodyCartItem.getCartSubItem()!=null) {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Save cart subitem: " + bodyCartItem.getCartSubItem());
-                    List<CartSubItem> cartSubItemList = new ArrayList();
+                    List<CartSubItem> cartSubItemList = new ArrayList<>();
                     for (int i=0;i<bodyCartItem.getCartSubItem().size();i++) {
                         CartSubItem subItem = bodyCartItem.getCartSubItem().get(i);
                         subItem.setCartItemId(createdCartItem.getId());
@@ -2950,7 +2970,7 @@ public class OrderController {
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Item addOn: " + bodyCartItem.getCartItemAddOn());
                     if (bodyCartItem.getCartItemAddOn()!=null && !bodyCartItem.getCartItemAddOn().isEmpty()) {
                         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Save cart item addOn: " + bodyCartItem.getCartItemAddOn());
-                        List<CartItemAddOn> cartItemAddOnList = new ArrayList();
+                        List<CartItemAddOn> cartItemAddOnList = new ArrayList<>();
                         for (int x=0;x<bodyCartItem.getCartItemAddOn().size();x++) {
                             CartItemAddOn cartItemAddOn = bodyCartItem.getCartItemAddOn().get(x);
                             cartItemAddOn.setCartItemId(createdCartItem.getId());

@@ -1154,6 +1154,10 @@ public class OrderWorker {
                     groupOrderId = groupOrderId.substring(1);
                 }
                 order.setOrderGroupId(groupOrderId);
+                order.setCartId(cartId);
+                order.setStoreId(cart.getStoreId());
+                order.setCompletionStatus(OrderStatus.RECEIVED_AT_STORE);
+                order.setPaymentStatus(PaymentStatus.PENDING);
                 order.setVoucherDiscount(orderTotalObject.getVoucherDiscount());
                 order.setVoucherId(orderTotalObject.getVoucherId());
                 order.setStoreVoucherDiscount(orderTotalObject.getStoreVoucherDiscount());
@@ -1200,7 +1204,7 @@ public class OrderWorker {
                 // saving order object to get order Id
                 order = orderRepository.save(order);
 
-                // save shipment detials
+                // save shipment details
                 Boolean storePickup = cart.getOrderShipmentDetails().getStorePickup();
 
                 if (newCart.getServiceType()!=null && newCart.getServiceType()==ServiceType.DINEIN) {
@@ -1220,10 +1224,10 @@ public class OrderWorker {
                 OrderItem orderItem = null;
 
                 // inserting order items now
-                for (int i = 0; i < orderItems.size(); i++) {
+                for (OrderItem item : orderItems) {
                     // insert orderItem
-                    orderItems.get(i).setOrderId(order.getId());
-                    orderItem = orderItemRepository.save(orderItems.get(i));
+                    item.setOrderId(order.getId());
+                    orderItem = orderItemRepository.save(item);
                     Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
                             logprefix, "orderItem created with id: " + orderItem.getId()
                                     + ", orderId: " + orderItem.getOrderId());
