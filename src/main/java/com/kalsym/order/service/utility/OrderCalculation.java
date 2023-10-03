@@ -66,11 +66,10 @@ public class OrderCalculation {
         
         boolean gotItemDiscount=false;
         //check if got item discount inside cart
-        for (int x=0;x<selectedCartItemList.size();x++) {
-            CartItem cartItem = selectedCartItemList.get(x);
-            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "CartItem discount:"+cartItem.getDiscountId());
-            if (cartItem.getDiscountId()!=null) {
-                gotItemDiscount=true;
+        for (CartItem cartItem : selectedCartItemList) {
+            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "CartItem discount:" + cartItem.getDiscountId());
+            if (cartItem.getDiscountId() != null) {
+                gotItemDiscount = true;
                 break;
             }
         }
@@ -94,7 +93,7 @@ public class OrderCalculation {
             }
             
             //check voucher double discount
-            if (discount.getDiscountId()!=null && customerPlatformVoucher.getVoucher().getAllowDoubleDiscount()==false) {
+            if (discount.getDiscountId()!=null && !customerPlatformVoucher.getVoucher().getAllowDoubleDiscount()) {
                 //error, not allow double discount
                 orderTotal.setGotError(Boolean.TRUE);
                 orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");
@@ -102,7 +101,7 @@ public class OrderCalculation {
             }  
             
             //check voucher double discount for item discount
-            if (gotItemDiscount && customerPlatformVoucher.getVoucher().getAllowDoubleDiscount()==false) {
+            if (gotItemDiscount && !customerPlatformVoucher.getVoucher().getAllowDoubleDiscount()) {
                 //error, not allow double discount
                 orderTotal.setGotError(Boolean.TRUE);
                 orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");
@@ -189,7 +188,7 @@ public class OrderCalculation {
             }
             
             //check voucher double discount
-            if (discount.getDiscountId()!=null && customerStoreVoucher.getVoucher().getAllowDoubleDiscount()==false) {
+            if (discount.getDiscountId()!=null && !customerStoreVoucher.getVoucher().getAllowDoubleDiscount()) {
                 //error, not allow double discount
                 orderTotal.setGotError(Boolean.TRUE);
                 orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");
@@ -197,7 +196,7 @@ public class OrderCalculation {
             }  
             
             //check voucher double discount for item discount
-            if (gotItemDiscount && customerStoreVoucher.getVoucher().getAllowDoubleDiscount()==false) {
+            if (gotItemDiscount && !customerStoreVoucher.getVoucher().getAllowDoubleDiscount()) {
                 //error, not allow double discount
                 orderTotal.setGotError(Boolean.TRUE);
                 orderTotal.setErrorMessage("Sorry, this voucher is not applicable for product with on-going campaign.");
@@ -221,7 +220,7 @@ public class OrderCalculation {
             
              //check serviceType 
             boolean serviceTypeValid=false;
-            if (customerStoreVoucher.getVoucher().getVoucherServiceTypeList()!=null && customerStoreVoucher.getVoucher().getVoucherServiceTypeList().size()>0) {
+            if (customerStoreVoucher.getVoucher().getVoucherServiceTypeList()!=null && !customerStoreVoucher.getVoucher().getVoucherServiceTypeList().isEmpty()) {
                 for (int i=0;i<customerStoreVoucher.getVoucher().getVoucherServiceTypeList().size();i++) {
                     VoucherServiceType voucherServiceType = customerStoreVoucher.getVoucher().getVoucherServiceTypeList().get(i);
                     if (voucherServiceType.getServiceType().equals(cart.getServiceType())) {
@@ -306,7 +305,7 @@ public class OrderCalculation {
         orderTotal.setStoreShare(Round2DecimalPoint(orderTotal.getSubTotal() - orderTotal.getAppliedDiscount() + orderTotal.getStoreServiceCharge() - commission - storeVoucherDiscountAmount));
         
         if (deliveryType!=null) {
-            if (deliveryType.equals(DeliveryType.SELF.toString())) {
+            if (deliveryType.equals(DeliveryType.SELF.toString()) || deliveryType.equals(DeliveryType.DIGITAL.toString())) {
                 double storeShare = orderTotal.getStoreShare() + deliveryCharge;
                 orderTotal.setStoreShare(Round2DecimalPoint(storeShare));
             } 
@@ -347,7 +346,7 @@ public class OrderCalculation {
             }
             
             //check voucher double discount (sub total)
-            if (platformVoucher.getVoucher().getAllowDoubleDiscount()==false && sumCartSubTotalDiscount>0) {
+            if (!platformVoucher.getVoucher().getAllowDoubleDiscount() && sumCartSubTotalDiscount>0) {
                 //error, not allow double discount
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error. AllowDoubleDiscount:"+platformVoucher.getVoucher().getAllowDoubleDiscount()+" sumCartSubTotalDiscount:"+sumCartSubTotalDiscount);
                 orderTotal.setGotError(Boolean.TRUE);                
@@ -356,7 +355,7 @@ public class OrderCalculation {
             }
             
              //check voucher double discount (delivery discount)
-            if (platformVoucher.getVoucher().getAllowDoubleDiscount()==false && sumDeliveryChargeDiscount>0) {
+            if (!platformVoucher.getVoucher().getAllowDoubleDiscount() && sumDeliveryChargeDiscount>0) {
                 //error, not allow double discount
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error. AllowDoubleDiscount:"+platformVoucher.getVoucher().getAllowDoubleDiscount()+" sumDeliveryChargeDiscount:"+sumDeliveryChargeDiscount);                
                 orderTotal.setGotError(Boolean.TRUE);                
@@ -365,7 +364,7 @@ public class OrderCalculation {
             }
             
              //check voucher double discount for item discount
-            if (gotItemDiscount && platformVoucher.getVoucher().getAllowDoubleDiscount()==false) {
+            if (gotItemDiscount && !platformVoucher.getVoucher().getAllowDoubleDiscount()) {
                 //error, not allow double discount
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Error. AllowDoubleDiscount:"+platformVoucher.getVoucher().getAllowDoubleDiscount()+" gotItemDiscount:"+gotItemDiscount);                               
                 orderTotal.setGotError(Boolean.TRUE);
