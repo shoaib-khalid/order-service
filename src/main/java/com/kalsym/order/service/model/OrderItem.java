@@ -2,24 +2,19 @@ package com.kalsym.order.service.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+
+import javax.persistence.*;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 import java.util.List;
-import javax.persistence.CascadeType;
+
 import com.kalsym.order.service.enums.DiscountCalculationType;
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -65,7 +60,11 @@ public class OrderItem implements Serializable {
     
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "orderItemId", insertable = false, updatable = false, nullable = true)
-    private List<OrderItemAddOn> orderItemAddOn;    
+    private List<OrderItemAddOn> orderItemAddOn;
+
+    @ManyToOne()
+    @JoinColumn(name = "productId", insertable = false, updatable = false)
+    private Product product;
     
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)

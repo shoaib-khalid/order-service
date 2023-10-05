@@ -941,44 +941,48 @@ public class OrderProcessWorker {
             // DIGITAL Logic comes here
             // Check if the order is digital and Payment is confirmed
             if (deliveryType == DeliveryType.DIGITAL && newStatus.equals("PAYMENT_CONFIRMED")) {
-                String voucherId = order.getVoucherId();
-                if (voucherId != null) {
-                    //uncomment if only quantity needs to be decreased
-                    Optional<Voucher> voucher = voucherRepository.findById(voucherId);
-                    if (voucher.isPresent()) {
-                        Voucher voucherObj = voucher.get();
-                        voucherObj.setTotalQuantity(voucher.get().getTotalRedeem() + 1);
-                        voucherRepository.save(voucherObj);
-                    }
-                    // Now, call the custom query method to get available voucher serial numbers
-                    List<VoucherSerialNumber> availableVoucherSerialNumber
-                            = voucherSerialNumberRepository.findAvailableVoucherSerialNumbers(voucherId);
 
-                    OrderShipmentDetail orderShipmentDetail = orderShipmentDetailRepository.findByOrderId(orderId);
+                for(OrderItem orderItem : orderItems) {
 
-                    // Check if an available voucher serial number was found
-                    if (availableVoucherSerialNumber != null) {
-                        StringBuilder concatenatedSerialNumbers;
-                        concatenatedSerialNumbers = new StringBuilder();
-                        int totalCount = 0;
-                        for(OrderItem orderItem : orderItems) {
-                            if(orderItem.getQuantity() > totalCount) {
+                    String voucherId =  orderItem.getProduct().getVoucherId();
+
+                    if (voucherId != null) {
+                        //uncomment if only quantity needs to be decreased
+                        Optional<Voucher> voucher = voucherRepository.findById(voucherId);
+                        if (voucher.isPresent()) {
+                            Voucher voucherObj = voucher.get();
+                            voucherObj.setTotalRedeem(voucher.get().getTotalRedeem() + orderItem.getQuantity());
+                            voucherRepository.save(voucherObj);
+                        }
+                        // Now, call the custom query method to get available voucher serial numbers
+                        List<VoucherSerialNumber> availableVoucherSerialNumber
+                                = voucherSerialNumberRepository.findAvailableVoucherSerialNumbers(voucherId);
+
+                        OrderShipmentDetail orderShipmentDetail = orderShipmentDetailRepository.findByOrderId(orderId);
+
+                        // Check if an available voucher serial number was found
+                        if (availableVoucherSerialNumber != null) {
+
+                            for (int i = 0; i < orderItem.getQuantity(); i++) {
+                                StringBuilder concatenatedSerialNumbers;
+                                concatenatedSerialNumbers = new StringBuilder();
+
                                 // Update voucher details
                                 availableVoucherSerialNumber.
-                                        get(totalCount).setCurrentStatus(VoucherSerialStatus.BOUGHT);
+                                        get(i).setCurrentStatus(VoucherSerialStatus.BOUGHT);
                                 availableVoucherSerialNumber.
-                                        get(totalCount).setCustomer(orderShipmentDetail.getPhoneNumber());
+                                        get(i).setCustomer(orderShipmentDetail.getPhoneNumber());
 
                                 // Save the updated voucher serial number
-                                voucherSerialNumberRepository.save(availableVoucherSerialNumber.get(totalCount));
+                                voucherSerialNumberRepository.save(availableVoucherSerialNumber.get(i));
                                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
                                         logprefix, "Voucher serial number updated for voucherId: "
                                                 + voucherId + ", with redeem code: "
-                                                +availableVoucherSerialNumber.get(totalCount).getVoucherRedeemCode());
+                                                +availableVoucherSerialNumber.get(i).getVoucherRedeemCode());
 
                                 // Append the serial number to the StringBuilder
                                 concatenatedSerialNumbers.append(availableVoucherSerialNumber.
-                                        get(totalCount).getVoucherRedeemCode());
+                                        get(i).getVoucherRedeemCode());
                                 // Append the semicolon for more items
                                 concatenatedSerialNumbers.append(";");
 
@@ -993,23 +997,20 @@ public class OrderProcessWorker {
                                     }
                                 }
 
-                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                            }
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
                                     logprefix, "Voucher redeem code updated for orderItemId: "
                                             + orderItem.getId() + ", with redeem code: "
                                             + orderItem.getVoucherRedeemCode());
-                                orderItemRepository.save(orderItem);
-                                totalCount +=1;
-                            }
+                            orderItemRepository.save(orderItem);
+
+                        } else {
+                            // Handle the case where no available voucher serial number was found
+                            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
+                                    logprefix, "No available voucher serial number found for voucherId: "
+                                            + voucherId);
                         }
-
-                    } else {
-                        // Handle the case where no available voucher serial number was found
-                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
-                                logprefix, "No available voucher serial number found for voucherId: "
-                                        + voucherId);
                     }
-
-
                 }
             }
 

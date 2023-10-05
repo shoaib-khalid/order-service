@@ -558,11 +558,15 @@ public class OrderController {
             StoreWithDetails storeWithDetails = optStore.get();
             String verticalId = storeWithDetails.getVerticalCode();
             Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
-            //TODO
-            // Override the Delivery type to DIGITAL for Coupons
+
             String storeDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
             if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN) {
                 storeDeliveryType = order.getDineInOption().name();
+            }
+
+            // Override the Delivery type to DIGITAL for Coupons
+            if (Objects.equals(order.getDeliveryType(), DeliveryType.DIGITAL.name())) {
+                storeDeliveryType = "DIGITAL";
             }
                         
             //get current status
