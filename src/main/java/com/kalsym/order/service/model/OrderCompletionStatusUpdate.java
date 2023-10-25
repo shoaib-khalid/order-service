@@ -67,5 +67,7 @@ public class OrderCompletionStatusUpdate {
     private String trackingUrl;
     @Transient
     private String spOrderId;
+    @Transient
+    private String paymentChannel;
 
 }

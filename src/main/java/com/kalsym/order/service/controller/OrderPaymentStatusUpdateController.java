@@ -140,6 +140,9 @@ public class OrderPaymentStatusUpdateController {
 
     @Value("${asset.service.URL:https://assets.symplified.it}")
     private String assetServiceBaseUrl;
+
+    @Autowired
+    ProviderRatePlanRepository providerRatePlanRepository;
     
     @PutMapping(path = {""}, name = "order-completion-status-updates-put-by-order-id")
     @PreAuthorize("hasAnyAuthority('order-completion-status-updates-put-by-order-id', 'all')")
@@ -175,6 +178,7 @@ public class OrderPaymentStatusUpdateController {
             voucherRepository,
             voucherSerialNumberRepository,
             customerVoucherRepository,
+            providerRatePlanRepository,
                 
             productService,
             emailService,

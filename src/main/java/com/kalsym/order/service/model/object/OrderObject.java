@@ -55,6 +55,7 @@ public class OrderObject {
     private Double grandTotal;
     private Double storeShare;
     private Double deliveryCharge;
+    private Double paymentFee;
     
     private String discountCalculationType;
     private Double discountCalculationValue;

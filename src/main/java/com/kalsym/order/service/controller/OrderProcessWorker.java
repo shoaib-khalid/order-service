@@ -68,7 +68,8 @@ public class OrderProcessWorker {
     
     private final boolean proceedRequestDelivery;
     private final String assetServiceBaseUrl;
-    
+    private final ProviderRatePlanRepository providerRatePlanRepository;
+
     public OrderProcessWorker(
             String logprefix, 
             String orderId, 
@@ -96,7 +97,8 @@ public class OrderProcessWorker {
             VoucherRepository voucherRepository,
             VoucherSerialNumberRepository voucherSerialNumberRepository,
             CustomerVoucherRepository customerVoucherRepository,
-            
+            ProviderRatePlanRepository providerRatePlanRepository,
+
             ProductService productService,
             EmailService emailService,
             WhatsappService whatsappService,
@@ -134,7 +136,8 @@ public class OrderProcessWorker {
         this.voucherRepository = voucherRepository;
         this.voucherSerialNumberRepository = voucherSerialNumberRepository;
         this.customerVoucherRepository = customerVoucherRepository;
-        
+        this.providerRatePlanRepository = providerRatePlanRepository;
+
         this.productService = productService;
         this.emailService = emailService;
         this.whatsappService = whatsappService;
@@ -454,7 +457,44 @@ public class OrderProcessWorker {
                 insertOrderCompletionStatusUpdate(OrderStatus.PAYMENT_CONFIRMED, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
                 insertOrderPaymentStatusUpdate(PaymentStatus.PAID, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
                 Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderPaymentStatusUpdate created with orderId: " + orderId);
-                //inserting order completing status update
+
+                // Update payment channel received from callback
+                if (bodyOrderCompletionStatusUpdate.getPaymentChannel() != null) {
+                    order.setPaymentChannel(bodyOrderCompletionStatusUpdate.getPaymentChannel());
+
+                    Optional<OrderPaymentDetail> orderPaymentDetailOpt = orderPaymentDetailRepository.findByOrderId(orderId);
+                    if (orderPaymentDetailOpt.isPresent()) {
+                        OrderPaymentDetail orderPaymentDetail = orderPaymentDetailOpt.get();
+                        orderPaymentDetail.setPaymentChannel(bodyOrderCompletionStatusUpdate.getPaymentChannel());
+                        orderPaymentDetailRepository.save(orderPaymentDetail);
+                    }
+                    // Deduct klCommision with paymentFee
+                    String paymentChannel = bodyOrderCompletionStatusUpdate.getPaymentChannel();
+                    // Split
+                    String[] parts = paymentChannel.split("-");
+                    String paymentType = parts.length > 1 ? parts[1] : paymentChannel;
+
+                    Optional<ProviderRatePlan> optionalProviderRatePlan = providerRatePlanRepository.findByIdProductCode(paymentType);
+
+                    if (optionalProviderRatePlan.isPresent()) {
+                        ProviderRatePlan providerRatePlan = optionalProviderRatePlan.get();
+                        double rate = providerRatePlan.getMargin();
+                        double paymentFee = 0;
+
+                        if (providerRatePlan.getMarginType().equalsIgnoreCase("FIXED")) {
+                            paymentFee = rate;
+                        }
+                        else {
+                            paymentFee = (order.getTotal() * (rate/100));
+                        }
+                        order.setPaymentFee(paymentFee);
+                        order.setKlCommission(order.getKlCommission() - paymentFee);
+                    } else {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Payment provider plan not found: " + paymentType);
+                    }
+
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "Update payment channel to: " + bodyOrderCompletionStatusUpdate.getPaymentChannel());
+                }
 
                 try {
                     Product product;
@@ -644,6 +684,9 @@ public class OrderProcessWorker {
                     orderCompletionStatusConfig.setPushWAToCustomer(false);
                     orderCompletionStatusConfig.setEmailToCustomer(false);
                 }
+                // TODO: call mmpay refund endpoint if paid by mmpay
+
+
             default:
                order.setCompletionStatus(status);
                insertOrderCompletionStatusUpdate(status, bodyOrderCompletionStatusUpdate.getComments(), bodyOrderCompletionStatusUpdate.getModifiedBy(), orderId);
@@ -1055,7 +1098,7 @@ public class OrderProcessWorker {
         
         return orderProcessResult;
     }
-    
+
     void insertOrderPaymentStatusUpdate(PaymentStatus paymentStatus, String comments, String modifiedBy, String orderId) {
         String logprefix = "insertOrderPaymentStatusUpdate";
         OrderPaymentStatusUpdate orderPaymentStatusUpdate = new OrderPaymentStatusUpdate();

@@ -149,6 +149,8 @@ public class Order implements Serializable {
      
     @Transient
     private OrderObject totalDataObject;
+
+    private Double paymentFee;
       
     /*
     @OneToOne(fetch=FetchType.LAZY)

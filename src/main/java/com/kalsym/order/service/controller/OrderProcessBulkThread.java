@@ -80,6 +80,7 @@ public class OrderProcessBulkThread extends Thread {
      private String easydukanOrdersSenderName;
     private String deliverinOrdersSenderName;
     private String assetServiceBaseUrl;
+    private ProviderRatePlanRepository providerRatePlanRepository;
     
     public OrderProcessBulkThread(
             String logprefix, 
@@ -194,7 +195,8 @@ public class OrderProcessBulkThread extends Thread {
                         voucherRepository,
                         voucherSerialNumberRepository,
                         customerVoucherRepository,
-                        
+                        providerRatePlanRepository,
+
                         productService,
                         emailService,
                         whatsappService,

@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -21,5 +22,5 @@ public interface OrderPaymentDetailRepository extends PagingAndSortingRepository
     
     List<OrderPaymentDetail> findByDeliveryQuotationReferenceId(@Param("deliveryQuotationId") String deliveryQuotationId);
     
-    OrderPaymentDetail findByOrderId(@Param("orderId") String orderId);
+    Optional<OrderPaymentDetail> findByOrderId(@Param("orderId") String orderId);
 }

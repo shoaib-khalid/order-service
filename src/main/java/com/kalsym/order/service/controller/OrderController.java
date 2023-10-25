@@ -958,7 +958,7 @@ public class OrderController {
             if (channel!=null)
                 orderGroup.setChannel(channel);
             else
-                orderGroup.setChannel(Channel.DELIVERIN);
+                orderGroup.setChannel(Channel.EKEDAI);
                          
             orderGroupRepository.save(orderGroup);
             
@@ -1441,7 +1441,7 @@ public class OrderController {
         if (channel!=null)
             orderGroup.setChannel(channel);
         else
-            orderGroup.setChannel(Channel.DELIVERIN);
+            orderGroup.setChannel(Channel.EKEDAI);
        
         Long qrGroupOrderId = null;
         if (orderGroup.getServiceType()==ServiceType.DINEIN && consolidateOrder && tableNo!=null && !tableNo.isEmpty()) {

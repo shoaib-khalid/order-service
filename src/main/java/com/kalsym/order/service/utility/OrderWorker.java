@@ -424,7 +424,7 @@ public class OrderWorker {
                 if (channel!=null) {
                     order.setChannel(channel);
                 } else {
-                    order.setChannel(Channel.DELIVERIN);
+                    order.setChannel(Channel.EKEDAI);
                 }    
                 
                 // saving order object to get order Id
@@ -1198,7 +1198,7 @@ public class OrderWorker {
                 if (channel!=null) {
                     order.setChannel(channel);
                 } else {
-                    order.setChannel(Channel.DELIVERIN);
+                    order.setChannel(Channel.EKEDAI);
                 }
 
                 // saving order object to get order Id
