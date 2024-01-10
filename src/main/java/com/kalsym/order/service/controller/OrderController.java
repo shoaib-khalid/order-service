@@ -4,6 +4,8 @@ import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.enums.*;
 import com.kalsym.order.service.model.*;
 import com.kalsym.order.service.model.object.CustomPageable;
+import com.kalsym.order.service.model.object.FreeCouponResponse;
+
 import javax.servlet.http.HttpServletRequest;
 
 import com.kalsym.order.service.model.repository.*;
@@ -21,9 +23,6 @@ import com.kalsym.order.service.utility.HttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import com.kalsym.order.service.service.EmailService;
-import com.kalsym.order.service.model.Order;
-import com.kalsym.order.service.model.OrderShipmentDetail;
-import com.kalsym.order.service.model.OrderPaymentDetail;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.object.OrderDetails;
 import com.kalsym.order.service.model.object.ItemDiscount;
@@ -33,6 +32,7 @@ import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.FCMService;
 import com.kalsym.order.service.service.OrderPostService;
 import com.kalsym.order.service.service.ProductService;
+import com.kalsym.order.service.service.SmsService;
 import com.kalsym.order.service.service.WhatsappService;
 import com.kalsym.order.service.utility.Logger;
 import com.kalsym.order.service.utility.MessageGenerator;
@@ -194,6 +194,12 @@ public class OrderController {
     
     @Autowired
     CartItemAddOnRepository cartItemAddOnRepository;
+
+    @Autowired
+    VoucherSerialNumberRepository voucherSerialNumberRepository;
+
+    @Autowired
+    SmsService smsService;
     
     @Value("${onboarding.order.URL:https://symplified.biz/orders/order-details?orderId=}")
     private String onboardingOrderLink;
@@ -1574,6 +1580,41 @@ public class OrderController {
          
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+
+    //Endpoints for free coupon
+    @PostMapping(path = {"/createFreeCouponOrder"}, name = "orders-create-freecoupon")
+    //@PreAuthorize("hasAnyAuthority('orders-push-cod', 'all')")
+    public ResponseEntity<HttpResponse> createFreeCouponOrder(HttpServletRequest request, 
+                                                @RequestParam(required = true) String voucherCode, 
+                                                @RequestParam(required = true) String phoneNumber) {
+        String logprefix = request.getRequestURI()+ " ";
+        HttpResponse response =  new HttpResponse(request.getRequestURI());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, 
+        " Create Free Coupon ");
+
+        response = OrderWorker.generateFreeCouponOrder(request, logprefix, storeRepository, voucherRepository,
+                                productRepository, productInventoryRepository, orderRepository, orderItemRepository, 
+                                storeDetailsRepository, voucherSerialNumberRepository, voucherCode, phoneNumber);
+
+        // TODO: send sms
+
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    @GetMapping(path = {"/getFreeCoupon/{id}"}, name = "orders-get-freecoupon")
+    public ResponseEntity<HttpResponse> getFreeCoupon (HttpServletRequest request, @PathVariable String id) {
+        
+        String logprefix = request.getRequestURI()+ " ";
+        HttpResponse response =  new HttpResponse(request.getRequestURI());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, 
+        " Get Free Coupon ");
+
+        response = OrderWorker.freeCouponData(request, logprefix, storeRepository, voucherRepository, productRepository,
+                                productInventoryRepository, orderRepository, orderItemRepository, id, smsService);
+
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
 
 
     //The endpoint for coupon service

@@ -15,5 +15,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductRepository extends PagingAndSortingRepository<Product, String>, JpaRepository<Product, String> {
 
+    Product findByVoucherId(String id);
+
 //    List<Order> findByCustomerId(@Param("customerId") String customerId);
 }

@@ -8,10 +8,12 @@ package com.kalsym.order.service.utility;
 import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.enums.*;
 import com.kalsym.order.service.model.*;
+import com.kalsym.order.service.model.object.FreeCouponResponse;
 import com.kalsym.order.service.model.object.ItemDiscount;
 import com.kalsym.order.service.model.object.OrderObject;
 import com.kalsym.order.service.model.repository.*;
 import com.kalsym.order.service.service.ProductService;
+import com.kalsym.order.service.service.SmsService;
 import com.kalsym.order.service.service.OrderPostService;
 import com.kalsym.order.service.service.DeliveryService;
 import com.kalsym.order.service.service.EmailService;
@@ -22,7 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.jetbrains.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -1281,6 +1286,216 @@ public class OrderWorker {
             return response;
         }
     }
+
+    // Services for free coupon
+    public static HttpResponse generateFreeCouponOrder(HttpServletRequest request, String logprefix, StoreRepository storeRepository, 
+                                        VoucherRepository voucherRepository, ProductRepository productRepository, 
+                                        ProductInventoryRepository productInventoryRepository, OrderRepository orderRepository, 
+                                        OrderItemRepository orderItemRepository, StoreDetailsRepository storeDetailsRepository, 
+                                        VoucherSerialNumberRepository voucherSerialNumberRepository, String voucherCode, String phoneNumber) {
+
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        // create order object
+        Order order = new Order();
+        Voucher voucher = voucherRepository.findByVoucherCode(voucherCode);
+        
+        if(voucher != null) {
+            Product voucherProduct = productRepository.findByVoucherId(voucher.getId());
+            String itemCode = voucherProduct.getId() + "aa";
+            ProductInventory voucherInventory = productInventoryRepository.findByItemCode(itemCode);
+        
+            //get store details
+            Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(voucher.getStoreId());
+            StoreWithDetails store = optStore.get();
+
+            //handle phone number format (MYS)
+            if (phoneNumber.startsWith("0")) {
+                phoneNumber = "6" + phoneNumber;
+            }
+
+            //check for stock
+            if (voucherInventory.getQuantity() < 1) {
+                //out of stock
+                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
+                    logprefix, "Voucher " + voucherInventory.getProduct().getName() + " is out of stock");
+                response.setMessage("Voucher " + voucherInventory.getProduct().getName() + " is out of stock");
+                response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+                return response;
+            } else {
+                //creating orderItem
+                OrderItem orderItem = new OrderItem();
+                
+                orderItem.setProductId(voucherProduct.getId());
+                orderItem.setProductPrice(voucherInventory.getPrice().floatValue());
+                orderItem.setSKU(voucherInventory.getSKU());
+                orderItem.setQuantity(1);
+                orderItem.setPrice(orderItem.getQuantity() * orderItem.getProductPrice());
+                orderItem.setItemCode(itemCode);
+                orderItem.setProductName(voucherProduct.getName());
+
+                List<VoucherSerialNumber> availableVoucherSerialNumber
+                        = voucherSerialNumberRepository.findAvailableVoucherSerialNumbers(voucher.getId());
+
+                if (availableVoucherSerialNumber != null) {
+                    for (int i = 0; i < orderItem.getQuantity(); i++) {
+                        StringBuilder concatenatedSerialNumbers;
+                        concatenatedSerialNumbers = new StringBuilder();
+
+                        // Update voucher details
+                        availableVoucherSerialNumber.get(i).setCurrentStatus(VoucherSerialStatus.BOUGHT);
+                        availableVoucherSerialNumber.get(i).setCustomer(phoneNumber);
+                        voucherSerialNumberRepository.save(availableVoucherSerialNumber.get(i));
+
+                        // Append the serial number to the StringBuilder
+                        concatenatedSerialNumbers.append(availableVoucherSerialNumber.
+                                get(i).getVoucherRedeemCode());
+                        // Append the semicolon for more items
+                        concatenatedSerialNumbers.append(";");
+
+                        // Check if there are concatenated serial numbers to append
+                        if (concatenatedSerialNumbers.length() > 0) {
+                            // Initialize or update the voucher redeem code based on the existing value
+                            String existingVoucherRedeemCode = orderItem.getVoucherRedeemCode();
+                            if (existingVoucherRedeemCode != null) {
+                                orderItem.setVoucherRedeemCode(existingVoucherRedeemCode + concatenatedSerialNumbers.toString());
+                            } else {
+                                orderItem.setVoucherRedeemCode(concatenatedSerialNumbers.toString());
+                            }
+                        }
+                    }
+                }
+
+                //creating order
+                order.setStoreId(voucher.getStoreId());
+                order.setCompletionStatus(OrderStatus.DELIVERED_TO_CUSTOMER);
+                order.setPaymentStatus(PaymentStatus.PAID);
+                    String invoicePrefix = store.getNameAbreviation();
+                    if (store.getStorePrefix()!=null) {
+                        invoicePrefix = store.getStorePrefix();
+                    }
+                    String invoiceId = TxIdUtil.generateInvoiceId(store.getId(),invoicePrefix, storeRepository);
+                order.setInvoiceId(invoiceId);
+                order.setSubTotal(voucherInventory.getPrice());
+                order.setTotal(order.getSubTotal());
+                order.setPaymentType("FREECOUPON");
+                order.setDeliveryDiscountDescription("NOT APPLICABLE");
+                order.setVoucherId(voucher.getId());
+                order.setServiceType(ServiceType.DIGITAL);
+                order.setDeliveryType("DIGITAL");
+                
+                try {
+                    // save the order/orderItem in DB
+                    Order couponOrder = new Order();
+                    couponOrder = orderRepository.save(order);
+                    OrderItem couponOrderItem = new OrderItem();
+                    couponOrderItem = orderItemRepository.save(orderItem);
+
+                    if (couponOrder != null && couponOrder.getId() != null) {
+                        // set order id to orderItem
+                        couponOrderItem.setOrderId(couponOrder.getId());
+                        orderItemRepository.save(couponOrderItem);
+
+                        // set response data
+                        FreeCouponResponse coupon = new FreeCouponResponse();
+                        coupon.setInvoiceId(couponOrder.getInvoiceId());
+                        coupon.setName(voucher.getName());
+                        coupon.setPrice(voucherInventory.getPrice());
+                        coupon.setStartDate(voucher.getStartDate());
+                        coupon.setEndDate(voucher.getEndDate());
+                        coupon.setStoreName(store.getName());
+                        coupon.setStoreId(store.getId());
+                        coupon.setStatus(voucher.getStatus());
+                        coupon.setVoucherCode(voucher.getVoucherCode());
+                        coupon.setVoucherImage(voucherProduct.getThumbnailUrl());
+                        coupon.setOrderId(couponOrder.getId());
+                        coupon.setOrderItemId(couponOrderItem.getId());
+                        coupon.setVoucher(voucher);
+
+                        //decrease quantity in inventory db
+                        voucherInventory.setQuantity(voucherInventory.getQuantity() - couponOrderItem.getQuantity());
+                        productInventoryRepository.save(voucherInventory);
+
+                        response.setStatus(HttpStatus.OK.value());
+                        response.setData(coupon);
+                    } 
+                } catch (Exception e) {
+                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
+                    logprefix, "Failed to create order");
+                }
+            }
+        } else {
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
+                        logprefix, " Voucher does not exist.");
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            response.setMessage("Voucher does not exist.");
+
+        }
+
+        return response;
+        
+    }
+
+    public static HttpResponse freeCouponData(HttpServletRequest request, String logprefix, StoreRepository storeRepository, 
+                                        VoucherRepository voucherRepository, ProductRepository productRepository, 
+                                        ProductInventoryRepository productInventoryRepository, OrderRepository orderRepository, 
+                                        OrderItemRepository orderItemRepository, String orderId, SmsService smsService) { 
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Optional<Order> optVoucherOrder = orderRepository.findById(orderId);
+
+        if(optVoucherOrder.isPresent()) {
+            // get coupon data
+            Order couponOrder = optVoucherOrder.get();
+
+            List<OrderItem> orderItem = orderItemRepository.findByOrderId(couponOrder.getId());
+            OrderItem couponOrderItem = orderItem.get(0);
+
+            Optional<Voucher> optVoucher = voucherRepository.findById(couponOrder.getVoucherId());
+            Voucher voucher = optVoucher.get();
+
+            Product voucherProduct = productRepository.findByVoucherId(voucher.getId());
+            List<ProductInventory> productInventory = productInventoryRepository.findByProductId(voucherProduct.getId());
+            ProductInventory voucherInventory = productInventory.get(0);
+
+            Optional<Store> optStore = storeRepository.findById(voucher.getStoreId());
+            Store store = optStore.get();
+
+            // set coupon data
+            FreeCouponResponse coupon = new FreeCouponResponse();
+            coupon.setInvoiceId(couponOrder.getInvoiceId());
+            coupon.setName(voucher.getName());
+            coupon.setPrice(voucherInventory.getPrice());
+            coupon.setStartDate(voucher.getStartDate());
+            coupon.setEndDate(voucher.getEndDate());
+            coupon.setStoreName(store.getName());
+            coupon.setStoreId(store.getId());
+            coupon.setStatus(voucher.getStatus());
+            coupon.setVoucherCode(voucher.getVoucherCode());
+            coupon.setVoucherImage(voucherProduct.getThumbnailUrl());
+            coupon.setOrderId(couponOrder.getId());
+            coupon.setOrderItemId(couponOrderItem.getId());
+            coupon.setVoucher(voucher);
+
+            if(coupon != null) {
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, 
+                " SendingMessage.... ");
+                smsService.sendCouponUrl("601170271734", "http://localhost:7001/orders/getFreeCoupon/22fd2f19-9490-4721-bc53-e08de246ea3e");
+                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, 
+                " sent!! ");
+            }
+
+            response.setStatus(HttpStatus.OK.value());
+            response.setData(coupon);
+        } else {
+            Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
+                        logprefix, " Order does not exist.");
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            response.setMessage("Order does not exist.");
+        }
+       
+        return response;
+    }
+
 
     @Nullable
     private static String getString(ProductInventory productInventory, ProductInventory productInventoryDB) {
