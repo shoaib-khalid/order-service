@@ -476,6 +476,7 @@ public class OrderController {
         if (storeId != null && !storeId.isEmpty()) {
             orderMatch.setStoreId(storeId);
         }
+        
         if (customerId != null && !customerId.isEmpty()) {
             orderMatch.setCustomerId(customerId);
         }
@@ -500,43 +501,33 @@ public class OrderController {
             orderMatch.setCompletionStatus(completionStatus);            
         }*/
         
-        Store storeDetail = new Store();
         if (clientId != null && !clientId.isEmpty()) {
-            storeDetail.setClientId(clientId);
+            orderMatch.getStore().setClientId(clientId);
         }
         
-        orderMatch.setStore(storeDetail);        
-        
-        
-        OrderPaymentDetail opd = new OrderPaymentDetail();
         if (accountName != null && !accountName.isEmpty()) {
-            opd.setAccountName(accountName);
+            orderMatch.getOrderPaymentDetail().setAccountName(accountName);
         }
 
         if (deliveryQuotationReferenceId != null && !deliveryQuotationReferenceId.isEmpty()) {
-            opd.setDeliveryQuotationReferenceId(deliveryQuotationReferenceId);
+            orderMatch.getOrderPaymentDetail().setDeliveryQuotationReferenceId(deliveryQuotationReferenceId);
         }
 
-        orderMatch.setOrderPaymentDetail(opd);
-
-        OrderShipmentDetail osd = new OrderShipmentDetail();
         if (receiverName != null && !receiverName.isEmpty()) {
-            osd.setReceiverName(receiverName);
+            orderMatch.getOrderShipmentDetail().setReceiverName(receiverName);
         }
 
         if (phoneNumber != null && !phoneNumber.isEmpty()) {
-            osd.setPhoneNumber(phoneNumber);
+            orderMatch.getOrderShipmentDetail().setPhoneNumber(phoneNumber);
         }
 
         if (city != null && !city.isEmpty()) {
-            osd.setCity(city);
+            orderMatch.getOrderShipmentDetail().setCity(city);
         }
 
         if (zipcode != null && !zipcode.isEmpty()) {
-            osd.setZipcode(zipcode);
+            orderMatch.getOrderShipmentDetail().setZipcode(zipcode);
         }
-
-        orderMatch.setOrderShipmentDetail(osd);
 
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, "orderMatch: " + orderMatch);
         
@@ -546,7 +537,7 @@ public class OrderController {
                 .withIgnoreNullValues()
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
         Example<Order> orderExample = Example.of(orderMatch, matcher);
-        
+
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("created").descending());
         if (sortingOrder==Sort.Direction.ASC)
             pageable = PageRequest.of(page, pageSize, Sort.by(sortByCol).ascending());
@@ -566,7 +557,8 @@ public class OrderController {
             Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(order.getStoreId());
             StoreWithDetails storeWithDetails = optStore.get();
             String verticalId = storeWithDetails.getVerticalCode();
-            Boolean storePickup = order.getOrderShipmentDetail().getStorePickup();
+            Boolean storePickup = (order.getOrderShipmentDetail() != null) ? order.getOrderShipmentDetail().getStorePickup() : null;
+
 
             String storeDeliveryType = storeWithDetails.getStoreDeliveryDetail().getType();
             if (order.getServiceType()!=null && order.getServiceType()==ServiceType.DINEIN) {
