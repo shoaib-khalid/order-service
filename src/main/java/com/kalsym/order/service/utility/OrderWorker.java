@@ -1408,7 +1408,7 @@ public class OrderWorker {
                         coupon.setStoreName(store.getName());
                         coupon.setStoreId(store.getId());
                         coupon.setStatus(voucher.getStatus());
-                        coupon.setVoucherCode(voucher.getVoucherCode());
+                        coupon.setVoucherCode(couponOrderItem.getVoucherRedeemCode());
                         coupon.setVoucherImage(voucherProduct.getThumbnailUrl());
                         coupon.setOrderId(couponOrder.getId());
                         coupon.setOrderItemId(couponOrderItem.getId());
@@ -1492,7 +1492,7 @@ public class OrderWorker {
             coupon.setStoreName(store.getName());
             coupon.setStoreId(store.getId());
             coupon.setStatus(voucher.getStatus());
-            coupon.setVoucherCode(voucher.getVoucherCode());
+            coupon.setVoucherCode(couponOrderItem.getVoucherRedeemCode());
             coupon.setVoucherImage(voucherProduct.getThumbnailUrl());
             coupon.setOrderId(couponOrder.getId());
             coupon.setOrderItemId(couponOrderItem.getId());
@@ -1547,7 +1547,7 @@ public class OrderWorker {
                 coupon.setStoreName(store.getName());
                 coupon.setStoreId(store.getId());
                 coupon.setStatus(voucher.getStatus());
-                coupon.setVoucherCode(voucher.getVoucherCode());
+                coupon.setVoucherCode(couponOrderItem.getVoucherRedeemCode());
                 coupon.setVoucherImage(voucherProduct.getThumbnailUrl());
                 coupon.setOrderId(couponOrder.getId());
                 coupon.setOrderItemId(couponOrderItem.getId());
