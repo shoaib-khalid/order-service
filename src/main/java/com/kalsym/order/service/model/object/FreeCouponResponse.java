@@ -14,6 +14,7 @@ import lombok.ToString;
 @ToString
 public class FreeCouponResponse {
     
+    String phoneNumber;
     String invoiceId;
     String name;
     Double price;

@@ -212,6 +212,9 @@ public class OrderController {
     
     @Value("${whatsapp.process.order.URL:https://api.symplified.it/order-service/v1/orders/%orderId%/completion-status-updates}")
     private String processOrderUrl;
+
+    @Value("${free.coupon.base.url}")
+    private String freeCouponUrl;
     
     //@PreAuthorize("hasAnyAuthority('orders-get', 'all') and (@customOwnerVerifier.VerifyStore(#storeId) or @customOwnerVerifier.VerifyCustomer(#customerId))")    
     @GetMapping(path = {""}, name = "orders-get", produces = "application/json")
@@ -1594,15 +1597,14 @@ public class OrderController {
 
         response = OrderWorker.generateFreeCouponOrder(request, logprefix, storeRepository, voucherRepository,
                                 productRepository, productInventoryRepository, orderRepository, orderItemRepository, 
-                                storeDetailsRepository, voucherSerialNumberRepository, voucherCode, phoneNumber);
-
-        // TODO: send sms
+                                storeDetailsRepository, voucherSerialNumberRepository, voucherCode, phoneNumber, 
+                                smsService, freeCouponUrl);
 
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    @GetMapping(path = {"/getFreeCoupon/{id}"}, name = "orders-get-freecoupon")
-    public ResponseEntity<HttpResponse> getFreeCoupon (HttpServletRequest request, @PathVariable String id) {
+    @GetMapping(path = {"/getFreeCoupon"}, name = "orders-get-freecoupon")
+    public ResponseEntity<HttpResponse> getFreeCoupon (HttpServletRequest request, @RequestParam String id) {
         
         String logprefix = request.getRequestURI()+ " ";
         HttpResponse response =  new HttpResponse(request.getRequestURI());
@@ -1610,8 +1612,25 @@ public class OrderController {
         " Get Free Coupon ");
 
         response = OrderWorker.freeCouponData(request, logprefix, storeRepository, voucherRepository, productRepository,
-                                productInventoryRepository, orderRepository, orderItemRepository, id, smsService);
+                                productInventoryRepository, orderRepository, orderItemRepository, id);
 
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    @PostMapping(path = {"/resendFreeCouponSMS"}, name = "orders-resend-freecoupon-sms")
+    //@PreAuthorize("hasAnyAuthority('orders-push-cod', 'all')")
+    public ResponseEntity<HttpResponse> resendFreeCouponSMS(HttpServletRequest request, 
+                                            @RequestParam(required=true) String id, 
+                                            @RequestParam(required=true) String phoneNumber) {
+        String logprefix = request.getRequestURI()+ " ";
+        HttpResponse response =  new HttpResponse(request.getRequestURI());
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, 
+        " Resend Free Coupon ");
+
+        response = OrderWorker.resendSMS(request, logprefix, storeRepository, voucherRepository, productRepository, 
+                                        productInventoryRepository, orderRepository, orderItemRepository, smsService, 
+                                        id, phoneNumber,freeCouponUrl);
+                                
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 

@@ -1292,7 +1292,8 @@ public class OrderWorker {
                                         VoucherRepository voucherRepository, ProductRepository productRepository, 
                                         ProductInventoryRepository productInventoryRepository, OrderRepository orderRepository, 
                                         OrderItemRepository orderItemRepository, StoreDetailsRepository storeDetailsRepository, 
-                                        VoucherSerialNumberRepository voucherSerialNumberRepository, String voucherCode, String phoneNumber) {
+                                        VoucherSerialNumberRepository voucherSerialNumberRepository, String voucherCode, String phoneNumber, 
+                                        SmsService smsService, String freeCouponUrl) {
 
         HttpResponse response = new HttpResponse(request.getRequestURI());
         // create order object
@@ -1374,6 +1375,7 @@ public class OrderWorker {
                         invoicePrefix = store.getStorePrefix();
                     }
                     String invoiceId = TxIdUtil.generateInvoiceId(store.getId(),invoicePrefix, storeRepository);
+                order.setPrivateAdminNotes(phoneNumber);
                 order.setInvoiceId(invoiceId);
                 order.setSubTotal(voucherInventory.getPrice());
                 order.setTotal(order.getSubTotal());
@@ -1397,6 +1399,7 @@ public class OrderWorker {
 
                         // set response data
                         FreeCouponResponse coupon = new FreeCouponResponse();
+                        coupon.setPhoneNumber(couponOrder.getPrivateAdminNotes());
                         coupon.setInvoiceId(couponOrder.getInvoiceId());
                         coupon.setName(voucher.getName());
                         coupon.setPrice(voucherInventory.getPrice());
@@ -1414,6 +1417,24 @@ public class OrderWorker {
                         //decrease quantity in inventory db
                         voucherInventory.setQuantity(voucherInventory.getQuantity() - couponOrderItem.getQuantity());
                         productInventoryRepository.save(voucherInventory);
+
+                        //Send QR through SMS
+                        String qrUrl = freeCouponUrl + coupon.getOrderId();
+
+                        if(coupon != null && phoneNumber != null) {
+                            Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, 
+                            " SendingMessage.... ");
+                            try {
+                                smsService.sendCouponUrl(phoneNumber, qrUrl);
+                                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, 
+                                " sent!! ");
+                                 response.setMessage("Order has been created successfully and SMS is sent.");
+                            } catch (Exception e) {
+                                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
+                                logprefix, " SendingMessage: Something went wrong!");
+                                response.setMessage("Order has been created successfully but SMS failed to send.");     
+                            }
+                        }
 
                         response.setStatus(HttpStatus.OK.value());
                         response.setData(coupon);
@@ -1438,7 +1459,7 @@ public class OrderWorker {
     public static HttpResponse freeCouponData(HttpServletRequest request, String logprefix, StoreRepository storeRepository, 
                                         VoucherRepository voucherRepository, ProductRepository productRepository, 
                                         ProductInventoryRepository productInventoryRepository, OrderRepository orderRepository, 
-                                        OrderItemRepository orderItemRepository, String orderId, SmsService smsService) { 
+                                        OrderItemRepository orderItemRepository, String orderId) { 
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Optional<Order> optVoucherOrder = orderRepository.findById(orderId);
@@ -1462,6 +1483,7 @@ public class OrderWorker {
 
             // set coupon data
             FreeCouponResponse coupon = new FreeCouponResponse();
+            coupon.setPhoneNumber(couponOrder.getPrivateAdminNotes());
             coupon.setInvoiceId(couponOrder.getInvoiceId());
             coupon.setName(voucher.getName());
             coupon.setPrice(voucherInventory.getPrice());
@@ -1476,14 +1498,6 @@ public class OrderWorker {
             coupon.setOrderItemId(couponOrderItem.getId());
             coupon.setVoucher(voucher);
 
-            if(coupon != null) {
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, 
-                " SendingMessage.... ");
-                smsService.sendCouponUrl("601170271734", "http://localhost:7001/orders/getFreeCoupon/22fd2f19-9490-4721-bc53-e08de246ea3e");
-                Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, 
-                " sent!! ");
-            }
-
             response.setStatus(HttpStatus.OK.value());
             response.setData(coupon);
         } else {
@@ -1495,6 +1509,81 @@ public class OrderWorker {
        
         return response;
     }
+
+    public static HttpResponse resendSMS(HttpServletRequest request, String logprefix, StoreRepository storeRepository, 
+                                        VoucherRepository voucherRepository, ProductRepository productRepository, 
+                                        ProductInventoryRepository productInventoryRepository, OrderRepository orderRepository, 
+                                        OrderItemRepository orderItemRepository, SmsService smsService, String orderId,
+                                        String phoneNumber, String freeCouponUrl ) { 
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+
+        Optional<Order> optVoucherOrder = orderRepository.findById(orderId);
+
+            if(optVoucherOrder.isPresent()) {
+                // get coupon data
+                Order couponOrder = optVoucherOrder.get();
+
+                List<OrderItem> orderItem = orderItemRepository.findByOrderId(couponOrder.getId());
+                OrderItem couponOrderItem = orderItem.get(0);
+
+                Optional<Voucher> optVoucher = voucherRepository.findById(couponOrder.getVoucherId());
+                Voucher voucher = optVoucher.get();
+
+                Product voucherProduct = productRepository.findByVoucherId(voucher.getId());
+                List<ProductInventory> productInventory = productInventoryRepository.findByProductId(voucherProduct.getId());
+                ProductInventory voucherInventory = productInventory.get(0);
+
+                Optional<Store> optStore = storeRepository.findById(voucher.getStoreId());
+                Store store = optStore.get();
+
+                // set coupon data
+                FreeCouponResponse coupon = new FreeCouponResponse();
+                coupon.setPhoneNumber(couponOrder.getPrivateAdminNotes());
+                coupon.setInvoiceId(couponOrder.getInvoiceId());
+                coupon.setName(voucher.getName());
+                coupon.setPrice(voucherInventory.getPrice());
+                coupon.setStartDate(voucher.getStartDate());
+                coupon.setEndDate(voucher.getEndDate());
+                coupon.setStoreName(store.getName());
+                coupon.setStoreId(store.getId());
+                coupon.setStatus(voucher.getStatus());
+                coupon.setVoucherCode(voucher.getVoucherCode());
+                coupon.setVoucherImage(voucherProduct.getThumbnailUrl());
+                coupon.setOrderId(couponOrder.getId());
+                coupon.setOrderItemId(couponOrderItem.getId());
+                coupon.setVoucher(voucher);
+
+                if(coupon != null && phoneNumber != null) {
+                    //handle phone number format (MYS)
+                    if (phoneNumber.startsWith("0")) {
+                        phoneNumber = "6" + phoneNumber;
+                    }
+
+                    //Send QR through SMS
+                    String qrUrl = freeCouponUrl + coupon.getOrderId();
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, 
+                    " SendingMessage.... ");
+                    try {
+                        smsService.sendCouponUrl(phoneNumber, qrUrl);
+
+                        response.setMessage("SMS is sent.");
+                        response.setStatus(HttpStatus.OK.value());
+                    } catch (Exception e) {
+                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
+                        logprefix, " SendingMessage: Something went wrong!");
+                        response.setMessage("SMS failed to send.");     
+                    }
+                }
+            } else {
+                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
+                            logprefix, " Order does not exist or phone nmumber is not provided");
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Order does not exist or phone nmumber is not provided");
+            }
+
+            return response;
+            
+        }
 
 
     @Nullable

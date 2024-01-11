@@ -16,6 +16,12 @@ import java.net.URLEncoder;
 @Service
 public class SmsService {
 
+    @Value("${umgUser}")
+    private String umgUser;
+
+    @Value("${umgPassword}")
+    private String umgPassword;
+
     public String generateMessage(String smsTemplate, String invoiceNo, String storeName, String trackingUrl) {
 
         smsTemplate = smsTemplate.replaceAll("%invoiceNo%", invoiceNo);
@@ -85,7 +91,8 @@ public class SmsService {
 
     public String sendCouponUrl(String destAddr, String couponUrl) {
 
-        String message = "E-Kedai : Congratulations! You have received a free coupon! Click on this link to get the QR ";
+        String message = "E-Kedai : Congratulations! You have received a free coupon! Click on this link to get the QR code ";
+
         try {
             //Set up the URL and parameters
             String url = "https://umgotp.hellosim.com.my/api/processMsg.php";
@@ -93,8 +100,8 @@ public class SmsService {
             String gwMsgId = "201108031EF00FFF";
             String svrMsgId = "999999999";
             String cliMsgId = "IATS123456789";
-            String systemId = "hellosim";
-            String password = "hellosimmtrade";
+            String systemId = umgUser;
+            String password = umgPassword;
             String srcAddr = "22422";
             String dataCoding = "1";
             
@@ -131,6 +138,8 @@ public class SmsService {
 
                 // Process the response
                 if (response.getStatusCode().is2xxSuccessful()) {
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, "SMSService", 
+                    " sent!! ");
                     return response.getBody();
                 } else {
                     Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION, "sendHttpGetRequest",

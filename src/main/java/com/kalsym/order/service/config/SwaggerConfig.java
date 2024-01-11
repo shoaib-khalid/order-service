@@ -47,7 +47,7 @@ public class SwaggerConfig {
                 .license("")
                 .licenseUrl("")
                 .version(OrderServiceApplication.VERSION)
-                .version("3.19.7")
+                .version("3.19.9")
                 .build();
     }
 
