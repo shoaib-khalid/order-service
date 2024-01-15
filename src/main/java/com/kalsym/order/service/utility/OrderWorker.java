@@ -1396,6 +1396,7 @@ public class OrderWorker {
                         // set order id to orderItem
                         couponOrderItem.setOrderId(couponOrder.getId());
                         orderItemRepository.save(couponOrderItem);
+                        VoucherSerialNumber voucherSerialNumber = voucherSerialNumberRepository.findByVoucherRedeemCode(couponOrderItem.getVoucherRedeemCode().replace(";", ""));
 
                         // set response data
                         FreeCouponResponse coupon = new FreeCouponResponse();
@@ -1413,6 +1414,7 @@ public class OrderWorker {
                         coupon.setOrderId(couponOrder.getId());
                         coupon.setOrderItemId(couponOrderItem.getId());
                         coupon.setVoucher(voucher);
+                        coupon.setRedeemStatus(voucherSerialNumber.getCurrentStatus());
 
                         //decrease quantity in inventory db
                         voucherInventory.setQuantity(voucherInventory.getQuantity() - couponOrderItem.getQuantity());
@@ -1459,7 +1461,7 @@ public class OrderWorker {
     public static HttpResponse freeCouponData(HttpServletRequest request, String logprefix, StoreRepository storeRepository, 
                                         VoucherRepository voucherRepository, ProductRepository productRepository, 
                                         ProductInventoryRepository productInventoryRepository, OrderRepository orderRepository, 
-                                        OrderItemRepository orderItemRepository, String orderId) { 
+                                        OrderItemRepository orderItemRepository, String orderId, VoucherSerialNumberRepository voucherSerialNumberRepository) { 
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Optional<Order> optVoucherOrder = orderRepository.findById(orderId);
@@ -1481,6 +1483,8 @@ public class OrderWorker {
             Optional<Store> optStore = storeRepository.findById(voucher.getStoreId());
             Store store = optStore.get();
 
+            VoucherSerialNumber voucherSerialNumber = voucherSerialNumberRepository.findByVoucherRedeemCode(couponOrderItem.getVoucherRedeemCode().replace(";", ""));
+
             // set coupon data
             FreeCouponResponse coupon = new FreeCouponResponse();
             coupon.setPhoneNumber(couponOrder.getPrivateAdminNotes());
@@ -1497,6 +1501,7 @@ public class OrderWorker {
             coupon.setOrderId(couponOrder.getId());
             coupon.setOrderItemId(couponOrderItem.getId());
             coupon.setVoucher(voucher);
+            coupon.setRedeemStatus(voucherSerialNumber.getCurrentStatus());
 
             response.setStatus(HttpStatus.OK.value());
             response.setData(coupon);
@@ -1514,7 +1519,7 @@ public class OrderWorker {
                                         VoucherRepository voucherRepository, ProductRepository productRepository, 
                                         ProductInventoryRepository productInventoryRepository, OrderRepository orderRepository, 
                                         OrderItemRepository orderItemRepository, SmsService smsService, String orderId,
-                                        String phoneNumber, String freeCouponUrl ) { 
+                                        String phoneNumber, String freeCouponUrl, VoucherSerialNumberRepository voucherSerialNumberRepository ) { 
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
         Optional<Order> optVoucherOrder = orderRepository.findById(orderId);
@@ -1536,6 +1541,8 @@ public class OrderWorker {
                 Optional<Store> optStore = storeRepository.findById(voucher.getStoreId());
                 Store store = optStore.get();
 
+                VoucherSerialNumber voucherSerialNumber = voucherSerialNumberRepository.findByVoucherRedeemCode(couponOrderItem.getVoucherRedeemCode().replace(";", ""));
+
                 // set coupon data
                 FreeCouponResponse coupon = new FreeCouponResponse();
                 coupon.setPhoneNumber(couponOrder.getPrivateAdminNotes());
@@ -1552,6 +1559,7 @@ public class OrderWorker {
                 coupon.setOrderId(couponOrder.getId());
                 coupon.setOrderItemId(couponOrderItem.getId());
                 coupon.setVoucher(voucher);
+                coupon.setRedeemStatus(voucherSerialNumber.getCurrentStatus());
 
                 if(coupon != null && phoneNumber != null) {
                     //handle phone number format (MYS)
@@ -1571,14 +1579,15 @@ public class OrderWorker {
                     } catch (Exception e) {
                         Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
                         logprefix, " SendingMessage: Something went wrong!");
+                        response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
                         response.setMessage("SMS failed to send.");     
                     }
                 }
             } else {
                 Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
-                            logprefix, " Order does not exist or phone nmumber is not provided");
+                            logprefix, " Order does not exist");
                 response.setStatus(HttpStatus.NOT_FOUND.value());
-                response.setMessage("Order does not exist or phone nmumber is not provided");
+                response.setMessage("Order does not exist");
             }
 
             return response;

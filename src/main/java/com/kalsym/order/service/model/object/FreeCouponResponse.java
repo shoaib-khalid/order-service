@@ -2,6 +2,7 @@ package com.kalsym.order.service.model.object;
 
 import java.util.Date;
 
+import com.kalsym.order.service.enums.VoucherSerialStatus;
 import com.kalsym.order.service.enums.VoucherStatus;
 import com.kalsym.order.service.model.Voucher;
 
@@ -25,6 +26,7 @@ public class FreeCouponResponse {
     VoucherStatus status;
     String voucherCode;
     String voucherImage;
+    VoucherSerialStatus redeemStatus;
 
     String orderId;
     String orderItemId;

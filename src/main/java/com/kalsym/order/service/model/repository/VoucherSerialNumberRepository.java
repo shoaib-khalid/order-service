@@ -25,4 +25,6 @@ public interface VoucherSerialNumberRepository extends PagingAndSortingRepositor
     List<VoucherSerialNumber> findAvailableVoucherSerialNumbers(
             @Param("voucherId") String voucherId
     );
+
+    VoucherSerialNumber findByVoucherRedeemCode(String voucherRedeemCode);
 }

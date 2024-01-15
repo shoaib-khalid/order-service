@@ -1604,7 +1604,7 @@ public class OrderController {
         " Get Free Coupon ");
 
         response = OrderWorker.freeCouponData(request, logprefix, storeRepository, voucherRepository, productRepository,
-                                productInventoryRepository, orderRepository, orderItemRepository, id);
+                                productInventoryRepository, orderRepository, orderItemRepository, id, voucherSerialNumberRepository);
 
         return ResponseEntity.status(response.getStatus()).body(response);
     }
@@ -1621,7 +1621,7 @@ public class OrderController {
 
         response = OrderWorker.resendSMS(request, logprefix, storeRepository, voucherRepository, productRepository, 
                                         productInventoryRepository, orderRepository, orderItemRepository, smsService, 
-                                        id, phoneNumber,freeCouponUrl);
+                                        id, phoneNumber,freeCouponUrl, voucherSerialNumberRepository);
                                 
         return ResponseEntity.status(response.getStatus()).body(response);
     }
