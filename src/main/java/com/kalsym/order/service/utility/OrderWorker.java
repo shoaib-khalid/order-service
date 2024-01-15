@@ -1439,7 +1439,7 @@ public class OrderWorker {
                         }
 
                         response.setStatus(HttpStatus.OK.value());
-                        response.setData(coupon);
+                        response.setData(qrUrl);
                     } 
                 } catch (Exception e) {
                     Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
