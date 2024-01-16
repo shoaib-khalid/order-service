@@ -1578,7 +1578,7 @@ public class OrderController {
 
     //Endpoints for free coupon
     @PostMapping(path = {"/createFreeCouponOrder"}, name = "orders-create-freecoupon")
-    //@PreAuthorize("hasAnyAuthority('orders-push-cod', 'all')")
+    @PreAuthorize("hasAnyAuthority('orders-create-freecoupon', 'all')")
     public ResponseEntity<HttpResponse> createFreeCouponOrder(HttpServletRequest request, 
                                                 @RequestParam(required = true) String voucherCode, 
                                                 @RequestParam(required = true) String phoneNumber) {
@@ -1596,6 +1596,7 @@ public class OrderController {
     }
 
     @GetMapping(path = {"/getFreeCoupon"}, name = "orders-get-freecoupon")
+    @PreAuthorize("hasAnyAuthority('orders-get-freecoupon', 'all')")
     public ResponseEntity<HttpResponse> getFreeCoupon (HttpServletRequest request, @RequestParam String id) {
         
         String logprefix = request.getRequestURI()+ " ";
@@ -1610,7 +1611,7 @@ public class OrderController {
     }
 
     @PostMapping(path = {"/resendFreeCouponSMS"}, name = "orders-resend-freecoupon-sms")
-    //@PreAuthorize("hasAnyAuthority('orders-push-cod', 'all')")
+    @PreAuthorize("hasAnyAuthority('orders-resend-freecoupon-sms', 'all')")
     public ResponseEntity<HttpResponse> resendFreeCouponSMS(HttpServletRequest request, 
                                             @RequestParam(required=true) String id, 
                                             @RequestParam(required=true) String phoneNumber) {
