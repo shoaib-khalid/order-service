@@ -1596,7 +1596,7 @@ public class OrderController {
     }
 
     @GetMapping(path = {"/getFreeCoupon"}, name = "orders-get-freecoupon")
-    @PreAuthorize("hasAnyAuthority('orders-get-freecoupon', 'all')")
+    //@PreAuthorize("hasAnyAuthority('orders-get-freecoupon', 'all')")
     public ResponseEntity<HttpResponse> getFreeCoupon (HttpServletRequest request, @RequestParam String id) {
         
         String logprefix = request.getRequestURI()+ " ";

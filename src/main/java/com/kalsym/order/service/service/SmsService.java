@@ -91,7 +91,7 @@ public class SmsService {
 
     public String sendCouponUrl(String destAddr, String couponUrl) {
 
-        String message = "E-Kedai : Congratulations! You have received a free coupon! Click on this link to get the QR code ";
+        String message = "E-Kedai : Congratulations! You have received a coupon! Click on this link to get the QR code ";
 
         try {
             //Set up the URL and parameters
