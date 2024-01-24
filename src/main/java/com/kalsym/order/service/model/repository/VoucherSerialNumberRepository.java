@@ -27,4 +27,7 @@ public interface VoucherSerialNumberRepository extends PagingAndSortingRepositor
     );
 
     VoucherSerialNumber findByVoucherRedeemCode(String voucherRedeemCode);
+
+    @Query("SELECT vt FROM VoucherSerialNumber vt WHERE vt.voucherId = :voucherId AND vt.currentStatus IN ('USED', 'BOUGHT')")
+    List<VoucherSerialNumber> findByVoucherToExport(@Param("voucherId") String voucherId);
 }

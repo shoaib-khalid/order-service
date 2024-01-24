@@ -5,6 +5,7 @@
  */
 package com.kalsym.order.service.utility;
 
+import com.google.gson.Gson;
 import com.kalsym.order.service.OrderServiceApplication;
 import com.kalsym.order.service.enums.*;
 import com.kalsym.order.service.model.*;
@@ -20,12 +21,30 @@ import com.kalsym.order.service.service.EmailService;
 import com.kalsym.order.service.service.FCMService;
 import com.kalsym.order.service.service.CustomerService;
 import com.kalsym.order.service.service.WhatsappService;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -1415,6 +1434,8 @@ public class OrderWorker {
                         coupon.setOrderItemId(couponOrderItem.getId());
                         coupon.setVoucher(voucher);
                         coupon.setRedeemStatus(voucherSerialNumber.getCurrentStatus());
+                        coupon.setVoucherType(couponOrder.getPaymentType());
+                        coupon.setIsGlobalStore(voucher.getIsGlobalStore() != null ? voucher.getIsGlobalStore() : false);
 
                         //decrease quantity in inventory db
                         voucherInventory.setQuantity(voucherInventory.getQuantity() - couponOrderItem.getQuantity());
@@ -1502,6 +1523,8 @@ public class OrderWorker {
             coupon.setOrderItemId(couponOrderItem.getId());
             coupon.setVoucher(voucher);
             coupon.setRedeemStatus(voucherSerialNumber.getCurrentStatus());
+            coupon.setVoucherType(couponOrder.getPaymentType());
+            coupon.setIsGlobalStore(voucher.getIsGlobalStore() != null ? voucher.getIsGlobalStore() : false);
 
             response.setStatus(HttpStatus.OK.value());
             response.setData(coupon);
@@ -1560,6 +1583,8 @@ public class OrderWorker {
                 coupon.setOrderItemId(couponOrderItem.getId());
                 coupon.setVoucher(voucher);
                 coupon.setRedeemStatus(voucherSerialNumber.getCurrentStatus());
+                coupon.setVoucherType(couponOrder.getPaymentType());
+                coupon.setIsGlobalStore(voucher.getIsGlobalStore() != null ? voucher.getIsGlobalStore() : false);
 
                 if(coupon != null && phoneNumber != null) {
                     //handle phone number format (MYS)
@@ -1593,6 +1618,282 @@ public class OrderWorker {
             return response;
             
         }
+
+
+    //services for qr coupon
+     public static HttpResponse generateQrCouponOrder(HttpServletRequest request, String logprefix, StoreRepository storeRepository, 
+                                        VoucherRepository voucherRepository, ProductRepository productRepository, 
+                                        ProductInventoryRepository productInventoryRepository, OrderRepository orderRepository, 
+                                        OrderItemRepository orderItemRepository, StoreDetailsRepository storeDetailsRepository, 
+                                        VoucherSerialNumberRepository voucherSerialNumberRepository, String voucherId) {
+
+        HttpResponse response = new HttpResponse(request.getRequestURI());
+        Optional<Voucher> optVoucher = voucherRepository.findById(voucherId);
+        
+        if(optVoucher.isPresent()) {
+            Voucher voucher = optVoucher.get();
+            Product voucherProduct = productRepository.findByVoucherId(voucher.getId());
+            String itemCode = voucherProduct.getId() + "aa";
+            ProductInventory voucherInventory = productInventoryRepository.findByItemCode(itemCode);
+        
+            //get store details
+            Optional<StoreWithDetails> optStore = storeDetailsRepository.findById(voucher.getStoreId());
+            StoreWithDetails store = optStore.get();
+
+            //set customer to "GUEST"
+            String customer = "GUEST";
+
+            List<VoucherSerialNumber> availableVoucher =  voucherSerialNumberRepository.findAvailableVoucherSerialNumbers(voucherId);
+            
+            if(!availableVoucher.isEmpty()) {
+
+                int successCount=0;
+                for (int x = 0; x < availableVoucher.size(); x++) {
+                    //check for stock
+                    if (voucherInventory.getQuantity() < 1) {
+                        //out of stock
+                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
+                            logprefix, "Voucher " + voucherInventory.getProduct().getName() + " is out of stock");
+                    } else {
+                        // Creating order
+                        Order order = new Order();
+
+                        order.setStoreId(voucher.getStoreId());
+                        order.setCompletionStatus(OrderStatus.DELIVERED_TO_CUSTOMER);
+                        order.setPaymentStatus(PaymentStatus.PAID);
+                            String invoicePrefix = store.getNameAbreviation();
+                            if (store.getStorePrefix()!=null) {
+                                invoicePrefix = store.getStorePrefix();
+                            }
+                            String invoiceId = TxIdUtil.generateInvoiceId(store.getId(),invoicePrefix, storeRepository);
+                        order.setPrivateAdminNotes(customer);
+                        order.setInvoiceId(invoiceId);
+                        order.setSubTotal(voucherInventory.getPrice());
+                        order.setTotal(order.getSubTotal());
+                        order.setPaymentType("QRCOUPON");
+                        order.setDeliveryDiscountDescription("NOT APPLICABLE");
+                        order.setVoucherId(voucher.getId());
+                        order.setServiceType(ServiceType.DIGITAL);
+                        order.setDeliveryType("DIGITAL");
+
+
+                        // Creating orderItem
+                        OrderItem orderItem = new OrderItem();
+                        
+                        orderItem.setProductId(voucherProduct.getId());
+                        orderItem.setProductPrice(voucherInventory.getPrice().floatValue());
+                        orderItem.setSKU(voucherInventory.getSKU());
+                        orderItem.setQuantity(1);
+                        orderItem.setPrice(orderItem.getQuantity() * orderItem.getProductPrice());
+                        orderItem.setItemCode(itemCode);
+                        orderItem.setProductName(voucherProduct.getName());
+
+                        // updating voucher serial number table + assign redeem code to orderItem
+                        StringBuilder concatenatedSerialNumbers;
+                        concatenatedSerialNumbers = new StringBuilder();
+
+                        // Update voucher serial number data
+                        availableVoucher.get(x).setCurrentStatus(VoucherSerialStatus.BOUGHT);
+                        availableVoucher.get(x).setCustomer(customer);
+                        voucherSerialNumberRepository.save(availableVoucher.get(x));
+
+                        // Assign redeem code to orderItem
+                        concatenatedSerialNumbers.append(availableVoucher.get(x).getVoucherRedeemCode());
+                        concatenatedSerialNumbers.append(";");
+                        if (concatenatedSerialNumbers.length() > 0) {
+                            String existingVoucherRedeemCode = orderItem.getVoucherRedeemCode();
+                            if (existingVoucherRedeemCode != null) {
+                                orderItem.setVoucherRedeemCode(existingVoucherRedeemCode + concatenatedSerialNumbers.toString());
+                            } else {
+                                orderItem.setVoucherRedeemCode(concatenatedSerialNumbers.toString());
+                            }
+                        }
+
+                        // save the order/orderItem in DB
+                        Order couponOrder = new Order();
+                        couponOrder = orderRepository.save(order);
+                        OrderItem couponOrderItem = new OrderItem();
+                        couponOrderItem = orderItemRepository.save(orderItem);
+
+                        if (couponOrder.getId() != null) {
+                            // set orderId to orderItem
+                            couponOrderItem.setOrderId(couponOrder.getId());
+                            orderItemRepository.save(couponOrderItem);
+                            VoucherSerialNumber voucherSerialNumber = voucherSerialNumberRepository.findByVoucherRedeemCode(couponOrderItem.getVoucherRedeemCode().replace(";", ""));
+
+                            // set QR details
+                            Map<String, Object> qrJson = new HashMap<>();
+                            qrJson.put("phoneNumber", couponOrder.getPrivateAdminNotes());
+                            qrJson.put("productName", voucher.getName());
+                            qrJson.put("productPrice", voucherInventory.getPrice());
+                            qrJson.put("date", voucher.getFormattedEndDate());
+                            qrJson.put("storeId", store.getId());
+                            qrJson.put("productImageUrl", voucherProduct.getThumbnailUrl());
+                            qrJson.put("voucherCode", couponOrderItem.getVoucherRedeemCode());
+                            qrJson.put("isGlobalStore", voucher.getIsGlobalStore() != null ? voucher.getIsGlobalStore() : false);
+
+                            Gson gson = new Gson();
+                            String qrDetails = gson.toJson(qrJson);
+                            voucherSerialNumber.setQrDetails(qrDetails);
+                            voucherSerialNumberRepository.save(voucherSerialNumber);
+
+                            successCount++;
+                        }
+
+                    }
+                }
+
+                //decrease quantity in inventory db
+                voucherInventory.setQuantity(voucherInventory.getQuantity() - successCount);
+                productInventoryRepository.save(voucherInventory);
+
+                if (successCount == availableVoucher.size()) {
+                    response.setStatus(HttpStatus.OK.value());
+                    Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                            logprefix, "Orders completed: " + successCount +" orders out of " + availableVoucher.size() 
+                            + " created successfully");
+                } else {
+                    response.setStatus(HttpStatus.OK.value());
+                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
+                        logprefix, "Orders incompleted: " + successCount +" orders out of " + availableVoucher.size() 
+                        + " created.");
+                }
+
+            } else {
+                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
+                            logprefix, " Voucher does not exist.");
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+            }
+        } else {
+              Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
+                            logprefix, " Voucher serial number has no data.");
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+        }
+
+        return response;
+        
+    }
+
+    public static byte[] exportQrCoupon(HttpServletRequest request, String logprefix, StoreRepository storeRepository, 
+                                        VoucherRepository voucherRepository, ProductRepository productRepository, 
+                                        ProductInventoryRepository productInventoryRepository, OrderRepository orderRepository, 
+                                        OrderItemRepository orderItemRepository, String voucherId, VoucherSerialNumberRepository voucherSerialNumberRepository) { 
+                                            
+        byte[] response = null;
+
+         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yy");
+
+            List<VoucherSerialNumber> voucherList = voucherSerialNumberRepository.findByVoucherToExport(voucherId);
+
+            if(!voucherList.isEmpty()) {
+                Optional<Voucher> voucherDetails = voucherRepository.findById(voucherId);
+                try (Workbook workbook = new XSSFWorkbook()) {
+                    Sheet sheet = workbook.createSheet("Voucher Report");
+
+                    // Create a style with text wrapping
+                    CellStyle wrapTextStyle = workbook.createCellStyle();
+                    wrapTextStyle.setWrapText(true);
+                    wrapTextStyle.setAlignment(HorizontalAlignment.LEFT);
+                    wrapTextStyle.setVerticalAlignment(VerticalAlignment.TOP);
+
+                    // Create the merged cell for voucher details
+                    Row voucherName = sheet.createRow(0);
+                    Row voucherCode = sheet.createRow(1);
+                    Row voucherDuration = sheet.createRow(2);
+
+                    CellRangeAddress mergedVName = new CellRangeAddress(0, 0, 0, 7);
+                    sheet.addMergedRegion(mergedVName);
+                    CellRangeAddress mergedVCode = new CellRangeAddress(1, 1, 0, 7);
+                    sheet.addMergedRegion(mergedVCode);
+                    CellRangeAddress mergedVDuration = new CellRangeAddress(2, 2, 0, 7);
+                    sheet.addMergedRegion(mergedVDuration);
+                    
+                    Cell cellVoucher = voucherName.createCell(0);
+                    cellVoucher.setCellValue("Voucher Name: "+voucherDetails.get().getName());
+
+                    Cell cellCode = voucherCode.createCell(0);
+                    cellCode.setCellValue("Voucher Code: "+voucherDetails.get().getVoucherCode());
+
+                    String startDate = dateFormat.format(voucherDetails.get().getStartDate());
+                    String endDate =  dateFormat.format(voucherDetails.get().getEndDate());
+                    Cell cellDuration = voucherDuration.createCell(0);
+                    cellDuration.setCellValue("Voucher Validity: "+startDate+" - "+endDate);
+
+                     // Create headers
+                    Row headerRow = sheet.createRow(3);
+                    headerRow.createCell(0).setCellValue("No.");
+                    headerRow.createCell(1).setCellValue("Redeem Code");
+                    headerRow.createCell(2).setCellValue("Status");
+                    headerRow.createCell(3).setCellValue("Redeem Date");
+                    headerRow.createCell(4).setCellValue("QR JSON Data");
+
+
+                    // Apply the text wrapping style to cells 
+                    for (int colIndex = 0; colIndex <= 4; colIndex++) {
+                        Cell cell = headerRow.getCell(colIndex);
+                        cell.setCellStyle(wrapTextStyle);
+                    }
+
+                    // Set data into the col/rows
+                    int rowNum = 4;
+                    for (VoucherSerialNumber voucher : voucherList) {
+                        Row row = sheet.createRow(rowNum++);
+                        row.createCell(0).setCellValue(rowNum-4);
+                        row.createCell(1).setCellValue(voucher.getVoucherRedeemCode());
+                        row.createCell(2).setCellValue(voucher.getCurrentStatus().toString());
+                        String redeemDate = "";
+                        if (voucher.getRedeemDate() != null) {
+                            redeemDate = dateFormat.format(voucher.getRedeemDate());
+                        } else {
+                            redeemDate = "N/A";
+                        }
+                        row.createCell(3).setCellValue(redeemDate);
+                        row.createCell(4).setCellValue(voucher.getQrDetails());
+
+                        // Apply the text wrapping style to cells 
+                        for (int colIndex = 0; colIndex <= 4; colIndex++) {
+                            Cell cell = row.getCell(colIndex);
+                            cell.setCellStyle(wrapTextStyle);
+                        }
+                    }
+
+                    // Convert workbook to byte array
+                    byte[] excelBytes;
+                    try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+                        workbook.write(byteArrayOutputStream);
+                        excelBytes = byteArrayOutputStream.toByteArray();
+                    }
+
+                    if (excelBytes != null) {
+                        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION,
+                        logprefix, "QR Code exported successfully!");
+
+                        response = excelBytes;
+                    } else {
+                        Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
+                        logprefix, "QR Code failed to export...");
+
+                        response = null;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
+                    logprefix, "Try_catch has caught an error: "+e);
+
+                    response = null;
+                }
+            } else {
+                Logger.application.error(Logger.pattern, OrderServiceApplication.VERSION,
+                logprefix, "There is no data to export");
+
+                response = null;
+            }
+       
+        return response;
+    }
+
+
+   
 
 
     @Nullable

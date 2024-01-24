@@ -27,6 +27,8 @@ public class FreeCouponResponse {
     String voucherCode;
     String voucherImage;
     VoucherSerialStatus redeemStatus;
+    String voucherType;
+    Boolean isGlobalStore;
 
     String orderId;
     String orderItemId;

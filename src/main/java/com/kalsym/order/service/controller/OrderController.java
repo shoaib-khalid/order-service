@@ -1627,6 +1627,55 @@ public class OrderController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
+    //Endpoints for physical QR coupon
+    @PostMapping(path = {"/createQRCouponOrder"}, name = "orders-create-qrcoupon")
+    //@PreAuthorize("hasAnyAuthority('orders-create-qrcoupon', 'all')")
+    public ResponseEntity<byte[]> createQrCouponOrder(HttpServletRequest request, 
+                                                @RequestParam(required = true) String voucherId) {
+        String logprefix = request.getRequestURI()+ " ";
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, 
+        " Create QR Coupon ");
+
+        HttpResponse createOrderResponse;
+        createOrderResponse = OrderWorker.generateQrCouponOrder(request, logprefix, storeRepository, voucherRepository,
+                                productRepository, productInventoryRepository, orderRepository, orderItemRepository, 
+                                storeDetailsRepository, voucherSerialNumberRepository, voucherId);
+                                
+        if (createOrderResponse.getStatus() == 200) {
+           byte[] excelBytes = OrderWorker.exportQrCoupon(request, logprefix, storeRepository, voucherRepository, productRepository,
+                                                productInventoryRepository, orderRepository, orderItemRepository, voucherId, voucherSerialNumberRepository);
+        
+            // Set response headers for file download
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData("attachment", "QR Codes JSON.xlsx");
+
+            return ResponseEntity.status(HttpStatus.OK).headers(headers).body(excelBytes);
+          
+        } else {
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(null);
+        }
+    }
+
+    @GetMapping(path = {"/getQrCoupon"}, name = "orders-get-qrcoupon")
+    //@PreAuthorize("hasAnyAuthority('orders-get-freecoupon', 'all')")
+    public ResponseEntity<byte[]> getQrCoupon (HttpServletRequest request, @RequestParam String voucherId) {
+        String logprefix = request.getRequestURI()+ " ";
+        Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, 
+        " Get QR Coupon ");
+
+        byte[] excelBytes = OrderWorker.exportQrCoupon(request, logprefix, storeRepository, voucherRepository, productRepository,
+        productInventoryRepository, orderRepository, orderItemRepository, voucherId, voucherSerialNumberRepository);
+
+        // Set response headers for file download
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", "QR Codes JSON.xlsx");
+
+        return ResponseEntity.status(HttpStatus.OK).headers(headers).body(excelBytes);
+
+    }
+
 
 
     //The endpoint for coupon service

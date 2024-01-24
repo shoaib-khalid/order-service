@@ -16,6 +16,8 @@ import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 import java.util.Date;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.FetchType;
@@ -105,6 +107,8 @@ public class Voucher implements Serializable {
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "voucherId", insertable = false, updatable = false, nullable = true)
     private List<VoucherServiceType> voucherServiceTypeList;
+
+    private Boolean isGlobalStore;
     
     public boolean getAllowMultipleRedeem() {
         if (allowMultipleRedeem==null)
@@ -192,6 +196,17 @@ public class Voucher implements Serializable {
             endDate = voucher.getEndDate();
         }
 
+    }
+
+    public String getFormattedEndDate() {
+        // Convert java.util.Date to java.time.LocalDateTime
+        LocalDateTime localDateTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+        // Define the output date format
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("dd/MM/yy");
+
+        // Format the date as per the desired format
+        return localDateTime.format(outputFormatter);
     }
 
 }
