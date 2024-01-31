@@ -1630,7 +1630,7 @@ public class OrderController {
     //Endpoints for physical QR coupon
     @PostMapping(path = {"/createQRCouponOrder"}, name = "orders-create-qrcoupon")
     //@PreAuthorize("hasAnyAuthority('orders-create-qrcoupon', 'all')")
-    public ResponseEntity<byte[]> createQrCouponOrder(HttpServletRequest request, 
+    public ResponseEntity<byte[]> createQrCouponOrder(HttpServletRequest request,
                                                 @RequestParam(required = true) String voucherId) {
         String logprefix = request.getRequestURI()+ " ";
         Logger.application.info(Logger.pattern, OrderServiceApplication.VERSION, logprefix, 
@@ -1642,13 +1642,14 @@ public class OrderController {
                                 storeDetailsRepository, voucherSerialNumberRepository, voucherId);
                                 
         if (createOrderResponse.getStatus() == 200) {
-           byte[] excelBytes = OrderWorker.exportQrCoupon(request, logprefix, storeRepository, voucherRepository, productRepository,
+            Optional<Voucher> voucherOptional = voucherRepository.findById(voucherId);
+            byte[] excelBytes = OrderWorker.exportQrCoupon(request, logprefix, storeRepository, voucherRepository, productRepository,
                                                 productInventoryRepository, orderRepository, orderItemRepository, voucherId, voucherSerialNumberRepository);
-        
+
             // Set response headers for file download
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDispositionFormData("attachment", "QR Codes JSON.xlsx");
+            headers.setContentDispositionFormData("attachment", "QR Codes JSON - " + voucherOptional.get().getVoucherCode() + ".xlsx");
 
             return ResponseEntity.status(HttpStatus.OK).headers(headers).body(excelBytes);
           
@@ -1667,10 +1668,11 @@ public class OrderController {
         byte[] excelBytes = OrderWorker.exportQrCoupon(request, logprefix, storeRepository, voucherRepository, productRepository,
         productInventoryRepository, orderRepository, orderItemRepository, voucherId, voucherSerialNumberRepository);
 
+        Optional<Voucher> voucherOptional = voucherRepository.findById(voucherId);
         // Set response headers for file download
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData("attachment", "QR Codes JSON.xlsx");
+        headers.setContentDispositionFormData("attachment", "QR Codes JSON - " + voucherOptional.get().getVoucherCode() + ".xlsx");
 
         return ResponseEntity.status(HttpStatus.OK).headers(headers).body(excelBytes);
 

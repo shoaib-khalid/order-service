@@ -986,17 +986,14 @@ public class OrderProcessWorker {
             if (deliveryType == DeliveryType.DIGITAL && newStatus.equals("PAYMENT_CONFIRMED")) {
 
                 for(OrderItem orderItem : orderItems) {
-
                     String voucherId =  orderItem.getProduct().getVoucherId();
-
                     if (voucherId != null) {
-                        //uncomment if only quantity needs to be decreased
-                        Optional<Voucher> voucher = voucherRepository.findById(voucherId);
-                        if (voucher.isPresent()) {
-                            Voucher voucherObj = voucher.get();
-                            voucherObj.setTotalRedeem(voucher.get().getTotalRedeem() + orderItem.getQuantity());
-                            voucherRepository.save(voucherObj);
-                        }
+//                        Optional<Voucher> voucher = voucherRepository.findById(voucherId);
+//                        if (voucher.isPresent()) {
+//                            Voucher voucherObj = voucher.get();
+//                            voucherObj.setTotalRedeem(voucher.get().getTotalRedeem() + orderItem.getQuantity());
+//                            voucherRepository.save(voucherObj);
+//                        }
                         // Now, call the custom query method to get available voucher serial numbers
                         List<VoucherSerialNumber> availableVoucherSerialNumber
                                 = voucherSerialNumberRepository.findAvailableVoucherSerialNumbers(voucherId);

@@ -5,10 +5,8 @@ import com.kalsym.order.service.enums.DiscountCalculationType;
 import com.kalsym.order.service.enums.VoucherStatus;
 import com.kalsym.order.service.enums.VoucherType;
 import java.io.Serializable;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,18 +17,10 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import javax.persistence.CascadeType;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 /**
  *
