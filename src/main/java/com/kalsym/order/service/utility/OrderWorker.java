@@ -1728,7 +1728,7 @@ public class OrderWorker {
                             qrJson.put("productPrice", voucherInventory.getPrice());
                             qrJson.put("date", voucher.getFormattedEndDate());
                             qrJson.put("storeId", store.getId());
-                            qrJson.put("productImageUrl", voucherProduct.getThumbnailUrl());
+                            qrJson.put("productImageUrl", voucherProduct.getThumbnailUrl() != null ? voucherProduct.getThumbnailUrl() : null);
                             qrJson.put("voucherCode", couponOrderItem.getVoucherRedeemCode());
                             qrJson.put("isGlobalStore", voucher.getIsGlobalStore() != null ? voucher.getIsGlobalStore() : false);
 
